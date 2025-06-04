@@ -22,6 +22,7 @@ graph TD
 ---
 
 **How to read this diagram:**
+
 - The app starts at `public/index.html`, which loads `src/main.tsx`.
 - `main.tsx` renders the root React component: `App.tsx`.
 - `App.tsx` uses Material UI's `ThemeProvider` for theming and imports global styles.

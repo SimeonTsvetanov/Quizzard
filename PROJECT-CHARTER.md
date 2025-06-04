@@ -11,25 +11,34 @@
   - Light and dark themes must be fully implemented and switchable
   - Pixel-perfect, device-consistent appearance (strict responsive rules)
   - Use only built-in or native solutions; avoid unnecessary dependencies
+  - Footer and header must be fully responsive and accessible on all devices
+  - Main menu and landing page buttons must never overflow viewport on any device
+  - MUI modal backdrops (Drawer, Dialog, etc.) must have a subtle blur (1.5px) for focus effect
 - **Structure:**
   - Each main tool (Random Team Generator, Points Counter, etc.) is a separate feature/project
   - Landing page (main) lists all tools as primary navigation/entry points
+  - Footer must include copyright, navigation, social, and support links
 - **Hosting:**
   - Hosted on GitHub Pages
   - Auto-update via GitHub Actions (to be set up)
 - **Database:**
   - Plan for persistent storage (Points Counter, future features)
   - Use local storage or IndexedDB for now; design for easy migration
+- **Terminal/Automation:**
+  - Do not use `&&` to chain commands in terminal scripts or documentation. Use separate lines or platform-appropriate alternatives for cross-platform compatibility.
 
 ### 2. Progress Tracker
 
 - [x] Project initialized (React + TypeScript + MUI)
 - [x] All base styles and themes complete
 - [x] Landing page with navigation to tools
+- [x] Responsive, pixel-perfect layout (including mobile menu and footer)
+- [x] GitHub repository created and code pushed (private)
+- [x] Footer implemented: dynamic year, logo, navigation, GitHub/support links, responsive
+- [x] Drawer accessibility: focus trap, ARIA, keyboard nav, subtle animation, blur backdrop
+- [x] Main menu buttons always fit viewport (no overflow on mobile)
 - [ ] Random Team Generator (placeholder)
 - [ ] Points Counter (placeholder)
-- [x] Responsive, pixel-perfect layout
-- [x] GitHub repository created and code pushed (private)
 - [ ] GitHub Pages deploy set up
 - [ ] Auto-update workflow
 
@@ -46,11 +55,14 @@
 - No unnecessary dependencies or folders
 - Device consistency is mandatory
 - Landing page is the current focus
+- Footer and header must always be accessible and responsive
+- All overlays (Drawer, Dialog, etc.) must blur background for focus
 
 ### 4. Change Log / Decisions
 
 - **2025-06-04:** Project charter created. Decided to focus on landing page and tool placeholders first. All styles/themes must be ready before feature work.
 - **2025-06-04:** Initialized git, created private GitHub repo, and pushed code. Local development and private remote workflow established. Will make public and enable GitHub Pages when ready.
+- **2025-06-04:** Implemented global MUI backdrop blur (1.5px) for all modals/drawers. Fixed main menu button overflow on mobile. Footer now includes copyright, navigation, GitHub, and support links, and is fully responsive.
 
 ---
 

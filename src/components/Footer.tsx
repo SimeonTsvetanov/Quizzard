@@ -1,0 +1,95 @@
+import { Box, Typography, Link, IconButton, Stack } from "@mui/material";
+import GitHubIcon from "@mui/icons-material/GitHub";
+import LocalCafeIcon from "@mui/icons-material/LocalCafe";
+
+const currentYear = new Date().getFullYear();
+
+const navLinks = [
+  { label: "Privacy Policy", href: "#privacy" },
+  { label: "Terms", href: "#terms" },
+  { label: "About", href: "#about" },
+  { label: "Contact", href: "#contact" },
+];
+
+export default function Footer() {
+  return (
+    <Box
+      component="footer"
+      sx={{
+        mt: 8,
+        py: 3,
+        px: 2,
+        bgcolor: "background.paper",
+        borderTop: 1,
+        borderColor: "divider",
+        color: "text.secondary",
+        fontSize: { xs: 13, sm: 15 },
+      }}
+    >
+      <Stack
+        direction={{ xs: "column", sm: "row" }}
+        spacing={2}
+        alignItems="center"
+        justifyContent="space-between"
+        sx={{ maxWidth: 900, mx: "auto", width: "100%" }}
+      >
+        {/* Left: Copyright & Logo */}
+        <Stack direction="row" alignItems="center" spacing={1}>
+          <Box
+            component="img"
+            src="/logo.png" // Use public path for Vite static asset
+            alt="Quizzard Logo"
+            sx={{ height: 28, width: 28, mr: 1, borderRadius: 1 }}
+          />
+          <Typography variant="body2" sx={{ fontWeight: 500 }}>
+            &copy; {currentYear} Quizzard. All rights reserved.
+          </Typography>
+        </Stack>
+        {/* Center: Navigation Links */}
+        <Stack
+          direction={{ xs: "column", sm: "row" }}
+          spacing={{ xs: 0.5, sm: 2 }}
+          alignItems="center"
+        >
+          {navLinks.map((link) => (
+            <Link
+              key={link.label}
+              href={link.href}
+              underline="hover"
+              color="inherit"
+              variant="body2"
+              sx={{ px: 0.5, py: 0.5, fontWeight: 400 }}
+            >
+              {link.label}
+            </Link>
+          ))}
+        </Stack>
+        {/* Right: Social & Support */}
+        <Stack direction="row" spacing={1} alignItems="center">
+          <IconButton
+            component="a"
+            href="https://github.com/SimeonTsvetanov"
+            target="_blank"
+            rel="noopener"
+            aria-label="GitHub"
+            color="inherit"
+            size="small"
+          >
+            <GitHubIcon fontSize="medium" />
+          </IconButton>
+          <IconButton
+            component="a"
+            href="https://buymeacoffee.com/simeontsvetanov"
+            target="_blank"
+            rel="noopener"
+            aria-label="Support Me"
+            color="inherit"
+            size="small"
+          >
+            <LocalCafeIcon fontSize="medium" />
+          </IconButton>
+        </Stack>
+      </Stack>
+    </Box>
+  );
+}

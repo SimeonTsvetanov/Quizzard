@@ -3,18 +3,15 @@ import {
   ThemeProvider,
   createTheme,
   CssBaseline,
-  AppBar,
-  Toolbar,
-  Typography,
-  IconButton,
-  Box,
-  Button,
   Container,
   Paper,
+  Box,
+  Button,
+  Typography,
 } from "@mui/material";
-import LightModeIcon from "@mui/icons-material/LightMode";
-import DarkModeIcon from "@mui/icons-material/DarkMode";
 import "./App.css";
+import Header from "./components/Header";
+import Footer from "./components/Footer";
 
 function App() {
   const [mode, setMode] = useState<"light" | "dark">(
@@ -46,7 +43,17 @@ function App() {
                 background: { default: "#2D3142", paper: "#22223B" },
                 text: { primary: "#FFF8F0", secondary: "#B5B5B5" },
               }),
-          shape: { borderRadius: 12 },
+        },
+        shape: { borderRadius: 12 },
+        components: {
+          MuiBackdrop: {
+            styleOverrides: {
+              root: {
+                backdropFilter: "blur(1.5px)", // Further reduced blur for a very subtle effect
+                WebkitBackdropFilter: "blur(1.5px)",
+              },
+            },
+          },
         },
       }),
     [mode]
@@ -55,57 +62,56 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <AppBar position="static" color="primary" enableColorOnDark>
-        <Toolbar>
-          <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            Quizzard
-          </Typography>
-          <IconButton
-            color="inherit"
-            onClick={() => setMode(mode === "light" ? "dark" : "light")}
+      <Header
+        mode={mode}
+        onToggleMode={() => setMode(mode === "light" ? "dark" : "light")}
+      />
+      <main style={{ flex: 1 }}>
+        <Container maxWidth="sm" sx={{ mt: 6 }}>
+          <Paper
+            elevation={3}
+            sx={{ p: 4, textAlign: "center", overflow: "hidden" }}
           >
-            {mode === "light" ? <DarkModeIcon /> : <LightModeIcon />}
-          </IconButton>
-        </Toolbar>
-      </AppBar>
-      <Container maxWidth="sm" sx={{ mt: 6 }}>
-        <Paper elevation={3} sx={{ p: 4, textAlign: "center" }}>
-          <Typography variant="h4" gutterBottom>
-            Welcome to Quizzard
-          </Typography>
-          <Typography variant="subtitle1" gutterBottom>
-            Your all-in-one quiz and team tools suite
-          </Typography>
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 4 }}>
-            <Button
-              variant="contained"
-              color="primary"
-              size="large"
-              fullWidth
-              disabled
+            <Typography variant="h4" gutterBottom>
+              Welcome to Quizzard
+            </Typography>
+            <Typography variant="subtitle1" gutterBottom>
+              Your all-in-one quiz and team tools suite
+            </Typography>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 2,
+                mt: 4,
+                width: "100%",
+              }}
             >
-              Random Team Generator (Coming Soon)
-            </Button>
-            <Button
-              variant="contained"
-              color="secondary"
-              size="large"
-              fullWidth
-              disabled
-            >
-              Points Counter (Coming Soon)
-            </Button>
-          </Box>
-        </Paper>
-      </Container>
-      <Box
-        component="footer"
-        sx={{ mt: 8, py: 2, textAlign: "center", color: "text.secondary" }}
-      >
-        <Typography variant="body2">
-          &copy; {new Date().getFullYear()} Quizzard. All rights reserved.
-        </Typography>
-      </Box>
+              <Button
+                variant="contained"
+                color="primary"
+                size="large"
+                fullWidth
+                disabled
+                sx={{ minWidth: 0, wordBreak: "break-word" }}
+              >
+                Random Team Generator (Coming Soon)
+              </Button>
+              <Button
+                variant="contained"
+                color="secondary"
+                size="large"
+                fullWidth
+                disabled
+                sx={{ minWidth: 0, wordBreak: "break-word" }}
+              >
+                Points Counter (Coming Soon)
+              </Button>
+            </Box>
+          </Paper>
+        </Container>
+      </main>
+      <Footer />
     </ThemeProvider>
   );
 }
