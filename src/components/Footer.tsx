@@ -1,14 +1,16 @@
 import { Box, Typography, Link, IconButton, Stack } from "@mui/material";
+import { Link as RouterLink } from "react-router-dom";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import LocalCafeIcon from "@mui/icons-material/LocalCafe";
+import quizzardLogo from "../assets/quizzard-logo.png";
 
 const currentYear = new Date().getFullYear();
 
 const navLinks = [
-  { label: "Privacy Policy", href: "#privacy" },
-  { label: "Terms", href: "#terms" },
-  { label: "About", href: "#about" },
-  { label: "Contact", href: "#contact" },
+  { label: "Privacy Policy", href: "/privacy" },
+  { label: "Terms", href: "/terms" },
+  { label: "About", href: "/about" },
+  { label: "Contact", href: "/contact" },
 ];
 
 export default function Footer() {
@@ -24,6 +26,9 @@ export default function Footer() {
         borderColor: "divider",
         color: "text.secondary",
         fontSize: { xs: 13, sm: 15 },
+        width: 1,
+        maxWidth: 1,
+        overflowX: "hidden",
       }}
     >
       <Stack
@@ -31,17 +36,29 @@ export default function Footer() {
         spacing={2}
         alignItems="center"
         justifyContent="space-between"
-        sx={{ maxWidth: 900, mx: "auto", width: "100%" }}
+        sx={{ maxWidth: 900, mx: "auto", width: "100%", minWidth: 0 }}
       >
         {/* Left: Copyright & Logo */}
-        <Stack direction="row" alignItems="center" spacing={1}>
+        <Stack
+          direction="row"
+          alignItems="center"
+          spacing={1}
+          sx={{ minWidth: 0 }}
+        >
           <Box
             component="img"
-            src="/logo.png" // Use public path for Vite static asset
+            src={quizzardLogo}
             alt="Quizzard Logo"
-            sx={{ height: 28, width: 28, mr: 1, borderRadius: 1 }}
+            sx={{
+              height: 24,
+              width: "auto",
+              mr: 1,
+              borderRadius: 1,
+              maxWidth: 32,
+              minWidth: 0,
+            }}
           />
-          <Typography variant="body2" sx={{ fontWeight: 500 }}>
+          <Typography variant="body2" sx={{ fontWeight: 500, minWidth: 0 }}>
             &copy; {currentYear} Quizzard. All rights reserved.
           </Typography>
         </Stack>
@@ -54,7 +71,8 @@ export default function Footer() {
           {navLinks.map((link) => (
             <Link
               key={link.label}
-              href={link.href}
+              component={RouterLink}
+              to={link.href}
               underline="hover"
               color="inherit"
               variant="body2"

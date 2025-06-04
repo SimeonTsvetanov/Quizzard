@@ -1,0 +1,37 @@
+import { Container, Paper, Typography } from "@mui/material";
+import { type ReactNode } from "react";
+
+interface PageLayoutProps {
+  title: string;
+  children: ReactNode;
+  maxWidth?: "xs" | "sm" | "md" | "lg" | "xl";
+  textAlign?: "left" | "center" | "right";
+}
+
+export default function PageLayout({
+  title,
+  children,
+  maxWidth = "xs",
+  textAlign = "left",
+}: PageLayoutProps) {
+  return (
+    <Container maxWidth={maxWidth} disableGutters sx={{ mt: 6 }}>
+      <Paper
+        elevation={3}
+        sx={{
+          p: { xs: 2, sm: 4 },
+          textAlign,
+          width: 1,
+          maxWidth: 420,
+          mx: "auto",
+          boxSizing: "border-box",
+        }}
+      >
+        <Typography variant="h4" gutterBottom>
+          {title}
+        </Typography>
+        {children}
+      </Paper>
+    </Container>
+  );
+}
