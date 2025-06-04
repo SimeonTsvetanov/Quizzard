@@ -25,8 +25,29 @@ function App() {
       createTheme({
         palette: {
           mode,
+          ...(mode === "light"
+            ? {
+                primary: { main: "#FF6F61", contrastText: "#fff" },
+                secondary: { main: "#FFD166", contrastText: "#222" },
+                error: { main: "#D7263D", contrastText: "#fff" },
+                warning: { main: "#F29E4C", contrastText: "#222" },
+                info: { main: "#3A86FF", contrastText: "#fff" },
+                success: { main: "#43AA8B", contrastText: "#fff" },
+                background: { default: "#FFF8F0", paper: "#FFFFFF" },
+                text: { primary: "#2D3142", secondary: "#595260" },
+              }
+            : {
+                primary: { main: "#FFB4A2", contrastText: "#222" },
+                secondary: { main: "#B5838D", contrastText: "#fff" },
+                error: { main: "#FF6F61", contrastText: "#fff" },
+                warning: { main: "#FFD166", contrastText: "#222" },
+                info: { main: "#3A86FF", contrastText: "#fff" },
+                success: { main: "#43AA8B", contrastText: "#fff" },
+                background: { default: "#2D3142", paper: "#22223B" },
+                text: { primary: "#FFF8F0", secondary: "#B5B5B5" },
+              }),
+          shape: { borderRadius: 12 },
         },
-        shape: { borderRadius: 12 },
       }),
     [mode]
   );

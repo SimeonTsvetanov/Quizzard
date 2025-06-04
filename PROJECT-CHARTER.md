@@ -23,12 +23,13 @@
 
 ### 2. Progress Tracker
 
-- [ ] Project initialized (React + TypeScript + MUI)
-- [ ] All base styles and themes complete
-- [ ] Landing page with navigation to tools
+- [x] Project initialized (React + TypeScript + MUI)
+- [x] All base styles and themes complete
+- [x] Landing page with navigation to tools
 - [ ] Random Team Generator (placeholder)
 - [ ] Points Counter (placeholder)
-- [ ] Responsive, pixel-perfect layout
+- [x] Responsive, pixel-perfect layout
+- [x] GitHub repository created and code pushed (private)
 - [ ] GitHub Pages deploy set up
 - [ ] Auto-update workflow
 
@@ -49,6 +50,37 @@
 ### 4. Change Log / Decisions
 
 - **2025-06-04:** Project charter created. Decided to focus on landing page and tool placeholders first. All styles/themes must be ready before feature work.
+- **2025-06-04:** Initialized git, created private GitHub repo, and pushed code. Local development and private remote workflow established. Will make public and enable GitHub Pages when ready.
+
+---
+
+## Color Palette Reference
+
+### Light Theme
+
+- primary: #FF6F61 (coral red)
+- secondary: #FFD166 (warm yellow)
+- error: #D7263D (crimson red)
+- warning: #F29E4C (orange)
+- info: #3A86FF (vivid blue)
+- success: #43AA8B (teal green)
+- background: #FFF8F0 (very light warm beige)
+- paper: #FFFFFF (white)
+- text primary: #2D3142 (dark blue-grey)
+- text secondary: #595260 (muted purple-grey)
+
+### Dark Theme
+
+- primary: #FFB4A2 (peach)
+- secondary: #B5838D (warm mauve)
+- error: #FF6F61 (coral red)
+- warning: #FFD166 (warm yellow)
+- info: #3A86FF (vivid blue)
+- success: #43AA8B (teal green)
+- background: #2D3142 (dark blue-grey)
+- paper: #22223B (deep indigo)
+- text primary: #FFF8F0 (very light warm beige)
+- text secondary: #B5B5B5 (soft grey)
 
 ---
 
