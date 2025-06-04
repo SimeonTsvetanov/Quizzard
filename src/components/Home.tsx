@@ -17,8 +17,7 @@ export default function Home() {
           width: "100%",
         }}
       >
-        {" "}
-        <Button
+        {" "}        <Button
           variant="contained"
           color="primary"
           size="large"

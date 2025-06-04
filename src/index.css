@@ -1,3 +1,14 @@
+html {
+  box-sizing: border-box;
+  overflow-x: hidden;
+  width: 100%;
+}
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -11,15 +22,6 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
-
-html {
-  box-sizing: border-box;
-}
-*,
-*::before,
-*::after {
-  box-sizing: inherit;
 }
 
 a {
@@ -37,6 +39,8 @@ body {
   min-height: 100vh;
   background: none;
   display: block;
+  overflow-x: hidden;
+  width: 100%;
 }
 
 #root {
@@ -45,6 +49,8 @@ body {
   flex-direction: column;
   justify-content: flex-start;
   align-items: stretch;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 main {

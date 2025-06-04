@@ -19,6 +19,15 @@ function App() {
   const theme = useMemo(
     () =>
       createTheme({
+        breakpoints: {
+          values: {
+            xs: 0,
+            sm: 600,
+            md: 900,
+            lg: 1200,
+            xl: 1536,
+          },
+        },
         palette: {
           mode,
           ...(mode === "light"
@@ -66,8 +75,7 @@ function App() {
           minHeight: "100vh",
           display: "flex",
           flexDirection: "column",
-          width: 1,
-          maxWidth: 1,
+          width: "100%",
           overflowX: "hidden",
         }}
       >
@@ -81,8 +89,7 @@ function App() {
               flex: 1,
               display: "flex",
               flexDirection: "column",
-              width: 1,
-              maxWidth: 1,
+              width: "100%",
             }}
           >
             <Routes>

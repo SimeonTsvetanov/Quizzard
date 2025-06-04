@@ -20,14 +20,13 @@ export default function Footer() {
       sx={{
         mt: 8,
         py: 3,
-        px: 2,
+        px: { xs: 1, sm: 2 },
         bgcolor: "background.paper",
         borderTop: 1,
         borderColor: "divider",
         color: "text.secondary",
         fontSize: { xs: 13, sm: 15 },
-        width: 1,
-        maxWidth: 1,
+        width: "100%",
         overflowX: "hidden",
       }}
     >
@@ -36,29 +35,17 @@ export default function Footer() {
         spacing={2}
         alignItems="center"
         justifyContent="space-between"
-        sx={{ maxWidth: 900, mx: "auto", width: "100%", minWidth: 0 }}
+        sx={{ maxWidth: 900, mx: "auto", width: "100%" }}
       >
         {/* Left: Copyright & Logo */}
-        <Stack
-          direction="row"
-          alignItems="center"
-          spacing={1}
-          sx={{ minWidth: 0 }}
-        >
+        <Stack direction="row" alignItems="center" spacing={1}>
           <Box
             component="img"
             src={quizzardLogo}
             alt="Quizzard Logo"
-            sx={{
-              height: 24,
-              width: "auto",
-              mr: 1,
-              borderRadius: 1,
-              maxWidth: 32,
-              minWidth: 0,
-            }}
+            sx={{ height: 28, width: 28, mr: 1, borderRadius: 1 }}
           />
-          <Typography variant="body2" sx={{ fontWeight: 500, minWidth: 0 }}>
+          <Typography variant="body2" sx={{ fontWeight: 500 }}>
             &copy; {currentYear} Quizzard. All rights reserved.
           </Typography>
         </Stack>

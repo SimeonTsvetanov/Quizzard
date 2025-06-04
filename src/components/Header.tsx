@@ -76,23 +76,26 @@ const Header = ({ mode, onToggleMode }: HeaderProps) => {
   }, [drawerOpen]);
 
   const handleDrawerToggle = () => setDrawerOpen((open) => !open);
-
   return (
-    <AppBar
-      position="static"
-      color="primary"
-      enableColorOnDark
-      sx={{ width: 1, maxWidth: 1 }}
-    >
-      <Toolbar sx={{ width: 1, maxWidth: 1, px: { xs: 1, sm: 2 } }}>
+    <AppBar position="static" color="primary" enableColorOnDark>
+      <Toolbar
+        sx={{
+          width: "100%",
+          maxWidth: "100%",
+          px: { xs: 1, sm: 2 },
+          minHeight: { xs: 56, sm: 64 },
+        }}
+      >
+        {" "}
         {/* Logo and App Name (clickable) */}
         <Box
           sx={{
             display: "flex",
             alignItems: "center",
             cursor: "pointer",
+            flex: 1,
             minWidth: 0,
-            flexShrink: 1,
+            overflow: "hidden",
           }}
           component={RouterLink}
           to="/"
@@ -101,29 +104,34 @@ const Header = ({ mode, onToggleMode }: HeaderProps) => {
             component="img"
             src={quizzardLogo}
             alt="Quizzard Logo"
-            sx={{ height: 36, width: "auto", mr: 1, maxWidth: 40, minWidth: 0 }}
+            sx={{
+              height: 36,
+              width: 36,
+              mr: 1,
+              flexShrink: 0,
+            }}
           />
           <Typography
             variant="h6"
-            noWrap
             sx={{
               fontWeight: 700,
               color: "inherit",
               textDecoration: "none",
-              minWidth: 0,
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
             }}
           >
             Quizzard
           </Typography>
-        </Box>
+        </Box>{" "}
         {/* Desktop Nav Links */}
-        <Box sx={{ flexGrow: 1 }} />
         <Box
           sx={{
             display: { xs: "none", md: "flex" },
             alignItems: "center",
             gap: 1,
-            minWidth: 0,
+            flexShrink: 0,
           }}
         >
           <Button
@@ -169,9 +177,15 @@ const Header = ({ mode, onToggleMode }: HeaderProps) => {
           >
             {mode === "light" ? <DarkModeIcon /> : <LightModeIcon />}
           </IconButton>
-        </Box>
+        </Box>{" "}
         {/* Hamburger for mobile */}
-        <Box sx={{ display: { xs: "flex", md: "none" } }}>
+        <Box
+          sx={{
+            display: { xs: "flex", md: "none" },
+            flexShrink: 0,
+            ml: 1,
+          }}
+        >
           <IconButton
             color="inherit"
             edge="end"
@@ -276,7 +290,6 @@ const Header = ({ mode, onToggleMode }: HeaderProps) => {
                 href="https://github.com/SimeonTsvetanov"
                 target="_blank"
                 rel="noopener"
-                onClick={handleDrawerToggle}
               >
                 <ListItemIcon>
                   <GitHubIcon />
@@ -290,7 +303,6 @@ const Header = ({ mode, onToggleMode }: HeaderProps) => {
                 href="https://buymeacoffee.com/simeontsvetanov"
                 target="_blank"
                 rel="noopener"
-                onClick={handleDrawerToggle}
               >
                 <ListItemIcon>
                   <LocalCafeIcon />
