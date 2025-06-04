@@ -1,0 +1,13 @@
+/* Remove all custom styles, let MUI handle layout and spacing */
+#root {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  text-align: initial;
+}
+
+.logo,
+.card,
+.read-the-docs {
+  display: none;
+}
