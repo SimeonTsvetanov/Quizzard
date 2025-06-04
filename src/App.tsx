@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
   ThemeProvider,
   createTheme,
@@ -12,11 +12,26 @@ import {
 import "./App.css";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
+import About from "./components/About";
 
 function App() {
   const [mode, setMode] = useState<"light" | "dark">(
     window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
   );
+  const [currentHash, setCurrentHash] = useState(window.location.hash);
+
+  // Listen for hash changes to enable navigation
+  useEffect(() => {
+    const handleHashChange = () => {
+      setCurrentHash(window.location.hash);
+    };
+    
+    window.addEventListener('hashchange', handleHashChange);
+    
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+    };
+  }, []);
   const theme = useMemo(
     () =>
       createTheme({
@@ -67,49 +82,54 @@ function App() {
         onToggleMode={() => setMode(mode === "light" ? "dark" : "light")}
       />
       <main style={{ flex: 1 }}>
-        <Container maxWidth="sm" sx={{ mt: 6 }}>
-          <Paper
-            elevation={3}
-            sx={{ p: 4, textAlign: "center", overflow: "hidden" }}
-          >
-            <Typography variant="h4" gutterBottom>
-              Welcome to Quizzard
-            </Typography>
-            <Typography variant="subtitle1" gutterBottom>
-              Your all-in-one quiz and team tools suite
-            </Typography>
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 2,
-                mt: 4,
-                width: "100%",
-              }}
+        {/* Simple route simulation for About page */}
+        {currentHash === "#about" ? (
+          <About />
+        ) : (
+          <Container maxWidth="sm" sx={{ mt: 6 }}>
+            <Paper
+              elevation={3}
+              sx={{ p: 4, textAlign: "center", overflow: "hidden" }}
             >
-              <Button
-                variant="contained"
-                color="primary"
-                size="large"
-                fullWidth
-                disabled
-                sx={{ minWidth: 0, wordBreak: "break-word" }}
+              <Typography variant="h4" gutterBottom>
+                Welcome to Quizzard
+              </Typography>
+              <Typography variant="subtitle1" gutterBottom>
+                Your all-in-one quiz and team tools suite
+              </Typography>
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 2,
+                  mt: 4,
+                  width: "100%",
+                }}
               >
-                Random Team Generator (Coming Soon)
-              </Button>
-              <Button
-                variant="contained"
-                color="secondary"
-                size="large"
-                fullWidth
-                disabled
-                sx={{ minWidth: 0, wordBreak: "break-word" }}
-              >
-                Points Counter (Coming Soon)
-              </Button>
-            </Box>
-          </Paper>
-        </Container>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  size="large"
+                  fullWidth
+                  disabled
+                  sx={{ minWidth: 0, wordBreak: "break-word" }}
+                >
+                  Random Team Generator (Coming Soon)
+                </Button>
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  size="large"
+                  fullWidth
+                  disabled
+                  sx={{ minWidth: 0, wordBreak: "break-word" }}
+                >
+                  Points Counter (Coming Soon)
+                </Button>
+              </Box>
+            </Paper>
+          </Container>
+        )}
       </main>
       <Footer />
     </ThemeProvider>

@@ -37,6 +37,7 @@
 - [x] Footer implemented: dynamic year, logo, navigation, GitHub/support links, responsive
 - [x] Drawer accessibility: focus trap, ARIA, keyboard nav, subtle animation, blur backdrop
 - [x] Main menu buttons always fit viewport (no overflow on mobile)
+- [x] About page navigation (hash-based routing with proper state management)
 - [ ] Random Team Generator (placeholder)
 - [ ] Points Counter (placeholder)
 - [ ] GitHub Pages deploy set up
