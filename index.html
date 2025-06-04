@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- Favicon and App Icons -->
+    <link rel="icon" type="image/png" href="/Quizzard/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="/Quizzard/favicon.svg" />
+    <link rel="shortcut icon" href="/Quizzard/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/Quizzard/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-title" content="Quizzard" />
+    <link rel="manifest" href="/Quizzard/manifest.json" />
+    <meta name="theme-color" content="#FF6F61" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quizzard</title>
+    <script>
+      // GitHub Pages SPA support
+      (function(l) {
+        if (l.search[1] === '/' ) {
+          var decoded = l.search.slice(1).split('&').map(function(s) { 
+            return s.replace(/~and~/g, '&')
+          }).join('?');
+          window.history.replaceState(null, null,
+              l.pathname.slice(0, -1) + decoded + l.hash
+          );
+        }
+      }(window.location))
+    </script>
+    <script type="module" crossorigin src="/Quizzard/assets/index-C3oCPT4R.js"></script>
+    <link rel="stylesheet" crossorigin href="/Quizzard/assets/index-D49-zH-S.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
