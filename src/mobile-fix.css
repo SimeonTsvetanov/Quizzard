@@ -1,0 +1,97 @@
+/* Mobile Responsiveness Fix - Absolute Constraints */
+
+/* Force viewport constraint on everything */
+html {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: hidden !important;
+  box-sizing: border-box !important;
+}
+
+body {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: hidden !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+#root {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: hidden !important;
+}
+
+/* Force all elements to respect container bounds */
+* {
+  box-sizing: border-box !important;
+  max-width: 100% !important;
+}
+
+/* Specific MUI overrides */
+.MuiAppBar-root {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: hidden !important;
+}
+
+.MuiToolbar-root {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: hidden !important;
+  padding-left: 8px !important;
+  padding-right: 8px !important;
+}
+
+.MuiContainer-root {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: hidden !important;
+  padding-left: 8px !important;
+  padding-right: 8px !important;
+}
+
+.MuiPaper-root {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: hidden !important;
+}
+
+/* Force flex containers to behave */
+.MuiBox-root {
+  max-width: 100% !important;
+  overflow-x: hidden !important;
+}
+
+/* Typography constraints */
+.MuiTypography-root {
+  max-width: 100% !important;
+  overflow-wrap: break-word !important;
+  word-break: break-word !important;
+}
+
+/* Button constraints */
+.MuiButton-root {
+  max-width: 100% !important;
+  overflow-x: hidden !important;
+}
+
+/* Responsive breakpoint override for xs devices */
+@media (max-width: 599px) {
+  .MuiContainer-root {
+    padding-left: 4px !important;
+    padding-right: 4px !important;
+  }
+
+  .MuiToolbar-root {
+    padding-left: 4px !important;
+    padding-right: 4px !important;
+    min-height: 56px !important;
+  }
+
+  .MuiPaper-root {
+    margin-left: 4px !important;
+    margin-right: 4px !important;
+    width: calc(100% - 8px) !important;
+  }
+}

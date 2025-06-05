@@ -78,16 +78,17 @@ const Header = ({ mode, onToggleMode }: HeaderProps) => {
   const handleDrawerToggle = () => setDrawerOpen((open) => !open);
   return (
     <AppBar position="static" color="primary" enableColorOnDark>
+      {" "}
       <Toolbar
         sx={{
           width: "100%",
           maxWidth: "100%",
           px: { xs: 1, sm: 2 },
-          minHeight: { xs: 56, sm: 64 },
+          minHeight: { xs: 64, sm: 72 }, // Increased height to accommodate larger logo
         }}
       >
         {" "}
-        {/* Logo and App Name (clickable) */}
+        {/* Logo and App Name (clickable) */}{" "}
         <Box
           sx={{
             display: "flex",
@@ -95,18 +96,21 @@ const Header = ({ mode, onToggleMode }: HeaderProps) => {
             cursor: "pointer",
             flex: 1,
             minWidth: 0,
-            overflow: "hidden",
+            // Removed overflow: "hidden" to prevent logo clipping
           }}
           component={RouterLink}
           to="/"
         >
+          {" "}
           <Box
             component="img"
             src={quizzardLogo}
             alt="Quizzard Logo"
             sx={{
-              height: 36,
-              width: 36,
+              height: { xs: 36, sm: 44 },
+              width: "auto",
+              maxWidth: { xs: 36, sm: 44 },
+              objectFit: "contain",
               mr: 1,
               flexShrink: 0,
             }}
@@ -193,8 +197,30 @@ const Header = ({ mode, onToggleMode }: HeaderProps) => {
             onClick={handleDrawerToggle}
             aria-haspopup="true"
             aria-controls="quizzard-mobile-drawer"
+            sx={{
+              padding: { xs: 1.5, sm: 1 },
+              minWidth: 48,
+              minHeight: 48,
+              "&:focus": {
+                outline: "none",
+              },
+              "&:focus-visible": {
+                outline: "2px solid",
+                outlineColor: "primary.main",
+                outlineOffset: 2,
+              },
+              "& .MuiTouchRipple-root": {
+                display: "none",
+              },
+              "&::after": {
+                display: "none",
+              },
+              "&:hover": {
+                backgroundColor: "rgba(255, 255, 255, 0.08)",
+              },
+            }}
           >
-            <MenuIcon />
+            <MenuIcon sx={{ fontSize: { xs: 28, sm: 24 } }} />
           </IconButton>
         </Box>
       </Toolbar>
@@ -221,6 +247,7 @@ const Header = ({ mode, onToggleMode }: HeaderProps) => {
           }}
           role="presentation"
         >
+          {" "}
           {/* Close button for accessibility */}
           <Box sx={{ display: "flex", justifyContent: "flex-end", p: 1 }}>
             <IconButton
@@ -228,6 +255,28 @@ const Header = ({ mode, onToggleMode }: HeaderProps) => {
               aria-label="Close menu"
               ref={closeBtnRef}
               tabIndex={0}
+              sx={{
+                padding: 1.5,
+                minWidth: 48,
+                minHeight: 48,
+                "&:focus": {
+                  outline: "none",
+                },
+                "&:focus-visible": {
+                  outline: "2px solid",
+                  outlineColor: "primary.main",
+                  outlineOffset: 2,
+                },
+                "& .MuiTouchRipple-root": {
+                  display: "none",
+                },
+                "&::after": {
+                  display: "none",
+                },
+                "&:hover": {
+                  backgroundColor: "action.hover",
+                },
+              }}
             >
               <Box
                 component="span"

@@ -27,29 +27,28 @@ function App() {
             lg: 1200,
             xl: 1536,
           },
-        },
-        palette: {
+        },        palette: {
           mode,
           ...(mode === "light"
             ? {
-                primary: { main: "#FF6F61", contrastText: "#fff" },
-                secondary: { main: "#FFD166", contrastText: "#222" },
-                error: { main: "#D7263D", contrastText: "#fff" },
-                warning: { main: "#F29E4C", contrastText: "#222" },
-                info: { main: "#3A86FF", contrastText: "#fff" },
-                success: { main: "#43AA8B", contrastText: "#fff" },
-                background: { default: "#FFF8F0", paper: "#FFFFFF" },
-                text: { primary: "#2D3142", secondary: "#595260" },
+                primary: { main: "#1976D2", contrastText: "#fff" }, // Google Blue 700
+                secondary: { main: "#9C27B0", contrastText: "#fff" }, // Google Purple 500
+                error: { main: "#D32F2F", contrastText: "#fff" }, // Google Red 700
+                warning: { main: "#FF9800", contrastText: "#212121" }, // Google Orange 500
+                info: { main: "#2196F3", contrastText: "#fff" }, // Google Blue 500
+                success: { main: "#4CAF50", contrastText: "#fff" }, // Google Green 500
+                background: { default: "#FAFAFA", paper: "#FFFFFF" }, // Google Grey 50, White
+                text: { primary: "#212121", secondary: "#757575" }, // Google Grey 900, Google Grey 600
               }
             : {
-                primary: { main: "#FFB4A2", contrastText: "#222" },
-                secondary: { main: "#B5838D", contrastText: "#fff" },
-                error: { main: "#FF6F61", contrastText: "#fff" },
-                warning: { main: "#FFD166", contrastText: "#222" },
-                info: { main: "#3A86FF", contrastText: "#fff" },
-                success: { main: "#43AA8B", contrastText: "#fff" },
-                background: { default: "#2D3142", paper: "#22223B" },
-                text: { primary: "#FFF8F0", secondary: "#B5B5B5" },
+                primary: { main: "#64B5F6", contrastText: "#121212" }, // Google Blue 300
+                secondary: { main: "#CE93D8", contrastText: "#121212" }, // Google Purple 200
+                error: { main: "#EF9A9A", contrastText: "#121212" }, // Google Red 200
+                warning: { main: "#FFCC80", contrastText: "#121212" }, // Google Orange 200
+                info: { main: "#90CAF9", contrastText: "#121212" }, // Google Blue 200
+                success: { main: "#A5D6A7", contrastText: "#121212" }, // Google Green 200
+                background: { default: "#121212", paper: "#1E1E1E" }, // Very Dark Grey, Dark Grey
+                text: { primary: "#FFFFFF", secondary: "#BDBDBD" }, // White, Google Grey 400
               }),
         },
         shape: { borderRadius: 12 },

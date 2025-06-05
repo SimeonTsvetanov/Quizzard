@@ -93,3 +93,37 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+/* MUI IconButton focus and ripple fixes for mobile */
+.MuiIconButton-root {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.MuiIconButton-root:focus {
+  outline: none;
+}
+
+.MuiIconButton-root:focus-visible {
+  outline: 2px solid;
+  outline-offset: 2px;
+}
+
+.MuiIconButton-root .MuiTouchRipple-root {
+  overflow: hidden;
+}
+
+/* Prevent persistent focus states on mobile */
+@media (hover: none) and (pointer: coarse) {
+  .MuiIconButton-root:focus {
+    background-color: transparent;
+  }
+
+  .MuiIconButton-root:focus:not(:focus-visible) {
+    outline: none;
+    background-color: transparent;
+  }
+
+  .MuiIconButton-root::after {
+    display: none;
+  }
+}
