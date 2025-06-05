@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { BrowserRouter, Routes, Route, useLocation, useNavigate } from "react-router-dom";
+import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import { ThemeProvider, createTheme, CssBaseline, Box } from "@mui/material";
 import "./App.css";
 import Header from "./components/Header";
@@ -93,22 +93,29 @@ function App() {
   );
 
   const location = useLocation();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    const queryParams = new URLSearchParams(location.search);
-    const redirectedPath = queryParams.get("path");
-    if (redirectedPath) {
-      // Ensure the path does not have a leading slash or is malformed
-      const sanitizedPath = redirectedPath.startsWith("/") ? redirectedPath.slice(1) : redirectedPath;
-      navigate(`/${sanitizedPath}`, { replace: true });
+  const navigate = useNavigate();  useEffect(() => {
+    // Only process path params when the app loads with a search parameter
+    if (location.search) {
+      const queryParams = new URLSearchParams(location.search);
+      const redirectedPath = queryParams.get("path");
+      console.log("Redirected Path:", redirectedPath);
+      
+      if (redirectedPath !== null) {
+        // Handle root path or regular paths
+        if (redirectedPath === "" || redirectedPath === "/") {
+          // Handle root path - use trailing slash for consistency
+          navigate("/", { replace: true });
+        } else {
+          // Handle other paths
+          const sanitizedPath = redirectedPath.replace(/^\/+|\/+$/g, ''); // Remove leading/trailing slashes
+          navigate(`/${sanitizedPath}`, { replace: true });
+        }
+      }
     }
-  }, [location, navigate]);
-
+  }, [location.search, navigate]);
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <BrowserRouter basename="/Quizzard">
         <Header mode={mode} onThemeChange={handleThemeChange} />
         <Box
           sx={{
@@ -127,11 +134,9 @@ function App() {
             <Route path="/terms" element={<Terms />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/team-generator" element={<RandomTeamGenerator />} />
-            <Route path="/points-counter" element={<PointsCounter />} />
-          </Routes>
+            <Route path="/points-counter" element={<PointsCounter />} />          </Routes>
         </Box>
         <Footer />
-      </BrowserRouter>
     </ThemeProvider>
   );
 }
