@@ -39,7 +39,7 @@
   - Plan for persistent storage (Points Counter, future features)
   - Use local storage or IndexedDB for now; design for easy migration
 - **Terminal/Automation:**
-  - Do not use `&&` to chain commands in terminal scripts or documentation. Use separate lines or platform-appropriate alternatives for cross-platform compatibility.
+  - Do not use `&&` to chain commands in terminal scripts or documentation. PowerShell does not support `&&` for command chaining (unlike Bash/CMD). Use separate lines, semicolons (`;`), or PowerShell-specific operators (`-and`) for cross-platform compatibility.
 
 ### 2. Progress Tracker
 
