@@ -20,6 +20,8 @@
   - Footer must include copyright, navigation, social, and support links
 - **Hosting:**
   - Hosted on GitHub Pages with SPA support (404.html redirect handling)
+  - Uses build + deployment method (main branch → gh-pages branch)
+  - Never upload built files to main branch (source code only)
   - Auto-update via GitHub Actions (to be set up)
   - Configured for `/Quizzard/` base path deployment
 - **Routing:**
@@ -82,6 +84,7 @@
 - **2025-06-05:** **MOBILE RESPONSIVENESS PERFECTED** - Comprehensive mobile responsiveness fix eliminating horizontal overflow issues on all devices. Implemented pixel-perfect MUI responsive design following strict protocols. All viewport constraints now properly enforced with no horizontal scrolling required on any screen size.
 - **2025-06-05:** **LOGO SIZING PERFECTED** - Applied MUI-recommended logo sizing (40px/48px mobile/desktop for Header, 32px/36px for Footer) to eliminate persistent bottom cropping issue. Logo now displays in full without visual cutoff while maintaining proper aspect ratio and responsive design. Final logo implementation deployed to GitHub Pages successfully.
 - **2025-06-05:** **GOOGLE MATERIAL DESIGN PALETTE ADOPTED** - Migrated from custom color palette to Google Material Design colors for better accessibility, consistency, and professional appearance. Applied proper light/dark theme variants following Material Design guidelines. Header now uses Google Blue (#1976D2 light, #64B5F6 dark) for improved visual hierarchy and brand consistency.
+- **2025-06-05:** **DEPLOYMENT WORKFLOW DOCUMENTED** - Clarified GitHub Pages deployment strategy using build + deploy method (main → gh-pages). Main branch contains source code only, gh-pages serves optimized production builds. Never upload built files to main branch to maintain clean repository and professional workflow.
 
 ---
 
