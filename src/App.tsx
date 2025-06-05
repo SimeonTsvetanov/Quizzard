@@ -16,7 +16,9 @@ function App() {
   const getInitialMode = () => {
     const stored = localStorage.getItem("user-settings-theme-selection");
     if (stored === "light" || stored === "dark") return stored;
-    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    return window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light";
   };
   const [mode, setMode] = useState<"light" | "dark">(getInitialMode());
   useEffect(() => {
