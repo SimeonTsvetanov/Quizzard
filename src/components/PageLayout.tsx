@@ -1,4 +1,4 @@
-import { Container, Paper, Typography } from "@mui/material";
+import { Container, Paper } from "@mui/material";
 import { type ReactNode } from "react";
 
 interface PageLayoutProps {
@@ -35,9 +35,7 @@ export default function PageLayout({
           boxSizing: "border-box",
         }}
       >
-        <Typography variant="h4" gutterBottom>
-          {title}
-        </Typography>
+        {/* Removed default heading to avoid duplicate headings */}
         {children}
       </Paper>
     </Container>

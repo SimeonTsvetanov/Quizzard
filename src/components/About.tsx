@@ -1,9 +1,20 @@
-import { Typography, Box } from "@mui/material";
+import { Typography, Box, IconButton } from "@mui/material";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { useNavigate } from "react-router-dom";
 import PageLayout from "./PageLayout";
 
 export default function About() {
+  const navigate = useNavigate();
   return (
     <PageLayout title="About Quizzard">
+      <Box sx={{ mb: 2 }}>
+        <IconButton aria-label="back" onClick={() => navigate(-1)}>
+          <ArrowBackIcon />
+        </IconButton>
+      </Box>
+      <Typography variant="h4" component="h1" gutterBottom>
+        About Quizzard
+      </Typography>
       <Box>
         <Typography variant="body1" gutterBottom>
           Quizzard is a modern, responsive, and accessible quiz and team tools

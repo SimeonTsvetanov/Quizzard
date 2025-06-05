@@ -14,6 +14,13 @@
   - Footer and header must be fully responsive and accessible on all devices
   - Main menu and landing page buttons must never overflow viewport on any device
   - MUI modal backdrops (Drawer, Dialog, etc.) must have a subtle blur (1.5px) for focus effect
+  - **Header must remain sticky at the top of the viewport at all times.**
+    - No ancestor of the AppBar (including #root) may have `overflow-x: hidden` or `overflow: hidden`—these must only be set on `html` and `body` to preserve sticky/fixed positioning.
+  - **Back button requirements:**
+    - About, Privacy, Terms, and Contact pages must display a native MUI IconButton (ArrowBackIcon) above the page heading, not in the header.
+    - The back button must be icon-only (no text), accessible, and use React Router's navigation (navigate(-1)).
+    - The back button must be styled using only native MUI props and be visually consistent with Material Design best practices.
+    - The back button must not appear on other pages or in the header.
 - **Structure:**
   - Each main tool (Random Team Generator, Points Counter, etc.) is a separate feature/project
   - Landing page (main) lists all tools as primary navigation/entry points
@@ -85,6 +92,8 @@
 - **2025-06-05:** **LOGO SIZING PERFECTED** - Applied MUI-recommended logo sizing (40px/48px mobile/desktop for Header, 32px/36px for Footer) to eliminate persistent bottom cropping issue. Logo now displays in full without visual cutoff while maintaining proper aspect ratio and responsive design. Final logo implementation deployed to GitHub Pages successfully.
 - **2025-06-05:** **GOOGLE MATERIAL DESIGN PALETTE ADOPTED** - Migrated from custom color palette to Google Material Design colors for better accessibility, consistency, and professional appearance. Applied proper light/dark theme variants following Material Design guidelines. Header now uses Google Blue (#1976D2 light, #64B5F6 dark) for improved visual hierarchy and brand consistency.
 - **2025-06-05:** **DEPLOYMENT WORKFLOW DOCUMENTED** - Clarified GitHub Pages deployment strategy using build + deploy method (main → gh-pages). Main branch contains source code only, gh-pages serves optimized production builds. Never upload built files to main branch to maintain clean repository and professional workflow.
+- **2025-06-06:** **STICKY HEADER REQUIREMENTS DEFINED** - Specified that the header must remain sticky at the top of the viewport at all times. No ancestor of the AppBar (including #root) may have `overflow-x: hidden` or `overflow: hidden`—these must only be set on `html` and `body` to preserve sticky/fixed positioning.
+- **2025-06-06:** **BACK BUTTON REQUIREMENTS DEFINED** - About, Privacy, Terms, and Contact pages must display a native MUI IconButton (ArrowBackIcon) above the page heading, not in the header. The back button must be icon-only (no text), accessible, and use React Router's navigation (navigate(-1)). The back button must be styled using only native MUI props and be visually consistent with Material Design best practices. The back button must not appear on other pages or in the header.
 
 ---
 

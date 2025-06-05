@@ -12,6 +12,9 @@ import {
   ListItemText,
   ListItemButton,
   Divider,
+  useTheme,
+  useMediaQuery,
+  useScrollTrigger,
 } from "@mui/material";
 import { Link, Link as RouterLink } from "react-router-dom";
 import MenuIcon from "@mui/icons-material/Menu";
@@ -33,6 +36,7 @@ const Header = ({ mode, onToggleMode }: HeaderProps) => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
   const drawerRef = useRef<HTMLDivElement>(null);
+  const theme = useTheme();
 
   // Focus management: focus close button when Drawer opens
   useEffect(() => {
@@ -77,18 +81,30 @@ const Header = ({ mode, onToggleMode }: HeaderProps) => {
 
   const handleDrawerToggle = () => setDrawerOpen((open) => !open);
   return (
-    <AppBar position="static" color="primary" enableColorOnDark>
-      {" "}
+    <AppBar
+      position="sticky"
+      elevation={useScrollTrigger({ disableHysteresis: true, threshold: 0 }) ? 4 : 0}
+      sx={{
+        bgcolor: theme.palette.background.paper,
+        color: theme.palette.text.primary,
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: theme.zIndex.appBar,
+        transition: theme.transitions.create(["box-shadow", "background-color"], {
+          duration: theme.transitions.duration.short,
+        }),
+      }}
+    >
       <Toolbar
         sx={{
           width: "100%",
           maxWidth: "100%",
           px: { xs: 1, sm: 2 },
-          minHeight: { xs: 64, sm: 72 }, // Increased height to accommodate larger logo
+          minHeight: { xs: 56, sm: 64 },
         }}
       >
-        {" "}
-        {/* Logo and App Name (clickable) */}{" "}
+        {/* Logo and App Name (clickable) */}
         <Box
           sx={{
             display: "flex",
@@ -96,20 +112,19 @@ const Header = ({ mode, onToggleMode }: HeaderProps) => {
             cursor: "pointer",
             flex: 1,
             minWidth: 0,
-            // Removed overflow: "hidden" to prevent logo clipping
+            overflow: "hidden",
           }}
           component={RouterLink}
           to="/"
         >
-          {" "}
           <Box
             component="img"
             src={quizzardLogo}
             alt="Quizzard Logo"
             sx={{
-              height: { xs: 36, sm: 44 },
+              height: { xs: 40, sm: 48 },
               width: "auto",
-              maxWidth: { xs: 36, sm: 44 },
+              maxWidth: { xs: 40, sm: 48 },
               objectFit: "contain",
               mr: 1,
               flexShrink: 0,
@@ -128,7 +143,7 @@ const Header = ({ mode, onToggleMode }: HeaderProps) => {
           >
             Quizzard
           </Typography>
-        </Box>{" "}
+        </Box>
         {/* Desktop Nav Links */}
         <Box
           sx={{
@@ -138,50 +153,22 @@ const Header = ({ mode, onToggleMode }: HeaderProps) => {
             flexShrink: 0,
           }}
         >
-          <Button
-            color="inherit"
-            startIcon={<HomeIcon />}
-            component={Link}
-            to="/"
-          >
+          <Button color="inherit" startIcon={<HomeIcon />} component={Link} to="/">
             Home
           </Button>
-          <Button
-            color="inherit"
-            startIcon={<InfoIcon />}
-            component={Link}
-            to="/about"
-          >
+          <Button color="inherit" startIcon={<InfoIcon />} component={Link} to="/about">
             About
           </Button>
-          <Button
-            color="inherit"
-            startIcon={<GitHubIcon />}
-            component="a"
-            href="https://github.com/SimeonTsvetanov"
-            target="_blank"
-            rel="noopener"
-          >
+          <Button color="inherit" startIcon={<GitHubIcon />} component="a" href="https://github.com/SimeonTsvetanov" target="_blank" rel="noopener">
             GitHub
           </Button>
-          <Button
-            color="inherit"
-            startIcon={<LocalCafeIcon />}
-            component="a"
-            href="https://buymeacoffee.com/simeontsvetanov"
-            target="_blank"
-            rel="noopener"
-          >
+          <Button color="inherit" startIcon={<LocalCafeIcon />} component="a" href="https://buymeacoffee.com/simeontsvetanov" target="_blank" rel="noopener">
             Support Me
           </Button>
-          <IconButton
-            color="inherit"
-            onClick={onToggleMode}
-            aria-label="Toggle theme"
-          >
+          <IconButton color="inherit" onClick={onToggleMode} aria-label="Toggle theme">
             {mode === "light" ? <DarkModeIcon /> : <LightModeIcon />}
           </IconButton>
-        </Box>{" "}
+        </Box>
         {/* Hamburger for mobile */}
         <Box
           sx={{
@@ -247,7 +234,6 @@ const Header = ({ mode, onToggleMode }: HeaderProps) => {
           }}
           role="presentation"
         >
-          {" "}
           {/* Close button for accessibility */}
           <Box sx={{ display: "flex", justifyContent: "flex-end", p: 1 }}>
             <IconButton

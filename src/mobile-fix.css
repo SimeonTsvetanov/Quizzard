@@ -4,14 +4,14 @@
 html {
   width: 100% !important;
   max-width: 100% !important;
-  overflow-x: hidden !important;
+  /* Removed overflow-x: hidden to allow sticky AppBar */
   box-sizing: border-box !important;
 }
 
 body {
   width: 100% !important;
   max-width: 100% !important;
-  overflow-x: hidden !important;
+  /* Removed overflow-x: hidden to allow sticky AppBar */
   margin: 0 !important;
   padding: 0 !important;
 }
@@ -19,7 +19,7 @@ body {
 #root {
   width: 100% !important;
   max-width: 100% !important;
-  overflow-x: hidden !important;
+  /* Removed overflow-x: hidden to allow sticky AppBar */
 }
 
 /* Force all elements to respect container bounds */

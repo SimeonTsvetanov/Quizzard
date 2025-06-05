@@ -1,6 +1,5 @@
 html {
   box-sizing: border-box;
-  overflow-x: hidden;
   width: 100%;
 }
 *,
@@ -39,7 +38,6 @@ body {
   min-height: 100vh;
   background: none;
   display: block;
-  overflow-x: hidden;
   width: 100%;
 }
 
@@ -50,7 +48,7 @@ body {
   justify-content: flex-start;
   align-items: stretch;
   width: 100%;
-  overflow-x: hidden;
+  /* Removed overflow-x: hidden to allow sticky AppBar */
 }
 
 main {

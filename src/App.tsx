@@ -75,7 +75,7 @@ function App() {
           display: "flex",
           flexDirection: "column",
           width: "100%",
-          overflowX: "hidden",
+          // Removed overflowX: 'hidden' to allow sticky AppBar
         }}
       >
         <BrowserRouter basename="/Quizzard">
