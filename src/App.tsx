@@ -95,39 +95,30 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Box
-        sx={{
-          minHeight: "100vh",
-          display: "flex",
-          flexDirection: "column",
-          width: "100%",
-          // Removed overflowX: 'hidden' to allow sticky AppBar
-        }}
-      >
-        {" "}
-        <BrowserRouter basename="/Quizzard">
-          <Header mode={mode} onThemeChange={handleThemeChange} />
-          <Box
-            sx={{
-              flex: 1,
-              display: "flex",
-              flexDirection: "column",
-              width: "100%",
-            }}
-          >
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/privacy" element={<PrivacyPolicy />} />
-              <Route path="/terms" element={<Terms />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/team-generator" element={<RandomTeamGenerator />} />
-              <Route path="/points-counter" element={<PointsCounter />} />
-            </Routes>
-          </Box>
-          <Footer />
-        </BrowserRouter>
-      </Box>
+      <BrowserRouter basename="/Quizzard">
+        <Header mode={mode} onThemeChange={handleThemeChange} />
+        <Box
+          sx={{
+            minHeight: "100vh",
+            display: "flex",
+            flexDirection: "column",
+            width: "100%",
+            // Removed overflowX: 'hidden' to allow sticky AppBar
+          }}
+        >
+          {" "}
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/team-generator" element={<RandomTeamGenerator />} />
+            <Route path="/points-counter" element={<PointsCounter />} />
+          </Routes>
+        </Box>
+        <Footer />
+      </BrowserRouter>
     </ThemeProvider>
   );
 }
