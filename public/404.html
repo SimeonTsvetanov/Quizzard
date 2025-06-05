@@ -6,10 +6,15 @@
   <title>Quizzard - Redirecting...</title>
   <script>
     // GitHub Pages SPA redirect script for project pages
-    // Redirects 404s to index.html with the original path stored in sessionStorage
-    sessionStorage.redirect = location.href;
+    // Redirects 404s to index.html with the original path preserved
+    (function() {
+      var redirectTo = '/Quizzard/index.html';
+      var fullUrl = window.location.href;
+      var path = fullUrl.substring(fullUrl.indexOf('/Quizzard/') + '/Quizzard/'.length);
+      var newUrl = redirectTo + '?path=' + encodeURIComponent(path);
+      window.location.replace(newUrl);
+    })();
   </script>
-  <meta http-equiv="refresh" content="0;URL='/Quizzard/'">
 </head>
 <body>
   <!-- This page redirects to index.html for SPA routing -->
