@@ -66,7 +66,7 @@
 - [ ] Random Team Generator (placeholder → full implementation)
 - [ ] Points Counter (placeholder → full implementation)
 - [x] GitHub Pages deploy set up
-- [ ] Auto-update workflow
+- [x] Auto-update workflow
 
 #### **Main Tools (Landing Page)**
 
@@ -103,7 +103,7 @@
 - **2025-06-05:** **THEME PERSISTENCE IMPLEMENTED** - Theme selection is now saved in localStorage under the key `user-settings-theme-selection`. The app restores the user's last theme choice on reload, following MUI and React best practices. This improves user experience and accessibility across sessions.
 - **2025-06-05:** **PWA FULLSCREEN MODE ENABLED** - Updated `manifest.json` to use `"display": "fullscreen"`, enabling true fullscreen mode for the installed PWA on Android and other platforms. This is a native PWA feature and does not affect routing or deployment.
 - **2025-06-05:** **THEME SELECTION DIALOG, PERSISTENCE, AND PWA FULLSCREEN** - Refactored new theme switch to use an accessible MUI Dialog for theme selection (Light, Dark, System) with focus trap and backdrop blur. Implemented theme persistence using localStorage (`user-settings-theme-selection`), restoring the user's last theme choice on reload. Added a "System" theme option that follows the OS/browser preference. Updated `manifest.json` to enable PWA fullscreen mode. All changes documented here, committed to GitHub main, and deployed to GitHub Pages. Users can preview changes locally before finalizing. This ensures a modern, accessible, and professional theming experience across devices and platforms.
-- **2025-06-05:** **DEPLOYMENT WORKFLOW FIXED** - Updated `.github/workflows/pages.yml` to trigger on pushes to `main` instead of `gh-pages`. This ensures the workflow runs automatically after each main branch update, builds the app, and deploys the production build to the `gh-pages` branch. This follows best practices for static site deployment on GitHub Pages. Manual deploys to `gh-pages` are no longer needed; deployment is now fully automated and reliable.
+- **2025-06-05:** **DEPLOYMENT WORKFLOW FIXED** - Updated `.github/workflows/pages.yml` to trigger on pushes to `main` and automatically build and deploy to the `gh-pages` branch. Fixed permissions to `contents: write` to allow the workflow to push to the `gh-pages` branch. This ensures the workflow runs automatically after each main branch update, builds the app, and deploys the production build to GitHub Pages. This follows best practices for static site deployment on GitHub Pages. Manual deploys to `gh-pages` are no longer needed; deployment is now fully automated and reliable.
 
 ---
 
