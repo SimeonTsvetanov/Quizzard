@@ -22,8 +22,6 @@ export default function Footer() {
         py: { xs: 3.5, sm: 4 }, // Increased padding to accommodate larger logo
         px: { xs: 1, sm: 2 },
         bgcolor: "background.paper",
-        borderTop: 1,
-        borderColor: "divider",
         color: "text.secondary",
         fontSize: { xs: 13, sm: 15 },
         width: "100%",

@@ -96,6 +96,7 @@
 - **2025-06-06:** **BACK BUTTON REQUIREMENTS DEFINED** - About, Privacy, Terms, and Contact pages must display a native MUI IconButton (ArrowBackIcon) above the page heading, not in the header. The back button must be icon-only (no text), accessible, and use React Router's navigation (navigate(-1)). The back button must be styled using only native MUI props and be visually consistent with Material Design best practices. The back button must not appear on other pages or in the header.
 - **2025-06-06:** **ROUTING MIGRATION & WORKFLOW CLARIFIED** - Documented the migration from custom hash-based routing to React Router's BrowserRouter. Added detailed workflow for pushing to main and deploying to GitHub Pages, including best practices and common mistakes to avoid. Explained why React Router is now used and why it is preferred for Quizzard.
 - **2025-06-05:** **HEADER COLOR MATCHES BODY** - Updated the header (AppBar) background color to match the main body background color in both light and dark mode (`#FAFAFA` for light, `#121212` for dark) for improved visual consistency. This is now live in the app and will be visible after deployment.
+- **2025-06-05:** **MOBILE THEME SWITCH UX IMPROVED** - The theme switch button in the mobile hamburger menu now closes the drawer when toggled and no longer shows a focus border when clicked or focused. This provides a cleaner and more intuitive user experience on mobile.
 
 ---
 

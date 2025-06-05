@@ -381,7 +381,17 @@ const Header = ({ mode, onToggleMode }: HeaderProps) => {
           <Divider />
           <List>
             <ListItem disablePadding>
-              <ListItemButton onClick={onToggleMode} component="button">
+              <ListItemButton 
+                onClick={() => {
+                  onToggleMode();
+                  handleDrawerToggle(); // Close drawer when theme is toggled
+                }} 
+                component="button"
+                sx={{
+                  '&:focus': { outline: 'none' },
+                  '&:focus-visible': { outline: 'none' }, // Remove focus border
+                }}
+              >
                 <ListItemIcon>
                   {mode === "light" ? <DarkModeIcon /> : <LightModeIcon />}
                 </ListItemIcon>
