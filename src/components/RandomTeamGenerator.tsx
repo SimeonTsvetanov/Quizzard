@@ -3,7 +3,10 @@ import PageLayout from "./PageLayout";
 
 export default function RandomTeamGenerator() {
   return (
-    <PageLayout title="Random Team Generator" textAlign="center">
+    <PageLayout textAlign="center">
+      <Typography variant="h4" component="h1" gutterBottom>
+        Random Team Generator
+      </Typography>
       <Typography variant="body1" gutterBottom>
         Create balanced teams from a list of participants with customizable
         options.

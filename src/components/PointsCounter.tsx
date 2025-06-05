@@ -3,7 +3,10 @@ import PageLayout from "./PageLayout";
 
 export default function PointsCounter() {
   return (
-    <PageLayout title="Points Counter" textAlign="center">
+    <PageLayout textAlign="center">
+      <Typography variant="h4" component="h1" gutterBottom>
+        Points Counter
+      </Typography>
       <Typography variant="body1" gutterBottom>
         Track scores and points for teams, individuals, or quiz sessions with
         persistent storage.

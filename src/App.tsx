@@ -27,7 +27,8 @@ function App() {
             lg: 1200,
             xl: 1536,
           },
-        },        palette: {
+        },
+        palette: {
           mode,
           ...(mode === "light"
             ? {

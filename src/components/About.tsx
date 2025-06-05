@@ -6,7 +6,7 @@ import PageLayout from "./PageLayout";
 export default function About() {
   const navigate = useNavigate();
   return (
-    <PageLayout title="About Quizzard">
+    <PageLayout>
       <Box sx={{ mb: 2 }}>
         <IconButton aria-label="back" onClick={() => navigate(-1)}>
           <ArrowBackIcon />

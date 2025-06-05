@@ -13,7 +13,6 @@ import {
   ListItemButton,
   Divider,
   useTheme,
-  useMediaQuery,
   useScrollTrigger,
 } from "@mui/material";
 import { Link, Link as RouterLink } from "react-router-dom";
@@ -83,7 +82,9 @@ const Header = ({ mode, onToggleMode }: HeaderProps) => {
   return (
     <AppBar
       position="sticky"
-      elevation={useScrollTrigger({ disableHysteresis: true, threshold: 0 }) ? 4 : 0}
+      elevation={
+        useScrollTrigger({ disableHysteresis: true, threshold: 0 }) ? 4 : 0
+      }
       sx={{
         bgcolor: theme.palette.background.paper,
         color: theme.palette.text.primary,
@@ -91,9 +92,12 @@ const Header = ({ mode, onToggleMode }: HeaderProps) => {
         left: 0,
         right: 0,
         zIndex: theme.zIndex.appBar,
-        transition: theme.transitions.create(["box-shadow", "background-color"], {
-          duration: theme.transitions.duration.short,
-        }),
+        transition: theme.transitions.create(
+          ["box-shadow", "background-color"],
+          {
+            duration: theme.transitions.duration.short,
+          }
+        ),
       }}
     >
       <Toolbar
@@ -153,19 +157,47 @@ const Header = ({ mode, onToggleMode }: HeaderProps) => {
             flexShrink: 0,
           }}
         >
-          <Button color="inherit" startIcon={<HomeIcon />} component={Link} to="/">
+          <Button
+            color="inherit"
+            startIcon={<HomeIcon />}
+            component={Link}
+            to="/"
+          >
             Home
           </Button>
-          <Button color="inherit" startIcon={<InfoIcon />} component={Link} to="/about">
+          <Button
+            color="inherit"
+            startIcon={<InfoIcon />}
+            component={Link}
+            to="/about"
+          >
             About
           </Button>
-          <Button color="inherit" startIcon={<GitHubIcon />} component="a" href="https://github.com/SimeonTsvetanov" target="_blank" rel="noopener">
+          <Button
+            color="inherit"
+            startIcon={<GitHubIcon />}
+            component="a"
+            href="https://github.com/SimeonTsvetanov"
+            target="_blank"
+            rel="noopener"
+          >
             GitHub
           </Button>
-          <Button color="inherit" startIcon={<LocalCafeIcon />} component="a" href="https://buymeacoffee.com/simeontsvetanov" target="_blank" rel="noopener">
+          <Button
+            color="inherit"
+            startIcon={<LocalCafeIcon />}
+            component="a"
+            href="https://buymeacoffee.com/simeontsvetanov"
+            target="_blank"
+            rel="noopener"
+          >
             Support Me
           </Button>
-          <IconButton color="inherit" onClick={onToggleMode} aria-label="Toggle theme">
+          <IconButton
+            color="inherit"
+            onClick={onToggleMode}
+            aria-label="Toggle theme"
+          >
             {mode === "light" ? <DarkModeIcon /> : <LightModeIcon />}
           </IconButton>
         </Box>

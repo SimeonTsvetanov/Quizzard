@@ -94,6 +94,60 @@
 - **2025-06-05:** **DEPLOYMENT WORKFLOW DOCUMENTED** - Clarified GitHub Pages deployment strategy using build + deploy method (main → gh-pages). Main branch contains source code only, gh-pages serves optimized production builds. Never upload built files to main branch to maintain clean repository and professional workflow.
 - **2025-06-06:** **STICKY HEADER REQUIREMENTS DEFINED** - Specified that the header must remain sticky at the top of the viewport at all times. No ancestor of the AppBar (including #root) may have `overflow-x: hidden` or `overflow: hidden`—these must only be set on `html` and `body` to preserve sticky/fixed positioning.
 - **2025-06-06:** **BACK BUTTON REQUIREMENTS DEFINED** - About, Privacy, Terms, and Contact pages must display a native MUI IconButton (ArrowBackIcon) above the page heading, not in the header. The back button must be icon-only (no text), accessible, and use React Router's navigation (navigate(-1)). The back button must be styled using only native MUI props and be visually consistent with Material Design best practices. The back button must not appear on other pages or in the header.
+- **2025-06-06:** **ROUTING MIGRATION & WORKFLOW CLARIFIED** - Documented the migration from custom hash-based routing to React Router's BrowserRouter. Added detailed workflow for pushing to main and deploying to GitHub Pages, including best practices and common mistakes to avoid. Explained why React Router is now used and why it is preferred for Quizzard.
+
+---
+
+## Routing Migration & Deployment Workflow (2025-06-06)
+
+### Routing System: From Custom Hash to React Router
+
+- **Previous system:** Custom hash-based routing (URLs like `/#about`).
+- **Current system:** React Router's `BrowserRouter` (URLs like `/about`).
+- **Why migrate?**
+  - Clean, professional URLs (no hash fragments).
+  - Better user experience: browser navigation, sharing, and bookmarking work as expected.
+  - SPA support on GitHub Pages with `404.html` redirect.
+  - Easier to scale, maintain, and integrate with MUI and modern React features.
+  - Industry standard for React apps.
+- **Result:**
+  - All navigation uses React Router's `<Link>` or `navigate()`.
+  - No more hash URLs; all routes are clean and professional.
+  - SPA works on GitHub Pages with direct links and refreshes.
+
+### Best Practices: Pushing to Main & Deploying to GitHub Pages
+
+#### Pushing to Main (Source Code Only)
+- Only push source code, documentation, and config files to main. **Never push built files** (like `dist` or `build`).
+- Use clear, descriptive commit messages.
+- Commit often, but only push when code is working or a feature is complete.
+- Always update `PROJECT-CHARTER.md` with new rules, changes, or decisions before pushing.
+- Typical steps:
+  1. Make and test changes locally.
+  2. Stage changes: `git add .`
+  3. Commit: `git commit -m "Describe what you changed"`
+  4. Push: `git push origin main`
+
+#### Deploying to GitHub Pages (Production Build)
+- Use the `gh-pages` npm package to automate deployment.
+- Only deploy the production build (the optimized output, usually in `dist` or `build`).
+- The main branch should never contain built files—keep it clean for source code only.
+- Deployment script builds the app and pushes the result to the `gh-pages` branch.
+- Typical steps:
+  1. Build the app: `npm run build`
+  2. Deploy: `npm run deploy` (uses `gh-pages` to push `dist` to `gh-pages` branch)
+- Result: App is live at `https://<your-username>.github.io/Quizzard/`
+
+#### Common Mistakes to Avoid
+- Accidentally pushing the `dist` or `build` folder to main.
+- Editing files directly in the `gh-pages` branch.
+- Forgetting to update documentation (`PROJECT-CHARTER.md`).
+- Not testing locally before pushing or deploying.
+
+#### Summary: Why React Router is Used
+- Clean URLs, better UX, SPA support, scalable, and industry standard.
+- Integrates seamlessly with MUI and modern React.
+- The best choice for a public, modern, and scalable app like Quizzard.
 
 ---
 
@@ -102,6 +156,7 @@
 ### Google Material Design Palette (Current)
 
 #### Light Theme
+
 - primary: #1976D2 (Google Blue 700)
 - secondary: #9C27B0 (Google Purple 500)
 - error: #D32F2F (Google Red 700)
@@ -114,6 +169,7 @@
 - text secondary: #757575 (Google Grey 600)
 
 #### Dark Theme
+
 - primary: #64B5F6 (Google Blue 300)
 - secondary: #CE93D8 (Google Purple 200)
 - error: #EF9A9A (Google Red 200)

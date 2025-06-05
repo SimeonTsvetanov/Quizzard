@@ -2,14 +2,12 @@ import { Container, Paper } from "@mui/material";
 import { type ReactNode } from "react";
 
 interface PageLayoutProps {
-  title: string;
   children: ReactNode;
   maxWidth?: "xs" | "sm" | "md" | "lg" | "xl";
   textAlign?: "left" | "center" | "right";
 }
 
 export default function PageLayout({
-  title,
   children,
   maxWidth = "xs",
   textAlign = "left",

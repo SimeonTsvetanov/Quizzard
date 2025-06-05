@@ -6,7 +6,7 @@ import PageLayout from "./PageLayout";
 export default function PrivacyPolicy() {
   const navigate = useNavigate();
   return (
-    <PageLayout title="Privacy Policy">
+    <PageLayout>
       <Box sx={{ mb: 2 }}>
         <IconButton aria-label="back" onClick={() => navigate(-1)}>
           <ArrowBackIcon />

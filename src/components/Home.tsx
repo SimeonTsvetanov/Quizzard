@@ -4,7 +4,10 @@ import PageLayout from "./PageLayout";
 
 export default function Home() {
   return (
-    <PageLayout title="Welcome to Quizzard" textAlign="center">
+    <PageLayout textAlign="center">
+      <Typography variant="h4" component="h1" gutterBottom>
+        Welcome to Quizzard
+      </Typography>
       <Typography variant="subtitle1" gutterBottom>
         Your all-in-one quiz and team tools suite
       </Typography>
@@ -17,7 +20,6 @@ export default function Home() {
           width: "100%",
         }}
       >
-        {" "}
         <Button
           variant="contained"
           color="primary"
