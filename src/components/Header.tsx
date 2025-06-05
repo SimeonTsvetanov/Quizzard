@@ -92,7 +92,8 @@ const Header = ({ mode, onThemeChange }: HeaderProps) => {
   const handleThemeMenuClick = () => {
     if (drawerOpen) setDrawerOpen(false);
     setTimeout(() => setThemeDialogOpen(true), drawerOpen ? 250 : 0);
-  };  const handleThemeDialogClose = (apply = false) => {
+  };
+  const handleThemeDialogClose = (apply = false) => {
     setThemeDialogOpen(false);
     if (apply) {
       onThemeChange(pendingTheme);
