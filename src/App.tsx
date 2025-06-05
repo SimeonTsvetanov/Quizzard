@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import { ThemeProvider, createTheme, CssBaseline, Box } from "@mui/material";
 import "./App.css";
 import Header from "./components/Header";
@@ -91,6 +91,17 @@ function App() {
       }),
     [mode]
   );
+
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    const redirectedPath = queryParams.get("path");
+    if (redirectedPath) {
+      navigate(`/${redirectedPath}`, { replace: true });
+    }
+  }, [location, navigate]);
 
   return (
     <ThemeProvider theme={theme}>

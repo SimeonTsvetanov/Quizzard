@@ -8,13 +8,13 @@
     // GitHub Pages SPA redirect script for project pages
     // Redirects 404s to index.html with the original path preserved
     (function() {
-      var redirectTo = '/Quizzard';
+      var redirectTo = '/Quizzard/index.html';
       var fullUrl = window.location.href;
       var path = fullUrl.substring(fullUrl.indexOf('/Quizzard/') + '/Quizzard/'.length);
       if (!path || path === 'index.html') {
         path = ''; // Default to root if path is empty or invalid
       }
-      var newUrl = redirectTo + '/' + path;
+      var newUrl = redirectTo + '?path=' + encodeURIComponent(path);
       window.location.replace(newUrl);
     })();
   </script>
