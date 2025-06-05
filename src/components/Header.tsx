@@ -166,7 +166,7 @@ const Header = ({ mode }: HeaderProps) => {
             variant="h6"
             sx={{
               fontWeight: 700,
-              color: "inherit",
+              color: "text.primary",
               textDecoration: "none",
               whiteSpace: "nowrap",
               overflow: "hidden",
