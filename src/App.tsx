@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider, createTheme, CssBaseline, Box } from "@mui/material";
 import "./App.css";
@@ -13,9 +13,16 @@ import RandomTeamGenerator from "./components/RandomTeamGenerator";
 import PointsCounter from "./components/PointsCounter";
 
 function App() {
-  const [mode, setMode] = useState<"light" | "dark">(
-    window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
-  );
+  const getInitialMode = () => {
+    const stored = localStorage.getItem("user-settings-theme-selection");
+    if (stored === "light" || stored === "dark") return stored;
+    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  };
+  const [mode, setMode] = useState<"light" | "dark">(getInitialMode());
+  useEffect(() => {
+    localStorage.setItem("user-settings-theme-selection", mode);
+  }, [mode]);
+
   const theme = useMemo(
     () =>
       createTheme({
