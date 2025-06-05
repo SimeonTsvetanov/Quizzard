@@ -34,10 +34,9 @@ import quizzardLogo from "../assets/quizzard-logo.png";
 
 interface HeaderProps {
   mode: "light" | "dark";
-  onToggleMode: () => void;
 }
 
-const Header = ({ mode, onToggleMode }: HeaderProps) => {
+const Header = ({ mode }: HeaderProps) => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [themeDialogOpen, setThemeDialogOpen] = useState(false);
   const [pendingTheme, setPendingTheme] = useState<"light" | "dark" | "system">(
@@ -224,7 +223,17 @@ const Header = ({ mode, onToggleMode }: HeaderProps) => {
           </Button>
           <Button
             color="inherit"
-            startIcon={<>{mode === "light" ? <LightModeIcon /> : mode === "dark" ? <DarkModeIcon /> : <ComputerIcon />}</>}
+            startIcon={
+              <>
+                {mode === "light" ? (
+                  <LightModeIcon />
+                ) : mode === "dark" ? (
+                  <DarkModeIcon />
+                ) : (
+                  <ComputerIcon />
+                )}
+              </>
+            }
             onClick={handleThemeMenuClick}
             aria-label="Theme selection"
           >
@@ -420,7 +429,13 @@ const Header = ({ mode, onToggleMode }: HeaderProps) => {
                 }}
               >
                 <ListItemIcon>
-                  {mode === "light" ? <LightModeIcon /> : mode === "dark" ? <DarkModeIcon /> : <ComputerIcon />}
+                  {mode === "light" ? (
+                    <LightModeIcon />
+                  ) : mode === "dark" ? (
+                    <DarkModeIcon />
+                  ) : (
+                    <ComputerIcon />
+                  )}
                 </ListItemIcon>
                 <ListItemText primary="Theme" />
               </ListItemButton>
@@ -438,10 +453,17 @@ const Header = ({ mode, onToggleMode }: HeaderProps) => {
         fullWidth
         maxWidth="xs"
         PaperProps={{
-          sx: { borderRadius: 3, p: 2, bgcolor: theme.palette.background.paper },
+          sx: {
+            borderRadius: 3,
+            p: 2,
+            bgcolor: theme.palette.background.paper,
+          },
         }}
       >
-        <DialogTitle id="theme-dialog-title" sx={{ textAlign: "center", fontWeight: 700 }}>
+        <DialogTitle
+          id="theme-dialog-title"
+          sx={{ textAlign: "center", fontWeight: 700 }}
+        >
           Select Theme
         </DialogTitle>
         <DialogContent>
