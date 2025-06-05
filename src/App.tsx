@@ -20,7 +20,7 @@ function App() {
       ? "dark"
       : "light";
   };
-  const [mode, setMode] = useState<"light" | "dark">(getInitialMode());
+  const [mode] = useState<"light" | "dark">(getInitialMode());
   useEffect(() => {
     localStorage.setItem("user-settings-theme-selection", mode);
   }, [mode]);
@@ -89,10 +89,7 @@ function App() {
         }}
       >
         <BrowserRouter basename="/Quizzard">
-          <Header
-            mode={mode}
-            onToggleMode={() => setMode(mode === "light" ? "dark" : "light")}
-          />
+          <Header mode={mode} />
           <Box
             sx={{
               flex: 1,
