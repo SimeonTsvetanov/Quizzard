@@ -99,7 +99,9 @@ function App() {
     const queryParams = new URLSearchParams(location.search);
     const redirectedPath = queryParams.get("path");
     if (redirectedPath) {
-      navigate(`/${redirectedPath}`, { replace: true });
+      // Ensure the path does not have a leading slash or is malformed
+      const sanitizedPath = redirectedPath.startsWith("/") ? redirectedPath.slice(1) : redirectedPath;
+      navigate(`/${sanitizedPath}`, { replace: true });
     }
   }, [location, navigate]);
 
