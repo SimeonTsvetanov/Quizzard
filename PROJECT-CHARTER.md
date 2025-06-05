@@ -102,7 +102,7 @@
 - **2025-06-05:** **MOBILE THEME SWITCH UX IMPROVED** - The theme switch button in the mobile hamburger menu now closes the drawer when toggled and no longer shows a focus border when clicked or focused. This provides a cleaner and more intuitive user experience on mobile.
 - **2025-06-05:** **THEME PERSISTENCE IMPLEMENTED** - Theme selection is now saved in localStorage under the key `user-settings-theme-selection`. The app restores the user's last theme choice on reload, following MUI and React best practices. This improves user experience and accessibility across sessions.
 - **2025-06-05:** **PWA FULLSCREEN MODE ENABLED** - Updated `manifest.json` to use `"display": "fullscreen"`, enabling true fullscreen mode for the installed PWA on Android and other platforms. This is a native PWA feature and does not affect routing or deployment.
-- **2025-06-05:** **THEME SELECTION DIALOG, PERSISTENCE, AND PWA FULLSCREEN** - Refactored new theme switch to use an accessible MUI Dialog for theme selection (Light, Dark, System) with focus trap and backdrop blur. Implemented theme persistence using localStorage (`user-settings-theme-selection`), restoring the user's last theme choice on reload. Added a "System" theme option that follows the OS/browser preference. Updated `manifest.json` to enable PWA fullscreen mode. All changes documented here, committed to GitHub main, and deployed to GitHub Pages. Users can preview changes locally before finalizing. This ensures a modern, accessible, and professional theming experience across devices and platforms.
+- **2025-06-05:** **THEME SELECTION DIALOG, PERSISTENCE, AND PWA FULLSCREEN** - Refactored new theme switch to use an accessible MUI Dialog for theme selection (Light, Dark, System) with focus trap and backdrop blur. Implemented theme persistence using localStorage (`user-settings-theme-selection`), restoring the user's last theme on reload. Added a "System" theme option that follows the OS/browser preference. Updated `manifest.json` to enable PWA fullscreen mode. All changes documented here, committed to GitHub main, and deployed to GitHub Pages. Users can preview changes locally before finalizing. This ensures a modern, accessible, and professional theming experience across devices and platforms.
 - **2025-06-05:** **DEPLOYMENT WORKFLOW FIXED** - Updated `.github/workflows/pages.yml` to trigger on pushes to `main` and automatically build and deploy to the `gh-pages` branch. Fixed permissions to `contents: write` to allow the workflow to push to the `gh-pages` branch. This ensures the workflow runs automatically after each main branch update, builds the app, and deploys the production build to GitHub Pages. This follows best practices for static site deployment on GitHub Pages. Manual deploys to `gh-pages` are no longer needed; deployment is now fully automated and reliable.
 
 ---
@@ -563,6 +563,251 @@ Applied same styling principles to the drawer close button for consistent UX thr
 - ✅ Ready for mobile device testing
 - ✅ Hamburger menu icon now properly sized and accessible
 - ✅ No more persistent focus rings or oval borders after interaction
+
+---
+
+## GitHub Actions Automated Deployment Solution (2025-06-05)
+
+### Problem Solved
+
+The GitHub Actions workflow for automated deployment to GitHub Pages was not triggering properly, causing deployment failures and requiring manual intervention for every code update.
+
+### Root Cause Analysis
+
+1. **Incorrect Branch Trigger**: Workflow was configured to trigger on pushes to `gh-pages` branch instead of `main` branch
+2. **Insufficient Permissions**: Workflow had `contents: read` permissions but needed `contents: write` to push to gh-pages
+3. **Workflow Logic Misunderstanding**: The workflow should trigger when source code changes (main branch), not when deployment happens (gh-pages branch)
+
+### Solution Applied
+
+#### 1. Fixed Workflow Trigger Configuration
+
+**File:** `.github/workflows/pages.yml`
+
+```yaml
+# BEFORE (problematic):
+on:
+  push:
+    branches: [ "gh-pages" ]  # Wrong - triggers on deployment branch
+
+# AFTER (correct):
+on:
+  push:
+    branches: [ "main" ]      # Correct - triggers on source code changes
+```
+
+#### 2. Updated Workflow Permissions
+
+```yaml
+# BEFORE (insufficient):
+permissions:
+  contents: read
+
+# AFTER (sufficient):
+permissions:
+  contents: write            # Allows pushing to gh-pages branch
+  pages: write              # Allows GitHub Pages deployment
+  id-token: write           # Required for GitHub Pages
+```
+
+#### 3. Complete Working Workflow File
+
+**File:** `.github/workflows/pages.yml`
+
+```yaml
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: ["main"] # Trigger on main branch pushes
+  workflow_dispatch: # Allow manual triggering
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          publish_branch: gh-pages
+```
+
+### How the Workflow Works
+
+1. **Trigger**: Developer pushes code changes to `main` branch
+2. **Build**: GitHub Actions automatically:
+   - Checks out the latest main branch code
+   - Sets up Node.js environment
+   - Installs project dependencies (`npm ci`)
+   - Builds the production app (`npm run build`)
+3. **Deploy**: Uses `peaceiris/actions-gh-pages@v4` to:
+   - Take the built files from `./dist` directory
+   - Push them to the `gh-pages` branch
+   - GitHub Pages automatically serves the updated site
+
+### Why This Solution Works
+
+- **Logical Flow**: Source code changes → automatic build → automatic deployment
+- **Best Practices**: Uses industry-standard GitHub Actions (`peaceiris/actions-gh-pages`)
+- **Proper Permissions**: Workflow has necessary write access to update gh-pages branch
+- **Concurrent Safety**: Prevents multiple deployments from running simultaneously
+- **Manual Override**: `workflow_dispatch` allows manual triggering when needed
+
+### Workflow Commands Reference
+
+#### Check Workflow Status
+
+```powershell
+# View recent workflow runs
+gh run list --repo your-username/Quizzard
+
+# View specific workflow run details
+gh run view [run-id] --repo your-username/Quizzard
+```
+
+#### Manual Workflow Trigger
+
+```powershell
+# Trigger workflow manually
+gh workflow run "Deploy to GitHub Pages" --repo your-username/Quizzard
+```
+
+#### Local Testing Before Push
+
+```powershell
+# Always test locally before pushing
+npm run build
+npm run preview  # Test production build locally
+```
+
+### Troubleshooting Guide
+
+#### Common Issues & Solutions
+
+**1. Workflow Not Triggering**
+
+- ✅ Check that trigger is set to `main` branch, not `gh-pages`
+- ✅ Verify workflow file is in `.github/workflows/` directory
+- ✅ Ensure workflow file has `.yml` or `.yaml` extension
+
+**2. Permission Denied Errors**
+
+- ✅ Verify `contents: write` permission is set
+- ✅ Check that `GITHUB_TOKEN` has repository access
+- ✅ Ensure repository has GitHub Pages enabled
+
+**3. Build Failures**
+
+- ✅ Test build locally first: `npm run build`
+- ✅ Check for TypeScript errors: `npm run type-check`
+- ✅ Verify all dependencies are in `package.json`
+
+**4. Deployment Succeeds But Site Not Updated**
+
+- ✅ Check GitHub Pages source is set to "Deploy from a branch: gh-pages"
+- ✅ Verify base URL configuration in `vite.config.ts`
+- ✅ Clear browser cache or check in incognito mode
+
+#### Workflow File Validation
+
+**Required Elements Checklist:**
+
+- [ ] Trigger on `main` branch pushes
+- [ ] `contents: write` permission
+- [ ] Node.js setup with correct version
+- [ ] `npm ci` for dependency installation
+- [ ] `npm run build` for production build
+- [ ] `peaceiris/actions-gh-pages@v4` for deployment
+- [ ] `publish_dir: ./dist` pointing to build output
+- [ ] `publish_branch: gh-pages` for GitHub Pages
+
+### Future Maintenance
+
+**When Updating Workflow:**
+
+1. Always test changes in a feature branch first
+2. Use `workflow_dispatch` to manually test workflow changes
+3. Monitor workflow runs in GitHub Actions tab
+4. Update this documentation if workflow structure changes
+
+**When Build Configuration Changes:**
+
+- Update `publish_dir` if build output directory changes
+- Update Node.js version in workflow when upgrading locally
+- Add new build steps if additional processing is needed
+
+### Deployment Workflow Summary
+
+**Simple Save Process:**
+
+1. Make code changes locally
+2. Test with `npm run dev` and `npm run build`
+3. Commit changes: `git add . && git commit -m "Description"`
+4. Push to main: `git push origin main`
+5. GitHub Actions automatically builds and deploys
+6. Site updates live at: `https://your-username.github.io/Quizzard/`
+
+**No manual deployment needed** - the workflow handles everything automatically!
+
+---
+
+## Quizzard AI Workflow Integration
+
+### AI Workflow Rules
+
+1. **Always Reference PROJECT-CHARTER.md**: This file is the single source of truth. Always check and update it with any changes, progress, or decisions.
+2. **AI Assistants Must Follow These Rules**: If using an AI assistant, instruct it to adhere to these rules explicitly.
+3. **Regular Updates and Reviews**: This file must be reviewed and updated regularly to reflect the current state of the project.
+
+### AI Workflow Example
+
+1. **AI Task Assignment**: Assign tasks to the AI, e.g., "Implement feature X" or "Fix bug Y".
+2. **AI Updates PROJECT-CHARTER.md**: After completing a task, the AI updates this file with:
+   - What was done
+   - Any new decisions or changes
+   - Links to relevant code commits or pull requests
+3. **Review and Approve**: The development team reviews the AI's work and this document. Approve or request changes.
+4. **Merge and Deploy**: Once approved, merge changes to the main branch. GitHub Actions deploys the updates.
+
+### Example AI Update
+
+- **Task**: Implemented user login feature
+- **Changes**:
+  - Updated `src/components/Login.tsx` for login form
+  - Added `src/hooks/useAuth.ts` for authentication logic
+  - Updated `PROJECT-CHARTER.md` with new routing rules
+- **Decisions**:
+  - Chose to use Context API for state management
+  - Decided on email/password authentication for MVP
+- **Links**:
+  - Code: [GitHub Commit Link](https://github.com/your-repo/commit/abc123)
+  - PR: [GitHub Pull Request Link](https://github.com/your-repo/pull/456)
 
 ---
 
