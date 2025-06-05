@@ -86,7 +86,7 @@ const Header = ({ mode, onToggleMode }: HeaderProps) => {
         useScrollTrigger({ disableHysteresis: true, threshold: 0 }) ? 4 : 0
       }
       sx={{
-        bgcolor: theme.palette.background.paper,
+        bgcolor: theme.palette.background.default, // Match main body background
         color: theme.palette.text.primary,
         top: 0,
         left: 0,

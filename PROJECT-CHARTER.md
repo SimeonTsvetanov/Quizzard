@@ -95,6 +95,7 @@
 - **2025-06-06:** **STICKY HEADER REQUIREMENTS DEFINED** - Specified that the header must remain sticky at the top of the viewport at all times. No ancestor of the AppBar (including #root) may have `overflow-x: hidden` or `overflow: hidden`—these must only be set on `html` and `body` to preserve sticky/fixed positioning.
 - **2025-06-06:** **BACK BUTTON REQUIREMENTS DEFINED** - About, Privacy, Terms, and Contact pages must display a native MUI IconButton (ArrowBackIcon) above the page heading, not in the header. The back button must be icon-only (no text), accessible, and use React Router's navigation (navigate(-1)). The back button must be styled using only native MUI props and be visually consistent with Material Design best practices. The back button must not appear on other pages or in the header.
 - **2025-06-06:** **ROUTING MIGRATION & WORKFLOW CLARIFIED** - Documented the migration from custom hash-based routing to React Router's BrowserRouter. Added detailed workflow for pushing to main and deploying to GitHub Pages, including best practices and common mistakes to avoid. Explained why React Router is now used and why it is preferred for Quizzard.
+- **2025-06-05:** **HEADER COLOR MATCHES BODY** - Updated the header (AppBar) background color to match the main body background color in both light and dark mode (`#FAFAFA` for light, `#121212` for dark) for improved visual consistency. This is now live in the app and will be visible after deployment.
 
 ---
 
@@ -118,6 +119,7 @@
 ### Best Practices: Pushing to Main & Deploying to GitHub Pages
 
 #### Pushing to Main (Source Code Only)
+
 - Only push source code, documentation, and config files to main. **Never push built files** (like `dist` or `build`).
 - Use clear, descriptive commit messages.
 - Commit often, but only push when code is working or a feature is complete.
@@ -129,6 +131,7 @@
   4. Push: `git push origin main`
 
 #### Deploying to GitHub Pages (Production Build)
+
 - Use the `gh-pages` npm package to automate deployment.
 - Only deploy the production build (the optimized output, usually in `dist` or `build`).
 - The main branch should never contain built files—keep it clean for source code only.
@@ -139,12 +142,14 @@
 - Result: App is live at `https://<your-username>.github.io/Quizzard/`
 
 #### Common Mistakes to Avoid
+
 - Accidentally pushing the `dist` or `build` folder to main.
 - Editing files directly in the `gh-pages` branch.
 - Forgetting to update documentation (`PROJECT-CHARTER.md`).
 - Not testing locally before pushing or deploying.
 
 #### Summary: Why React Router is Used
+
 - Clean URLs, better UX, SPA support, scalable, and industry standard.
 - Integrates seamlessly with MUI and modern React.
 - The best choice for a public, modern, and scalable app like Quizzard.
