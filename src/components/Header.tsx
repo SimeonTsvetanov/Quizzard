@@ -14,6 +14,11 @@ import {
   Divider,
   useTheme,
   useScrollTrigger,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Stack,
 } from "@mui/material";
 import { Link, Link as RouterLink } from "react-router-dom";
 import MenuIcon from "@mui/icons-material/Menu";
@@ -23,6 +28,7 @@ import GitHubIcon from "@mui/icons-material/GitHub";
 import LocalCafeIcon from "@mui/icons-material/LocalCafe";
 import LightModeIcon from "@mui/icons-material/LightMode";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
+import ComputerIcon from "@mui/icons-material/Computer";
 import { useState, useRef, useEffect } from "react";
 import quizzardLogo from "../assets/quizzard-logo.png";
 
@@ -33,6 +39,10 @@ interface HeaderProps {
 
 const Header = ({ mode, onToggleMode }: HeaderProps) => {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [themeDialogOpen, setThemeDialogOpen] = useState(false);
+  const [pendingTheme, setPendingTheme] = useState<"light" | "dark" | "system">(
+    mode === "light" || mode === "dark" ? mode : "system"
+  );
   const closeBtnRef = useRef<HTMLButtonElement>(null);
   const drawerRef = useRef<HTMLDivElement>(null);
   const theme = useTheme();
@@ -79,6 +89,25 @@ const Header = ({ mode, onToggleMode }: HeaderProps) => {
   }, [drawerOpen]);
 
   const handleDrawerToggle = () => setDrawerOpen((open) => !open);
+  const handleThemeMenuClick = () => {
+    if (drawerOpen) setDrawerOpen(false);
+    setTimeout(() => setThemeDialogOpen(true), drawerOpen ? 250 : 0);
+  };
+  const handleThemeDialogClose = (apply = false) => {
+    setThemeDialogOpen(false);
+    if (apply) {
+      if (pendingTheme === "system") {
+        localStorage.removeItem("user-settings-theme-selection");
+        window.location.reload(); // reload to reapply system theme
+      } else {
+        localStorage.setItem("user-settings-theme-selection", pendingTheme);
+        window.location.reload();
+      }
+    } else {
+      setPendingTheme(mode);
+    }
+  };
+
   return (
     <AppBar
       position="sticky"
@@ -193,13 +222,14 @@ const Header = ({ mode, onToggleMode }: HeaderProps) => {
           >
             Support Me
           </Button>
-          <IconButton
+          <Button
             color="inherit"
-            onClick={onToggleMode}
-            aria-label="Toggle theme"
+            startIcon={<>{mode === "light" ? <LightModeIcon /> : mode === "dark" ? <DarkModeIcon /> : <ComputerIcon />}</>}
+            onClick={handleThemeMenuClick}
+            aria-label="Theme selection"
           >
-            {mode === "light" ? <DarkModeIcon /> : <LightModeIcon />}
-          </IconButton>
+            Theme
+          </Button>
         </Box>
         {/* Hamburger for mobile */}
         <Box
@@ -382,10 +412,7 @@ const Header = ({ mode, onToggleMode }: HeaderProps) => {
           <List>
             <ListItem disablePadding>
               <ListItemButton
-                onClick={() => {
-                  onToggleMode();
-                  handleDrawerToggle(); // Close drawer when theme is toggled
-                }}
+                onClick={handleThemeMenuClick}
                 component="button"
                 sx={{
                   "&:focus": { outline: "none" },
@@ -393,11 +420,9 @@ const Header = ({ mode, onToggleMode }: HeaderProps) => {
                 }}
               >
                 <ListItemIcon>
-                  {mode === "light" ? <DarkModeIcon /> : <LightModeIcon />}
+                  {mode === "light" ? <LightModeIcon /> : mode === "dark" ? <DarkModeIcon /> : <ComputerIcon />}
                 </ListItemIcon>
-                <ListItemText
-                  primary={mode === "light" ? "Dark Mode" : "Light Mode"}
-                />
+                <ListItemText primary="Theme" />
               </ListItemButton>
             </ListItem>
           </List>
@@ -405,6 +430,65 @@ const Header = ({ mode, onToggleMode }: HeaderProps) => {
           <Box sx={{ flexGrow: 1 }} />
         </Box>
       </Drawer>
+      {/* Theme Selection Dialog */}
+      <Dialog
+        open={themeDialogOpen}
+        onClose={() => handleThemeDialogClose(false)}
+        aria-labelledby="theme-dialog-title"
+        fullWidth
+        maxWidth="xs"
+        PaperProps={{
+          sx: { borderRadius: 3, p: 2, bgcolor: theme.palette.background.paper },
+        }}
+      >
+        <DialogTitle id="theme-dialog-title" sx={{ textAlign: "center", fontWeight: 700 }}>
+          Select Theme
+        </DialogTitle>
+        <DialogContent>
+          <Stack spacing={2}>
+            <Button
+              variant={pendingTheme === "light" ? "contained" : "outlined"}
+              startIcon={<LightModeIcon />}
+              fullWidth
+              onClick={() => setPendingTheme("light")}
+              sx={{ justifyContent: "flex-start", fontWeight: 500 }}
+              aria-pressed={pendingTheme === "light"}
+            >
+              Light
+            </Button>
+            <Button
+              variant={pendingTheme === "dark" ? "contained" : "outlined"}
+              startIcon={<DarkModeIcon />}
+              fullWidth
+              onClick={() => setPendingTheme("dark")}
+              sx={{ justifyContent: "flex-start", fontWeight: 500 }}
+              aria-pressed={pendingTheme === "dark"}
+            >
+              Dark
+            </Button>
+            <Button
+              variant={pendingTheme === "system" ? "contained" : "outlined"}
+              startIcon={<ComputerIcon />}
+              fullWidth
+              onClick={() => setPendingTheme("system")}
+              sx={{ justifyContent: "flex-start", fontWeight: 500 }}
+              aria-pressed={pendingTheme === "system"}
+            >
+              System
+            </Button>
+          </Stack>
+        </DialogContent>
+        <DialogActions sx={{ justifyContent: "center", pt: 2 }}>
+          <Button
+            onClick={() => handleThemeDialogClose(true)}
+            variant="contained"
+            color="primary"
+            sx={{ minWidth: 120, fontWeight: 600 }}
+          >
+            OK
+          </Button>
+        </DialogActions>
+      </Dialog>
     </AppBar>
   );
 };

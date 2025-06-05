@@ -62,6 +62,7 @@
 - [x] **LOGO SIZING PERFECTED** - Applied MUI-recommended logo sizing to eliminate bottom cropping: Header (40px/48px mobile/desktop), Footer (32px/36px mobile/desktop). Logo now displays in full without visual cutoff while maintaining aspect ratio and responsive design.
 - [x] Theme persistence with localStorage (user-settings-theme-selection)
 - [x] PWA fullscreen display mode (manifest.json)
+- [x] Theme selection dialog (popup) with Light/Dark/System options, accessible and mobile-friendly
 - [ ] Random Team Generator (placeholder → full implementation)
 - [ ] Points Counter (placeholder → full implementation)
 - [x] GitHub Pages deploy set up
@@ -101,6 +102,7 @@
 - **2025-06-05:** **MOBILE THEME SWITCH UX IMPROVED** - The theme switch button in the mobile hamburger menu now closes the drawer when toggled and no longer shows a focus border when clicked or focused. This provides a cleaner and more intuitive user experience on mobile.
 - **2025-06-05:** **THEME PERSISTENCE IMPLEMENTED** - Theme selection is now saved in localStorage under the key `user-settings-theme-selection`. The app restores the user's last theme choice on reload, following MUI and React best practices. This improves user experience and accessibility across sessions.
 - **2025-06-05:** **PWA FULLSCREEN MODE ENABLED** - Updated `manifest.json` to use `"display": "fullscreen"`, enabling true fullscreen mode for the installed PWA on Android and other platforms. This is a native PWA feature and does not affect routing or deployment.
+- **2025-06-05:** **THEME SELECTION DIALOG ADOPTED** - Refactored theme switch to open a single accessible MUI Dialog (popup) for theme selection. The dialog presents Light, Dark, and System options with icons, traps focus, blurs the background, and works on both mobile and desktop. This keeps the menu minimal and follows MUI/React best practices for accessibility and UX.
 
 ---
 
