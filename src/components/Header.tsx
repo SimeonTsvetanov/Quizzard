@@ -34,9 +34,10 @@ import quizzardLogo from "../assets/quizzard-logo.png";
 
 interface HeaderProps {
   mode: "light" | "dark";
+  onThemeChange: (theme: "light" | "dark" | "system") => void;
 }
 
-const Header = ({ mode }: HeaderProps) => {
+const Header = ({ mode, onThemeChange }: HeaderProps) => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [themeDialogOpen, setThemeDialogOpen] = useState(false);
   const [pendingTheme, setPendingTheme] = useState<"light" | "dark" | "system">(
@@ -91,17 +92,10 @@ const Header = ({ mode }: HeaderProps) => {
   const handleThemeMenuClick = () => {
     if (drawerOpen) setDrawerOpen(false);
     setTimeout(() => setThemeDialogOpen(true), drawerOpen ? 250 : 0);
-  };
-  const handleThemeDialogClose = (apply = false) => {
+  };  const handleThemeDialogClose = (apply = false) => {
     setThemeDialogOpen(false);
     if (apply) {
-      if (pendingTheme === "system") {
-        localStorage.removeItem("user-settings-theme-selection");
-        window.location.reload(); // reload to reapply system theme
-      } else {
-        localStorage.setItem("user-settings-theme-selection", pendingTheme);
-        window.location.reload();
-      }
+      onThemeChange(pendingTheme);
     } else {
       setPendingTheme(mode);
     }

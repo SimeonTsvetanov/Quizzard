@@ -20,10 +20,23 @@ function App() {
       ? "dark"
       : "light";
   };
-  const [mode] = useState<"light" | "dark">(getInitialMode());
+  const [mode, setMode] = useState<"light" | "dark">(getInitialMode());
+  
   useEffect(() => {
     localStorage.setItem("user-settings-theme-selection", mode);
   }, [mode]);
+
+  // Theme change handler function to pass to Header
+  const handleThemeChange = (newTheme: "light" | "dark" | "system") => {
+    if (newTheme === "system") {
+      localStorage.removeItem("user-settings-theme-selection");
+      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      setMode(systemTheme);
+    } else {
+      localStorage.setItem("user-settings-theme-selection", newTheme);
+      setMode(newTheme);
+    }
+  };
 
   const theme = useMemo(
     () =>
@@ -87,9 +100,8 @@ function App() {
           width: "100%",
           // Removed overflowX: 'hidden' to allow sticky AppBar
         }}
-      >
-        <BrowserRouter basename="/Quizzard">
-          <Header mode={mode} />
+      >        <BrowserRouter basename="/Quizzard">
+          <Header mode={mode} onThemeChange={handleThemeChange} />
           <Box
             sx={{
               flex: 1,
