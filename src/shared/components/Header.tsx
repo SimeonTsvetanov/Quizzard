@@ -538,7 +538,12 @@ const Header = ({ mode, onThemeChange }: HeaderProps) => {
             onClick={() => handleThemeDialogClose(true)}
             variant="contained"
             color="primary"
-            sx={{ minWidth: 120, fontWeight: 600 }}
+            sx={{
+              minWidth: 120,
+              fontWeight: 600,
+              '&:focus': { outline: 'none' },
+              '&:focus-visible': { outline: 'none' },
+            }}
           >
             OK
           </Button>
