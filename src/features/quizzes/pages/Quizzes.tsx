@@ -1,5 +1,5 @@
 import { Typography, Box } from "@mui/material";
-import PageLayout from "../../shared/components/PageLayout";
+import PageLayout from "../../../shared/components/PageLayout";
 
 export default function Quizzes() {
   return (

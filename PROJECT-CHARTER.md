@@ -69,6 +69,7 @@
 - [x] Theme selection dialog (popup) with Light/Dark/System options, accessible and mobile-friendly
 - [ ] Random Team Generator (placeholder → full implementation)
 - [ ] Points Counter (placeholder → full implementation)
+- [ ] Quizzes (Build and Play Quizzes) (placeholder → full implementation)
 - [x] GitHub Pages deploy set up
 - [x] Auto-update workflow
 
@@ -76,6 +77,7 @@
 
 - [ ] Random Team Generator (placeholder → full implementation)
 - [ ] Points Counter (placeholder → full implementation)
+- [ ] Quizzes (Build and Play Quizzes) (placeholder → full implementation)
 - [ ] (Add more tools here as needed)
 
 ### 3. Main Points & Priorities
@@ -100,6 +102,12 @@ The project follows a feature-based architecture:
     - **utils/** - Utility functions specific to this feature
   - **pointsCounter/** - Points Counter feature
     - (Similar structure as above)
+  - **quizzes/** - Quizzes (Build and Play Quizzes) feature
+    - **pages/** - Page components for this feature
+    - **components/** - UI components specific to this feature
+    - **hooks/** - Custom hooks specific to this feature
+    - **types/** - TypeScript types for this feature
+    - **README.md** - Feature documentation
 - **src/pages/** - Page components that serve as routes in the application
 - **src/shared/** - Shared resources used across multiple features
   - **components/** - Reusable UI components (Header, Footer, PageLayout, etc.)
@@ -131,6 +139,7 @@ The project follows a feature-based architecture:
 - **2025-06-05:** **DEPLOYMENT WORKFLOW FIXED** - Updated `.github/workflows/pages.yml` to trigger on pushes to `main` and automatically build and deploy to the `gh-pages` branch. Fixed permissions to `contents: write` to allow the workflow to push to the `gh-pages` branch. This ensures the workflow runs automatically after each main branch update, builds the app, and deploys the production build to GitHub Pages. This follows best practices for static site deployment on GitHub Pages. Manual deploys to `gh-pages` are no longer needed; deployment is now fully automated and reliable.
 - **2025-06-05:** **HEADER TEXT COLOR THEME-AWARE** - Updated the "Quizzard" text in the header to use `color: "text.primary"` instead of `color: "inherit"`. This ensures the brand text follows the proper theme colors: black (`#212121`) in light mode and white (`#FFFFFF`) in dark mode, providing better visual contrast and accessibility. The change only affects the Typography component without impacting the logo, AppBar background, or any other header elements.
 - **2025-06-06:** **PRODUCTION THEME SWITCH BUG FIXED** - Resolved critical production-only issue where changing themes on subpages (About, Privacy, etc.) caused blank white screens. Root cause was `window.location.reload()` conflicting with React Router + GitHub Pages SPA redirect system. Replaced reload-based theme switching with React state management (`onThemeChange` callback pattern). Theme changes now work instantly without page reloads, maintaining proper routing context. Local development was unaffected, issue only occurred in GitHub Pages production environment.
+- **2025-06-09:** **QUIZZES TOOL PLACEHOLDER ADDED** - Added Quizzes (Build and Play Quizzes) as a new tool with full feature structure (pages, components, hooks, types, README). Integrated into the main menu and routing as a placeholder for future development. Landing page now displays all three main tools. All code follows feature-based architecture and MUI/TypeScript standards.
 
 ---
 

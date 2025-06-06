@@ -46,7 +46,7 @@ export default function Home() {
             </Button>
             <Button
               variant="contained"
-              color="tertiary"
+              color="secondary"
               size="large"
               fullWidth
               component={Link}
