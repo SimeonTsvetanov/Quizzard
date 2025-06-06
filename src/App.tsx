@@ -1,10 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import {
-  Routes,
-  Route,
-  useLocation,
-  useNavigate,
-} from "react-router-dom";
+import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import { ThemeProvider, createTheme, CssBaseline, Box } from "@mui/material";
 import "./App.css";
 import Header from "./components/Header";
@@ -118,29 +113,30 @@ function App() {
         }
       }
     }
-  }, [location.search, navigate]);  return (
+  }, [location.search, navigate]);
+  return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
       {/* Main app container with proper flex layout */}
       <Box
         sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          minHeight: '100vh', // Set minimum height to fill viewport
-          width: '100%'
+          display: "flex",
+          flexDirection: "column",
+          minHeight: "100vh", // Set minimum height to fill viewport
+          width: "100%",
         }}
       >
         {/* Header stays at the top */}
         <Header mode={mode} onThemeChange={handleThemeChange} />
-        
+
         {/* Content area that grows to fill available space */}
         <Box
           component="main"
           sx={{
             flexGrow: 1, // This makes it fill available space
-            width: '100%',
-            display: 'flex',
-            flexDirection: 'column',
+            width: "100%",
+            display: "flex",
+            flexDirection: "column",
           }}
         >
           <Routes>
@@ -153,7 +149,7 @@ function App() {
             <Route path="/points-counter" element={<PointsCounter />} />
           </Routes>
         </Box>
-        
+
         {/* Footer stays at the bottom */}
         <Footer />
       </Box>
