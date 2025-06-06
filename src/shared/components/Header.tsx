@@ -35,7 +35,7 @@ import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 
 interface HeaderProps {
-  mode: "light" | "dark";
+  mode: "light" | "dark" | "system";
   onThemeChange: (theme: "light" | "dark" | "system") => void;
 }
 

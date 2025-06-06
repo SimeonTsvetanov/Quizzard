@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createTheme } from "@mui/material";
 
-type ThemeMode = "light" | "dark";
+type ThemeMode = "light" | "dark" | "system";
 type ThemeSelection = ThemeMode | "system";
 
 /**
@@ -41,6 +41,14 @@ export const useTheme = () => {
     }
   };
 
+  // Determine the palette mode for MUI (only 'light' or 'dark')
+  const getPaletteMode = (mode: ThemeMode): "light" | "dark" => {
+    if (mode === "system") {
+      return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
+    return mode;
+  };
+
   // Create the theme object with proper configurations
   const theme = useMemo(
     () =>
@@ -55,7 +63,7 @@ export const useTheme = () => {
           },
         },
         palette: {
-          mode,
+          mode: getPaletteMode(mode),
           ...(mode === "light"
             ? {
                 // Material 3 Light Palette
