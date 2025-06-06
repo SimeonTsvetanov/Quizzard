@@ -845,3 +845,75 @@ npm run preview  # Test production build locally
 - This file must be referenced and updated after every significant project change, decision, or milestone.
 - If using an AI assistant, always instruct it to check and update this file as part of your workflow.
 - Pin this file in your editor for visibility, but also make it a habit to review and update it regularly.
+
+## Material 3 Color Palette (2025-06-10)
+
+The project now uses the Material 3 (Material You) color system for both light and dark themes. All MUI components inherit these colors globally.
+
+**Palette keys:**
+- primary
+- secondary
+- tertiary
+- error
+- warning
+- info
+- success
+- background
+- surface
+- onSurface
+- text
+
+**How to use:**
+- Use MUI's color props: `<Button color="primary">`, `<Box bgcolor="background.paper">`, etc.
+- Reference the palette demo at `/palette-demo` to see all colors and usage examples.
+- Do not hardcode hex values; always use palette keys for consistency and accessibility.
+
+**Palette Demo:**
+- Visit `/palette-demo` in the app to view all theme colors, swatches, and example usage.
+- Copy code snippets directly from the demo page for new features.
+
+**Best Practices:**
+- All new features and pages should use MUI components and palette keys for color.
+- Typography, spacing, and transitions are set globally for a modern, accessible look.
+- Navigation highlighting, snackbar feedback, and micro-animations are now standard.
+
+**Light Theme Example:**
+- primary: #6750A4
+- secondary: #625B71
+- tertiary: #7D5260
+- error: #B3261E
+- warning: #F9A825
+- info: #00639B
+- success: #2E7D32
+- background: #FFFBFE
+- surface: #FFFBFE
+- onSurface: #1C1B1F
+- text primary: #1C1B1F
+- text secondary: #49454F
+
+**Dark Theme Example:**
+- primary: #D0BCFF
+- secondary: #CCC2DC
+- tertiary: #EFB8C8
+- error: #F2B8B5
+- warning: #FFD600
+- info: #80D8FF
+- success: #81C784
+- background: #1C1B1F
+- surface: #1C1B1F
+- onSurface: #E6E1E5
+- text primary: #E6E1E5
+- text secondary: #CAC4D0
+
+**UI/UX Improvements (2025-06-10):**
+- Material 3 palette and typography
+- Navigation highlighting in header/footer
+- Snackbar feedback for theme changes
+- Micro-animations for dialogs, menus, and buttons
+- All changes are global and apply to new features automatically
+
+**Service Worker Registration (2025-06-10):**
+- The service worker (sw.js) is only registered in production builds (import.meta.env.PROD) to avoid caching issues during local development.
+- This ensures you always see the latest changes when running the dev server, but still get full PWA support and offline caching in production (GitHub Pages).
+- If you need to test the service worker locally, build the app for production and serve the dist folder.
+- This is best practice for React/MUI/Vite PWAs to prevent confusion and stale content during development.

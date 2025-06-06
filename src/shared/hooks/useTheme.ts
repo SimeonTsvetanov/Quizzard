@@ -58,27 +58,46 @@ export const useTheme = () => {
           mode,
           ...(mode === "light"
             ? {
-                primary: { main: "#1976D2", contrastText: "#fff" }, // Google Blue 700
-                secondary: { main: "#9C27B0", contrastText: "#fff" }, // Google Purple 500
-                error: { main: "#D32F2F", contrastText: "#fff" }, // Google Red 700
-                warning: { main: "#FF9800", contrastText: "#212121" }, // Google Orange 500
-                info: { main: "#2196F3", contrastText: "#fff" }, // Google Blue 500
-                success: { main: "#4CAF50", contrastText: "#fff" }, // Google Green 500
-                background: { default: "#FAFAFA", paper: "#FFFFFF" }, // Google Grey 50, White
-                text: { primary: "#212121", secondary: "#757575" }, // Google Grey 900, Google Grey 600
+                // Material 3 Light Palette
+                primary: { main: "#6750A4", contrastText: "#fff" }, // M3 Primary
+                secondary: { main: "#625B71", contrastText: "#fff" }, // M3 Secondary
+                tertiary: { main: "#7D5260", contrastText: "#fff" }, // M3 Tertiary
+                error: { main: "#B3261E", contrastText: "#fff" },
+                warning: { main: "#F9A825", contrastText: "#fff" },
+                info: { main: "#00639B", contrastText: "#fff" },
+                success: { main: "#2E7D32", contrastText: "#fff" },
+                background: { default: "#FFFBFE", paper: "#FFFFFF" }, // M3 background/surface
+                surface: { main: "#FFFBFE", contrastText: "#1C1B1F" },
+                onSurface: { main: "#1C1B1F" },
+                text: { primary: "#1C1B1F", secondary: "#49454F" },
               }
             : {
-                primary: { main: "#64B5F6", contrastText: "#121212" }, // Google Blue 300
-                secondary: { main: "#CE93D8", contrastText: "#121212" }, // Google Purple 200
-                error: { main: "#EF9A9A", contrastText: "#121212" }, // Google Red 200
-                warning: { main: "#FFCC80", contrastText: "#121212" }, // Google Orange 200
-                info: { main: "#90CAF9", contrastText: "#121212" }, // Google Blue 200
-                success: { main: "#A5D6A7", contrastText: "#121212" }, // Google Green 200
-                background: { default: "#121212", paper: "#1E1E1E" }, // Very Dark Grey, Dark Grey
-                text: { primary: "#FFFFFF", secondary: "#BDBDBD" }, // White, Google Grey 400
+                // Material 3 Dark Palette
+                primary: { main: "#D0BCFF", contrastText: "#381E72" },
+                secondary: { main: "#CCC2DC", contrastText: "#332D41" },
+                tertiary: { main: "#EFB8C8", contrastText: "#492532" },
+                error: { main: "#F2B8B5", contrastText: "#601410" },
+                warning: { main: "#FFD600", contrastText: "#332900" },
+                info: { main: "#80D8FF", contrastText: "#00344F" },
+                success: { main: "#81C784", contrastText: "#003916" },
+                background: { default: "#1C1B1F", paper: "#232227" }, // M3 dark background/surface
+                surface: { main: "#1C1B1F", contrastText: "#E6E1E5" },
+                onSurface: { main: "#E6E1E5" },
+                text: { primary: "#E6E1E5", secondary: "#CAC4D0" },
               }),
         },
         shape: { borderRadius: 12 },
+        transitions: {
+          duration: {
+            shortest: 150,
+            shorter: 200,
+            short: 250,
+            standard: 300,
+            complex: 375,
+            enteringScreen: 225,
+            leavingScreen: 195,
+          },
+        },
         components: {
           MuiBackdrop: {
             styleOverrides: {

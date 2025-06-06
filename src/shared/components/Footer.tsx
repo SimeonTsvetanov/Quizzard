@@ -1,5 +1,5 @@
 import { Box, Typography, Link, IconButton, Stack } from "@mui/material";
-import { Link as RouterLink } from "react-router-dom";
+import { Link as RouterLink, useLocation } from "react-router-dom";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import LocalCafeIcon from "@mui/icons-material/LocalCafe";
 import quizzardLogo from "../assets/quizzard-logo.png";
@@ -14,6 +14,7 @@ const navLinks = [
 ];
 
 export default function Footer() {
+  const location = useLocation();
   return (
     <Box
       component="footer"
@@ -69,9 +70,14 @@ export default function Footer() {
               component={RouterLink}
               to={link.href}
               underline="hover"
-              color="inherit"
+              color={location.pathname === link.href ? "primary" : "inherit"}
               variant="body2"
-              sx={{ px: 0.5, py: 0.5, fontWeight: 400 }}
+              sx={{
+                px: 0.5,
+                py: 0.5,
+                fontWeight: location.pathname === link.href ? 700 : 400,
+                transition: "color 0.2s",
+              }}
             >
               {link.label}
             </Link>

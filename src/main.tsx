@@ -4,8 +4,8 @@ import "./index.css"; // Imports the global CSS styles, so they apply to your wh
 import App from "./App.tsx"; // Imports the main React component, which contains the app UI and logic.
 import { BrowserRouter } from "react-router-dom"; // Import BrowserRouter for routing
 
-// Register service worker for PWA auto-update
-if ("serviceWorker" in navigator) {
+// Register service worker for PWA auto-update (only in production)
+if (import.meta.env.PROD && "serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker
       .register("/Quizzard/sw.js")

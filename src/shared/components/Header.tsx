@@ -20,7 +20,7 @@ import {
   DialogActions,
   Stack,
 } from "@mui/material";
-import { Link, Link as RouterLink } from "react-router-dom";
+import { Link, Link as RouterLink, useLocation } from "react-router-dom";
 import MenuIcon from "@mui/icons-material/Menu";
 import HomeIcon from "@mui/icons-material/Home";
 import InfoIcon from "@mui/icons-material/Info";
@@ -31,6 +31,8 @@ import DarkModeIcon from "@mui/icons-material/DarkMode";
 import ComputerIcon from "@mui/icons-material/Computer";
 import { useState, useRef, useEffect } from "react";
 import quizzardLogo from "../assets/quizzard-logo.png";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
 
 interface HeaderProps {
   mode: "light" | "dark";
@@ -47,6 +49,9 @@ const Header = ({ mode, onThemeChange }: HeaderProps) => {
   const drawerRef = useRef<HTMLDivElement>(null);
   const theme = useTheme();
   const themeBtnRef = useRef<HTMLButtonElement>(null);
+  const location = useLocation();
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const prevMode = useRef(mode);
 
   // Focus management: focus close button when Drawer opens
   useEffect(() => {
@@ -96,7 +101,13 @@ const Header = ({ mode, onThemeChange }: HeaderProps) => {
   const handleThemeDialogClose = (apply = false) => {
     setThemeDialogOpen(false);
     if (apply) {
-      onThemeChange(pendingTheme);
+      if (pendingTheme !== prevMode.current) {
+        onThemeChange(pendingTheme);
+        setSnackbarOpen(true);
+        prevMode.current = pendingTheme;
+      }
+      // Close drawer if open
+      if (drawerOpen) setDrawerOpen(false);
     } else {
       setPendingTheme(mode);
     }
@@ -184,20 +195,37 @@ const Header = ({ mode, onThemeChange }: HeaderProps) => {
             flexShrink: 0,
           }}
         >
-          {" "}
           <Button
-            color="inherit"
+            variant={location.pathname === "/" ? "contained" : "text"}
+            color="primary"
             startIcon={<HomeIcon />}
             component={Link}
             to="/"
+            sx={{
+              transition: theme.transitions.create(["background-color", "box-shadow", "color"], { duration: theme.transitions.duration.short }),
+              fontWeight: location.pathname === "/" ? 700 : 500,
+              '&:hover': {
+                backgroundColor: location.pathname === "/" ? theme.palette.primary.main : theme.palette.action.hover,
+                color: theme.palette.primary.contrastText,
+              },
+            }}
           >
             Home
           </Button>
           <Button
-            color="inherit"
+            variant={location.pathname === "/about" ? "contained" : "text"}
+            color="primary"
             startIcon={<InfoIcon />}
             component={Link}
             to="/about"
+            sx={{
+              transition: theme.transitions.create(["background-color", "box-shadow", "color"], { duration: theme.transitions.duration.short }),
+              fontWeight: location.pathname === "/about" ? 700 : 500,
+              '&:hover': {
+                backgroundColor: location.pathname === "/about" ? theme.palette.primary.main : theme.palette.action.hover,
+                color: theme.palette.primary.contrastText,
+              },
+            }}
           >
             About
           </Button>
@@ -549,6 +577,17 @@ const Header = ({ mode, onThemeChange }: HeaderProps) => {
           </Button>
         </DialogActions>
       </Dialog>
+      {/* Snackbar for theme change confirmation */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={2000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert severity="success" sx={{ width: "100%" }}>
+          Theme changed!
+        </Alert>
+      </Snackbar>
     </AppBar>
   );
 };

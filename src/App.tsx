@@ -12,6 +12,7 @@ import Terms from "./pages/Terms";
 import Contact from "./pages/Contact";
 import RandomTeamGenerator from "./features/randomTeamGenerator/pages/RandomTeamGenerator";
 import PointsCounter from "./features/pointsCounter/pages/PointsCounter";
+import ColorPaletteDemo from "./pages/ColorPaletteDemo";
 
 function App() {
   // Use our custom theme hook instead of the logic that was here
@@ -72,6 +73,7 @@ function App() {
             <Route path="/contact" element={<Contact />} />
             <Route path="/team-generator" element={<RandomTeamGenerator />} />
             <Route path="/points-counter" element={<PointsCounter />} />
+            {/* <Route path="/palette-demo" element={<ColorPaletteDemo />} /> */}
           </Routes>
         </Box>
 
