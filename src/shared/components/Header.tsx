@@ -46,6 +46,7 @@ const Header = ({ mode, onThemeChange }: HeaderProps) => {
   const closeBtnRef = useRef<HTMLButtonElement>(null);
   const drawerRef = useRef<HTMLDivElement>(null);
   const theme = useTheme();
+  const themeBtnRef = useRef<HTMLButtonElement>(null);
 
   // Focus management: focus close button when Drawer opens
   useEffect(() => {
@@ -90,8 +91,7 @@ const Header = ({ mode, onThemeChange }: HeaderProps) => {
 
   const handleDrawerToggle = () => setDrawerOpen((open) => !open);
   const handleThemeMenuClick = () => {
-    if (drawerOpen) setDrawerOpen(false);
-    setTimeout(() => setThemeDialogOpen(true), drawerOpen ? 250 : 0);
+    setThemeDialogOpen(true);
   };
   const handleThemeDialogClose = (apply = false) => {
     setThemeDialogOpen(false);
@@ -100,6 +100,9 @@ const Header = ({ mode, onThemeChange }: HeaderProps) => {
     } else {
       setPendingTheme(mode);
     }
+    setTimeout(() => {
+      if (themeBtnRef.current) themeBtnRef.current.blur();
+    }, 0);
   };
 
   return (
@@ -233,6 +236,11 @@ const Header = ({ mode, onThemeChange }: HeaderProps) => {
             }
             onClick={handleThemeMenuClick}
             aria-label="Theme selection"
+            ref={themeBtnRef}
+            sx={{
+              '&:focus': { outline: 'none' },
+              '&:focus-visible': { outline: '2px solid', outlineColor: 'primary.main', outlineOffset: 2 },
+            }}
           >
             Theme
           </Button>
@@ -467,31 +475,58 @@ const Header = ({ mode, onThemeChange }: HeaderProps) => {
         <DialogContent>
           <Stack spacing={2}>
             <Button
-              variant={pendingTheme === "light" ? "contained" : "outlined"}
+              variant={pendingTheme === "light" ? "contained" : "text"}
+              color="primary"
               startIcon={<LightModeIcon />}
               fullWidth
               onClick={() => setPendingTheme("light")}
-              sx={{ justifyContent: "flex-start", fontWeight: 500 }}
+              sx={{
+                justifyContent: "flex-start",
+                fontWeight: 500,
+                boxShadow: pendingTheme === "light" ? 2 : 0,
+                border: "none",
+                '&:focus': { outline: 'none' },
+                '&:focus-visible': { outline: 'none' },
+                transition: 'background 0.2s, box-shadow 0.2s',
+              }}
               aria-pressed={pendingTheme === "light"}
             >
               Light
             </Button>
             <Button
-              variant={pendingTheme === "dark" ? "contained" : "outlined"}
+              variant={pendingTheme === "dark" ? "contained" : "text"}
+              color="secondary"
               startIcon={<DarkModeIcon />}
               fullWidth
               onClick={() => setPendingTheme("dark")}
-              sx={{ justifyContent: "flex-start", fontWeight: 500 }}
+              sx={{
+                justifyContent: "flex-start",
+                fontWeight: 500,
+                boxShadow: pendingTheme === "dark" ? 2 : 0,
+                border: "none",
+                '&:focus': { outline: 'none' },
+                '&:focus-visible': { outline: 'none' },
+                transition: 'background 0.2s, box-shadow 0.2s',
+              }}
               aria-pressed={pendingTheme === "dark"}
             >
               Dark
             </Button>
             <Button
-              variant={pendingTheme === "system" ? "contained" : "outlined"}
+              variant={pendingTheme === "system" ? "contained" : "text"}
+              color="info"
               startIcon={<ComputerIcon />}
               fullWidth
               onClick={() => setPendingTheme("system")}
-              sx={{ justifyContent: "flex-start", fontWeight: 500 }}
+              sx={{
+                justifyContent: "flex-start",
+                fontWeight: 500,
+                boxShadow: pendingTheme === "system" ? 2 : 0,
+                border: "none",
+                '&:focus': { outline: 'none' },
+                '&:focus-visible': { outline: 'none' },
+                transition: 'background 0.2s, box-shadow 0.2s',
+              }}
               aria-pressed={pendingTheme === "system"}
             >
               System
