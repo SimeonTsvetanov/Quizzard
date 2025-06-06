@@ -24,7 +24,7 @@
 - **Structure:**
   - Feature-based architecture:
     - `src/features/` - Contains feature-specific folders (e.g., randomTeamGenerator, pointsCounter)
-    - `src/pages/` - Contains page components 
+    - `src/pages/` - Contains page components
     - `src/shared/` - Contains shared components, hooks, utilities, and assets
   - Each main tool (Random Team Generator, Points Counter, etc.) is a separate feature/project in its own directory
   - Landing page (main) lists all tools as primary navigation/entry points
@@ -113,11 +113,13 @@ The project follows a feature-based architecture:
 When adding a new feature to Quizzard, follow these guidelines:
 
 1. **Create a Feature Directory**:
+
    ```
    src/features/newFeatureName/
    ```
 
 2. **Set Up the Feature Structure**:
+
    ```
    src/features/newFeatureName/
      ├── components/ - Feature-specific UI components
@@ -128,14 +130,17 @@ When adding a new feature to Quizzard, follow these guidelines:
    ```
 
 3. **Create a Main Page Component**:
+
    - Place the main feature page in `pages/` directory
    - Example: `src/features/newFeatureName/pages/NewFeatureName.tsx`
 
 4. **Extract Common Logic**:
+
    - Place feature-specific hooks in the feature's `hooks/` directory
    - Place shared hooks in `src/shared/hooks/`
 
 5. **Update Routes**:
+
    - Add the new feature route in `App.tsx`
    - Follow the existing pattern for consistency
 
@@ -147,7 +152,7 @@ When adding a new feature to Quizzard, follow these guidelines:
 
 - **2025-06-08:** **PROJECT CLEANUP & DEPLOYMENT PREPARATION** - Removed duplicate and unnecessary files (src/assets, root image files, logos directory, assets directory at root level, backup files). Verified build and preview functionality. Updated PROJECT-CHARTER.md and copilot-preferences.json with comprehensive documentation about the feature-based architecture.
 
-- **2025-06-08:** **FOLDER STRUCTURE REORGANIZATION** - Implemented feature-based architecture for better organization and scalability. Moved components to appropriate directories (src/features/*, src/pages/, src/shared/components/). Extracted theme logic to a custom hook (useTheme.ts). Updated all import paths to reflect the new structure.
+- **2025-06-08:** **FOLDER STRUCTURE REORGANIZATION** - Implemented feature-based architecture for better organization and scalability. Moved components to appropriate directories (src/features/\*, src/pages/, src/shared/components/). Extracted theme logic to a custom hook (useTheme.ts). Updated all import paths to reflect the new structure.
 - **2025-06-04:** Project charter created. Decided to focus on landing page and tool placeholders first. All styles/themes must be ready before feature work.
 - **2025-06-04:** Initialized git, created private GitHub repo, and pushed code. Local development and private remote workflow established. Will make public and enable GitHub Pages when ready.
 - **2025-06-04:** Implemented global MUI backdrop blur (1.5px) for all modals/drawers. Fixed main menu button overflow on mobile. Footer now includes copyright, navigation, GitHub, and support links, and is fully responsive.

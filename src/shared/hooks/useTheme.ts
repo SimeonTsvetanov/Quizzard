@@ -17,7 +17,7 @@ export const useTheme = () => {
       ? "dark"
       : "light";
   };
-  
+
   // State for the current theme mode
   const [mode, setMode] = useState<ThemeMode>(getInitialMode());
 
