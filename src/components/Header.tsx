@@ -130,14 +130,18 @@ const Header = ({ mode, onThemeChange }: HeaderProps) => {
           px: { xs: 1, sm: 2 },
           minHeight: { xs: 56, sm: 64 },
         }}
-      >        {/* Logo and App Name (clickable) */}        <Box
+      >
+        {" "}
+        {/* Logo and App Name (clickable) */}
+        <Box
           sx={{
             display: "flex",
             alignItems: "center",
             cursor: "pointer",
             flex: 1,
             minWidth: 0,
-            overflow: "hidden",          }}
+            overflow: "hidden",
+          }}
           component={RouterLink}
           to="/"
         >
@@ -176,11 +180,13 @@ const Header = ({ mode, onThemeChange }: HeaderProps) => {
             gap: 1,
             flexShrink: 0,
           }}
-        >          <Button
+        >
+          {" "}
+          <Button
             color="inherit"
             startIcon={<HomeIcon />}
             component={Link}
-            to="/" 
+            to="/"
           >
             Home
           </Button>
@@ -356,9 +362,12 @@ const Header = ({ mode, onThemeChange }: HeaderProps) => {
             </IconButton>
           </Box>
           <Divider />
-          <List>            <ListItem disablePadding>              <ListItemButton
+          <List>
+            <ListItem disablePadding>
+              {" "}
+              <ListItemButton
                 component={Link}
-                to="/"
+                to=""
                 onClick={handleDrawerToggle}
               >
                 <ListItemIcon>

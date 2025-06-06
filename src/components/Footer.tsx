@@ -14,8 +14,7 @@ const navLinks = [
 ];
 
 export default function Footer() {
-  return (
-    <Box
+  return (    <Box
       component="footer"
       sx={{
         mt: 8,

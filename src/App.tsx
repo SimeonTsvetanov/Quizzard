@@ -1,5 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 import { ThemeProvider, createTheme, CssBaseline, Box } from "@mui/material";
 import "./App.css";
 import Header from "./components/Header";
@@ -93,40 +99,51 @@ function App() {
   );
 
   const location = useLocation();
-  const navigate = useNavigate();  useEffect(() => {
+  const navigate = useNavigate();
+  useEffect(() => {
     // Only process path params when the app loads with a search parameter
     if (location.search) {
       const queryParams = new URLSearchParams(location.search);
       const redirectedPath = queryParams.get("path");
       console.log("Redirected Path:", redirectedPath);
-      
+
       if (redirectedPath !== null) {
         // Handle root path or regular paths
         if (redirectedPath === "" || redirectedPath === "/") {
-          // Handle root path - use trailing slash for consistency
+          // Handle root path
           navigate("/", { replace: true });
         } else {
           // Handle other paths
-          const sanitizedPath = redirectedPath.replace(/^\/+|\/+$/g, ''); // Remove leading/trailing slashes
+          const sanitizedPath = redirectedPath.replace(/^\/+|\/+$/g, ""); // Remove leading/trailing slashes
           navigate(`/${sanitizedPath}`, { replace: true });
         }
       }
     }
-  }, [location.search, navigate]);
-  return (
+  }, [location.search, navigate]);  return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
+      {/* Main app container with proper flex layout */}
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          minHeight: '100vh', // Set minimum height to fill viewport
+          width: '100%'
+        }}
+      >
+        {/* Header stays at the top */}
         <Header mode={mode} onThemeChange={handleThemeChange} />
+        
+        {/* Content area that grows to fill available space */}
         <Box
+          component="main"
           sx={{
-            minHeight: "100vh",
-            display: "flex",
-            flexDirection: "column",
-            width: "100%",
-            // Removed overflowX: 'hidden' to allow sticky AppBar
+            flexGrow: 1, // This makes it fill available space
+            width: '100%',
+            display: 'flex',
+            flexDirection: 'column',
           }}
         >
-          {" "}
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/about" element={<About />} />
@@ -134,9 +151,13 @@ function App() {
             <Route path="/terms" element={<Terms />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/team-generator" element={<RandomTeamGenerator />} />
-            <Route path="/points-counter" element={<PointsCounter />} />          </Routes>
+            <Route path="/points-counter" element={<PointsCounter />} />
+          </Routes>
         </Box>
+        
+        {/* Footer stays at the bottom */}
         <Footer />
+      </Box>
     </ThemeProvider>
   );
 }
