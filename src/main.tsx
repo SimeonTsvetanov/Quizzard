@@ -6,7 +6,7 @@ import { BrowserRouter } from "react-router-dom"; // Import BrowserRouter for ro
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <BrowserRouter basename="/Quizzard">
+    <BrowserRouter basename="/Quizzard/">
       <App />
     </BrowserRouter>
   </StrictMode>

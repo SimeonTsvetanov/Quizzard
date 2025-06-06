@@ -1,6 +1,6 @@
 import { Typography, Box, Button } from "@mui/material";
 import { Link } from "react-router-dom";
-import PageLayout from "./PageLayout";
+import PageLayout from "../shared/components/PageLayout";
 
 export default function Home() {
   return (

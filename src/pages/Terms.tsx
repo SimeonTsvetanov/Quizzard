@@ -1,9 +1,9 @@
 import { Typography, Box, IconButton } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useNavigate } from "react-router-dom";
-import PageLayout from "./PageLayout";
+import PageLayout from "../shared/components/PageLayout";
 
-export default function Contact() {
+export default function Terms() {
   const navigate = useNavigate();
   return (
     <PageLayout>
@@ -13,13 +13,11 @@ export default function Contact() {
         </IconButton>
       </Box>
       <Typography variant="h4" component="h1" gutterBottom>
-        Contact Us
+        Terms
       </Typography>
-      <Box>
-        <Typography variant="body1">
-          Contact information coming soon...
-        </Typography>
-      </Box>
+      <Typography variant="body1">
+        Terms of Service content coming soon...
+      </Typography>
     </PageLayout>
   );
 }

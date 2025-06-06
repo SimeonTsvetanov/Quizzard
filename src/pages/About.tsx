@@ -1,7 +1,7 @@
 import { Typography, Box, IconButton } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useNavigate } from "react-router-dom";
-import PageLayout from "./PageLayout";
+import PageLayout from "../shared/components/PageLayout";
 
 export default function About() {
   const navigate = useNavigate();

@@ -22,7 +22,11 @@
     - The back button must be styled using only native MUI props and be visually consistent with Material Design best practices.
     - The back button must not appear on other pages or in the header.
 - **Structure:**
-  - Each main tool (Random Team Generator, Points Counter, etc.) is a separate feature/project
+  - Feature-based architecture:
+    - `src/features/` - Contains feature-specific folders (e.g., randomTeamGenerator, pointsCounter)
+    - `src/pages/` - Contains page components 
+    - `src/shared/` - Contains shared components, hooks, utilities, and assets
+  - Each main tool (Random Team Generator, Points Counter, etc.) is a separate feature/project in its own directory
   - Landing page (main) lists all tools as primary navigation/entry points
   - Footer must include copyright, navigation, social, and support links
 - **Hosting:**
@@ -84,8 +88,66 @@
 - Footer and header must always be accessible and responsive
 - All overlays (Drawer, Dialog, etc.) must blur background for focus
 
+### 3.1. Folder Structure
+
+The project follows a feature-based architecture:
+
+- **src/features/** - Feature-specific modules
+  - **randomTeamGenerator/** - Random Team Generator feature
+    - **pages/** - Page components for this feature
+    - **components/** - UI components specific to this feature
+    - **hooks/** - Custom hooks specific to this feature
+    - **utils/** - Utility functions specific to this feature
+  - **pointsCounter/** - Points Counter feature
+    - (Similar structure as above)
+- **src/pages/** - Page components that serve as routes in the application
+- **src/shared/** - Shared resources used across multiple features
+  - **components/** - Reusable UI components (Header, Footer, PageLayout, etc.)
+  - **hooks/** - Custom React hooks (useTheme, etc.)
+  - **utils/** - Utility functions and helpers
+  - **assets/** - Static assets (images, icons, etc.)
+  - **types/** - TypeScript type definitions
+
+### 3.2. Adding New Features
+
+When adding a new feature to Quizzard, follow these guidelines:
+
+1. **Create a Feature Directory**:
+   ```
+   src/features/newFeatureName/
+   ```
+
+2. **Set Up the Feature Structure**:
+   ```
+   src/features/newFeatureName/
+     ├── components/ - Feature-specific UI components
+     ├── hooks/ - Feature-specific custom hooks
+     ├── pages/ - Page components for this feature
+     ├── utils/ - Helper functions for this feature
+     └── types/ - TypeScript types specific to this feature
+   ```
+
+3. **Create a Main Page Component**:
+   - Place the main feature page in `pages/` directory
+   - Example: `src/features/newFeatureName/pages/NewFeatureName.tsx`
+
+4. **Extract Common Logic**:
+   - Place feature-specific hooks in the feature's `hooks/` directory
+   - Place shared hooks in `src/shared/hooks/`
+
+5. **Update Routes**:
+   - Add the new feature route in `App.tsx`
+   - Follow the existing pattern for consistency
+
+6. **Add Navigation**:
+   - Add the feature to the Home page navigation
+   - Ensure consistent styling with other feature links
+
 ### 4. Change Log / Decisions
 
+- **2025-06-08:** **PROJECT CLEANUP & DEPLOYMENT PREPARATION** - Removed duplicate and unnecessary files (src/assets, root image files, logos directory, assets directory at root level, backup files). Verified build and preview functionality. Updated PROJECT-CHARTER.md and copilot-preferences.json with comprehensive documentation about the feature-based architecture.
+
+- **2025-06-08:** **FOLDER STRUCTURE REORGANIZATION** - Implemented feature-based architecture for better organization and scalability. Moved components to appropriate directories (src/features/*, src/pages/, src/shared/components/). Extracted theme logic to a custom hook (useTheme.ts). Updated all import paths to reflect the new structure.
 - **2025-06-04:** Project charter created. Decided to focus on landing page and tool placeholders first. All styles/themes must be ready before feature work.
 - **2025-06-04:** Initialized git, created private GitHub repo, and pushed code. Local development and private remote workflow established. Will make public and enable GitHub Pages when ready.
 - **2025-06-04:** Implemented global MUI backdrop blur (1.5px) for all modals/drawers. Fixed main menu button overflow on mobile. Footer now includes copyright, navigation, GitHub, and support links, and is fully responsive.

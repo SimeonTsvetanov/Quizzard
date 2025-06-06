@@ -5,32 +5,30 @@
   "start_url": "/Quizzard/",
   "display": "fullscreen",
   "background_color": "#FFF8F0",
-  "theme_color": "#FF6F61",
-  "icons": [
+  "theme_color": "#FF6F61",  "icons": [
     {
-      "src": "/icon-192.png",
+      "src": "/Quizzard/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/icon-512.png",
+      "src": "/Quizzard/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/apple-touch-icon.png",
+      "src": "/Quizzard/apple-touch-icon.png",
       "sizes": "180x180",
       "type": "image/png"
     },
     {
-      "src": "/favicon-96x96.png",
+      "src": "/Quizzard/favicon-96x96.png",
       "sizes": "96x96",
       "type": "image/png"
-    },
-    {
-      "src": "/favicon.svg",
+    },    {
+      "src": "/Quizzard/favicon.svg",
       "sizes": "any",
       "type": "image/svg+xml"
     }
