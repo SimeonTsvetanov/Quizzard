@@ -4,34 +4,16 @@
 html {
   width: 100% !important;
   max-width: 100% !important;
-  margin: 0 !important;
-  padding: 0 !important;
+  /* Removed overflow-x: hidden to allow sticky AppBar */
   box-sizing: border-box !important;
-  overflow-x: hidden !important;
-  /* Apply Apple-specific PWA fixes */
-  -webkit-touch-callout: none !important; /* iOS Safari */
-}
-
-/* Fix for PWA status bar gap on iOS */
-@supports (-webkit-touch-callout: none) {
-  body {
-    /* Add safe area insets for iOS PWA */
-    padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0) env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0) !important;
-  }
 }
 
 body {
   width: 100% !important;
   max-width: 100% !important;
+  /* Removed overflow-x: hidden to allow sticky AppBar */
   margin: 0 !important;
   padding: 0 !important;
-  position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  bottom: 0 !important;
-  overflow-y: auto !important;
-  overscroll-behavior-y: none !important;
 }
 
 #root {
