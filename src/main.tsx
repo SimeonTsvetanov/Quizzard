@@ -9,7 +9,7 @@ if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker
       .register("/Quizzard/sw.js")
-      .then((registration) => {
+      .then(() => {
         // Listen for updates from the service worker
         navigator.serviceWorker.addEventListener("message", (event) => {
           if (event.data && event.data.type === "SW_UPDATED") {
