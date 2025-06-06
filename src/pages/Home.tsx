@@ -44,6 +44,17 @@ export default function Home() {
             >
               Points Counter
             </Button>
+            <Button
+              variant="contained"
+              color="tertiary"
+              size="large"
+              fullWidth
+              component={Link}
+              to="/quizzes"
+              sx={{ minWidth: 0, wordBreak: "break-word" }}
+            >
+              Quizzes (Build and Play Quizzes)
+            </Button>
           </Box>
         </Box>
       </Fade>
