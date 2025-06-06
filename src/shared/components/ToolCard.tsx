@@ -1,5 +1,5 @@
 import { Card, CardActionArea, CardContent, Typography, Box } from "@mui/material";
-import { ReactNode } from "react";
+import { type ReactNode } from "react";
 
 interface ToolCardProps {
   icon: ReactNode;
