@@ -3,7 +3,7 @@
   "short_name": "Quizzard",
   "description": "Your all-in-one quiz and team tools suite",
   "start_url": "/Quizzard/",
-  "display": "fullscreen",
+  "display": "standalone",
   "background_color": "#FFF8F0",
   "theme_color": "#FF6F61",
   "icons": [
