@@ -1,63 +1,116 @@
-import { Typography, Box, Button, Fade } from "@mui/material";
-import { Link } from "react-router-dom";
-import PageLayout from "../shared/components/PageLayout";
+import { Typography, Box, Snackbar, Alert } from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import ToolCard from "../shared/components/ToolCard";
+import QuizIcon from "@mui/icons-material/Quiz";
+import ScoreboardIcon from "@mui/icons-material/Scoreboard";
+import GroupsIcon from "@mui/icons-material/Groups";
 
 export default function Home() {
+  const navigate = useNavigate();
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+
+  const handleRandomTeamGenerator = () => {
+    navigate("/team-generator");
+  };
+
+  const handleDisabledCardClick = () => {
+    setSnackbarOpen(true);
+  };
+
   return (
-    <PageLayout textAlign="center">
-      <Fade in timeout={500}>
-        <Box>
-          <Typography variant="h3" component="h1" gutterBottom>
-            Welcome to Quizzard
-          </Typography>
-          <Typography variant="h5" gutterBottom>
-            Your all-in-one quiz and team tools suite
-          </Typography>
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 2,
-              mt: 4,
-              width: "100%",
-            }}
-          >
-            <Button
-              variant="contained"
-              color="primary"
-              size="large"
-              fullWidth
-              component={Link}
-              to="/team-generator"
-              sx={{ minWidth: 0, wordBreak: "break-word" }}
-            >
-              Random Team Generator
-            </Button>
-            <Button
-              variant="contained"
-              color="secondary"
-              size="large"
-              fullWidth
-              component={Link}
-              to="/points-counter"
-              sx={{ minWidth: 0, wordBreak: "break-word" }}
-            >
-              Points Counter
-            </Button>
-            <Button
-              variant="contained"
-              color="secondary"
-              size="large"
-              fullWidth
-              component={Link}
-              to="/quizzes"
-              sx={{ minWidth: 0, wordBreak: "break-word" }}
-            >
-              Quizzes (Build and Play Quizzes)
-            </Button>
-          </Box>
-        </Box>
-      </Fade>
-    </PageLayout>
+    <Box
+      sx={{
+        width: '100%',
+        minHeight: 'calc(100vh - 64px)', // Account for header
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        py: 4,
+        px: 2,
+      }}
+    >
+      {/* Headings - Full width and centered */}
+      <Box sx={{ textAlign: 'center', mb: 6 }}>
+        <Typography 
+          variant="h2" 
+          component="h1" 
+          gutterBottom
+          sx={{ 
+            fontSize: { xs: '2.5rem', sm: '3rem', md: '3.5rem' },
+            fontWeight: 700 
+          }}
+        >
+          Welcome to Quizzard
+        </Typography>
+        <Typography 
+          variant="h5" 
+          sx={{ 
+            fontSize: { xs: '1.1rem', sm: '1.25rem', md: '1.5rem' },
+            color: 'text.secondary',
+            maxWidth: '600px',
+            mx: 'auto'
+          }}
+        >
+          Your all-in-one quiz and team tools suite
+        </Typography>
+      </Box>
+
+      {/* Tool Cards - Responsive layout */}
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: { xs: 'column', lg: 'row' },
+          justifyContent: 'center',
+          alignItems: 'center',
+          gap: { xs: 3, sm: 4, md: 5 },
+          width: '100%',
+          maxWidth: '1400px', // Max width for very large screens
+        }}
+      >
+        <ToolCard
+          icon={<GroupsIcon sx={{ fontSize: { xs: 56, sm: 64, md: 72 }, color: "primary.main" }} />}
+          title="Random Team Generator"
+          description="Quickly split people into random teams for any activity. Fair, unbiased, and instant."
+          onClick={handleRandomTeamGenerator}
+        />
+        <ToolCard
+          icon={<ScoreboardIcon sx={{ fontSize: { xs: 56, sm: 64, md: 72 }, color: "secondary.main" }} />}
+          title="Points Counter"
+          description="Track and manage scores for games, quizzes, or events. Simple, fast, and reliable."
+          onClick={handleDisabledCardClick}
+          disabled
+        />
+        <ToolCard
+          icon={<QuizIcon sx={{ fontSize: { xs: 56, sm: 64, md: 72 }, color: "info.main" }} />}
+          title="Quizzes"
+          description="Build and play custom quizzes with friends or solo. Fun, interactive, and coming soon!"
+          onClick={handleDisabledCardClick}
+          disabled
+        />
+      </Box>
+
+      {/* Snackbar for disabled cards */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert 
+          severity="info" 
+          sx={{ 
+            width: "100%",
+            fontSize: { xs: '0.875rem', sm: '1rem' },
+            '& .MuiAlert-message': {
+              fontWeight: 500,
+            }
+          }}
+        >
+          Still Under Construction
+        </Alert>
+      </Snackbar>
+    </Box>
   );
 }

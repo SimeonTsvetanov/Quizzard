@@ -67,17 +67,17 @@
 - [x] Theme persistence with localStorage (user-settings-theme-selection)
 - [x] PWA fullscreen display mode (manifest.json)
 - [x] Theme selection dialog (popup) with Light/Dark/System options, accessible and mobile-friendly
+- [x] **MAIN WINDOW REDESIGNED** - Professional card-based layout with responsive design, ToolCard component, and disabled state system
 - [ ] Random Team Generator (placeholder → full implementation)
 - [ ] Points Counter (placeholder → full implementation)
-- [ ] Quizzes (Build and Play Quizzes) (placeholder → full implementation)
 - [x] GitHub Pages deploy set up
 - [x] Auto-update workflow
+- [x] Service worker auto-versioning for reliable PWA updates
 
 #### **Main Tools (Landing Page)**
 
 - [ ] Random Team Generator (placeholder → full implementation)
 - [ ] Points Counter (placeholder → full implementation)
-- [ ] Quizzes (Build and Play Quizzes) (placeholder → full implementation)
 - [ ] (Add more tools here as needed)
 
 ### 3. Main Points & Priorities
@@ -102,15 +102,10 @@ The project follows a feature-based architecture:
     - **utils/** - Utility functions specific to this feature
   - **pointsCounter/** - Points Counter feature
     - (Similar structure as above)
-  - **quizzes/** - Quizzes (Build and Play Quizzes) feature
-    - **pages/** - Page components for this feature
-    - **components/** - UI components specific to this feature
-    - **hooks/** - Custom hooks specific to this feature
-    - **types/** - TypeScript types for this feature
-    - **README.md** - Feature documentation
 - **src/pages/** - Page components that serve as routes in the application
 - **src/shared/** - Shared resources used across multiple features
   - **components/** - Reusable UI components (Header, Footer, PageLayout, etc.)
+  - **ToolCard.tsx** - Professional card component for main window tools with disabled state support
   - **hooks/** - Custom React hooks (useTheme, etc.)
   - **utils/** - Utility functions and helpers
   - **assets/** - Static assets (images, icons, etc.)
@@ -140,6 +135,7 @@ The project follows a feature-based architecture:
 - **2025-06-05:** **HEADER TEXT COLOR THEME-AWARE** - Updated the "Quizzard" text in the header to use `color: "text.primary"` instead of `color: "inherit"`. This ensures the brand text follows the proper theme colors: black (`#212121`) in light mode and white (`#FFFFFF`) in dark mode, providing better visual contrast and accessibility. The change only affects the Typography component without impacting the logo, AppBar background, or any other header elements.
 - **2025-06-06:** **PRODUCTION THEME SWITCH BUG FIXED** - Resolved critical production-only issue where changing themes on subpages (About, Privacy, etc.) caused blank white screens. Root cause was `window.location.reload()` conflicting with React Router + GitHub Pages SPA redirect system. Replaced reload-based theme switching with React state management (`onThemeChange` callback pattern). Theme changes now work instantly without page reloads, maintaining proper routing context. Local development was unaffected, issue only occurred in GitHub Pages production environment.
 - **2025-06-09:** **QUIZZES TOOL PLACEHOLDER ADDED** - Added Quizzes (Build and Play Quizzes) as a new tool with full feature structure (pages, components, hooks, types, README). Integrated into the main menu and routing as a placeholder for future development. Landing page now displays all three main tools. All code follows feature-based architecture and MUI/TypeScript standards.
+- **2025-06-09:** **MAIN WINDOW COMPLETE REDESIGN & PROFESSIONAL CARD LAYOUT** - Completely redesigned the main window with a modern, professional tool card layout following SaaS industry standards. **Removed constraining PageLayout** that limited width to 420px, creating a full-width responsive layout that scales perfectly from mobile to 4K monitors. **Created ToolCard component** with fixed dimensions (300x280px base, responsive scaling), subtle shadows, rounded corners, and beautiful hover effects (translateY + scale). **Replaced button-based layout** with clickable cards featuring icons, headings, and descriptions. **Implemented disabled state system** for Points Counter and Quizzes tools with visual indicators (reduced opacity, "Still Under Construction" snackbar). **Fixed mobile touch interactions** by removing selection highlights, implementing proper ripple animations from click point, and ensuring smooth transitions. **Enhanced accessibility** with proper focus states, keyboard navigation, and responsive typography scaling. **Cleaned up assets** by removing unused RTG image and using Material Icons (Groups, Scoreboard, Quiz) for consistency. **Responsive design** ensures cards display in a row on desktop (lg+), stack vertically on mobile, with appropriate spacing and gaps that scale with screen size. All routing functionality maintained with smooth navigation to working tools. Design follows Material 3 principles with the established color palette and supports all themes (light/dark/system).
 
 ---
 
