@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import {
-  BrowserRouter,
   Routes,
   Route,
   useLocation,
