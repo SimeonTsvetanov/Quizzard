@@ -1,4 +1,4 @@
-import { type Participant, type Team, TEAM_COLORS } from '../types';
+import { type Participant, type Team, type TeamMember } from '../types';
 
 /**
  * Utility class for generating random teams
@@ -21,13 +21,18 @@ export class TeamGenerator {
 
     for (let i = 0; i < teamCount; i++) {
       const teamSize = i < extraMembers ? minTeamSize + 1 : minTeamSize;
-      const teamMembers = shuffledParticipants.slice(participantIndex, participantIndex + teamSize);
+      const teamParticipants = shuffledParticipants.slice(participantIndex, participantIndex + teamSize);
+      
+      // Convert participants to team members
+      const teamMembers: TeamMember[] = teamParticipants.map(participant => ({
+        id: participant.id,
+        name: participant.name
+      }));
       
       teams.push({
         id: `team-${i + 1}`,
         name: `Team ${i + 1}`,
-        members: teamMembers,
-        color: TEAM_COLORS[i % TEAM_COLORS.length]
+        members: teamMembers
       });
       
       participantIndex += teamSize;
@@ -53,8 +58,14 @@ export class TeamGenerator {
    * Shuffle an existing set of teams (for refresh functionality)
    */
   static shuffleTeams(teams: Team[]): Team[] {
-    // Get all participants from all teams
-    const allParticipants = teams.flatMap(team => team.members);
+    // Get all participants from all teams and convert back to Participant format
+    const allParticipants: Participant[] = teams.flatMap(team => 
+      team.members.map((member, index) => ({
+        id: member.id,
+        name: member.name,
+        number: index + 1 // Add required number property
+      }))
+    );
     
     // Generate new teams with the same team count
     return this.generateTeams(allParticipants, teams.length);

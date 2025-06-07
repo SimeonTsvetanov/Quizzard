@@ -10,7 +10,7 @@ import About from "./pages/About";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import Terms from "./pages/Terms";
 import Contact from "./pages/Contact";
-import RandomTeamGenerator from "./features/random-team-generator/pages/RandomTeamGenerator";
+import RandomTeamGeneratorPage from "./features/random-team-generator/pages/RandomTeamGeneratorPage";
 import PointsCounter from "./features/pointsCounter/pages/PointsCounter";
 import Quizzes from "./features/quizzes/pages/Quizzes";
 
@@ -71,7 +71,7 @@ function App() {
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/contact" element={<Contact />} />
-            <Route path="/team-generator" element={<RandomTeamGenerator />} />
+            <Route path="/team-generator" element={<RandomTeamGeneratorPage />} />
             <Route path="/points-counter" element={<PointsCounter />} />
             <Route path="/quizzes" element={<Quizzes />} />
           </Routes>
