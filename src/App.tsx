@@ -10,7 +10,7 @@ import About from "./pages/About";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import Terms from "./pages/Terms";
 import Contact from "./pages/Contact";
-import RandomTeamGenerator from "./features/randomTeamGenerator/pages/RandomTeamGenerator";
+import RandomTeamGenerator from "./features/random-team-generator/pages/RandomTeamGenerator";
 import PointsCounter from "./features/pointsCounter/pages/PointsCounter";
 import Quizzes from "./features/quizzes/pages/Quizzes";
 
