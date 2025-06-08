@@ -1,131 +1,80 @@
 // Service Worker for Quizzard PWA
-// VERSION: 2025-06-08T18:57:34Z
+// VERSION: 2025-06-08T19:29:29Z
 // Handles caching, updates, and offline functionality
 // Version updated: June 6, 2025 - SPA routing fix
 
-const CACHE_NAME = "quizzard-v1.0.1";
+const CACHE_NAME = 'quizzard-v2.1';
 const STATIC_CACHE_NAME = "quizzard-static-v1.0.1";
 
 // Files to cache for offline functionality
 const urlsToCache = [
-  "/Quizzard/",
-  "/Quizzard/index.html",
-  "/Quizzard/manifest.json",
-  "/Quizzard/favicon.svg",
-  "/Quizzard/favicon-96x96.png",
-  "/Quizzard/icon-192.png",
-  "/Quizzard/icon-512.png",
-  "/Quizzard/apple-touch-icon.png",
+  '/Quizzard/',
+  '/Quizzard/index.html',
+  '/Quizzard/icon-192.png',
+  '/Quizzard/icon-512.png',
+  '/Quizzard/favicon.ico',
 ];
 
-// Install event - cache resources
-self.addEventListener("install", (event) => {
+// Install event - aggressive cache clearing
+self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches
-      .open(CACHE_NAME)
+    caches.open(CACHE_NAME)
       .then((cache) => {
-        console.log("Opened cache");
         return cache.addAll(urlsToCache);
       })
       .then(() => {
-        // Force the waiting service worker to become the active service worker
+        // Force immediate activation
         return self.skipWaiting();
       })
   );
 });
 
-// Activate event - clean up old caches and take control
-self.addEventListener("activate", (event) => {
+// Activate event - remove old caches immediately
+self.addEventListener('activate', (event) => {
   event.waitUntil(
-    Promise.all([
-      // Clean up old caches
-      caches.keys().then((cacheNames) => {
-        return Promise.all(
-          cacheNames.map((cacheName) => {
-            if (cacheName !== CACHE_NAME && cacheName !== STATIC_CACHE_NAME) {
-              console.log("Deleting old cache:", cacheName);
-              return caches.delete(cacheName);
-            }
-          })
-        );
-      }),
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          if (cacheName !== CACHE_NAME) {
+            console.log('Deleting old cache:', cacheName);
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    }).then(() => {
       // Take control of all clients immediately
-      self.clients.claim(),
-    ])
-  );
-
-  // Notify clients that a new version is available
-  self.clients.matchAll().then((clients) => {
-    clients.forEach((client) => {
-      client.postMessage({
-        type: "SW_UPDATED",
-        message: "App updated! Refresh to see changes.",
-      });
-    });
-  });
-});
-
-// Fetch event - serve from cache, fallback to network and handle SPA routes
-self.addEventListener("fetch", (event) => {
-  // Extract the URL for easier handling
-  const url = new URL(event.request.url);
-
-  // Handle navigation requests for SPA routes (HTML requests)
-  // If it's a navigation request and it's on our domain and it's not a direct file fetch
-  const isNavigationRequest = event.request.mode === "navigate";
-  const isHtmlRequest = event.request.headers
-    .get("Accept")
-    ?.includes("text/html");
-  const isOurDomain = url.origin === self.location.origin;
-  const isQuizzardPath = url.pathname.startsWith("/Quizzard/");
-  const isDirectFileRequest = url.pathname.match(
-    /\.(js|css|png|jpg|jpeg|gif|svg|ico|json)$/i
-  );
-
-  if (
-    isNavigationRequest &&
-    isHtmlRequest &&
-    isOurDomain &&
-    isQuizzardPath &&
-    !isDirectFileRequest
-  ) {
-    // For SPA navigation requests, serve the index.html
-    event.respondWith(
-      caches.match("/Quizzard/index.html").then((cachedResponse) => {
-        if (cachedResponse) {
-          return cachedResponse;
-        }
-        return fetch("/Quizzard/index.html");
-      })
-    );
-    return;
-  }
-
-  // For all other requests, use normal caching strategy
-  event.respondWith(
-    caches.match(event.request).then((response) => {
-      // Return cached version or fetch from network
-      if (response) {
-        return response;
-      }
-
-      return fetch(event.request).then((response) => {
-        // Don't cache non-successful responses
-        if (!response || response.status !== 200 || response.type !== "basic") {
-          return response;
-        }
-
-        // Clone the response for caching
-        const responseToCache = response.clone();
-
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, responseToCache);
-        });
-
-        return response;
-      });
+      return self.clients.claim();
     })
   );
+});
+
+// Fetch event - network first for HTML, cache first for assets
+self.addEventListener('fetch', (event) => {
+  event.respondWith(
+    fetch(event.request)
+      .then((response) => {
+        // If network request succeeds, cache it
+        if (response.status === 200) {
+          const responseClone = response.clone();
+          caches.open(CACHE_NAME)
+            .then((cache) => {
+              cache.put(event.request, responseClone);
+            });
+        }
+        return response;
+      })
+      .catch(() => {
+        // If network fails, try cache
+        return caches.match(event.request);
+      })
+  );
+});
+
+// Message event - handle update requests
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 // Background sync for when connection is restored
