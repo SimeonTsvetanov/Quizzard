@@ -23,7 +23,7 @@ export default function Home() {
     <>
       <Box sx={{ 
         bgcolor: 'background.default',
-        py: 3,
+        py: 2,
         px: { xs: 1, sm: 2 },
         display: 'flex',
         justifyContent: 'center'
@@ -36,7 +36,7 @@ export default function Home() {
           },
           display: 'flex',
           flexDirection: 'column',
-          gap: { xs: 3, sm: 4, md: 5 }, // Unified gap system for ALL elements
+          gap: { xs: 2, sm: 2.5, md: 3 }, // Reduced gaps for tighter spacing
           alignItems: 'center', // Center all elements
           textAlign: 'center' // Center all text
         }}>
@@ -46,7 +46,7 @@ export default function Home() {
             src={quizzardPageLogo}
             alt="Quizzard Logo"
             sx={{
-              width: { xs: 120, sm: 150, md: 180 }, // Small website logo size
+              width: { xs: 96, sm: 120, md: 144 },
               height: 'auto',
               // NO margin/padding - gap system handles spacing
             }}
@@ -57,7 +57,7 @@ export default function Home() {
             variant="h2" 
             component="h1" 
             sx={{ 
-              fontSize: { xs: '2.5rem', sm: '3rem', md: '3.5rem' },
+              fontSize: { xs: '2rem', sm: '2.4rem', md: '2.8rem' },
               fontWeight: 700,
               // NO margin/padding - gap system handles spacing
             }}
@@ -69,7 +69,7 @@ export default function Home() {
           <Typography 
             variant="h5" 
             sx={{ 
-              fontSize: { xs: '1.1rem', sm: '1.25rem', md: '1.5rem' },
+              fontSize: { xs: '0.9rem', sm: '1rem', md: '1.2rem' },
               color: 'text.secondary',
               maxWidth: '600px',
               // NO margin/padding - gap system handles spacing
@@ -85,25 +85,25 @@ export default function Home() {
               flexDirection: { xs: 'column', lg: 'row' },
               justifyContent: 'center',
               alignItems: 'center',
-              gap: { xs: 3, sm: 4, md: 5 }, // Same unified gap system
+              gap: { xs: 2, sm: 2.5, md: 3 },
               width: '100%',
             }}
           >
             <ToolCard
-              icon={<GroupsIcon sx={{ fontSize: { xs: 56, sm: 64, md: 72 }, color: "primary.main" }} />}
+              icon={<GroupsIcon sx={{ fontSize: { xs: 45, sm: 51, md: 58 }, color: "primary.main" }} />}
               title="Random Team Generator"
               description="Quickly split people into random teams for any activity. Fair, unbiased, and instant."
               onClick={handleRandomTeamGenerator}
             />
             <ToolCard
-              icon={<ScoreboardIcon sx={{ fontSize: { xs: 56, sm: 64, md: 72 }, color: "secondary.main" }} />}
+              icon={<ScoreboardIcon sx={{ fontSize: { xs: 45, sm: 51, md: 58 }, color: "secondary.main" }} />}
               title="Points Counter"
               description="Track and manage scores for games, quizzes, or events. Simple, fast, and reliable."
               onClick={handleDisabledCardClick}
               disabled
             />
             <ToolCard
-              icon={<QuizIcon sx={{ fontSize: { xs: 56, sm: 64, md: 72 }, color: "info.main" }} />}
+              icon={<QuizIcon sx={{ fontSize: { xs: 45, sm: 51, md: 58 }, color: "info.main" }} />}
               title="Quizzes"
               description="Build and play custom quizzes with friends or solo. Fun, interactive, and coming soon!"
               onClick={handleDisabledCardClick}

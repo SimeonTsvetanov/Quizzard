@@ -1,4 +1,4 @@
-import { Card, CardActionArea, CardContent, Typography, Box } from "@mui/material";
+import { Card, CardActionArea, Typography, Box } from "@mui/material";
 import { type ReactNode } from "react";
 
 interface ToolCardProps {
@@ -15,9 +15,9 @@ export default function ToolCard({ icon, title, description, onClick, disabled =
       elevation={disabled ? 2 : 4}
       sx={{
         borderRadius: 3,
-        width: { xs: '90vw', sm: '400px', md: '350px', lg: '320px', xl: '380px' },
-        maxWidth: 400,
-        minHeight: { xs: 250, sm: 280, md: 300 },
+        width: { xs: '85vw', sm: '320px', md: '280px', lg: '256px', xl: '304px' },
+        maxWidth: 320,
+        minHeight: { xs: 200, sm: 224, md: 240 },
         transition: "transform 0.15s, box-shadow 0.15s",
         opacity: disabled ? 0.7 : 1,
         cursor: 'pointer',
@@ -32,28 +32,24 @@ export default function ToolCard({ icon, title, description, onClick, disabled =
       <CardActionArea 
         onClick={onClick}
         sx={{ 
-          p: { xs: 2, sm: 3 }, 
+          p: { xs: 1.6, sm: 2.4 },
           display: 'flex', 
           flexDirection: 'column', 
           alignItems: 'center',
           height: '100%',
-          justifyContent: 'space-between',
-          cursor: 'pointer',
-          // Remove mobile selection highlights
+          gap: { xs: 0.8, sm: 1.2 },
           WebkitTapHighlightColor: 'transparent',
           WebkitUserSelect: 'none',
           MozUserSelect: 'none',
           msUserSelect: 'none',
           userSelect: 'none',
           WebkitTouchCallout: 'none',
-          // Custom ripple styling for disabled cards
           '& .MuiTouchRipple-root': {
             color: disabled ? 'rgba(0, 0, 0, 0.2)' : 'primary.main',
           },
           '& .MuiTouchRipple-child': {
             backgroundColor: disabled ? 'rgba(0, 0, 0, 0.1)' : 'currentColor',
           },
-          // Remove focus rings but keep accessibility
           '&:focus': { 
             outline: 'none',
             '& .MuiCardActionArea-focusHighlight': {
@@ -73,44 +69,38 @@ export default function ToolCard({ icon, title, description, onClick, disabled =
         }}
       >
         <Box sx={{ 
-          mb: 2, 
           display: 'flex', 
           alignItems: 'center', 
           justifyContent: 'center',
-          minHeight: { xs: 60, sm: 72, md: 80 }
+          minHeight: { xs: 48, sm: 58, md: 64 },
+          flexShrink: 0
         }}>
           {icon}
         </Box>
-        <CardContent sx={{ 
-          textAlign: 'center', 
-          p: 0, 
-          flexGrow: 1, 
-          display: 'flex', 
-          flexDirection: 'column', 
-          justifyContent: 'center' 
-        }}>
-          <Typography 
-            variant="h5" 
-            component="div" 
-            fontWeight={700} 
-            gutterBottom
-            sx={{
-              fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.75rem' }
-            }}
-          >
-            {title}
-          </Typography>
-          <Typography 
-            variant="body2" 
-            color="text.secondary"
-            sx={{
-              fontSize: { xs: '0.875rem', sm: '1rem' },
-              lineHeight: 1.5
-            }}
-          >
-            {description}
-          </Typography>
-        </CardContent>
+        <Typography 
+          variant="h5" 
+          component="div" 
+          fontWeight={700}
+          sx={{
+            fontSize: { xs: '1rem', sm: '1.2rem', md: '1.4rem' },
+            textAlign: 'center',
+            flexShrink: 0
+          }}
+        >
+          {title}
+        </Typography>
+        <Typography 
+          variant="body2" 
+          color="text.secondary"
+          sx={{
+            fontSize: { xs: '0.7rem', sm: '0.8rem' },
+            lineHeight: 1.5,
+            textAlign: 'center',
+            flexShrink: 0
+          }}
+        >
+          {description}
+        </Typography>
       </CardActionArea>
     </Card>
   );
