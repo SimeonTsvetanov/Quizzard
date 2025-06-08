@@ -176,22 +176,15 @@ export default function RandomTeamGeneratorPage() {
     setClearDialogOpen(false);
   };
 
-  return (
-    <Box sx={{ 
-      minHeight: '100vh',
-      display: 'flex',
-      flexDirection: 'column',
-      bgcolor: 'background.default'
-    }}>
-      {/* Main Content - Constrained width like original */}
+    return (
+    <>
       <Box sx={{ 
-        flex: 1,
-        display: 'flex',
-        justifyContent: 'center',
+        bgcolor: 'background.default',
         py: 3,
-        px: { xs: 1, sm: 2 }
+        px: { xs: 1, sm: 2 },
+        display: 'flex',
+        justifyContent: 'center'
       }}>
-        {/* Content Container with Original Width Constraints */}
         <Box sx={{ 
           width: '100%',
           maxWidth: { 
@@ -260,6 +253,6 @@ export default function RandomTeamGeneratorPage() {
           {snackbar.message}
         </Alert>
       </Snackbar>
-    </Box>
+    </>
   );
 } 
