@@ -69,6 +69,8 @@
 - [x] Theme selection dialog (popup) with Light/Dark/System options, accessible and mobile-friendly
 - [x] **MAIN WINDOW REDESIGNED** - Professional card-based layout with responsive design, ToolCard component, and disabled state system
 - [x] **RANDOM TEAM GENERATOR COMPLETE REFACTORING** - Implemented clean architecture with 67% code reduction, eliminated all unused code, and created industry-standard component structure
+- [x] **DEVELOPMENT STANDARDS DOCUMENTATION** - Created comprehensive DEVELOPMENT-STANDARDS.md guide covering architecture patterns, naming conventions, tech stack, and quality gates
+- [x] **COMPREHENSIVE DEVELOPMENT STANDARDS UPDATE** - Enhanced DEVELOPMENT-STANDARDS.md with PWA-first design system, universal device support (320px to 7680px), localStorage patterns, Quizzard visual design system (no borders, blur backgrounds, floating effects), automated GitHub deployment workflow, and complete usage instructions
 - [ ] Points Counter (placeholder → full implementation)
 - [x] GitHub Pages deploy set up
 - [x] Auto-update workflow
@@ -137,6 +139,7 @@ The project follows a feature-based architecture:
 - **2025-06-09:** **QUIZZES TOOL PLACEHOLDER ADDED** - Added Quizzes (Build and Play Quizzes) as a new tool with full feature structure (pages, components, hooks, types, README). Integrated into the main menu and routing as a placeholder for future development. Landing page now displays all three main tools. All code follows feature-based architecture and MUI/TypeScript standards.
 - **2025-06-09:** **MAIN WINDOW COMPLETE REDESIGN & PROFESSIONAL CARD LAYOUT** - Completely redesigned the main window with a modern, professional tool card layout following SaaS industry standards. **Removed constraining PageLayout** that limited width to 420px, creating a full-width responsive layout that scales perfectly from mobile to 4K monitors. **Created ToolCard component** with fixed dimensions (300x280px base, responsive scaling), subtle shadows, rounded corners, and beautiful hover effects (translateY + scale). **Replaced button-based layout** with clickable cards featuring icons, headings, and descriptions. **Implemented disabled state system** for Points Counter and Quizzes tools with visual indicators (reduced opacity, "Still Under Construction" snackbar). **Fixed mobile touch interactions** by removing selection highlights, implementing proper ripple animations from click point, and ensuring smooth transitions. **Enhanced accessibility** with proper focus states, keyboard navigation, and responsive typography scaling. **Cleaned up assets** by removing unused RTG image and using Material Icons (Groups, Scoreboard, Quiz) for consistency. **Responsive design** ensures cards display in a row on desktop (lg+), stack vertically on mobile, with appropriate spacing and gaps that scale with screen size. All routing functionality maintained with smooth navigation to working tools. Design follows Material 3 principles with the established color palette and supports all themes (light/dark/system).
 - **2025-12-07:** **RANDOM TEAM GENERATOR COMPLETE REFACTORING** - **MAJOR ARCHITECTURE OVERHAUL** implementing industry-standard clean architecture principles. **Eliminated 1,238 lines of unused code (67% reduction)** by deleting orphaned components (ParticipantInput.tsx, TeamDisplay.tsx, TeamCountControls.tsx, useTeamGenerator.ts, inputValidator.ts). **Replaced monolithic 773-line component** with **15 focused files** following Single Responsibility Principle. **Implemented clean separation**: Components (11 files) for UI, Hooks (3 files) for state management, Utils (3 files) for pure functions, Types (1 file) for definitions. **New component structure**: ParticipantsList/ (input management), TeamControls/ (UI controls), TeamsModal/ (results display), Dialogs/ (confirmations). **Custom hooks**: useParticipants (state + cheat codes), useTeamGeneration (team creation + validation), useKeyboardNavigation (Enter/Arrow navigation). **Utilities**: teamGenerator.ts (core algorithm), cheatCodes.ts ("the followers" easter egg), clipboard.ts (copy functionality). **Comprehensive JSDoc documentation** for every component, hook, prop, and function. **All functionality preserved**: participant input with auto-creation, keyboard navigation, cheat codes, team generation, modal display, clipboard copy, clear confirmation, responsive design. **Zero breaking changes** - application works exactly as before but with clean, maintainable, and scalable architecture. **Builds successfully** and ready for production deployment.
+- **2025-12-07:** **COMPREHENSIVE DEVELOPMENT STANDARDS ENHANCEMENT** - **MAJOR DOCUMENTATION UPDATE** expanding DEVELOPMENT-STANDARDS.md with critical platform requirements. **Added PWA-first design principles** as top priority for future Android APK deployment. **Implemented universal device support standards** covering 320px mobile phones to 7680px 4K TVs (70+ inches). **Documented Quizzard visual design system**: no borders anywhere, background colors with contrasting text, MUI elevation shadows for floating effects, blur backgrounds on focused popups/modals, rounded corners on all elements. **Created comprehensive localStorage patterns** with auto-save requirements, feature-specific key conventions, and error handling for all tools. **Defined automated GitHub deployment workflow**: push to main → auto-build → GitHub Pages deployment with zero manual intervention. **Added complete usage instructions** including before/during/after development checklists, critical PWA reminders, quick reference patterns, and document workflow. **Enhanced with Points Counter requirements** including team setup, scoring interface, leaderboard functionality, and persistent game state. **All changes align with quiz platform vision** supporting bar quiz nights with quizmasters and competing teams across all device types.
 
 ---
 
@@ -936,13 +939,38 @@ This refactoring transforms the Random Team Generator from a poorly organized mo
 
 ---
 
-**Always update this file with new rules, progress, and decisions. This is the single source of truth for the project.**
+---
+
+## 📚 **Documentation Hierarchy**
+
+**For all development work, follow this documentation order:**
+
+1. **[DEVELOPMENT-STANDARDS.md](DEVELOPMENT-STANDARDS.md)** - **PRIMARY GUIDE** for all coding standards, architecture patterns, naming conventions, and technical decisions
+2. **[PROJECT-CHARTER.md](PROJECT-CHARTER.md)** - Project overview, progress tracking, and high-level decisions  
+3. **Feature README files** - Feature-specific documentation (when applicable)
+
+### **Development Workflow Documentation**
+
+**Before starting ANY work:**
+1. Read **DEVELOPMENT-STANDARDS.md** for current architecture patterns
+2. Check **PROJECT-CHARTER.md** for project status and context
+3. Follow the established patterns exactly
+
+**After completing work:**
+1. Update **PROJECT-CHARTER.md** with progress and decisions
+2. Update **DEVELOPMENT-STANDARDS.md** if new patterns were established
+3. Ensure all code follows the documented standards
+
+---
+
+**Always update this file with new rules, progress, and decisions. This is the single source of truth for project progress and high-level decisions.**
 
 **AI/Automation Workflow Rule:**
 
 - This file must be referenced and updated after every significant project change, decision, or milestone.
 - If using an AI assistant, always instruct it to check and update this file as part of your workflow.
 - Pin this file in your editor for visibility, but also make it a habit to review and update it regularly.
+- **CRITICAL:** Always check DEVELOPMENT-STANDARDS.md first for technical implementation guidance.
 
 ## Material 3 Color Palette (2025-06-10)
 
