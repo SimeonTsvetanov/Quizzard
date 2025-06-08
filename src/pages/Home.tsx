@@ -36,57 +36,47 @@ export default function Home() {
           },
           display: 'flex',
           flexDirection: 'column',
-          gap: { xs: 3, sm: 4, md: 5 } // Unified gap system for all elements
+          gap: { xs: 3, sm: 4, md: 5 }, // Unified gap system for ALL elements
+          alignItems: 'center', // Center all elements
+          textAlign: 'center' // Center all text
         }}>
           {/* Clean Logo - Website Style */}
-          <Box sx={{ 
-            display: 'flex', 
-            justifyContent: 'center',
-            alignItems: 'center',
-            // No margin - let the unified gap system handle spacing
-          }}>
-            <Box
-              component="img"
-              src={quizzardPageLogo}
-              alt="Quizzard Logo"
-              sx={{
-                width: { xs: 120, sm: 150, md: 180 }, // Small website logo size
-                height: 'auto',
-                // No styling - just clean logo
-              }}
-            />
-          </Box>
+          <Box
+            component="img"
+            src={quizzardPageLogo}
+            alt="Quizzard Logo"
+            sx={{
+              width: { xs: 120, sm: 150, md: 180 }, // Small website logo size
+              height: 'auto',
+              // NO margin/padding - gap system handles spacing
+            }}
+          />
 
-          {/* Main Heading */}
-          <Box sx={{ textAlign: 'center' }}>
-            <Typography 
-              variant="h2" 
-              component="h1" 
-              sx={{ 
-                fontSize: { xs: '2.5rem', sm: '3rem', md: '3.5rem' },
-                fontWeight: 700,
-                mb: 0 // Remove individual margin, let gap system handle it
-              }}
-            >
-              Welcome to Quizzard
-            </Typography>
-          </Box>
+          {/* Main Heading - Direct Typography, no Box wrapper */}
+          <Typography 
+            variant="h2" 
+            component="h1" 
+            sx={{ 
+              fontSize: { xs: '2.5rem', sm: '3rem', md: '3.5rem' },
+              fontWeight: 700,
+              // NO margin/padding - gap system handles spacing
+            }}
+          >
+            Welcome to Quizzard
+          </Typography>
 
-          {/* Subtitle */}
-          <Box sx={{ textAlign: 'center' }}>
-            <Typography 
-              variant="h5" 
-              sx={{ 
-                fontSize: { xs: '1.1rem', sm: '1.25rem', md: '1.5rem' },
-                color: 'text.secondary',
-                maxWidth: '600px',
-                mx: 'auto',
-                mb: 0 // Remove individual margin, let gap system handle it
-              }}
-            >
-              Your all-in-one quiz and team tools suite
-            </Typography>
-          </Box>
+          {/* Subtitle - Direct Typography, no Box wrapper */}
+          <Typography 
+            variant="h5" 
+            sx={{ 
+              fontSize: { xs: '1.1rem', sm: '1.25rem', md: '1.5rem' },
+              color: 'text.secondary',
+              maxWidth: '600px',
+              // NO margin/padding - gap system handles spacing
+            }}
+          >
+            Your all-in-one quiz and team tools suite
+          </Typography>
 
           {/* Tool Cards Section */}
           <Box
@@ -123,12 +113,12 @@ export default function Home() {
         </Box>
       </Box>
 
-      {/* Snackbar for disabled cards */}
+      {/* Snackbar for disabled cards - NOW AT TOP */}
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={3000}
         onClose={() => setSnackbarOpen(false)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >
         <Alert 
           severity="info" 
