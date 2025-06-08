@@ -66,8 +66,9 @@ export const ParticipantsList = ({
       sx={{ 
         display: 'flex',
         flexDirection: 'column',
-        maxHeight: { xs: '50vh', sm: '55vh' }, // Fixed max height
-        minHeight: { xs: '40vh', sm: '45vh' }, // Minimum height
+        // Reduced sizing by 30% - more compact but still fits 7 names
+        minHeight: { xs: 224, sm: 252 }, // Reduced from 320/360
+        maxHeight: { xs: 350, sm: 385 }, // Reduced from 500/550
         bgcolor: 'background.paper',
         borderRadius: 3,
         elevation: 4,

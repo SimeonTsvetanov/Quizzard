@@ -15,9 +15,9 @@ export default function ToolCard({ icon, title, description, onClick, disabled =
       elevation={disabled ? 2 : 4}
       sx={{
         borderRadius: 3,
-        width: { xs: '85vw', sm: '320px', md: '280px', lg: '256px', xl: '304px' },
-        maxWidth: 320,
-        minHeight: { xs: 200, sm: 224, md: 240 },
+        width: { xs: '102vw', sm: '384px', md: '280px', lg: '256px', xl: '304px' },
+        maxWidth: { xs: 384, sm: 384, md: 320, lg: 320, xl: 320 },
+        minHeight: { xs: 240, sm: 269, md: 240 },
         transition: "transform 0.15s, box-shadow 0.15s",
         opacity: disabled ? 0.7 : 1,
         cursor: 'pointer',
@@ -32,12 +32,12 @@ export default function ToolCard({ icon, title, description, onClick, disabled =
       <CardActionArea 
         onClick={onClick}
         sx={{ 
-          p: { xs: 1.6, sm: 2.4 },
+          p: { xs: 1.92, sm: 2.88, md: 2.4 },
           display: 'flex', 
           flexDirection: 'column', 
           alignItems: 'center',
           height: '100%',
-          gap: { xs: 0.8, sm: 1.2 },
+          gap: { xs: 0.96, sm: 1.44, md: 1.2 },
           WebkitTapHighlightColor: 'transparent',
           WebkitUserSelect: 'none',
           MozUserSelect: 'none',
@@ -72,7 +72,7 @@ export default function ToolCard({ icon, title, description, onClick, disabled =
           display: 'flex', 
           alignItems: 'center', 
           justifyContent: 'center',
-          minHeight: { xs: 48, sm: 58, md: 64 },
+          minHeight: { xs: 58, sm: 70, md: 64 },
           flexShrink: 0
         }}>
           {icon}
@@ -82,7 +82,7 @@ export default function ToolCard({ icon, title, description, onClick, disabled =
           component="div" 
           fontWeight={700}
           sx={{
-            fontSize: { xs: '1rem', sm: '1.2rem', md: '1.4rem' },
+            fontSize: { xs: '1.2rem', sm: '1.44rem', md: '1.4rem' },
             textAlign: 'center',
             flexShrink: 0
           }}
@@ -93,7 +93,7 @@ export default function ToolCard({ icon, title, description, onClick, disabled =
           variant="body2" 
           color="text.secondary"
           sx={{
-            fontSize: { xs: '0.7rem', sm: '0.8rem' },
+            fontSize: { xs: '0.84rem', sm: '0.96rem', md: '0.8rem' },
             lineHeight: 1.5,
             textAlign: 'center',
             flexShrink: 0

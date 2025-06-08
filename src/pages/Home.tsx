@@ -12,7 +12,7 @@ export default function Home() {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
 
   const handleRandomTeamGenerator = () => {
-    navigate("/team-generator");
+    navigate("/random-team-generator");
   };
 
   const handleDisabledCardClick = () => {
@@ -36,7 +36,7 @@ export default function Home() {
           },
           display: 'flex',
           flexDirection: 'column',
-          gap: { xs: 2, sm: 2.5, md: 3 }, // Reduced gaps for tighter spacing
+          gap: { xs: 3, sm: 4, md: 3 }, // Increased gaps for mobile (20% more)
           alignItems: 'center', // Center all elements
           textAlign: 'center' // Center all text
         }}>
@@ -46,7 +46,7 @@ export default function Home() {
             src={quizzardPageLogo}
             alt="Quizzard Logo"
             sx={{
-              width: { xs: 96, sm: 120, md: 144 },
+              width: { xs: 115, sm: 144, md: 144 }, // 20% bigger on mobile (96→115, 120→144)
               height: 'auto',
               // NO margin/padding - gap system handles spacing
             }}
@@ -57,7 +57,7 @@ export default function Home() {
             variant="h2" 
             component="h1" 
             sx={{ 
-              fontSize: { xs: '2rem', sm: '2.4rem', md: '2.8rem' },
+              fontSize: { xs: '2.4rem', sm: '2.88rem', md: '2.8rem' }, // 20% bigger on mobile (2→2.4, 2.4→2.88)
               fontWeight: 700,
               // NO margin/padding - gap system handles spacing
             }}
@@ -69,7 +69,7 @@ export default function Home() {
           <Typography 
             variant="h5" 
             sx={{ 
-              fontSize: { xs: '0.9rem', sm: '1rem', md: '1.2rem' },
+              fontSize: { xs: '1.08rem', sm: '1.2rem', md: '1.2rem' }, // 20% bigger on mobile (0.9→1.08, 1→1.2)
               color: 'text.secondary',
               maxWidth: '600px',
               // NO margin/padding - gap system handles spacing
@@ -85,25 +85,25 @@ export default function Home() {
               flexDirection: { xs: 'column', lg: 'row' },
               justifyContent: 'center',
               alignItems: 'center',
-              gap: { xs: 2, sm: 2.5, md: 3 },
+              gap: { xs: 3, sm: 4, md: 3 }, // Increased gaps for mobile (20% more)
               width: '100%',
             }}
           >
             <ToolCard
-              icon={<GroupsIcon sx={{ fontSize: { xs: 45, sm: 51, md: 58 }, color: "primary.main" }} />}
+              icon={<GroupsIcon sx={{ fontSize: { xs: 54, sm: 61, md: 58 }, color: "primary.main" }} />} // 20% bigger on mobile (45→54, 51→61)
               title="Random Team Generator"
               description="Quickly split people into random teams for any activity. Fair, unbiased, and instant."
               onClick={handleRandomTeamGenerator}
             />
             <ToolCard
-              icon={<ScoreboardIcon sx={{ fontSize: { xs: 45, sm: 51, md: 58 }, color: "secondary.main" }} />}
+              icon={<ScoreboardIcon sx={{ fontSize: { xs: 54, sm: 61, md: 58 }, color: "secondary.main" }} />} // 20% bigger on mobile (45→54, 51→61)
               title="Points Counter"
               description="Track and manage scores for games, quizzes, or events. Simple, fast, and reliable."
               onClick={handleDisabledCardClick}
               disabled
             />
             <ToolCard
-              icon={<QuizIcon sx={{ fontSize: { xs: 45, sm: 51, md: 58 }, color: "info.main" }} />}
+              icon={<QuizIcon sx={{ fontSize: { xs: 54, sm: 61, md: 58 }, color: "info.main" }} />} // 20% bigger on mobile (45→54, 51→61)
               title="Quizzes"
               description="Build and play custom quizzes with friends or solo. Fun, interactive, and coming soon!"
               onClick={handleDisabledCardClick}
@@ -124,7 +124,7 @@ export default function Home() {
           severity="info" 
           sx={{ 
             width: "100%",
-            fontSize: { xs: '0.875rem', sm: '1rem' },
+            fontSize: { xs: '1.05rem', sm: '1.2rem', md: '1rem' }, // 20% bigger on mobile (0.875→1.05, 1→1.2)
             '& .MuiAlert-message': {
               fontWeight: 500,
             }
