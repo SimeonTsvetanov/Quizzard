@@ -176,7 +176,7 @@ export default function RandomTeamGeneratorPage() {
     setClearDialogOpen(false);
   };
 
-    return (
+  return (
     <>
       <Box sx={{ 
         bgcolor: 'background.default',
