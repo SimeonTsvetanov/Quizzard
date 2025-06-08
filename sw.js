@@ -1,27 +1,37 @@
 // Service Worker for Quizzard PWA
-// VERSION: 2025-06-08T20:13:53Z
+// VERSION: 2025-06-08T21:15:18Z
 // Handles caching, updates, and offline functionality
-// Version updated: June 6, 2025 - SPA routing fix
+// Version updated: December 7, 2025 - Black bar fix and manifest update
 
-const CACHE_NAME = 'quizzard-simple';
+const CACHE_NAME = 'quizzard-fixed-theme-2025';
 const urlsToCache = [
   '/Quizzard/',
   '/Quizzard/index.html',
+  '/Quizzard/manifest.json?v=fresh-final',
   '/Quizzard/quizzard-logo.png',
   '/Quizzard/favicon.ico',
 ];
 
-// Install event - aggressive cache clearing
+// Install event - aggressive cache clearing for theme fix
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => {
-        return cache.addAll(urlsToCache);
-      })
-      .then(() => {
-        // Force immediate activation
-        return self.skipWaiting();
-      })
+    // First clear ALL existing caches to fix theme colors
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          console.log('Deleting old cache for theme fix:', cacheName);
+          return caches.delete(cacheName);
+        })
+      );
+    }).then(() => {
+      // Then create fresh cache with updated manifest
+      return caches.open(CACHE_NAME);
+    }).then((cache) => {
+      return cache.addAll(urlsToCache);
+    }).then(() => {
+      // Force immediate activation
+      return self.skipWaiting();
+    })
   );
 });
 
@@ -32,7 +42,7 @@ self.addEventListener('activate', (event) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
           if (cacheName !== CACHE_NAME) {
-            console.log('Deleting old cache:', cacheName);
+            console.log('Deleting old cache during activate:', cacheName);
             return caches.delete(cacheName);
           }
         })
@@ -44,7 +54,7 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Fetch event - network first for HTML, cache first for assets
+// Fetch event - always try network first to avoid cache issues
 self.addEventListener('fetch', (event) => {
   event.respondWith(
     fetch(event.request)

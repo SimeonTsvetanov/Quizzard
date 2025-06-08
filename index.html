@@ -175,10 +175,10 @@
       window.addEventListener('storage', updateThemeColor);
       window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateThemeColor);
     </script>
-    <script type="module" crossorigin src="/Quizzard/assets/index-Bv8by1m_.js"></script>
+    <script type="module" crossorigin src="/Quizzard/assets/index-BgQvkvoa.js"></script>
     <link rel="modulepreload" crossorigin href="/Quizzard/assets/vendor-DJG_os-6.js">
     <link rel="modulepreload" crossorigin href="/Quizzard/assets/mui-BVxukjnY.js">
-    <link rel="stylesheet" crossorigin href="/Quizzard/assets/index-OhbA3WY-.css">
+    <link rel="stylesheet" crossorigin href="/Quizzard/assets/index-nh97z3yv.css">
   </head>
   <body style="background-color: #FAFAFA;">
     <!-- Initial CSS Loading Screen -->
@@ -203,20 +203,22 @@
         }, 50); // Faster transition to React
       });
       
-      // Register the service worker
+      // Register the service worker with cache busting
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", function () {
-          navigator.serviceWorker
-            .register("/Quizzard/sw.js")
-            .then(function (registration) {
-              console.log(
-                "ServiceWorker registration successful with scope: ",
-                registration.scope
-              );
-            })
-            .catch(function (err) {
-              console.log("ServiceWorker registration failed: ", err);
-            });
+          // Force service worker update by unregistering old ones first
+          navigator.serviceWorker.getRegistrations().then(function(registrations) {
+            for(let registration of registrations) {
+              registration.unregister();
+            }
+          }).then(function() {
+            // Register fresh service worker
+            return navigator.serviceWorker.register("/Quizzard/sw.js?v=fresh-2025");
+          }).then(function (registration) {
+            console.log("ServiceWorker registration successful with scope: ", registration.scope);
+          }).catch(function (err) {
+            console.log("ServiceWorker registration failed: ", err);
+          });
         });
       }
     </script>
