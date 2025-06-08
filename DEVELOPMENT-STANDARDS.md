@@ -356,6 +356,60 @@ sx={{
 - **Text readability:** Minimum 16px font size on mobile
 - **Offline capability:** Core functionality works without internet
 - **Install prompt:** Native app-like installation experience
+- **Auto-update functionality:** Mandatory automatic app updates when new versions deploy
+
+#### **🔄 MANDATORY AUTO-UPDATE SYSTEM:**
+```typescript
+// ✅ IMPLEMENTED: Service worker auto-versioning
+// Location: public/sw.js + src/main.tsx registration
+
+// Auto-update flow:
+// 1. User has PWA installed on device
+// 2. We push changes to main branch
+// 3. GitHub Actions builds and deploys
+// 4. Service worker detects new version automatically
+// 5. User gets fresh content without manual action
+
+// Registration (production only)
+if ('serviceWorker' in navigator && import.meta.env.PROD) {
+  navigator.serviceWorker.register('/Quizzard/sw.js')
+    .then(() => console.log('SW registered for auto-updates'))
+    .catch(() => console.log('SW registration failed'));
+}
+```
+
+#### **📱 iOS PWA LIMITATIONS & SAFE ZONES:**
+```css
+/* MANDATORY: iOS safe area support */
+/* Add to all full-screen layouts */
+
+.ios-safe-layout {
+  /* Top safe area (status bar, Dynamic Island) */
+  padding-top: max(16px, env(safe-area-inset-top));
+  
+  /* Bottom safe area (home indicator) */
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+  
+  /* Side safe areas (rounded corners, notches) */
+  padding-left: max(16px, env(safe-area-inset-left));
+  padding-right: max(16px, env(safe-area-inset-right));
+}
+
+/* MUI Box implementation */
+sx={{
+  pt: 'max(16px, env(safe-area-inset-top))',
+  pb: 'max(16px, env(safe-area-inset-bottom))',
+  pl: 'max(16px, env(safe-area-inset-left))',
+  pr: 'max(16px, env(safe-area-inset-right))'
+}}
+```
+
+#### **🚨 iOS PWA Critical Limitations:**
+- **Limited storage:** iOS can clear PWA data if device storage is low
+- **No push notifications:** iOS PWAs cannot receive push notifications
+- **Safari restrictions:** Always runs in Safari engine regardless of default browser
+- **Home screen behavior:** May not behave exactly like native apps
+- **Update delays:** iOS may cache service worker updates for 24+ hours
 
 ### **Layout Patterns**
 ```typescript
@@ -471,18 +525,49 @@ const STORAGE_KEYS = {
 - Only "Clear Game" button removes localStorage data
 - Edit mode preserves all existing game progress
 
-**3. Error Handling:**
+**3. iOS Storage Limitations (CRITICAL WARNING):**
 ```typescript
-// Always handle localStorage failures gracefully
+// ⚠️ iOS PWA localStorage can be cleared automatically
+// if device storage is low - always handle gracefully
 const saveGameState = (gameData: GameState) => {
   try {
     localStorage.setItem(STORAGE_KEYS.PC_GAME_STATE, JSON.stringify(gameData));
+    
+    // iOS safety check - verify data was actually saved
+    const verification = localStorage.getItem(STORAGE_KEYS.PC_GAME_STATE);
+    if (!verification) {
+      throw new Error('iOS storage quota exceeded or blocked');
+    }
   } catch (error) {
-    // Show user-friendly error, don't crash app
-    showSnackbar('Unable to save game progress. Storage may be full.', 'warning');
+    // iOS-aware error messaging
+    showSnackbar(
+      'Unable to save game progress. iPhone/iPad storage may be full.', 
+      'warning'
+    );
+    console.warn('localStorage save failed (iOS limitation):', error);
+  }
+};
+
+// Always validate data exists on load (iOS may clear it)
+const loadGameState = (): GameState | null => {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEYS.PC_GAME_STATE);
+    if (!stored) {
+      showSnackbar('Previous game not found (may have been cleared by iOS)', 'info');
+      return null;
+    }
+    return JSON.parse(stored);
+  } catch (error) {
+    console.warn('localStorage load failed:', error);
+    return null;
   }
 };
 ```
+
+**4. Cross-Platform Storage Strategy:**
+- **Android/Windows:** Full localStorage support, persistent across sessions
+- **iOS/Safari:** Limited support, may be cleared automatically
+- **Always provide fallback:** App must work even if localStorage fails
 
 #### **💾 Adding New Storage for Future Features:**
 
@@ -567,10 +652,13 @@ permissions:
 
 ### **⚡ PWA Deployment Requirements**
 
-#### **Service Worker Auto-Versioning:**
-- Service worker only registers in production (`import.meta.env.PROD`)
-- Auto-updates on deployment for immediate user refresh
-- Offline capability for core app functionality
+#### **🔄 Service Worker Auto-Update System (CRITICAL):**
+- **Service worker only registers in production** (`import.meta.env.PROD`)
+- **Automatic version detection:** New deploys trigger instant app updates
+- **Zero user intervention:** Updates happen transparently in background
+- **Offline capability:** Core app functionality works without internet
+- **Cache busting:** Ensures users always get latest version after deployment
+- **Cross-platform support:** Works on Android, Windows, limited iOS support
 
 #### **PWA Manifest Configuration:**
 ```json
@@ -921,6 +1009,9 @@ git add . && git commit -m "TYPE: Description" && git push origin main
 - **Auto-save everything** - Browser refresh should never lose data
 - **No borders anywhere** - Use background colors and shadows only
 - **Blur popups/modals** - Background blur when focused
+- **Auto-update system** - Every deployment automatically updates user devices
+- **iOS safe zones** - Use env(safe-area-inset-*) for iPhone/iPad compatibility
+- **iOS storage limits** - localStorage may be cleared, always handle gracefully
 
 #### **For Team Collaboration:**
 - **This document is law** - All team members must follow exactly
@@ -935,15 +1026,17 @@ git add . && git commit -m "TYPE: Description" && git push origin main
 // 1. Does it follow the visual design system? (no borders, shadows, blur)
 // 2. Is it responsive across all device sizes? (xs to xxl breakpoints)
 // 3. Does it auto-save to localStorage if needed? (useLocalStoragePersistence)
-// 4. Is it properly typed with JSDoc? (interfaces + documentation)
-// 5. Does it handle errors gracefully? (try-catch + user feedback)
+// 4. Does it handle iOS safe zones? (env(safe-area-inset-*))
+// 5. Does it handle localStorage failures? (iOS may clear data)
+// 6. Is it properly typed with JSDoc? (interfaces + documentation)
+// 7. Does it handle errors gracefully? (try-catch + user feedback)
 
 // ✅ Before pushing to main:
 // 1. npm run build (successful production build)
-// 2. Test on mobile AND desktop
+// 2. Test on mobile AND desktop (including iPhone/iPad if possible)
 // 3. Update DEVELOPMENT-STANDARDS.md if new patterns added
 // 4. Update PROJECT-CHARTER.md with progress
-// 5. Push to main (auto-deployment to GitHub Pages)
+// 5. Push to main (auto-deployment + auto-update for all users)
 ```
 
 ### **🔗 Document Workflow:**
