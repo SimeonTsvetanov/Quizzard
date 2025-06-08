@@ -250,7 +250,7 @@ export default function RandomTeamGeneratorPage() {
         open={snackbar.open}
         autoHideDuration={4000}
         onClose={hideSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
         <Alert 
           onClose={hideSnackbar} 
