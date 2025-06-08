@@ -1,13 +1,16 @@
 // Service Worker for Quizzard PWA
-// VERSION: 2025-06-08T21:15:18Z
+// VERSION: 2025-06-08T21:33:52Z
 // Handles caching, updates, and offline functionality
 // Version updated: December 7, 2025 - Black bar fix and manifest update
 
-const CACHE_NAME = 'quizzard-fixed-theme-2025';
+const CACHE_NAME = 'quizzard-mint-icons-2025';
 const urlsToCache = [
   '/Quizzard/',
   '/Quizzard/index.html',
-  '/Quizzard/manifest.json?v=fresh-final',
+  '/Quizzard/manifest.json?v=mint',
+  '/Quizzard/icon-192.png?v=mint',
+  '/Quizzard/icon-512.png?v=mint', 
+  '/Quizzard/apple-touch-icon.png?v=mint',
   '/Quizzard/quizzard-logo.png',
   '/Quizzard/favicon.ico',
 ];
@@ -97,7 +100,7 @@ self.addEventListener("push", (event) => {
     const data = event.data.json();
     const options = {
       body: data.body,
-      icon: "/Quizzard/icon-192.png",
+      icon: "/Quizzard/icon-192.png?v=mint",
       badge: "/Quizzard/favicon-96x96.png",
       vibrate: [100, 50, 100],
       data: {
@@ -108,7 +111,7 @@ self.addEventListener("push", (event) => {
         {
           action: "explore",
           title: "Open Quizzard",
-          icon: "/Quizzard/icon-192.png",
+          icon: "/Quizzard/icon-192.png?v=mint",
         },
         {
           action: "close",
