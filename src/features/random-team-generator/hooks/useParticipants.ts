@@ -11,6 +11,87 @@ import { CONSTANTS } from '../types';
 import { isCheatCode, generateFriendsParticipants, getNextIdAfterCheatCode } from '../utils/cheatCodes';
 
 /**
+ * LocalStorage key for saving participant data
+ */
+const STORAGE_KEY = 'quizzard-random-team-generator-participants';
+
+/**
+ * Interface for stored participant data
+ */
+interface StoredParticipantData {
+  participants: ParticipantInput[];
+  nextId: number;
+}
+
+/**
+ * Loads participant data from localStorage
+ * Returns default state if no data exists or data is corrupted
+ */
+const loadParticipantsFromStorage = (): StoredParticipantData => {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      const data: StoredParticipantData = JSON.parse(stored);
+      
+      // Validate the data structure
+      if (data.participants && Array.isArray(data.participants) && 
+          typeof data.nextId === 'number' && data.participants.length > 0) {
+        
+        // Ensure we have at least one empty input for user interaction
+        const hasEmptyInput = data.participants.some(p => p.value.trim() === '');
+        if (!hasEmptyInput) {
+          data.participants.push({ id: data.nextId, value: '' });
+          data.nextId += 1;
+        }
+        
+        return data;
+      }
+    }
+  } catch (error) {
+    console.warn('Error loading participants from localStorage:', error);
+  }
+  
+  // Return default state if loading fails
+  return {
+    participants: [{ id: 1, value: '' }],
+    nextId: 2
+  };
+};
+
+/**
+ * Saves participant data to localStorage
+ * Filters out completely empty participants except for one empty input
+ */
+const saveParticipantsToStorage = (participants: ParticipantInput[], nextId: number): void => {
+  try {
+    // Filter participants to only save non-empty ones + one empty for UX
+    const nonEmpty = participants.filter(p => p.value.trim() !== '');
+    const oneEmpty = participants.filter(p => p.value.trim() === '').slice(0, 1);
+    const participantsToSave = [...nonEmpty, ...oneEmpty];
+    
+    const dataToSave: StoredParticipantData = {
+      participants: participantsToSave,
+      nextId
+    };
+    
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+  } catch (error) {
+    console.warn('Error saving participants to localStorage:', error);
+  }
+};
+
+/**
+ * Clears participant data from localStorage
+ */
+const clearParticipantsFromStorage = (): void => {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch (error) {
+    console.warn('Error clearing participants from localStorage:', error);
+  }
+};
+
+/**
  * Hook return type defining all participant-related state and functions
  */
 interface UseParticipantsReturn {
@@ -38,11 +119,12 @@ interface UseParticipantsReturn {
  * @returns Object containing participant state and management functions
  */
 export const useParticipants = (): UseParticipantsReturn => {
+  // Load initial state from localStorage
+  const initialData = loadParticipantsFromStorage();
+  
   // State management
-  const [participants, setParticipants] = useState<ParticipantInput[]>([
-    { id: 1, value: '' }
-  ]);
-  const [nextId, setNextId] = useState(2);
+  const [participants, setParticipants] = useState<ParticipantInput[]>(initialData.participants);
+  const [nextId, setNextId] = useState(initialData.nextId);
   
   // Ref for managing input focus
   const inputRefs = useRef<Map<number, HTMLInputElement>>(new Map());
@@ -102,11 +184,25 @@ export const useParticipants = (): UseParticipantsReturn => {
 
   /**
    * Clears all participants and resets to initial state
+   * Also clears localStorage data
    */
   const clearAllParticipants = useCallback(() => {
     setParticipants([{ id: 1, value: '' }]);
     setNextId(2);
+    clearParticipantsFromStorage();
   }, []);
+
+  /**
+   * Effect to save participant data to localStorage whenever state changes
+   * Debounced to avoid excessive writes during fast typing
+   */
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      saveParticipantsToStorage(participants, nextId);
+    }, 500); // 500ms debounce
+    
+    return () => clearTimeout(timer);
+  }, [participants, nextId]);
 
   /**
    * Auto-cleanup effect: removes empty inputs except the last one
