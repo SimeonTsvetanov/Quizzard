@@ -1,17 +1,13 @@
 // Service Worker for Quizzard PWA
-// VERSION: 2025-06-08T19:29:29Z
+// VERSION: 2025-06-08T20:13:53Z
 // Handles caching, updates, and offline functionality
 // Version updated: June 6, 2025 - SPA routing fix
 
-const CACHE_NAME = 'quizzard-v2.1';
-const STATIC_CACHE_NAME = "quizzard-static-v1.0.1";
-
-// Files to cache for offline functionality
+const CACHE_NAME = 'quizzard-simple';
 const urlsToCache = [
   '/Quizzard/',
   '/Quizzard/index.html',
-  '/Quizzard/icon-192.png',
-  '/Quizzard/icon-512.png',
+  '/Quizzard/quizzard-logo.png',
   '/Quizzard/favicon.ico',
 ];
 
