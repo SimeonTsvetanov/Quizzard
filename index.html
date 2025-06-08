@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" style="background-color: #FAFAFA;">  <head>
+<html lang="en" style="background-color: #121212;">  <head>
     <meta charset="UTF-8" />
     <base href="/Quizzard/" />
     <!-- Simplified Favicon Setup -->
@@ -21,46 +21,30 @@
     <style>
       /* Immediate background color to prevent any white flash */
       html {
-        background-color: #FAFAFA !important;
+        background-color: #121212 !important;
       }
       
       body {
-        background-color: #FAFAFA !important;
+        background-color: #121212 !important;
         margin: 0;
         padding: 0;
       }
       
-      @media (prefers-color-scheme: dark) {
-        html {
-          background-color: #121212 !important;
-        }
-        body {
-          background-color: #121212 !important;
-        }
-      }
-      
       /* Initial loading screen that shows before React loads */
-      #initial-loading {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        background-color: #FAFAFA; /* Light theme background */
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        z-index: 10000;
-        transition: opacity 0.3s ease;
-      }
-      
-      /* Dark theme support */
-      @media (prefers-color-scheme: dark) {
-        #initial-loading {
+              #initial-loading {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100vw;
+          height: 100vh;
           background-color: #121212; /* Dark theme background */
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          z-index: 10000;
+          transition: opacity 0.2s ease;
         }
-      }
       
       /* Hide when React loads */
       #initial-loading.hidden {
@@ -175,12 +159,12 @@
       window.addEventListener('storage', updateThemeColor);
       window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateThemeColor);
     </script>
-    <script type="module" crossorigin src="/Quizzard/assets/index-BgQvkvoa.js"></script>
+    <script type="module" crossorigin src="/Quizzard/assets/index-8ksEal62.js"></script>
     <link rel="modulepreload" crossorigin href="/Quizzard/assets/vendor-DJG_os-6.js">
-    <link rel="modulepreload" crossorigin href="/Quizzard/assets/mui-BVxukjnY.js">
+    <link rel="modulepreload" crossorigin href="/Quizzard/assets/mui-DVhBnY7t.js">
     <link rel="stylesheet" crossorigin href="/Quizzard/assets/index-nh97z3yv.css">
   </head>
-  <body style="background-color: #FAFAFA;">
+  <body style="background-color: #121212;">
     <!-- Initial CSS Loading Screen -->
     <div id="initial-loading">
       <img src="/Quizzard/icon-192.png?v=mint" alt="Quizzard" onload="this.style.opacity='0.8'" onerror="this.style.display='none'; document.querySelector('#initial-loading .loading-fallback').style.display='block';" />
@@ -200,7 +184,7 @@
               initialLoading.style.display = 'none';
             }, 300);
           }
-        }, 50); // Faster transition to React
+        }, 5); // Ultra fast transition to React
       });
       
       // Register the service worker with cache busting
