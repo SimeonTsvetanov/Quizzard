@@ -17,16 +17,27 @@ export default function Footer() {
   const location = useLocation();
   return (
     <Box
-      component="footer"
       sx={{
-        mt: 8,
         py: { xs: 3.5, sm: 4 }, // Increased padding to accommodate larger logo
         px: { xs: 1, sm: 2 },
-        bgcolor: "background.paper",
+        bgcolor: "background.default", 
         color: "text.secondary",
         fontSize: { xs: 13, sm: 15 },
         width: "100%",
         overflowX: "hidden",
+        // Explicitly remove any styling that could create the black bar
+        boxShadow: "none",
+        border: "none",
+        borderTop: "none",
+        borderBottom: "none",
+        outline: "none",
+        // Remove any potential pseudo-element styling
+        '&::before': {
+          display: 'none',
+        },
+        '&::after': {
+          display: 'none',
+        },
       }}
     >
       <Stack

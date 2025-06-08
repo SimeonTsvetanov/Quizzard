@@ -7,20 +7,30 @@ import { BrowserRouter } from "react-router-dom"; // Import BrowserRouter for ro
 // Register service worker for PWA auto-update (only in production)
 if (import.meta.env.PROD && "serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker
-      .register("/Quizzard/sw.js")
-      .then(() => {
-        // Listen for updates from the service worker
-        navigator.serviceWorker.addEventListener("message", (event) => {
-          if (event.data && event.data.type === "SW_UPDATED") {
-            // Auto-reload the page to get the latest version
-            window.location.reload();
-          }
-        });
-      })
-      .catch((registrationError) => {
-        console.log("SW registration failed:", registrationError);
+    // First unregister all existing service workers to fix theme issues
+    navigator.serviceWorker.getRegistrations().then((registrations) => {
+      registrations.forEach((registration) => {
+        console.log('Unregistering old service worker for theme fix');
+        registration.unregister();
       });
+      
+      // Then register fresh service worker with cache busting
+      navigator.serviceWorker
+        .register("/Quizzard/sw.js?v=fixed-theme-2025")
+        .then(() => {
+          console.log('Fresh service worker registered for theme fix');
+          // Listen for updates from the service worker
+          navigator.serviceWorker.addEventListener("message", (event) => {
+            if (event.data && event.data.type === "SW_UPDATED") {
+              // Auto-reload the page to get the latest version
+              window.location.reload();
+            }
+          });
+        })
+        .catch((registrationError) => {
+          console.log("SW registration failed:", registrationError);
+        });
+    });
   });
 }
 
