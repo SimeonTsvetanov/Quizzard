@@ -1,5 +1,5 @@
 // Service Worker for Quizzard PWA
-// VERSION: 2025-06-08T10:35:00Z
+// VERSION: 2025-06-08T10:44:18Z
 // Handles caching, updates, and offline functionality
 // Version updated: June 6, 2025 - SPA routing fix
 
