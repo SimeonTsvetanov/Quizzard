@@ -1,18 +1,22 @@
 // Service Worker for Quizzard PWA
-// VERSION: 2025-06-09T13:27:48Z
+// VERSION: 2025-06-09T13:41:18Z
 // Handles caching, updates, and offline functionality
 // Version updated: December 7, 2025 - Black bar fix and manifest update
 
-const CACHE_NAME = 'quizzard-mint-icons-2025';
+const CACHE_NAME = 'quizzard-favicons-new-logo-2024';
 const urlsToCache = [
   '/Quizzard/',
   '/Quizzard/index.html',
-  '/Quizzard/manifest.json?v=mint',
-  '/Quizzard/icon-192.png?v=mint',
-  '/Quizzard/icon-512.png?v=mint', 
-  '/Quizzard/apple-touch-icon.png?v=mint',
+  '/Quizzard/manifest.json?v=new-logo-2024',
+  '/Quizzard/favicon.ico?v=new-logo-2024',
+  '/Quizzard/favicon-16x16.png?v=new-logo-2024',
+  '/Quizzard/favicon-32x32.png?v=new-logo-2024',
+  '/Quizzard/favicon-96x96.png?v=new-logo-2024',
+  '/Quizzard/favicon.svg?v=new-logo-2024',
+  '/Quizzard/apple-touch-icon.png?v=new-logo-2024',
+  '/Quizzard/icon-192.png?v=new-logo-2024',
+  '/Quizzard/icon-512.png?v=new-logo-2024',
   '/Quizzard/quizzard-logo.png',
-  '/Quizzard/favicon.ico',
 ];
 
 // Install event - aggressive cache clearing for theme fix
