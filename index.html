@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" style="background-color: #FAFAFA;">  <head>
+<html lang="en" style="background-color: #121212;">  <head>
     <meta charset="UTF-8" />
     <base href="/Quizzard/" />
     <!-- Favicon Setup -->
@@ -45,23 +45,23 @@
     
     <!-- CSS Loading Screen to prevent white flash -->
     <style>
-      /* Immediate background color to prevent any white flash */
+      /* TESTING: Force dark background to test border theory */
       html {
-        background-color: #FAFAFA !important;
+        background-color: #121212 !important; /* Force dark for testing */
       }
       
       body {
-        background-color: #FAFAFA !important;
+        background-color: #121212 !important; /* Force dark for testing */
         margin: 0;
         padding: 0;
       }
       
       @media (prefers-color-scheme: dark) {
         html {
-          background-color: #121212 !important;
+          background-color: #121212 !important; /* Already forced above for testing */
         }
         body {
-          background-color: #121212 !important;
+          background-color: #121212 !important; /* Already forced above for testing */
         }
       }
       
@@ -72,7 +72,7 @@
         left: 0;
         width: 100vw;
         height: 100vh;
-        background-color: #FAFAFA; /* Light theme background */
+        background-color: #121212; /* TESTING: Force dark for testing */
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -84,7 +84,7 @@
       /* Dark theme support */
       @media (prefers-color-scheme: dark) {
         #initial-loading {
-          background-color: #121212; /* Dark theme background */
+          background-color: #121212; /* TESTING: Already forced above */
         }
       }
       
@@ -223,7 +223,7 @@
     <link rel="modulepreload" crossorigin href="/Quizzard/assets/mui-BVxukjnY.js">
     <link rel="stylesheet" crossorigin href="/Quizzard/assets/index-nh97z3yv.css">
   </head>
-  <body style="background-color: #FAFAFA;">
+  <body style="background-color: #121212;">
     <!-- Initial CSS Loading Screen -->
     <div id="initial-loading">
       <img src="/Quizzard/android-chrome-192x192.png" alt="Quizzard" onload="this.style.opacity='0.8'" onerror="this.style.display='none'; document.querySelector('#initial-loading .loading-fallback').style.display='block';" />
