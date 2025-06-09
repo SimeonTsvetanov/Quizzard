@@ -6,7 +6,7 @@
   "display": "standalone",
   "orientation": "any",
   "background_color": "#FAFAFA",
-  "theme_color": "#FAFAFA",
+  "theme_color": "#1976D2",
   "scope": "/Quizzard/",
   "categories": ["games", "entertainment", "education"],
   "lang": "en-US",

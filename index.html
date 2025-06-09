@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" style="background-color: #121212;">  <head>
+<html lang="en" style="background-color: #FAFAFA;">  <head>
     <meta charset="UTF-8" />
     <base href="/Quizzard/" />
     <!-- Favicon Setup -->
@@ -27,7 +27,7 @@
     
     <!-- Windows Tiles -->
     <meta name="msapplication-TileImage" content="/Quizzard/mstile-150x150.png" />
-    <meta name="msapplication-TileColor" content="#FAFAFA" />
+    <meta name="msapplication-TileColor" content="#1976D2" />
     
     <!-- Social Media -->
     <meta property="og:image" content="/Quizzard/og-image.png" />
@@ -45,23 +45,23 @@
     
     <!-- CSS Loading Screen to prevent white flash -->
     <style>
-      /* TESTING: Force dark background to test border theory */
+      /* Immediate background color to prevent any white flash */
       html {
-        background-color: #121212 !important; /* Force dark for testing */
+        background-color: #FAFAFA !important;
       }
       
       body {
-        background-color: #121212 !important; /* Force dark for testing */
+        background-color: #FAFAFA !important;
         margin: 0;
         padding: 0;
       }
       
       @media (prefers-color-scheme: dark) {
         html {
-          background-color: #121212 !important; /* Already forced above for testing */
+          background-color: #121212 !important;
         }
         body {
-          background-color: #121212 !important; /* Already forced above for testing */
+          background-color: #121212 !important;
         }
       }
       
@@ -72,7 +72,7 @@
         left: 0;
         width: 100vw;
         height: 100vh;
-        background-color: #121212; /* TESTING: Force dark for testing */
+        background-color: #FAFAFA; /* Light theme background */
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -82,11 +82,11 @@
       }
       
       /* Dark theme support */
-      @media (prefers-color-scheme: dark) {
-        #initial-loading {
-          background-color: #121212; /* TESTING: Already forced above */
+              @media (prefers-color-scheme: dark) {
+          #initial-loading {
+            background-color: #121212; /* Dark theme background */
+          }
         }
-      }
       
       /* Hide when React loads */
       #initial-loading.hidden {
@@ -219,7 +219,7 @@
       window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateThemeColor);
     </script>
   </head>
-  <body style="background-color: #121212;">
+  <body style="background-color: #FAFAFA;">
     <!-- Initial CSS Loading Screen -->
     <div id="initial-loading">
       <img src="/Quizzard/android-chrome-192x192.png" alt="Quizzard" onload="this.style.opacity='0.8'" onerror="this.style.display='none'; document.querySelector('#initial-loading .loading-fallback').style.display='block';" />
