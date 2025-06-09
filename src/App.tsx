@@ -165,6 +165,7 @@ function App() {
             width: "100%",
             display: "flex",
             flexDirection: "column",
+            bgcolor: 'background.default', // Theme-aware background
           }}
         >
           <Routes>

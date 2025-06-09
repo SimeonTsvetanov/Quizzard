@@ -20,6 +20,7 @@ export default function PageLayout({
         mt: 6,
         px: { xs: 1, sm: 2 },
         width: "100%",
+        bgcolor: 'background.default', // Theme-aware background
       }}
     >
       <Paper
@@ -31,6 +32,7 @@ export default function PageLayout({
           maxWidth: { xs: "100%", sm: 420 },
           mx: "auto",
           boxSizing: "border-box",
+          bgcolor: 'background.paper', // Theme-aware paper background
         }}
       >
         {/* Removed default heading to avoid duplicate headings */}
