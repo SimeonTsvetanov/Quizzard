@@ -1,5 +1,5 @@
 // Service Worker for Quizzard PWA
-// VERSION: 2025-06-09T15:16:25Z
+// VERSION: 2025-06-09T15:17:06Z
 // Handles caching, updates, and offline functionality
 // Version updated: December 7, 2025 - Black bar fix and manifest update
 
