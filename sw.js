@@ -1,9 +1,9 @@
 // Service Worker for Quizzard PWA
-// VERSION: 2025-06-08T22:31:29Z
+// VERSION: 2025-06-09T00:20:54Z
 // Handles caching, updates, and offline functionality
 // Version updated: December 7, 2025 - Black bar fix and manifest update
 
-const CACHE_NAME = 'quizzard-dark-no-borders-2025';
+const CACHE_NAME = 'quizzard-mint-icons-2025';
 const urlsToCache = [
   '/Quizzard/',
   '/Quizzard/index.html',
