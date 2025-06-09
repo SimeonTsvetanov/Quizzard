@@ -30,7 +30,7 @@ import LightModeIcon from "@mui/icons-material/LightMode";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
 import ComputerIcon from "@mui/icons-material/Computer";
 import { useState, useRef, useEffect } from "react";
-import quizzardLogo from "../assets/quizzard-logo.png";
+import quizzardLogo from "../assets/quizzard-page-logo.png";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 

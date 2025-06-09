@@ -2,7 +2,7 @@ import { Box, Typography, Link, IconButton, Stack } from "@mui/material";
 import { Link as RouterLink, useLocation } from "react-router-dom";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import LocalCafeIcon from "@mui/icons-material/LocalCafe";
-import quizzardLogo from "../assets/quizzard-logo.png";
+import quizzardLogo from "../assets/quizzard-page-logo.png";
 
 const currentYear = new Date().getFullYear();
 
