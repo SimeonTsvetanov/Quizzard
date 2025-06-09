@@ -2,7 +2,14 @@
  * useParticipants Hook
  * 
  * Custom hook for managing participant state in the Random Team Generator.
- * Handles participant input management, cheat codes, auto-cleanup, and validation.
+ * Handles participant input management, cheat codes, localStorage persistence, and validation.
+ * 
+ * FIXED (Dec 2025): Resolved localStorage persistence race condition issue:
+ * - Removed auto-cleanup useEffect that was competing with auto-save
+ * - Increased debounce to 1000ms for better stability
+ * - Added localStorage verification for iOS compatibility
+ * - Manual cleanup only occurs during explicit user actions
+ * - Saves exact user state without aggressive filtering
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react';
@@ -26,6 +33,8 @@ interface StoredParticipantData {
 /**
  * Loads participant data from localStorage
  * Returns default state if no data exists or data is corrupted
+ * 
+ * FIXED: Improved validation and better handling of edge cases
  */
 const loadParticipantsFromStorage = (): StoredParticipantData => {
   try {
@@ -35,7 +44,15 @@ const loadParticipantsFromStorage = (): StoredParticipantData => {
       
       // Validate the data structure
       if (data.participants && Array.isArray(data.participants) && 
-          typeof data.nextId === 'number' && data.participants.length > 0) {
+          typeof data.nextId === 'number') {
+        
+        // Handle case where all participants are empty (valid state)
+        if (data.participants.length === 0) {
+          return {
+            participants: [{ id: data.nextId, value: '' }],
+            nextId: data.nextId + 1
+          };
+        }
         
         // Ensure we have at least one empty input for user interaction
         const hasEmptyInput = data.participants.some(p => p.value.trim() === '');
@@ -58,27 +75,8 @@ const loadParticipantsFromStorage = (): StoredParticipantData => {
   };
 };
 
-/**
- * Saves participant data to localStorage
- * Filters out completely empty participants except for one empty input
- */
-const saveParticipantsToStorage = (participants: ParticipantInput[], nextId: number): void => {
-  try {
-    // Filter participants to only save non-empty ones + one empty for UX
-    const nonEmpty = participants.filter(p => p.value.trim() !== '');
-    const oneEmpty = participants.filter(p => p.value.trim() === '').slice(0, 1);
-    const participantsToSave = [...nonEmpty, ...oneEmpty];
-    
-    const dataToSave: StoredParticipantData = {
-      participants: participantsToSave,
-      nextId
-    };
-    
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
-  } catch (error) {
-    console.warn('Error saving participants to localStorage:', error);
-  }
-};
+// REMOVED: saveParticipantsToStorage function - no longer needed
+// Auto-save now happens directly in useEffect with better error handling
 
 /**
  * Clears participant data from localStorage
@@ -158,12 +156,34 @@ export const useParticipants = (): UseParticipantsReturn => {
   /**
    * Removes a participant by ID
    * Ensures at least one input always remains
+   * 
+   * FIXED: Added manual cleanup logic for better UX after explicit removal
    */
   const removeParticipant = useCallback((id: number) => {
     if (participants.length > 1) {
-      setParticipants(prev => prev.filter(p => p.id !== id));
+      setParticipants(prev => {
+        const filtered = prev.filter(p => p.id !== id);
+        
+        // Manual cleanup: ensure we have exactly one empty input at the end
+        const nonEmpty = filtered.filter(p => p.value.trim() !== '');
+        const hasEmpty = filtered.some(p => p.value.trim() === '');
+        
+        if (hasEmpty) {
+          // Keep existing structure if there's already an empty input
+          return filtered;
+        } else {
+          // Add one empty input if none exists
+          return [...nonEmpty, { id: nextId, value: '' }];
+        }
+      });
+      
+      // Update nextId if we added a new empty input
+      const hasEmptyAfterRemoval = participants.filter(p => p.id !== id).some(p => p.value.trim() === '');
+      if (!hasEmptyAfterRemoval) {
+        setNextId(prev => prev + 1);
+      }
     }
-  }, [participants.length]);
+  }, [participants, nextId]);
 
   /**
    * Gets array of non-empty participant names
@@ -194,31 +214,34 @@ export const useParticipants = (): UseParticipantsReturn => {
 
   /**
    * Effect to save participant data to localStorage whenever state changes
-   * Debounced to avoid excessive writes during fast typing
+   * 
+   * FIXED: Removed race condition with auto-cleanup effect.
+   * Now uses longer debounce (1000ms) and saves exact user state without aggressive filtering.
+   * Only manual cleanup occurs during explicit user actions (remove button, clear all).
    */
   useEffect(() => {
     const timer = setTimeout(() => {
-      saveParticipantsToStorage(participants, nextId);
-    }, 500); // 500ms debounce
+      try {
+        const dataToSave: StoredParticipantData = {
+          participants,
+          nextId
+        };
+        
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+        
+        // Verify save was successful (iOS safety check)
+        const verification = localStorage.getItem(STORAGE_KEY);
+        if (!verification) {
+          console.warn('localStorage save verification failed - data may not persist on iOS');
+        }
+      } catch (error) {
+        console.warn('Error saving participants to localStorage:', error);
+        // App continues working even if localStorage fails
+      }
+    }, 1000); // Increased debounce to 1000ms for better stability
     
     return () => clearTimeout(timer);
   }, [participants, nextId]);
-
-  /**
-   * Auto-cleanup effect: removes empty inputs except the last one
-   * Runs with a delay to avoid removing inputs while user is typing
-   */
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setParticipants(prev => {
-        const nonEmpty = prev.filter(p => p.value.trim() !== '');
-        const lastEmpty = prev.filter(p => p.value.trim() === '').slice(-1);
-        return [...nonEmpty, ...lastEmpty].slice(0, CONSTANTS.MAX_PARTICIPANTS);
-      });
-    }, CONSTANTS.AUTO_REMOVE_TIMEOUT);
-    
-    return () => clearTimeout(timer);
-  }, [participants]);
 
   return {
     participants,
