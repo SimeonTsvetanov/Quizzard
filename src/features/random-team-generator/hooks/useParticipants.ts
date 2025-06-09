@@ -16,11 +16,13 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import type { ParticipantInput } from '../types';
 import { CONSTANTS } from '../types';
 import { isCheatCode, generateFriendsParticipants, getNextIdAfterCheatCode } from '../utils/cheatCodes';
+import { STORAGE_KEYS } from '../../../shared/utils/storageKeys';
 
 /**
  * LocalStorage key for saving participant data
+ * FIXED: Now uses centralized storage key system to prevent migration conflicts
  */
-const STORAGE_KEY = 'quizzard-random-team-generator-participants';
+const STORAGE_KEY = STORAGE_KEYS.RTG_PARTICIPANTS;
 
 /**
  * Interface for stored participant data
