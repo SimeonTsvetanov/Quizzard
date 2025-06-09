@@ -8,13 +8,14 @@ import { useTheme } from "./shared/hooks/useTheme";
 import Header from "./shared/components/Header";
 import Footer from "./shared/components/Footer";
 import { LoadingScreen } from "./shared/components/LoadingScreen";
+import { performLegacyStorageMigration } from "./shared/utils/storageKeys";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import Terms from "./pages/Terms";
 import Contact from "./pages/Contact";
 import RandomTeamGeneratorPage from "./features/random-team-generator/pages/RandomTeamGeneratorPage";
-import PointsCounter from "./features/pointsCounter/pages/PointsCounter";
+import PointsCounter from "./features/points-counter/pages/PointsCounter";
 import Quizzes from "./features/quizzes/pages/Quizzes";
 
 const PWA_INSTALL_DISMISSED_KEY = 'user-settings-pwa-install-dismissed';
@@ -28,6 +29,12 @@ function App() {
     // Only show loading screen on initial visit or PWA launch
     return !sessionStorage.getItem('app-loaded');
   });
+
+  // Perform legacy storage migration on app startup
+  // This ensures existing user data is preserved when switching to new storage keys
+  useEffect(() => {
+    performLegacyStorageMigration();
+  }, []);
 
   const location = useLocation();
   const navigate = useNavigate();
