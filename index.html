@@ -170,8 +170,8 @@
         }
       })(window.location);
       
-      // Dynamic theme-color update based on actual theme selection
-      // FIXED: Enhanced theme color system to prevent PWA blue border issue
+      // Dynamic theme-color and background update for fullscreen PWA
+      // FIXED: Enhanced system to eliminate PWA borders in fullscreen mode
       function updateThemeColor() {
         const savedTheme = localStorage.getItem('user-settings-theme-selection');
         const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -183,16 +183,16 @@
           isDark = systemDark;
         }
         
-        const themeColor = isDark ? '#121212' : '#FAFAFA';
+        const backgroundColor = isDark ? '#121212' : '#FAFAFA';
         
         // Update existing meta theme-color tag (non-media specific)
         const metaThemeColor = document.querySelector('meta[name="theme-color"]:not([media])');
         if (metaThemeColor) {
-          metaThemeColor.setAttribute('content', themeColor);
+          metaThemeColor.setAttribute('content', backgroundColor);
         } else {
           const meta = document.createElement('meta');
           meta.name = 'theme-color';
-          meta.content = themeColor;
+          meta.content = backgroundColor;
           document.head.appendChild(meta);
         }
         
@@ -207,8 +207,12 @@
           darkThemeTag.setAttribute('content', '#121212');
         }
         
+        // FULLSCREEN FIX: Update HTML and body background colors for seamless experience
+        document.documentElement.style.backgroundColor = backgroundColor;
+        document.body.style.backgroundColor = backgroundColor;
+        
         // Store current theme color for PWA manifest sync (future enhancement)
-        sessionStorage.setItem('current-theme-color', themeColor);
+        sessionStorage.setItem('current-theme-color', backgroundColor);
       }
       
       // Update theme color immediately
