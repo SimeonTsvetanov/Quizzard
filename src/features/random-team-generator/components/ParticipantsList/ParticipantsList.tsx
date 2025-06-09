@@ -81,7 +81,6 @@ export const ParticipantsList = ({
         sx={{ 
           p: { xs: 2, sm: 3 },
           pb: 1,
-          borderBottom: `1px solid ${theme.palette.divider}`,
           flexShrink: 0,
           display: 'flex',
           alignItems: 'center',
