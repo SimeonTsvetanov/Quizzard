@@ -20,7 +20,7 @@ import {
   DialogActions,
   Stack,
 } from "@mui/material";
-import { Link, Link as RouterLink, useLocation } from "react-router-dom";
+import { Link, Link as RouterLink } from "react-router-dom";
 import MenuIcon from "@mui/icons-material/Menu";
 import HomeIcon from "@mui/icons-material/Home";
 import InfoIcon from "@mui/icons-material/Info";
@@ -29,6 +29,9 @@ import LocalCafeIcon from "@mui/icons-material/LocalCafe";
 import LightModeIcon from "@mui/icons-material/LightMode";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
 import ComputerIcon from "@mui/icons-material/Computer";
+import PrivacyTipIcon from "@mui/icons-material/PrivacyTip";
+import GavelIcon from "@mui/icons-material/Gavel";
+import ContactMailIcon from "@mui/icons-material/ContactMail";
 import { useState, useRef, useEffect } from "react";
 import quizzardLogo from "../assets/quizzard-page-logo.png";
 import Snackbar from "@mui/material/Snackbar";
@@ -39,6 +42,25 @@ interface HeaderProps {
   onThemeChange: (theme: "light" | "dark" | "system") => void;
 }
 
+/**
+ * Header Component
+ * 
+ * Application header with logo, app name, and hamburger menu navigation.
+ * Uses hamburger menu for all screen sizes to maintain consistent UX
+ * across mobile and desktop. Includes comprehensive navigation links,
+ * theme selection, and external links.
+ * 
+ * Features:
+ * - Always-visible hamburger menu (all screen sizes)
+ * - Comprehensive navigation: Home, About, Privacy, Terms, Contact, GitHub, Support
+ * - Theme selection dialog with light/dark/system options
+ * - Focus management and keyboard navigation
+ * - Responsive design following PWA-first principles
+ * - Accessibility compliance with ARIA labels and roles
+ * 
+ * @param mode - Current theme mode (light/dark/system)
+ * @param onThemeChange - Callback for theme changes
+ */
 const Header = ({ mode, onThemeChange }: HeaderProps) => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [themeDialogOpen, setThemeDialogOpen] = useState(false);
@@ -49,7 +71,6 @@ const Header = ({ mode, onThemeChange }: HeaderProps) => {
   const drawerRef = useRef<HTMLDivElement>(null);
   const theme = useTheme();
   const themeBtnRef = useRef<HTMLButtonElement>(null);
-  const location = useLocation();
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const prevMode = useRef(mode);
 
@@ -186,97 +207,10 @@ const Header = ({ mode, onThemeChange }: HeaderProps) => {
             Quizzard
           </Typography>
         </Box>
-        {/* Desktop Nav Links */}
+        {/* Hamburger Menu - Always visible for consistent UX */}
         <Box
           sx={{
-            display: { xs: "none", md: "flex" },
-            alignItems: "center",
-            gap: 1,
-            flexShrink: 0,
-          }}
-        >
-          <Button
-            variant={location.pathname === "/" ? "contained" : "text"}
-            color="primary"
-            startIcon={<HomeIcon />}
-            component={Link}
-            to="/"
-            sx={{
-              transition: theme.transitions.create(["background-color", "box-shadow", "color"], { duration: theme.transitions.duration.short }),
-              fontWeight: location.pathname === "/" ? 700 : 500,
-              '&:hover': {
-                backgroundColor: location.pathname === "/" ? theme.palette.primary.main : theme.palette.action.hover,
-                color: theme.palette.primary.contrastText,
-              },
-            }}
-          >
-            Home
-          </Button>
-          <Button
-            variant={location.pathname === "/about" ? "contained" : "text"}
-            color="primary"
-            startIcon={<InfoIcon />}
-            component={Link}
-            to="/about"
-            sx={{
-              transition: theme.transitions.create(["background-color", "box-shadow", "color"], { duration: theme.transitions.duration.short }),
-              fontWeight: location.pathname === "/about" ? 700 : 500,
-              '&:hover': {
-                backgroundColor: location.pathname === "/about" ? theme.palette.primary.main : theme.palette.action.hover,
-                color: theme.palette.primary.contrastText,
-              },
-            }}
-          >
-            About
-          </Button>
-          <Button
-            color="inherit"
-            startIcon={<GitHubIcon />}
-            component="a"
-            href="https://github.com/SimeonTsvetanov"
-            target="_blank"
-            rel="noopener"
-          >
-            GitHub
-          </Button>
-          <Button
-            color="inherit"
-            startIcon={<LocalCafeIcon />}
-            component="a"
-            href="https://buymeacoffee.com/simeontsvetanov"
-            target="_blank"
-            rel="noopener"
-          >
-            Support Me
-          </Button>
-          <Button
-            color="inherit"
-            startIcon={
-              <>
-                {mode === "light" ? (
-                  <LightModeIcon />
-                ) : mode === "dark" ? (
-                  <DarkModeIcon />
-                ) : (
-                  <ComputerIcon />
-                )}
-              </>
-            }
-            onClick={handleThemeMenuClick}
-            aria-label="Theme selection"
-            ref={themeBtnRef}
-            sx={{
-              '&:focus': { outline: 'none' },
-              '&:focus-visible': { outline: '2px solid', outlineColor: 'primary.main', outlineOffset: 2 },
-            }}
-          >
-            Theme
-          </Button>
-        </Box>
-        {/* Hamburger for mobile */}
-        <Box
-          sx={{
-            display: { xs: "flex", md: "none" },
+            display: "flex",
             flexShrink: 0,
             ml: 1,
           }}
@@ -315,7 +249,7 @@ const Header = ({ mode, onThemeChange }: HeaderProps) => {
           </IconButton>
         </Box>
       </Toolbar>
-      {/* Drawer for mobile menu */}
+      {/* Drawer for navigation menu */}
       <Drawer
         anchor="right"
         open={drawerOpen}
@@ -398,12 +332,12 @@ const Header = ({ mode, onThemeChange }: HeaderProps) => {
             </IconButton>
           </Box>
           <Divider />
+          {/* Main Navigation */}
           <List>
             <ListItem disablePadding>
-              {" "}
               <ListItemButton
                 component={Link}
-                to=""
+                to="/"
                 onClick={handleDrawerToggle}
               >
                 <ListItemIcon>
@@ -422,6 +356,42 @@ const Header = ({ mode, onThemeChange }: HeaderProps) => {
                   <InfoIcon />
                 </ListItemIcon>
                 <ListItemText primary="About" />
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton
+                component={Link}
+                to="/privacy"
+                onClick={handleDrawerToggle}
+              >
+                <ListItemIcon>
+                  <PrivacyTipIcon />
+                </ListItemIcon>
+                <ListItemText primary="Privacy Policy" />
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton
+                component={Link}
+                to="/terms"
+                onClick={handleDrawerToggle}
+              >
+                <ListItemIcon>
+                  <GavelIcon />
+                </ListItemIcon>
+                <ListItemText primary="Terms" />
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton
+                component={Link}
+                to="/contact"
+                onClick={handleDrawerToggle}
+              >
+                <ListItemIcon>
+                  <ContactMailIcon />
+                </ListItemIcon>
+                <ListItemText primary="Contact" />
               </ListItemButton>
             </ListItem>
             <ListItem disablePadding>
@@ -452,6 +422,7 @@ const Header = ({ mode, onThemeChange }: HeaderProps) => {
             </ListItem>
           </List>
           <Divider />
+          {/* Theme Selection */}
           <List>
             <ListItem disablePadding>
               <ListItemButton

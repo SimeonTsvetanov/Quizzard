@@ -117,7 +117,52 @@ src/
 - Max 150 lines per component (excluding JSDoc)
 - If larger, split into sub-components
 
-#### **2. Component Categories**
+#### **2. Header Navigation Pattern (REQUIRED)**
+```typescript
+// ✅ REQUIRED: Hamburger menu always visible across all screen sizes
+<IconButton
+  edge="start"
+  color="inherit"
+  aria-label="menu"
+  onClick={() => setDrawerOpen(true)}
+  sx={{ display: "flex" }}  // Always visible, not responsive
+>
+  <MenuIcon />
+</IconButton>
+
+// ❌ NEVER: Desktop inline navigation links
+// Do not implement responsive navigation that shows/hides based on breakpoints
+// All navigation MUST be contained within the hamburger drawer menu
+
+// ✅ REQUIRED: Drawer menu structure with all navigation links
+<Drawer anchor="left" open={drawerOpen}>
+  <List>
+    <ListItemButton component={RouterLink} to="/">
+      <ListItemIcon><HomeIcon /></ListItemIcon>
+      <ListItemText primary="Home" />
+    </ListItemButton>
+    <ListItemButton component={RouterLink} to="/about">
+      <ListItemIcon><InfoIcon /></ListItemIcon>
+      <ListItemText primary="About" />
+    </ListItemButton>
+    <ListItemButton component={RouterLink} to="/privacy">
+      <ListItemIcon><PrivacyTipIcon /></ListItemIcon>
+      <ListItemText primary="Privacy Policy" />
+    </ListItemButton>
+    <ListItemButton component={RouterLink} to="/terms">
+      <ListItemIcon><GavelIcon /></ListItemIcon>
+      <ListItemText primary="Terms" />
+    </ListItemButton>
+    <ListItemButton component={RouterLink} to="/contact">
+      <ListItemIcon><ContactMailIcon /></ListItemIcon>
+      <ListItemText primary="Contact" />
+    </ListItemButton>
+    {/* Additional navigation items */}
+  </List>
+</Drawer>
+```
+
+#### **3. Component Categories**
 
 **Container Components** (orchestrators):
 ```tsx
