@@ -237,7 +237,6 @@ const Header = ({ mode, onThemeChange }: HeaderProps) => {
         {/* Hamburger Menu - Always visible for consistent UX */}
         <IconButton
           color="inherit"
-          edge="end"
           aria-label="menu"
           onClick={handleDrawerToggle}
           aria-haspopup="true"

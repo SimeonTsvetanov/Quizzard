@@ -297,15 +297,19 @@ const headerElementSizing = {
 
 // ✅ REQUIRED: Symmetrical Icon Spacing
 // Both home and menu icons MUST have identical spacing from their respective edges
-// Avoid unnecessary wrapper containers that create spacing asymmetry
+// Avoid unnecessary wrapper containers and MUI edge props that create spacing asymmetry
 
-// ✅ CORRECT: Direct IconButton placement for symmetrical spacing
+// ✅ CORRECT: Direct IconButton placement without edge props for symmetrical spacing
 <IconButton component={RouterLink} to="/" aria-label="Home">
   <HomeRoundedIcon />
 </IconButton>
 <IconButton onClick={handleDrawerToggle} aria-label="menu">
   <MenuOpenRoundedIcon />
 </IconButton>
+
+// ❌ NEVER: Use edge props that create automatic margin adjustments
+<IconButton edge="start"><HomeRoundedIcon /></IconButton>      // -12px left margin
+<IconButton edge="end"><MenuOpenRoundedIcon /></IconButton>    // -12px right margin
 
 // ❌ NEVER: Wrap one icon in Box while leaving the other unwrapped
 <IconButton><HomeRoundedIcon /></IconButton>
