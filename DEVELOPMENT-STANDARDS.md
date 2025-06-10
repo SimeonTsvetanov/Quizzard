@@ -222,6 +222,80 @@ sx={{
 - Use MUI's styling system consistently
 - Leverage theme breakpoints for responsiveness
 
+#### **4. Header & Footer Layout Standards (REQUIRED)**
+
+```typescript
+// ✅ REQUIRED: Consistent Header/Footer sizing using padding-based height control
+// Header and Footer MUST maintain same height across all breakpoints
+
+// Header Configuration:
+<Toolbar
+  sx={{
+    minHeight: { xs: 40, sm: 48 }, // Slimmer profile for more content space
+    padding: { xs: 0.25, sm: 0.5 }, // Minimal padding for tight design
+    px: { xs: 1, sm: 2 }, // Horizontal spacing
+  }}
+>
+
+// Footer Configuration:
+<Box
+  sx={{
+    minHeight: { xs: 40, sm: 48 }, // MUST match header height exactly
+    py: { xs: 0.25, sm: 0.5 }, // MUST match header padding
+    px: { xs: 1, sm: 2 }, // MUST match header horizontal spacing
+    display: "flex",
+    alignItems: "center", // Center content vertically
+  }}
+>
+
+// ✅ REQUIRED: Icon and Text Sizing Standards
+// All header elements (icons, text) MUST have consistent sizing:
+const headerElementSizing = {
+  fontSize: { xs: '1.75rem', sm: '2.1rem' }, // 40% larger than default for prominence
+  minWidth: { xs: 36, sm: 44 }, // Container sizing matches slimmer profile
+  minHeight: { xs: 36, sm: 44 }, // Consistent with header height
+  padding: { xs: 0.25, sm: 0.5 }, // Minimal padding for elements
+};
+
+// ❌ NEVER: Size elements based on their content height
+// ❌ NEVER: Use different heights for header and footer
+// ❌ NEVER: Use large padding that makes header/footer bulky
+```
+
+#### **5. Header Navigation Standards (REQUIRED)**
+
+```typescript
+// ✅ REQUIRED: Three-element header layout
+<Toolbar>
+  {/* Left: Home icon (clickable, links to /) */}
+  <IconButton component={RouterLink} to="/" aria-label="Home">
+    <HomeRoundedIcon sx={{ fontSize: { xs: '1.75rem', sm: '2.1rem' } }} />
+  </IconButton>
+  
+  {/* Center: QUIZZARD text (non-clickable, animated) */}
+  <Box sx={{ flex: 1, display: "flex", justifyContent: "center" }}>
+    <Typography sx={{ fontSize: { xs: '1.75rem', sm: '2.1rem' } }}>
+      QUIZZARD
+    </Typography>
+  </Box>
+  
+  {/* Right: Menu icon (always visible, opens drawer) */}
+  <IconButton onClick={handleDrawerToggle} aria-label="menu">
+    <MenuOpenRoundedIcon sx={{ fontSize: { xs: '1.75rem', sm: '2.1rem' } }} />
+  </IconButton>
+</Toolbar>
+
+// ✅ REQUIRED: Drawer animation configuration
+<Drawer
+  anchor="right"
+  open={drawerOpen}
+  onClose={handleDrawerToggle}
+  transitionDuration={300} // Smooth 300ms animation
+  // ❌ NEVER: Use conflicting animation properties
+  // ❌ NEVER: Override MUI's built-in animation system
+>
+```
+
 ### **localStorage Patterns**
 
 #### **1. Centralized Storage Keys**

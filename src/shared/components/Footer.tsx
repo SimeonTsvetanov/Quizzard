@@ -32,11 +32,14 @@ export default function Footer() {
   return (
     <Box
       sx={{
-        py: 2,
-        px: 1,
+        py: { xs: 0.25, sm: 0.5 },
+        px: { xs: 1, sm: 2 },
         bgcolor: "background.default",
         color: "text.secondary",
         width: "100%",
+        minHeight: { xs: 40, sm: 48 },
+        display: "flex",
+        alignItems: "center",
       }}
     >
       <Stack

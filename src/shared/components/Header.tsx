@@ -21,8 +21,8 @@ import {
   Stack,
 } from "@mui/material";
 import { Link, Link as RouterLink } from "react-router-dom";
-import MenuIcon from "@mui/icons-material/Menu";
-import HomeIcon from "@mui/icons-material/Home";
+import MenuOpenRoundedIcon from "@mui/icons-material/MenuOpenRounded";
+import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
 import InfoIcon from "@mui/icons-material/Info";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import LocalCafeIcon from "@mui/icons-material/LocalCafe";
@@ -162,33 +162,59 @@ const Header = ({ mode, onThemeChange }: HeaderProps) => {
           width: "100%",
           maxWidth: "100%",
           px: { xs: 1, sm: 2 },
-          minHeight: { xs: 56, sm: 64 },
+          minHeight: { xs: 40, sm: 48 },
+          display: "flex",
+          alignItems: "center",
         }}
       >
-        {" "}
-        {/* Animated QUIZZARD Brand (clickable) */}
+        {/* Home Icon on Left */}
+        <IconButton
+          component={RouterLink}
+          to="/"
+          color="inherit"
+          aria-label="Home"
+          sx={{
+            padding: { xs: 0.25, sm: 0.5 },
+            minWidth: { xs: 36, sm: 44 },
+            minHeight: { xs: 36, sm: 44 },
+            mr: 0,
+            "&:focus": {
+              outline: "none",
+            },
+            "&:focus-visible": {
+              outline: "2px solid",
+              outlineColor: "primary.main",
+              outlineOffset: 2,
+            },
+            "&:hover": {
+              backgroundColor: "rgba(255, 255, 255, 0.08)",
+            },
+          }}
+        >
+          <HomeRoundedIcon sx={{ fontSize: { xs: '1.75rem', sm: '2.1rem' } }} />
+        </IconButton>
+
+        {/* Centered QUIZZARD Text (non-clickable) */}
         <Box
           sx={{
             flex: 1,
+            display: "flex",
+            justifyContent: "center",
             minWidth: 0,
             overflow: "hidden",
           }}
-          component={RouterLink}
-          to="/"
         >
           <Typography
             variant="h6"
             sx={{
               fontWeight: 700,
-              fontSize: { xs: '1.25rem', sm: '1.5rem' },
+              fontSize: { xs: '1.75rem', sm: '2.1rem' },
               background: 'linear-gradient(45deg, #1976d2, #42a5f5, #1976d2, #42a5f5)',
               backgroundSize: '400% 400%',
               backgroundClip: 'text',
               WebkitBackgroundClip: 'text',
               color: 'transparent',
               animation: 'shimmer 3s ease-in-out infinite',
-              cursor: 'pointer',
-              textDecoration: 'none',
               '@keyframes shimmer': {
                 '0%': {
                   backgroundPosition: '0% 50%'
@@ -213,7 +239,7 @@ const Header = ({ mode, onThemeChange }: HeaderProps) => {
           sx={{
             display: "flex",
             flexShrink: 0,
-            ml: 1,
+            ml: 0,
           }}
         >
           <IconButton
@@ -224,9 +250,9 @@ const Header = ({ mode, onThemeChange }: HeaderProps) => {
             aria-haspopup="true"
             aria-controls="quizzard-mobile-drawer"
             sx={{
-              padding: { xs: 1.5, sm: 1 },
-              minWidth: 48,
-              minHeight: 48,
+              padding: { xs: 0.25, sm: 0.5 },
+              minWidth: { xs: 36, sm: 44 },
+              minHeight: { xs: 36, sm: 44 },
               "&:focus": {
                 outline: "none",
               },
@@ -246,7 +272,7 @@ const Header = ({ mode, onThemeChange }: HeaderProps) => {
               },
             }}
           >
-            <MenuIcon sx={{ fontSize: { xs: 28, sm: 24 } }} />
+            <MenuOpenRoundedIcon sx={{ fontSize: { xs: '1.75rem', sm: '2.1rem' } }} />
           </IconButton>
         </Box>
       </Toolbar>
@@ -255,13 +281,13 @@ const Header = ({ mode, onThemeChange }: HeaderProps) => {
         anchor="right"
         open={drawerOpen}
         onClose={handleDrawerToggle}
+        transitionDuration={300}
         PaperProps={{
           id: "quizzard-mobile-drawer",
           role: "dialog",
           "aria-modal": true,
           "aria-labelledby": "drawer-title",
           ref: drawerRef,
-          sx: { transition: "transform 0.25s cubic-bezier(0.4,0,0.2,1)" }, // subtle animation
         }}
       >
         <Box
@@ -342,7 +368,7 @@ const Header = ({ mode, onThemeChange }: HeaderProps) => {
                 onClick={handleDrawerToggle}
               >
                 <ListItemIcon>
-                  <HomeIcon />
+                  <HomeRoundedIcon />
                 </ListItemIcon>
                 <ListItemText primary="Home" />
               </ListItemButton>
