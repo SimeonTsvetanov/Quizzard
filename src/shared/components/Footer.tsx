@@ -1,124 +1,124 @@
-import { Box, Typography, Link, IconButton, Stack } from "@mui/material";
-import { Link as RouterLink, useLocation } from "react-router-dom";
+import { Box, Typography, IconButton, Stack } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import LocalCafeIcon from "@mui/icons-material/LocalCafe";
-import quizzardLogo from "../assets/quizzard-page-logo.png";
+import ArrowCircleUpIcon from "@mui/icons-material/ArrowCircleUp";
+import HomeIcon from "@mui/icons-material/Home";
 
-const currentYear = new Date().getFullYear();
-
-const navLinks = [
-  { label: "Privacy Policy", href: "/privacy" },
-  { label: "Terms", href: "/terms" },
-  { label: "About", href: "/about" },
-  { label: "Contact", href: "/contact" },
-];
-
+/**
+ * Footer component with simplified layout and scroll-to-top functionality
+ * @returns JSX element containing footer with 4 icons and copyright text in single row
+ */
 export default function Footer() {
-  const location = useLocation();
+  const navigate = useNavigate();
+
+  /**
+   * Scrolls to top of page with smooth animation
+   */
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+  };
+
+  /**
+   * Navigates to home page
+   */
+  const goToHome = () => {
+    navigate("/");
+  };
+
   return (
     <Box
       sx={{
-        py: { xs: 3.5, sm: 4 }, // Increased padding to accommodate larger logo
-        px: { xs: 1, sm: 2 },
-        bgcolor: "background.default", 
+        py: 2,
+        px: 1,
+        bgcolor: "background.default",
         color: "text.secondary",
-        fontSize: { xs: 13, sm: 15 },
         width: "100%",
-        overflowX: "hidden",
-        // Explicitly remove any styling that could create the black bar
-        boxShadow: "none",
-        border: "none",
-        borderTop: "none",
-        borderBottom: "none",
-        outline: "none",
-        // Remove any potential pseudo-element styling
-        '&::before': {
-          display: 'none',
-        },
-        '&::after': {
-          display: 'none',
-        },
       }}
     >
       <Stack
-        direction={{ xs: "column", sm: "row" }}
+        direction="row"
         spacing={2}
         alignItems="center"
-        justifyContent="space-between"
-        sx={{ maxWidth: 900, mx: "auto", width: "100%" }}
+        justifyContent="center"
+        sx={{ width: "100%" }}
       >
-        {" "}
-        {/* Left: Copyright & Logo */}{" "}
-        <Stack direction="row" alignItems="center" spacing={1}>
-          {" "}
-          <Box
-            component="img"
-            src={quizzardLogo}
-            alt="Quizzard Logo"
-            sx={{
-              height: { xs: 29, sm: 33 },
-              width: "auto",
-              maxWidth: { xs: 29, sm: 33 },
-              objectFit: "contain",
-              mr: 1,
-              flexShrink: 0,
-              borderRadius: 1,
-            }}
-          />
-          <Typography variant="body2" sx={{ fontWeight: 500 }}>
-            &copy; {currentYear} Quizzard. All rights reserved.
-          </Typography>
-        </Stack>
-        {/* Center: Navigation Links */}
-        <Stack
-          direction={{ xs: "column", sm: "row" }}
-          spacing={{ xs: 0.5, sm: 2 }}
-          alignItems="center"
+        {/* Arrow Up Icon - Scroll to Top */}
+        <IconButton
+          onClick={scrollToTop}
+          aria-label="Scroll to top"
+          color="inherit"
+          size="small"
         >
-          {navLinks.map((link) => (
-            <Link
-              key={link.label}
-              component={RouterLink}
-              to={link.href}
-              underline="hover"
-              color={location.pathname === link.href ? "primary" : "inherit"}
-              variant="body2"
-              sx={{
-                px: 0.5,
-                py: 0.5,
-                fontWeight: location.pathname === link.href ? 700 : 400,
-                transition: "color 0.2s",
-              }}
-            >
-              {link.label}
-            </Link>
-          ))}
-        </Stack>
-        {/* Right: Social & Support */}
-        <Stack direction="row" spacing={1} alignItems="center">
-          <IconButton
-            component="a"
-            href="https://github.com/SimeonTsvetanov"
-            target="_blank"
-            rel="noopener"
-            aria-label="GitHub"
-            color="inherit"
-            size="small"
-          >
-            <GitHubIcon fontSize="medium" />
-          </IconButton>
-          <IconButton
-            component="a"
-            href="https://buymeacoffee.com/simeontsvetanov"
-            target="_blank"
-            rel="noopener"
-            aria-label="Support Me"
-            color="inherit"
-            size="small"
-          >
-            <LocalCafeIcon fontSize="medium" />
-          </IconButton>
-        </Stack>
+          <ArrowCircleUpIcon fontSize="medium" />
+        </IconButton>
+
+        {/* Home Icon - Navigate to Home */}
+        <IconButton
+          onClick={goToHome}
+          aria-label="Go to home"
+          color="inherit"
+          size="small"
+        >
+          <HomeIcon fontSize="medium" />
+        </IconButton>
+
+        {/* Animated Copyright Text */}
+        <Typography 
+          variant="body2" 
+          sx={{ 
+            fontWeight: 700,
+            fontSize: '1rem',
+            background: 'linear-gradient(45deg, #1976d2, #42a5f5, #1976d2, #42a5f5)',
+            backgroundSize: '400% 400%',
+            backgroundClip: 'text',
+            WebkitBackgroundClip: 'text',
+            color: 'transparent',
+            animation: 'shimmer 3s ease-in-out infinite',
+            '@keyframes shimmer': {
+              '0%': {
+                backgroundPosition: '0% 50%'
+              },
+              '50%': {
+                backgroundPosition: '100% 50%'
+              },
+              '100%': {
+                backgroundPosition: '0% 50%'
+              }
+            }
+          }}
+        >
+          QUIZZARD
+        </Typography>
+
+        {/* GitHub Icon */}
+        <IconButton
+          component="a"
+          href="https://github.com/SimeonTsvetanov"
+          target="_blank"
+          rel="noopener"
+          aria-label="GitHub"
+          color="inherit"
+          size="small"
+        >
+          <GitHubIcon fontSize="medium" />
+        </IconButton>
+
+        {/* Buy Me Coffee Icon */}
+        <IconButton
+          component="a"
+          href="https://buymeacoffee.com/simeontsvetanov"
+          target="_blank"
+          rel="noopener"
+          aria-label="Support Me"
+          color="inherit"
+          size="small"
+        >
+          <LocalCafeIcon fontSize="medium" />
+        </IconButton>
       </Stack>
     </Box>
   );
