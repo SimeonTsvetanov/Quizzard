@@ -935,5 +935,262 @@ try {
 - Bug report functionality
 - Feature request tracking
 
+### **Progressive UI Disclosure Patterns**
+
+#### **1. Instructional Text Guidelines (REQUIRED)**
+
+```typescript
+// ✅ REQUIRED: Self-explanatory interfaces without verbose instructions
+// Avoid cluttering UI with instructional text that can be inferred
+
+// ❌ AVOID: Verbose instructions that clutter interface
+<Typography variant="h6">
+  Participants (Add your names - each on a new line)
+</Typography>
+
+// ✅ PREFERRED: Clean, self-explanatory interfaces
+<TextField
+  placeholder="Enter participant names (one per line)"
+  multiline
+  // Interface behavior teaches users naturally
+/>
+
+// ✅ REQUIRED: Conditional content rendering
+{participants.length > 0 && (
+  <Button startIcon={<ClearIcon />}>Clear</Button>
+)}
+```
+
+#### **2. Content-First Space Optimization (REQUIRED)**
+
+```typescript
+// ✅ REQUIRED: Maximize content space by removing unnecessary headers
+// Only show titles when they provide essential context
+
+// ❌ AVOID: Static titles that consume valuable space
+<Typography variant="h6" sx={{ pb: 1 }}>
+  Participants
+</Typography>
+
+// ✅ PREFERRED: Dynamic headers that adapt to content
+{participants.length > 0 ? (
+  <Box sx={{ display: 'flex', justifyContent: 'space-between', pb: 0.5 }}>
+    <Button size="small">Clear All</Button>
+  </Box>
+) : (
+  <Box sx={{ pb: 0.5 }} /> // Maintain spacing consistency
+)}
+```
+
+### **Safety-First Button Design Patterns**
+
+#### **1. Destructive vs Constructive Action Layout (REQUIRED)**
+
+```typescript
+// ✅ REQUIRED: Safety button positioning for accident prevention
+// Primary actions centered, destructive actions edge-positioned
+
+<Box sx={{ position: 'relative', display: 'flex', justifyContent: 'center' }}>
+  {/* Primary/Constructive Action - Centered for prominence */}
+  <Button 
+    variant="contained" 
+    size="large" 
+    startIcon={<Groups />}
+    sx={{ px: 4 }} // Larger touch target
+  >
+    Generate
+  </Button>
+  
+  {/* Destructive Action - Edge positioned to prevent accidents */}
+  <IconButton 
+    sx={{ 
+      position: 'absolute', 
+      right: 0, 
+      top: '50%', 
+      transform: 'translateY(-50%)',
+      color: 'text.secondary' // Subtle color for less prominence
+    }}
+    aria-label="Clear all participants"
+  >
+    <DeleteForeverIcon />
+  </IconButton>
+</Box>
+
+// ❌ AVOID: Equal prominence for destructive and constructive actions
+<Box sx={{ display: 'flex', gap: 2 }}>
+  <Button variant="outlined" color="error">Clear</Button> // Too prominent
+  <Button variant="contained">Generate</Button>
+</Box>
+```
+
+#### **2. Visual Hierarchy for Action Safety (REQUIRED)**
+
+```typescript
+// ✅ REQUIRED: Visual cues for action importance and safety
+const actionButtonStyles = {
+  // Primary/Safe actions - Maximum visibility
+  primary: {
+    variant: 'contained',
+    size: 'large',
+    color: 'primary'
+  },
+  
+  // Secondary/Neutral actions - Medium visibility
+  secondary: {
+    variant: 'outlined',
+    size: 'medium',
+    color: 'primary'
+  },
+  
+  // Destructive actions - Minimal visibility, intentional targeting required
+  destructive: {
+    component: IconButton, // Icon only for smaller target
+    color: 'text.secondary', // Muted color
+    'aria-label': 'required', // Accessibility compensation
+    sx: { fontSize: '1.2rem' } // Smaller than primary actions
+  }
+};
+```
+
+### **Hint Text Styling Standards**
+
+#### **1. Material Design Hint Text Pattern (REQUIRED)**
+
+```typescript
+// ✅ REQUIRED: Consistent hint text styling for informational content
+const hintTextStyles = {
+  variant: 'body2',
+  sx: {
+    fontStyle: 'italic',           // Distinguish from primary content
+    color: 'text.secondary',       // Muted color for hierarchy
+    fontSize: '0.875rem',          // Smaller than body text
+    opacity: 0.8,                  // Additional subtlety
+    lineHeight: 1.6                // Optimal readability
+  }
+};
+
+// Usage example:
+<Typography {...hintTextStyles}>
+  Your 5 teams will have 3-4 members each
+</Typography>
+
+// ❌ AVOID: Regular text styling for hint content
+<Typography variant="body1" color="text.primary">
+  Distribution information // Too prominent for hint content
+</Typography>
+```
+
+#### **2. Dynamic Informational Text (REQUIRED)**
+
+```typescript
+// ✅ REQUIRED: Smart content that adapts to user context
+const getDistributionMessage = (participantCount: number, teamCount: number) => {
+  if (participantCount === 0) return null; // No clutter when empty
+  
+  const distribution = Math.ceil(participantCount / teamCount);
+  const remainder = participantCount % teamCount;
+  
+  if (remainder === 0) {
+    return `Your ${teamCount} teams will have ${distribution} members each`;
+  } else {
+    return `Your ${teamCount} teams will have ${distribution-1}-${distribution} members each`;
+  }
+};
+
+// Show only when relevant
+{distributionMessage && (
+  <Typography {...hintTextStyles}>
+    {distributionMessage}
+  </Typography>
+)}
+```
+
+### **Robust Data Conversion Patterns**
+
+#### **1. Type-Safe Number Conversion (REQUIRED)**
+
+```typescript
+// ✅ REQUIRED: Robust number conversion with fallbacks
+const safeNumberConversion = (value: unknown, fallback: number): number => {
+  // Handle multiple input types safely
+  const num = parseInt(String(value), 10);
+  return isNaN(num) ? fallback : num;
+};
+
+// Usage in pluralization logic:
+const teamCountNum = safeNumberConversion(teamCount, CONSTANTS.MIN_TEAMS);
+const teamText = teamCountNum === 1 ? 'Team' : 'Teams'; // Correct logic
+
+// ❌ AVOID: Unsafe conversion and flawed logic
+const teamText = teamCount !== 1 ? 'Teams' : 'Team'; // Broken for non-numbers
+```
+
+#### **2. localStorage Data Validation (REQUIRED)**
+
+```typescript
+// ✅ REQUIRED: Comprehensive localStorage error handling
+const loadPersistedData = <T>(key: string, fallback: T): T => {
+  try {
+    const stored = localStorage.getItem(key);
+    if (!stored) return fallback;
+    
+    const parsed = JSON.parse(stored);
+    
+    // Type validation for expected data structure
+    if (typeof parsed !== typeof fallback) {
+      console.warn(`Invalid data type for ${key}, using fallback`);
+      return fallback;
+    }
+    
+    return parsed;
+  } catch (error) {
+    console.error(`Failed to load ${key} from localStorage:`, error);
+    return fallback;
+  }
+};
+
+// Edge case handling for arrays
+const loadParticipants = (): Participant[] => {
+  const data = loadPersistedData(STORAGE_KEYS.RTG_PARTICIPANTS, []);
+  
+  // Ensure array structure
+  if (!Array.isArray(data)) {
+    console.warn('Participants data is not an array, resetting');
+    return [];
+  }
+  
+  // Filter out invalid entries
+  return data.filter(p => p && typeof p.name === 'string' && p.name.trim());
+};
+```
+
+### **Mobile-First Content Optimization**
+
+#### **1. Space Maximization Patterns (REQUIRED)**
+
+```typescript
+// ✅ REQUIRED: Progressive space optimization for mobile screens
+const mobileOptimizedLayout = {
+  // Remove non-essential headers on mobile
+  conditionalHeaders: {
+    display: { xs: 'none', sm: 'flex' }, // Hide titles on mobile
+    '& + .content': { pt: { xs: 0, sm: 2 } } // Adjust spacing
+  },
+  
+  // Compact gaps for mobile density
+  responsiveGaps: {
+    gap: 'clamp(0.25rem, 1vw, 0.5rem)', // Tight mobile, comfortable desktop
+    py: 'clamp(0.25rem, 1vw, 0.75rem)'  // Responsive padding
+  },
+  
+  // Content-first approach
+  maxContentSpace: {
+    minHeight: 0,           // Allow content to determine height
+    overflow: 'hidden',     // Prevent unwanted scrolling
+    px: { xs: 0.5, sm: 1 }  // Minimal horizontal padding
+  }
+};
+```
+
 **Last Updated:** December 18, 2025  
 **Next Review:** January 18, 2026

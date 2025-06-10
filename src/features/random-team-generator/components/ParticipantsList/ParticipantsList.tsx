@@ -13,7 +13,7 @@
  */
 
 import { Box, Typography, Button, IconButton, useTheme } from '@mui/material';
-import { Add as AddIcon, Remove as RemoveIcon, Shuffle as ShuffleIcon } from '@mui/icons-material';
+import { Add as AddIcon, Remove as RemoveIcon, Shuffle as ShuffleIcon, DeleteForever as DeleteForeverIcon } from '@mui/icons-material';
 import { ParticipantInput } from './ParticipantInput';
 import type { ParticipantInput as ParticipantInputType } from '../../types';
 import { CONSTANTS } from '../../types';
@@ -79,11 +79,15 @@ export const ParticipantsList = ({
 }: ParticipantsListProps) => {
   const theme = useTheme();
   
-  // Check if there are any filled participants to show clear button
-  const hasParticipants = filledCount > 0;
-
-  // Team count selector logic
-  const safeTeamCount = typeof teamCount === 'number' && teamCount > 0 ? teamCount : CONSTANTS.MIN_TEAMS;
+  // Team count selector logic - Ensure proper number handling
+  const safeTeamCount = (() => {
+    // Ensure we always get a valid number
+    const numericTeamCount = typeof teamCount === 'number' ? teamCount : parseInt(String(teamCount), 10);
+    const fallbackCount = typeof CONSTANTS.MIN_TEAMS === 'number' ? CONSTANTS.MIN_TEAMS : 2;
+    
+    return (!isNaN(numericTeamCount) && numericTeamCount > 0) ? numericTeamCount : fallbackCount;
+  })();
+  
   const canDecrement = safeTeamCount > CONSTANTS.MIN_TEAMS;
   const canIncrement = safeTeamCount < CONSTANTS.MAX_TEAMS;
 
@@ -101,7 +105,6 @@ export const ParticipantsList = ({
 
   // Generate button logic
   const isDisabled = !canGenerate || isGenerating;
-  const buttonText = isGenerating ? 'Generating...' : 'Generate Teams';
 
   return (
     <Box 
@@ -117,77 +120,12 @@ export const ParticipantsList = ({
         overflow: 'hidden'
       }}
     >
-      {/* Header Section */}
-      <Box 
-        sx={{ 
-          p: { xs: 2, sm: 3 },
-          pb: 1, // Optimized spacing to header-to-input gap
-          flexShrink: 0,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between'
-        }}
-      >
-        {/* Title and Hint - Using modern typography system for consistency */}
-        <Typography 
-          variant="quizTitle" 
-          component="h2"
-          sx={{ 
-            flex: 1, 
-            marginBottom: 0, // Override theme margin since we use gap layout
-            fontSize: 'clamp(1rem, 2vw, 1.25rem)', // Slightly smaller than default quizTitle for section context
-          }}
-        >
-          Participants{' '}
-          {/* Instructions using quiz-specific variant for consistency */}
-          <Typography 
-            component="span"
-            variant="quizInstructions"
-            sx={{ 
-              fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)', // Fluid scaling replaces manual breakpoints
-              fontWeight: 400,
-              marginBottom: 0, // Override theme margin for inline span
-            }}
-          >
-            (Add your names - each on a new line)
-          </Typography>
-        </Typography>
-        
-        {/* Clear All Button - Only show when there are names */}
-        {hasParticipants && (
-          <Button
-            onClick={onClearAll}
-            size="small"
-            variant="contained"
-            sx={{
-              ml: 1,
-              minWidth: 'auto',
-              px: 1.5,
-              py: 0.5,
-              fontSize: '0.75rem',
-              bgcolor: 'secondary.main',
-              color: 'secondary.contrastText',
-              boxShadow: (theme) => theme.shadows[1],
-              '&:hover': {
-                bgcolor: 'secondary.dark',
-                boxShadow: (theme) => theme.shadows[2]
-              }
-            }}
-            // Accessibility attributes
-            aria-label="Clear all participants"
-            title="Clear all participants"
-          >
-            Clear
-          </Button>
-        )}
-      </Box>
-      
       {/* Participant List - Scrollable Area */}
       <Box 
         sx={{ 
           flex: 1, // Take remaining space
           p: { xs: 1, sm: 2 },
-          pt: 0.5, // Optimized top padding for compact header-to-input spacing
+          pt: { xs: 1, sm: 2 }, // Full top padding since no header
           overflowY: 'auto', // Only this area scrolls
           display: 'flex',
           flexDirection: 'column',
@@ -291,7 +229,7 @@ export const ParticipantsList = ({
             }}
             aria-live="polite" // Announce changes to screen readers
           >
-            {safeTeamCount} Team{safeTeamCount !== 1 ? 's' : ''}
+            {safeTeamCount} Team{safeTeamCount === 1 ? '' : 's'}
           </Typography>
           
           {/* Increment Button */}
@@ -315,7 +253,7 @@ export const ParticipantsList = ({
           </IconButton>
         </Box>
 
-        {/* Distribution Message */}
+        {/* Distribution Message - Styled as hint text */}
         {distributionMessage && (
           <Typography 
             variant="quizInstructions"
@@ -326,19 +264,26 @@ export const ParticipantsList = ({
               alignItems: 'center',
               justifyContent: 'center',
               marginBottom: 0, // Override theme margin
+              fontStyle: 'italic', // Italic for hint appearance
+              color: 'text.secondary', // Muted color for subtle hint
+              fontSize: 'clamp(0.75rem, 1.3vw, 0.8rem)', // Slightly smaller than default
+              opacity: 0.8, // Subtle transparency for hint effect
             }}
           >
             {distributionMessage}
           </Typography>
         )}
 
-        {/* Generate Teams Button - Centered */}
+        {/* Action Buttons - Generate centered, Clear icon at end */}
         <Box 
           sx={{ 
             display: 'flex',
-            justifyContent: 'center'
+            alignItems: 'center',
+            justifyContent: 'center',
+            position: 'relative', // For absolute positioning of clear button
           }}
         >
+          {/* Generate Teams Button - Centered */}
           <Button
             variant="contained"
             startIcon={<ShuffleIcon />}
@@ -347,7 +292,6 @@ export const ParticipantsList = ({
             sx={{ 
               px: { xs: 4, sm: 6 },
               py: { xs: 1.5, sm: 1.25 },
-              // Font family and weight inherited from theme button typography variant
               fontSize: 'clamp(0.8rem, 1.2vw, 0.875rem)', // Fluid scaling for responsive button text
               borderRadius: 2,
               boxShadow: (theme) => theme.shadows[2],
@@ -368,8 +312,32 @@ export const ParticipantsList = ({
             aria-label={isGenerating ? 'Generating teams, please wait' : 'Generate teams'}
             title={isGenerating ? 'Generating teams...' : 'Generate teams from participants'}
           >
-            {buttonText}
+            {isGenerating ? 'Generating...' : 'Generate'}
           </Button>
+
+          {/* Clear All Icon Button - Positioned at the end */}
+          <IconButton
+            onClick={onClearAll}
+            sx={{ 
+              position: 'absolute',
+              right: 0,
+              bgcolor: 'secondary.main',
+              color: 'secondary.contrastText',
+              '&:hover': {
+                bgcolor: 'secondary.dark',
+                transform: 'scale(1.1)',
+                transition: 'all 0.2s ease-in-out'
+              },
+              '&:active': {
+                transform: 'scale(1)',
+              }
+            }}
+            // Accessibility attributes
+            aria-label="Clear all participants"
+            title="Clear all participants"
+          >
+            <DeleteForeverIcon />
+          </IconButton>
         </Box>
       </Box>
     </Box>
