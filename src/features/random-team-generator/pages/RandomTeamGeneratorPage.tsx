@@ -18,7 +18,6 @@ import { useParticipants } from '../hooks/useParticipants';
 import { useTeamGeneration } from '../hooks/useTeamGeneration';
 import { useKeyboardNavigation } from '../hooks/useKeyboardNavigation';
 import { ParticipantsList } from '../components/ParticipantsList/ParticipantsList';
-import { TeamControls } from '../components/TeamControls/TeamControls';
 import { TeamsModal } from '../components/TeamsModal/TeamsModal';
 import { ClearConfirmDialog } from '../components/Dialogs/ClearConfirmDialog';
 import { copyTeamsToClipboard } from '../utils/clipboard';
@@ -190,44 +189,54 @@ export default function RandomTeamGeneratorPage() {
 
   return (
     <>
+      {/* Full Viewport Container - App-like Layout */}
       <Box sx={{ 
-        bgcolor: 'background.default',
-        py: 3,
-        px: { xs: 1, sm: 2 },
+        // Account for browser chrome (address bar, tabs, etc.)
+        height: 'calc(100vh - 100px)', // Subtract space for browser UI elements
+        minHeight: '480px', // Safety minimum for very small screens
         display: 'flex',
-        justifyContent: 'center'
+        flexDirection: 'column',
+        bgcolor: 'background.default',
+        overflow: 'hidden', // Prevent page-level scrolling
       }}>
+        
+        {/* Main Content Area - Takes remaining space between header and footer */}
         <Box sx={{ 
-          width: '100%',
-          maxWidth: { 
-            xs: 'calc(100vw - 16px)', 
-            sm: 'clamp(280px, 50vw, 600px)' // Same as original --main-content-width
-          },
+          flex: 1, // Fill available space
           display: 'flex',
-          flexDirection: 'column',
-          gap: 3
+          justifyContent: 'center',
+          alignItems: 'center',
+          p: { xs: 1, sm: 2 }, // Padding for the card
+          overflow: 'hidden', // Ensure no overflow
         }}>
-          {/* Participants Input Section */}
-          <ParticipantsList
-            participants={participants}
-            filledCount={filledCount}
-            isOnlyInput={isOnlyInput}
-            inputRefs={inputRefs}
-            onInputChange={handleParticipantInputChange}
-            onKeyDown={handleKeyDown}
-            onRemoveParticipant={removeParticipant}
-            onClearAll={handleClearAll}
-          />
-
-          {/* Team Controls Section */}
-          <TeamControls
-            teamCount={teamCount}
-            isGenerating={generationState.isGenerating}
-            distributionMessage={distributionMessage}
-            canGenerate={canGenerate}
-            onTeamCountChange={setTeamCount}
-            onGenerateTeams={handleGenerateTeams}
-          />
+          <Box sx={{ 
+            width: '100%',
+            height: '100%', // Take full available height
+            maxWidth: { 
+              xs: 'calc(100vw - 16px)', 
+              sm: 'clamp(280px, 50vw, 600px)' // Same as original --main-content-width
+            },
+            display: 'flex',
+            flexDirection: 'column'
+          }}>
+            {/* Combined Participants Input and Team Controls Section */}
+            <ParticipantsList
+              participants={participants}
+              filledCount={filledCount}
+              isOnlyInput={isOnlyInput}
+              inputRefs={inputRefs}
+              onInputChange={handleParticipantInputChange}
+              onKeyDown={handleKeyDown}
+              onRemoveParticipant={removeParticipant}
+              onClearAll={handleClearAll}
+              teamCount={teamCount}
+              isGenerating={generationState.isGenerating}
+              distributionMessage={distributionMessage}
+              canGenerate={canGenerate}
+              onTeamCountChange={setTeamCount}
+              onGenerateTeams={handleGenerateTeams}
+            />
+          </Box>
         </Box>
       </Box>
 
