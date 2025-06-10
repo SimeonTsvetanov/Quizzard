@@ -33,7 +33,6 @@ import PrivacyTipIcon from "@mui/icons-material/PrivacyTip";
 import GavelIcon from "@mui/icons-material/Gavel";
 import ContactMailIcon from "@mui/icons-material/ContactMail";
 import { useState, useRef, useEffect } from "react";
-import quizzardLogo from "../assets/quizzard-page-logo.png";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 
@@ -167,12 +166,9 @@ const Header = ({ mode, onThemeChange }: HeaderProps) => {
         }}
       >
         {" "}
-        {/* Logo and App Name (clickable) */}
+        {/* Animated QUIZZARD Brand (clickable) */}
         <Box
           sx={{
-            display: "flex",
-            alignItems: "center",
-            cursor: "pointer",
             flex: 1,
             minWidth: 0,
             overflow: "hidden",
@@ -180,31 +176,36 @@ const Header = ({ mode, onThemeChange }: HeaderProps) => {
           component={RouterLink}
           to="/"
         >
-          <Box
-            component="img"
-            src={quizzardLogo}
-            alt="Quizzard Logo"
-            sx={{
-              height: { xs: 40, sm: 48 },
-              width: "auto",
-              maxWidth: { xs: 40, sm: 48 },
-              objectFit: "contain",
-              mr: 1,
-              flexShrink: 0,
-            }}
-          />
           <Typography
             variant="h6"
             sx={{
               fontWeight: 700,
-              color: "text.primary",
-              textDecoration: "none",
+              fontSize: { xs: '1.25rem', sm: '1.5rem' },
+              background: 'linear-gradient(45deg, #1976d2, #42a5f5, #1976d2, #42a5f5)',
+              backgroundSize: '400% 400%',
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              color: 'transparent',
+              animation: 'shimmer 3s ease-in-out infinite',
+              cursor: 'pointer',
+              textDecoration: 'none',
+              '@keyframes shimmer': {
+                '0%': {
+                  backgroundPosition: '0% 50%'
+                },
+                '50%': {
+                  backgroundPosition: '100% 50%'
+                },
+                '100%': {
+                  backgroundPosition: '0% 50%'
+                }
+               },
               whiteSpace: "nowrap",
               overflow: "hidden",
               textOverflow: "ellipsis",
             }}
           >
-            Quizzard
+            QUIZZARD
           </Typography>
         </Box>
         {/* Hamburger Menu - Always visible for consistent UX */}
