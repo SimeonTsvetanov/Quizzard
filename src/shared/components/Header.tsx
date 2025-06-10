@@ -20,7 +20,7 @@ import {
   DialogActions,
   Stack,
 } from "@mui/material";
-import { Link, Link as RouterLink } from "react-router-dom";
+import { Link, Link as RouterLink, useLocation } from "react-router-dom";
 import MenuOpenRoundedIcon from "@mui/icons-material/MenuOpenRounded";
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
 import InfoIcon from "@mui/icons-material/Info";
@@ -44,12 +44,18 @@ interface HeaderProps {
 /**
  * Header Component
  * 
- * Application header with logo, app name, and hamburger menu navigation.
- * Uses hamburger menu for all screen sizes to maintain consistent UX
- * across mobile and desktop. Includes comprehensive navigation links,
- * theme selection, and external links.
+ * Application header with dynamic text that changes based on current route,
+ * home icon, and hamburger menu navigation. Uses hamburger menu for all 
+ * screen sizes to maintain consistent UX across mobile and desktop.
+ * 
+ * Dynamic Header Text:
+ * - Home page: "QUIZZARD"
+ * - Random Team Generator: "RANDOM GENERATOR"
+ * - Points Counter: "POINTS COUNTER"
+ * - Quizzes: "QUIZZES"
  * 
  * Features:
+ * - Route-aware dynamic header text with animated shimmer effect
  * - Always-visible hamburger menu (all screen sizes)
  * - Comprehensive navigation: Home, About, Privacy, Terms, Contact, GitHub, Support
  * - Theme selection dialog with light/dark/system options
@@ -72,6 +78,21 @@ const Header = ({ mode, onThemeChange }: HeaderProps) => {
   const themeBtnRef = useRef<HTMLButtonElement>(null);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const prevMode = useRef(mode);
+  
+  // Get current location for dynamic header text
+  const location = useLocation();
+  
+  /**
+   * Get header text based on current route
+   * @param pathname - Current route pathname
+   * @returns Appropriate header text for the current page
+   */
+  const getHeaderText = (pathname: string): string => {
+    if (pathname === '/random-team-generator') return 'RANDOM GENERATOR';
+    if (pathname === '/points-counter') return 'POINTS COUNTER';
+    if (pathname === '/quizzes') return 'QUIZZES';
+    return 'QUIZZARD'; // Default for home and other pages
+  };
 
   // Focus management: focus close button when Drawer opens
   useEffect(() => {
@@ -238,7 +259,7 @@ const Header = ({ mode, onThemeChange }: HeaderProps) => {
               textOverflow: "ellipsis",
             }}
           >
-            QUIZZARD
+            {getHeaderText(location.pathname)}
           </Typography>
         </Box>
         {/* Hamburger Menu - Always visible for consistent UX */}
