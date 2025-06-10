@@ -3,7 +3,7 @@
   "short_name": "Quizzard",
   "description": "Create and manage quizzes for interactive quiz nights, team competitions, and events",
   "start_url": "/Quizzard/?source=pwa",
-  "display": "fullscreen",
+  "display": "standalone",
   "orientation": "any",
   "background_color": "#FAFAFA",
   "theme_color": "#1976D2",
