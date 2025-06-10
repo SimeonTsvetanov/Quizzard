@@ -194,12 +194,13 @@ const Header = ({ mode, onThemeChange }: HeaderProps) => {
           <HomeRoundedIcon sx={{ fontSize: { xs: '1.75rem', sm: '2.1rem' } }} />
         </IconButton>
 
-        {/* Centered QUIZZARD Text (non-clickable) */}
+        {/* Centered QUIZZARD Text (non-clickable) - Fixed vertical centering */}
         <Box
           sx={{
             flex: 1,
             display: "flex",
             justifyContent: "center",
+            alignItems: "center", // FIXED: Perfect vertical centering
             minWidth: 0,
             overflow: "hidden",
           }}
@@ -210,6 +211,11 @@ const Header = ({ mode, onThemeChange }: HeaderProps) => {
               // Font family provided by theme - no manual override needed
               fontWeight: 700,
               fontSize: { xs: '1.75rem', sm: '2.1rem' }, // Keep existing sizing standards per development requirements
+              
+              // FIXED: Perfect vertical centering by removing default margins and line height
+              margin: 0, // Remove all default margins
+              lineHeight: 1, // Tight line height for perfect centering
+              
               background: 'linear-gradient(45deg, #1976d2, #42a5f5, #1976d2, #42a5f5)',
               backgroundSize: '400% 400%',
               backgroundClip: 'text',
