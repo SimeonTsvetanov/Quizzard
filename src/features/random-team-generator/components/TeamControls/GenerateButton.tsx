@@ -52,7 +52,8 @@ export const GenerateButton = ({
       sx={{ 
         px: { xs: 4, sm: 6 },
         py: { xs: 1.5, sm: 1.25 },
-        fontSize: { xs: '0.875rem', sm: '1rem' },
+        // Font family and weight inherited from theme button typography variant
+        fontSize: 'clamp(0.8rem, 1.2vw, 0.875rem)', // Fluid scaling for responsive button text
         borderRadius: 2,
         boxShadow: (theme) => theme.shadows[2],
         '&:hover': {

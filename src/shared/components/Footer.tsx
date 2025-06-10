@@ -73,6 +73,7 @@ export default function Footer() {
         <Typography 
           variant="body2" 
           sx={{ 
+            // Font family automatically provided by theme typography system
             fontWeight: 700,
             fontSize: '1rem',
             background: 'linear-gradient(45deg, #1976d2, #42a5f5, #1976d2, #42a5f5)',

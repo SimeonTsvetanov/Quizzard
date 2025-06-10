@@ -1,7 +1,7 @@
 # 📘 **QUIZZARD DEVELOPMENT STANDARDS**
 
-**Version:** 2.1  
-**Last Updated:** December 7, 2025  
+**Version:** 2.2  
+**Last Updated:** December 18, 2025  
 **Status:** ACTIVE  
 
 ## **📋 OVERVIEW**
@@ -158,6 +158,249 @@ export const Button: React.FC<ButtonProps> = ({
 }) => {
   // Implementation
 };
+```
+
+### **Typography & Font Standards**
+
+#### **1. Google Fonts Integration (REQUIRED)**
+
+```html
+<!-- ✅ REQUIRED: Poppins font preload in index.html -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link 
+  href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" 
+  rel="stylesheet"
+>
+```
+
+#### **2. Fluid Typography System (REQUIRED)**
+
+```typescript
+// ✅ REQUIRED: Use clamp() for fluid scaling instead of manual breakpoints
+sx={{
+  fontSize: 'clamp(1.2rem, 2.5vw, 1.4rem)', // Modern fluid scaling
+  lineHeight: 1.6, // Optimal readability
+}}
+
+// ❌ NEVER: Manual responsive breakpoints for typography
+sx={{
+  fontSize: { xs: '1.2rem', sm: '1.44rem', md: '1.4rem' }, // Avoid this
+}}
+```
+
+#### **3. Typography Theme Configuration (REQUIRED)**
+
+```typescript
+// ✅ REQUIRED: Centralized typography in useTheme.ts
+const theme = createTheme({
+  typography: {
+    fontFamily: '"Poppins", "Roboto", "Helvetica", "Arial", sans-serif',
+    
+    // Fluid scaling for all variants
+    h1: { fontSize: 'clamp(2rem, 5vw, 3.5rem)' },
+    h5: { fontSize: 'clamp(1.2rem, 3vw, 1.5rem)' },
+    body1: { fontSize: 'clamp(0.9rem, 2vw, 1rem)' },
+    button: { fontSize: 'clamp(0.8rem, 1.5vw, 0.875rem)' },
+    
+    // Custom quiz-specific variants
+    quizTitle: { fontSize: 'clamp(1.5rem, 3.5vw, 2rem)' },
+    quizQuestion: { fontSize: 'clamp(1.1rem, 2.5vw, 1.3rem)' },
+    quizOption: { fontSize: 'clamp(0.9rem, 2vw, 1rem)' },
+    quizFeedback: { fontSize: 'clamp(0.85rem, 1.8vw, 0.95rem)' },
+    quizInstructions: { fontSize: 'clamp(0.8rem, 1.5vw, 0.875rem)' },
+    quizCounter: { fontSize: 'clamp(0.75rem, 1.2vw, 0.8rem)' },
+    quizScore: { fontSize: 'clamp(1.2rem, 2.8vw, 1.6rem)' },
+  }
+});
+```
+
+#### **4. Font Declaration Rules (REQUIRED)**
+
+```typescript
+// ✅ REQUIRED: Never manually declare font family in components
+sx={{
+  // Font family automatically inherited from theme
+  fontWeight: 700,
+  fontSize: 'clamp(1rem, 2vw, 1.2rem)',
+}}
+
+// ❌ NEVER: Manual font family declarations
+sx={{
+  fontFamily: '"Poppins", "Roboto", "Helvetica", "Arial", sans-serif', // Redundant
+  fontWeight: 700,
+}}
+```
+
+#### **5. Typography Variant Usage (REQUIRED)**
+
+```typescript
+// ✅ REQUIRED: Use appropriate variants for content type
+<Typography variant="quizTitle">Quiz Main Title</Typography>
+<Typography variant="quizQuestion">Question Text</Typography>
+<Typography variant="quizInstructions">Helper Instructions</Typography>
+
+// ✅ REQUIRED: Override margins in layout contexts
+<Typography 
+  variant="h1" 
+  sx={{ marginBottom: 0 }} // Override theme margin when using gap system
+>
+  Page Title
+</Typography>
+```
+
+### **Card Component Standards**
+
+#### **1. Consistent Card Sizing (REQUIRED)**
+
+```typescript
+// ✅ REQUIRED: Fixed height for visual consistency
+<Card
+  sx={{
+    // All cards same height (as tall as tallest card)
+    height: { xs: 280, sm: 320, md: 280 },
+    
+    // No mobile overflow - always use 100% width on mobile
+    width: { xs: '100%', sm: '100%', md: 280, lg: 256, xl: 304 },
+    maxWidth: { xs: 384, sm: 384, md: 320, lg: 320, xl: 320 },
+  }}
+>
+```
+
+#### **2. Card Content Distribution (REQUIRED)**
+
+```typescript
+// ✅ REQUIRED: Proper content distribution in fixed height
+<CardActionArea 
+  sx={{ 
+    height: '100%',
+    display: 'flex', 
+    flexDirection: 'column', 
+    alignItems: 'center',
+    justifyContent: 'space-between', // Distribute content evenly
+    gap: { xs: 1, sm: 1.5, md: 1.2 },
+  }}
+>
+  {/* Icon Section - Top */}
+  <Box sx={{ flexShrink: 0 }}>{icon}</Box>
+  
+  {/* Text Content - Center with flex: 1 */}
+  <Box sx={{ 
+    flex: 1, 
+    display: 'flex', 
+    flexDirection: 'column',
+    justifyContent: 'center' 
+  }}>
+    <Typography variant="h5">Title</Typography>
+    <Typography variant="body2">Description</Typography>
+  </Box>
+</CardActionArea>
+```
+
+#### **3. Card Layout Container (REQUIRED)**
+
+```typescript
+// ✅ REQUIRED: Always center cards in all layouts
+<Box
+  sx={{
+    display: 'flex',
+    flexDirection: { xs: 'column', lg: 'row' },
+    justifyContent: 'center',
+    alignItems: 'center', // Always center - no conditional alignment
+    gap: { xs: 3, sm: 4, md: 3 },
+    width: '100%',
+    maxWidth: { xs: '100%', lg: '1200px' },
+  }}
+>
+```
+
+### **Responsive Design Patterns**
+
+#### **1. Fluid Scaling Rules (REQUIRED)**
+
+```typescript
+// ✅ REQUIRED: Use clamp() for all responsive sizing
+fontSize: 'clamp(minSize, preferredSize, maxSize)',
+padding: 'clamp(0.5rem, 2vw, 1rem)',
+gap: 'clamp(1rem, 3vw, 2rem)',
+
+// ✅ REQUIRED: Optimal clamp() ranges
+// Mobile-first: clamp(mobileMin, viewportUnit, desktopMax)
+// Typography: clamp(0.8rem, 1.5vw, 0.9rem)
+// Spacing: clamp(0.5rem, 2vw, 1rem)
+// Large elements: clamp(2rem, 5vw, 3.5rem)
+```
+
+#### **2. Container Patterns (REQUIRED)**
+
+```typescript
+// ✅ REQUIRED: Gap-based spacing system
+<Box sx={{ 
+  display: 'flex',
+  flexDirection: 'column',
+  gap: { xs: 3, sm: 4, md: 3 }, // 20% bigger gaps on mobile
+  alignItems: 'center',
+}}>
+
+// ✅ REQUIRED: Prevent mobile overflow
+<Box sx={{
+  width: '100%',
+  maxWidth: { xs: '100%', sm: 'clamp(280px, 90vw, 1400px)' },
+  px: { xs: 1, sm: 2 }, // Horizontal padding for mobile safety
+}}>
+```
+
+#### **3. Icon Sizing Standards (REQUIRED)**
+
+```typescript
+// ✅ REQUIRED: Icon sizing follows development standards
+const iconSizing = {
+  // Header icons: 40% larger than default
+  header: { fontSize: { xs: '1.75rem', sm: '2.1rem' } },
+  
+  // Card icons: 20% bigger on mobile for touch targets
+  card: { fontSize: { xs: 54, sm: 61, md: 58 } },
+  
+  // Standard icons: Base sizing
+  standard: { fontSize: { xs: 24, sm: 28, md: 24 } },
+};
+```
+
+### **Performance & Maintenance Standards**
+
+#### **1. Typography Performance (REQUIRED)**
+
+```typescript
+// ✅ REQUIRED: Minimal CSS properties for performance
+sx={{
+  fontSize: 'clamp(0.9rem, 2vw, 1rem)', // Single fluid property
+  lineHeight: 1.6, // Single value
+  textAlign: 'center', // Single alignment
+  // No redundant properties
+}}
+
+// ❌ AVOID: Multiple responsive properties
+sx={{
+  fontSize: { xs: '0.9rem', sm: '0.95rem', md: '1rem' }, // Creates multiple CSS rules
+  lineHeight: { xs: 1.5, sm: 1.6, md: 1.6 }, // Unnecessary complexity
+}}
+```
+
+#### **2. Theme Import Patterns (REQUIRED)**
+
+```typescript
+// ✅ REQUIRED: Proper TypeScript integration
+import { useTheme } from '../shared/hooks/useTheme';
+import type { Theme } from '@mui/material/styles';
+
+// ✅ REQUIRED: Type-safe custom variants
+declare module '@mui/material/styles' {
+  interface TypographyVariants {
+    quizTitle: React.CSSProperties;
+    quizQuestion: React.CSSProperties;
+    quizOption: React.CSSProperties;
+  }
+}
 ```
 
 ### **Material-UI Standards**
@@ -653,5 +896,5 @@ try {
 - Bug report functionality
 - Feature request tracking
 
-**Last Updated:** December 7, 2025  
-**Next Review:** January 7, 2026
+**Last Updated:** December 18, 2025  
+**Next Review:** January 18, 2026

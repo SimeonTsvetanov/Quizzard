@@ -80,7 +80,13 @@ export const TeamsModal = ({
           pb: 1
         }}
       >
-        <Typography variant="h6" fontWeight={600}>
+        <Typography 
+          variant="quizTitle" 
+          component="h2"
+          sx={{ 
+            marginBottom: 0, // Override theme margin
+          }}
+        >
           Your Teams
         </Typography>
         

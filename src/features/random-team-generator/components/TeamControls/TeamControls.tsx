@@ -72,15 +72,14 @@ export const TeamControls = ({
       {/* Distribution Message */}
       {distributionMessage && (
         <Typography 
-          variant="body2" 
-          color="text.secondary"
-          textAlign="center"
+          variant="quizInstructions"
           sx={{ 
-            fontSize: { xs: '0.75rem', sm: '0.875rem' },
+            textAlign: 'center',
             minHeight: '1.2em', // Prevent layout shift
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'center',
+            marginBottom: 0, // Override theme margin
           }}
         >
           {distributionMessage}

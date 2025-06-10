@@ -87,21 +87,25 @@ export const ParticipantsList = ({
           justifyContent: 'space-between'
         }}
       >
-        {/* Title and Hint */}
+        {/* Title and Hint - Using modern typography system for consistency */}
         <Typography 
-          variant="h6" 
-          fontWeight={600}
-          color="text.primary"
-          sx={{ fontSize: { xs: '1rem', sm: '1.25rem' }, flex: 1 }}
+          variant="quizTitle" 
+          component="h2"
+          sx={{ 
+            flex: 1, 
+            marginBottom: 0, // Override theme margin since we use gap layout
+            fontSize: 'clamp(1rem, 2vw, 1.25rem)', // Slightly smaller than default quizTitle for section context
+          }}
         >
           Participants{' '}
+          {/* Instructions using quiz-specific variant for consistency */}
           <Typography 
             component="span"
-            variant="body2" 
-            color="text.secondary"
+            variant="quizInstructions"
             sx={{ 
-              fontSize: { xs: '0.75rem', sm: '0.875rem' },
-              fontWeight: 400
+              fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)', // Fluid scaling replaces manual breakpoints
+              fontWeight: 400,
+              marginBottom: 0, // Override theme margin for inline span
             }}
           >
             (Add your names - each on a new line)

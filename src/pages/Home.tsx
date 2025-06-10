@@ -52,41 +52,39 @@ export default function Home() {
             }}
           />
 
-          {/* Main Heading - Direct Typography, no Box wrapper */}
+          {/* Main Heading - Using fluid typography from theme */}
           <Typography 
-            variant="h2" 
-            component="h1" 
-            sx={{ 
-              fontSize: { xs: '2.4rem', sm: '2.88rem', md: '2.8rem' }, // 20% bigger on mobile (2→2.4, 2.4→2.88)
-              fontWeight: 700,
-              // NO margin/padding - gap system handles spacing
+            variant="h1" 
+            component="h1"
+            sx={{
+              marginBottom: 0, // Override theme margin, use gap system
             }}
           >
             Welcome to Quizzard
           </Typography>
 
-          {/* Subtitle - Direct Typography, no Box wrapper */}
+          {/* Subtitle - Using fluid typography from theme */}
           <Typography 
             variant="h5" 
             sx={{ 
-              fontSize: { xs: '1.08rem', sm: '1.2rem', md: '1.2rem' }, // 20% bigger on mobile (0.9→1.08, 1→1.2)
               color: 'text.secondary',
               maxWidth: '600px',
-              // NO margin/padding - gap system handles spacing
+              marginBottom: 0, // Override theme margin, use gap system
             }}
           >
             Your all-in-one quiz and team tools suite
           </Typography>
 
-          {/* Tool Cards Section */}
+          {/* Tool Cards Section - FIXED: Always centered on all screen sizes */}
           <Box
             sx={{
               display: 'flex',
               flexDirection: { xs: 'column', lg: 'row' },
               justifyContent: 'center',
-              alignItems: 'center',
+              alignItems: 'center', // FIXED: Always center the cards, both column and row layouts
               gap: { xs: 3, sm: 4, md: 3 }, // Increased gaps for mobile (20% more)
               width: '100%',
+              maxWidth: { xs: '100%', lg: '1200px' }, // Prevent overflow on large screens
             }}
           >
             <ToolCard
@@ -124,9 +122,10 @@ export default function Home() {
           severity="info" 
           sx={{ 
             width: "100%",
-            fontSize: { xs: '1.05rem', sm: '1.2rem', md: '1rem' }, // 20% bigger on mobile (0.875→1.05, 1→1.2)
             '& .MuiAlert-message': {
+              // Font family inherited from theme typography system
               fontWeight: 500,
+              fontSize: 'clamp(0.9rem, 1.8vw, 1rem)', // Fluid sizing for responsive alerts
             }
           }}
         >

@@ -86,13 +86,12 @@ export const TeamCountSelector = ({
       
       {/* Team Count Display */}
       <Typography 
-        variant="h6" 
-        fontWeight={600}
+        variant="quizCounter"
         sx={{ 
           minWidth: { xs: 120, sm: 140 },
           textAlign: 'center',
-          fontSize: { xs: '1rem', sm: '1.25rem' },
-          userSelect: 'none' // Prevent text selection
+          userSelect: 'none', // Prevent text selection
+          marginBottom: 0, // Override theme margin
         }}
         aria-live="polite" // Announce changes to screen readers
       >

@@ -111,10 +111,12 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
           textAlign: 'center',
           px: 2
         }}>
+          {/* Loading Title - Theme provides Poppins font automatically */}
           <Typography
             variant="h4"
             sx={{
-              fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' },
+              // Font family inherited from theme typography system
+              fontSize: 'clamp(1.5rem, 4vw, 2.5rem)', // Fluid scaling for responsive design
               fontWeight: 700,
               color: 'primary.main',
               mb: 0.5,
@@ -122,10 +124,13 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
           >
             Quizzard
           </Typography>
+          
+          {/* Loading Status - Consistent with theme typography */}
           <Typography
             variant="body1"
             sx={{
-              fontSize: { xs: '0.9rem', sm: '1rem' },
+              // Font family and letter spacing inherited from theme
+              fontSize: 'clamp(0.9rem, 2vw, 1rem)', // Fluid scaling for cross-device consistency
               color: 'text.secondary',
               fontWeight: 400,
               opacity: 0.7,

@@ -207,8 +207,9 @@ const Header = ({ mode, onThemeChange }: HeaderProps) => {
           <Typography
             variant="h6"
             sx={{
+              // Font family provided by theme - no manual override needed
               fontWeight: 700,
-              fontSize: { xs: '1.75rem', sm: '2.1rem' },
+              fontSize: { xs: '1.75rem', sm: '2.1rem' }, // Keep existing sizing standards per development requirements
               background: 'linear-gradient(45deg, #1976d2, #42a5f5, #1976d2, #42a5f5)',
               backgroundSize: '400% 400%',
               backgroundClip: 'text',

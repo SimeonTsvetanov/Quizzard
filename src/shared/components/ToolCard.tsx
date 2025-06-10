@@ -15,9 +15,11 @@ export default function ToolCard({ icon, title, description, onClick, disabled =
       elevation={disabled ? 2 : 4}
       sx={{
         borderRadius: 3,
-        width: { xs: '102vw', sm: '384px', md: '280px', lg: '256px', xl: '304px' },
+        // FIXED: Consistent width and NO mobile overflow
+        width: { xs: '100%', sm: '100%', md: 280, lg: 256, xl: 304 },
         maxWidth: { xs: 384, sm: 384, md: 320, lg: 320, xl: 320 },
-        minHeight: { xs: 240, sm: 269, md: 240 },
+        // FIXED: All cards same height (as tall as the tallest card)
+        height: { xs: 280, sm: 320, md: 280 }, // Fixed height ensures all cards match
         transition: "transform 0.15s, box-shadow 0.15s",
         opacity: disabled ? 0.7 : 1,
         cursor: 'pointer',
@@ -36,8 +38,9 @@ export default function ToolCard({ icon, title, description, onClick, disabled =
           display: 'flex', 
           flexDirection: 'column', 
           alignItems: 'center',
-          height: '100%',
-          gap: { xs: 0.96, sm: 1.44, md: 1.2 },
+          justifyContent: 'space-between', // FIXED: Distribute content evenly in fixed height
+          height: '100%', // Fill the entire card height
+          gap: { xs: 1, sm: 1.5, md: 1.2 }, // Slightly adjusted gaps for better distribution
           WebkitTapHighlightColor: 'transparent',
           WebkitUserSelect: 'none',
           MozUserSelect: 'none',
@@ -68,6 +71,7 @@ export default function ToolCard({ icon, title, description, onClick, disabled =
           }
         }}
       >
+        {/* Icon Section - Top */}
         <Box sx={{ 
           display: 'flex', 
           alignItems: 'center', 
@@ -77,30 +81,44 @@ export default function ToolCard({ icon, title, description, onClick, disabled =
         }}>
           {icon}
         </Box>
-        <Typography 
-          variant="h5" 
-          component="div" 
-          fontWeight={700}
-          sx={{
-            fontSize: { xs: '1.2rem', sm: '1.44rem', md: '1.4rem' },
-            textAlign: 'center',
-            flexShrink: 0
-          }}
-        >
-          {title}
-        </Typography>
-        <Typography 
-          variant="body2" 
-          color="text.secondary"
-          sx={{
-            fontSize: { xs: '0.84rem', sm: '0.96rem', md: '0.8rem' },
-            lineHeight: 1.5,
-            textAlign: 'center',
-            flexShrink: 0
-          }}
-        >
-          {description}
-        </Typography>
+        
+        {/* Text Content Section - Center with consistent spacing */}
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'center',
+          gap: { xs: 1, sm: 1.2, md: 1 },
+          flex: 1, // Take remaining space
+          justifyContent: 'center' // Center the text content vertically
+        }}>
+          {/* Card Title - Using fluid typography from theme for consistent scaling */}
+          <Typography 
+            variant="h5" 
+            component="div" 
+            fontWeight={700}
+            sx={{
+              fontSize: 'clamp(1.2rem, 2.5vw, 1.4rem)', // Modern fluid scaling replaces manual breakpoints
+              textAlign: 'center',
+              // Theme automatically provides Poppins font family
+            }}
+          >
+            {title}
+          </Typography>
+          
+          {/* Card Description - Enhanced with fluid scaling and better readability */}
+          <Typography 
+            variant="body2" 
+            color="text.secondary"
+            sx={{
+              fontSize: 'clamp(0.8rem, 1.5vw, 0.9rem)', // Fluid scaling for better cross-device consistency
+              lineHeight: 1.6, // Improved readability (was 1.5)
+              textAlign: 'center',
+              // Theme automatically provides Poppins font family and optimal letter spacing
+            }}
+          >
+            {description}
+          </Typography>
+        </Box>
       </CardActionArea>
     </Card>
   );
