@@ -38,18 +38,20 @@ export const TeamCountSelector = ({
   teamCount, 
   onTeamCountChange 
 }: TeamCountSelectorProps) => {
-  const canDecrement = teamCount > CONSTANTS.MIN_TEAMS;
-  const canIncrement = teamCount < CONSTANTS.MAX_TEAMS;
+  // Ensure teamCount is valid before using it for button states
+  const safeTeamCount = typeof teamCount === 'number' && teamCount > 0 ? teamCount : CONSTANTS.MIN_TEAMS;
+  const canDecrement = safeTeamCount > CONSTANTS.MIN_TEAMS;
+  const canIncrement = safeTeamCount < CONSTANTS.MAX_TEAMS;
 
   const handleDecrement = () => {
     if (canDecrement) {
-      onTeamCountChange(teamCount - 1);
+      onTeamCountChange(safeTeamCount - 1);
     }
   };
 
   const handleIncrement = () => {
     if (canIncrement) {
-      onTeamCountChange(teamCount + 1);
+      onTeamCountChange(safeTeamCount + 1);
     }
   };
 
@@ -94,7 +96,7 @@ export const TeamCountSelector = ({
         }}
         aria-live="polite" // Announce changes to screen readers
       >
-        {teamCount} Team{teamCount !== 1 ? 's' : ''}
+        {safeTeamCount} Team{safeTeamCount !== 1 ? 's' : ''}
       </Typography>
       
       {/* Increment Button */}

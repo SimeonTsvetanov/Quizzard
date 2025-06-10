@@ -11,7 +11,7 @@
  * - Provide snackbar feedback for user actions
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Box, Snackbar, Alert } from '@mui/material';
 import { useSnackbar } from '../../../shared/hooks/useSnackbar';
 import { useParticipants } from '../hooks/useParticipants';
@@ -55,6 +55,7 @@ export default function RandomTeamGeneratorPage() {
     generationState,
     teamsModalOpen,
     setTeamCount,
+    resetTeamCount,
     generateTeams,
     refreshTeams,
     clearTeams,
@@ -83,6 +84,16 @@ export default function RandomTeamGeneratorPage() {
   const isOnlyInput = participants.length === 1;
   const distributionMessage = getTeamDistributionMessage(participantNames.length);
   const { canGenerate } = canGenerateTeams(participantNames.length);
+  
+  /**
+   * Auto-reset team count to minimum when no participants remain
+   * This provides logical UX - empty participant list should reset team count
+   */
+  useEffect(() => {
+    if (participantNames.length === 0 && teamCount > 2) {
+      resetTeamCount();
+    }
+  }, [participantNames.length, teamCount, resetTeamCount]);
   
   /**
    * Handle input changes with cheat code detection
@@ -159,6 +170,7 @@ export default function RandomTeamGeneratorPage() {
   const confirmClearAll = () => {
     clearAllParticipants();
     clearTeams();
+    resetTeamCount(); // Reset team count to minimum when no participants
     
     // Close dialog FIRST
     setClearDialogOpen(false);

@@ -1072,3 +1072,70 @@ The project now uses the Material 3 (Material You) color system for both light a
 - This ensures you always see the latest changes when running the dev server, but still get full PWA support and offline caching in production (GitHub Pages).
 - If you need to test the service worker locally, build the app for production and serve the dist folder.
 - This is best practice for React/MUI/Vite PWAs to prevent confusion and stale content during development.
+
+**Random Team Generator Bug Fixes & Improvements (2025-12-07):**
+
+**Issues Identified & Fixed:**
+
+1. **Team Count localStorage Persistence Missing**
+   - **Problem**: Team count (e.g., 5 teams) was not saved to localStorage, always reset to 2 on page refresh
+   - **Root Cause**: `useTeamGeneration` hook used basic `useState` instead of persistence hook
+   - **Solution**: Implemented `useLocalStoragePersistence<number>` with 500ms debounce auto-save
+   - **Key**: Uses existing `STORAGE_KEYS.RTG_TEAM_COUNT` for centralized storage management
+   - **Compliance**: Follows development standards for localStorage patterns and iOS compatibility
+
+2. **"Teams s" Display Bug**
+   - **Problem**: Team count display occasionally showed "2 Teams s" instead of "2 Teams" after refresh
+   - **Root Cause**: React state initialization race condition during component mounting
+   - **Solution**: Added state validation guards with `safeTeamCount` variable in `TeamCountSelector`
+   - **Implementation**: `typeof teamCount === 'number' && teamCount > 0` checks before rendering
+
+3. **Team Count Reset Logic Enhancement**
+   - **Problem**: Team count remained high (e.g., 5) even when no participants existed
+   - **UX Issue**: Illogical to have 5 teams with 0 participants
+   - **Solution**: Added automatic team count reset to minimum (2) when participants are cleared
+
+**Technical Implementation:**
+
+```typescript
+// New resetTeamCount function in useTeamGeneration hook
+const resetTeamCount = useCallback(() => {
+  setTeamCountSafe(CONSTANTS.MIN_TEAMS);
+}, [setTeamCountSafe]);
+
+// Automatic reset on clear all action
+const confirmClearAll = () => {
+  clearAllParticipants();
+  clearTeams();
+  resetTeamCount(); // Reset team count to minimum when no participants
+  // ...
+};
+
+// Automatic reset when participants become empty
+useEffect(() => {
+  if (participantNames.length === 0 && teamCount > 2) {
+    resetTeamCount();
+  }
+}, [participantNames.length, teamCount, resetTeamCount]);
+```
+
+**Files Modified:**
+- `src/features/random-team-generator/hooks/useTeamGeneration.ts` - Added persistence and reset functionality
+- `src/features/random-team-generator/components/TeamControls/TeamCountSelector.tsx` - Added state guards
+- `src/features/random-team-generator/pages/RandomTeamGeneratorPage.tsx` - Added reset logic and monitoring
+
+**User Experience Improvements:**
+- ✅ Team count persists across page refreshes (localStorage auto-save)
+- ✅ No more "Teams s" display glitch during initialization
+- ✅ Logical team count behavior: resets to 2 when no participants exist
+- ✅ Seamless operation on all platforms (mobile, web, PWA)
+- ✅ Maintains all existing functionality without breaking changes
+
+**Development Standards Compliance:**
+- ✅ 500ms debounced localStorage auto-save pattern
+- ✅ Centralized storage keys system usage
+- ✅ iOS compatibility mode enabled
+- ✅ Comprehensive JSDoc documentation
+- ✅ TypeScript type safety with proper generics
+- ✅ React hooks best practices (useCallback, useEffect)
+- ✅ No duplicate code or production risks

@@ -9,6 +9,8 @@ import { useState, useCallback } from 'react';
 import type { Team, TeamMember, Participant, GenerationState } from '../types';
 import { CONSTANTS } from '../types';
 import { TeamGenerator } from '../utils/teamGenerator';
+import { useLocalStoragePersistence } from '../../../shared/hooks/useLocalStoragePersistence';
+import { STORAGE_KEYS } from '../../../shared/utils/storageKeys';
 
 /**
  * Hook return type defining all team generation related state and functions
@@ -24,6 +26,8 @@ interface UseTeamGenerationReturn {
   teamsModalOpen: boolean;
   /** Set team count */
   setTeamCount: (count: number) => void;
+  /** Reset team count to minimum value */
+  resetTeamCount: () => void;
   /** Generate teams from participant names */
   generateTeams: (participantNames: string[]) => Team[];
   /** Refresh existing teams with same participants */
@@ -46,9 +50,13 @@ interface UseTeamGenerationReturn {
  * @returns Object containing team generation state and management functions
  */
 export const useTeamGeneration = (): UseTeamGenerationReturn => {
-  // State management
+  // State management with localStorage persistence for team count
   const [teams, setTeams] = useState<Team[]>([]);
-  const [teamCount, setTeamCount] = useState<number>(CONSTANTS.MIN_TEAMS);
+  const { value: teamCount, setValue: setTeamCountValue } = useLocalStoragePersistence<number>(
+    STORAGE_KEYS.RTG_TEAM_COUNT,
+    CONSTANTS.MIN_TEAMS,
+    { debounceMs: 500, iosCompatMode: true }
+  );
   const [generationState, setGenerationState] = useState<GenerationState>({
     isGenerating: false,
     isRefreshing: false
@@ -168,8 +176,8 @@ export const useTeamGeneration = (): UseTeamGenerationReturn => {
    */
   const setTeamCountSafe = useCallback((count: number) => {
     const safeCount = Math.max(CONSTANTS.MIN_TEAMS, Math.min(CONSTANTS.MAX_TEAMS, count));
-    setTeamCount(safeCount);
-  }, []);
+    setTeamCountValue(safeCount);
+  }, [setTeamCountValue]);
 
   /**
    * Gets team distribution message for UI display
@@ -211,12 +219,20 @@ export const useTeamGeneration = (): UseTeamGenerationReturn => {
     return { canGenerate: true };
   }, [teamCount]);
 
+  /**
+   * Resets team count to minimum value
+   */
+  const resetTeamCount = useCallback(() => {
+    setTeamCountSafe(CONSTANTS.MIN_TEAMS);
+  }, [setTeamCountSafe]);
+
   return {
     teams,
     teamCount,
     generationState,
     teamsModalOpen,
     setTeamCount: setTeamCountSafe,
+    resetTeamCount,
     generateTeams,
     refreshTeams,
     clearTeams,

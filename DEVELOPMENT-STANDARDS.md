@@ -266,6 +266,28 @@ const loadParticipants = (): Participant[] => {
 };
 ```
 
+#### **4. useLocalStoragePersistence Hook Pattern**
+
+```typescript
+// ✅ PREFERRED: Use the standardized localStorage persistence hook
+import { useLocalStoragePersistence } from '../../../shared/hooks/useLocalStoragePersistence';
+import { STORAGE_KEYS } from '../../../shared/utils/storageKeys';
+
+// In your component or custom hook:
+const { value: teamCount, setValue: setTeamCountValue } = useLocalStoragePersistence<number>(
+  STORAGE_KEYS.RTG_TEAM_COUNT,
+  CONSTANTS.MIN_TEAMS, // default value
+  { 
+    debounceMs: 500,      // 500ms auto-save debounce
+    iosCompatMode: true   // iOS storage safety checks
+  }
+);
+
+// Use just like useState:
+const handleIncrement = () => setTeamCountValue(prev => prev + 1);
+const resetToDefault = () => setTeamCountValue(CONSTANTS.MIN_TEAMS);
+```
+
 ### **Folder Structure**
 
 ```text
