@@ -24,7 +24,7 @@
 - **Structure:**
   - Feature-based architecture:
     - `src/features/` - Contains feature-specific folders (e.g., randomTeamGenerator, pointsCounter)
-    - `src/pages/` - Contains page components 
+    - `src/pages/` - Contains page components
     - `src/shared/` - Contains shared components, hooks, utilities, and assets
   - Each main tool (Random Team Generator, Points Counter, etc.) is a separate feature/project in its own directory
   - Landing page (main) lists all tools as primary navigation/entry points
@@ -153,6 +153,8 @@ The project follows a feature-based architecture:
 - **2025-12-07:** **RANDOM TEAM GENERATOR LOCALSTORAGE PERSISTENCE FIX** - **CRITICAL BUG RESOLUTION** fixing reported issue where participant names were getting deleted on PWA refresh on Android devices. **Root cause identified**: Race condition between two competing useEffect hooks - auto-save (500ms debounce) and auto-cleanup (1000ms timeout) were modifying participant state simultaneously, causing data inconsistency and loss. **Implemented comprehensive fix**: Removed auto-cleanup useEffect entirely to eliminate race condition, increased auto-save debounce to 1000ms for better stability, added localStorage verification for iOS compatibility, enhanced error handling with graceful degradation, and simplified data structure by saving exact user state without aggressive filtering. **Manual cleanup strategy**: Cleanup now only occurs during explicit user actions (remove button, clear all) rather than automatic background processes. **Enhanced data validation**: Improved loadParticipantsFromStorage to handle edge cases and empty participant arrays. **Result**: Robust localStorage persistence system with 95% confidence that participant names will persist reliably across PWA refreshes on all platforms (Android, iOS, desktop), eliminating user frustration and data loss while maintaining all existing functionality.
 - **2025-12-07:** **STORAGE KEY MIGRATION CONFLICT FIX** - **CRITICAL FOLLOW-UP FIX** resolving storage key inconsistency that was causing continued data loss after previous localStorage fix. **Problem identified**: Migration system was moving data from legacy key `'quizzard-random-team-generator-participants'` to new centralized key `'rtg-participants'`, but useParticipants hook continued writing to the old legacy key, causing data to be lost after migration. **Solution implemented**: Updated useParticipants.ts to use centralized STORAGE_KEYS.RTG_PARTICIPANTS instead of hardcoded legacy key, ensuring data persists in the correct location that the migration system expects. **Result**: localStorage persistence should now work reliably as data is written to and read from the same storage key without migration conflicts.
 - **2025-12-07:** **HEADER HAMBURGER MENU ALWAYS VISIBLE** - **UX ENHANCEMENT** implementing user-requested navigation pattern for consistent mobile-first design. **Removed desktop navigation links**: Eliminated inline navigation links that appeared on desktop breakpoints (md+), making hamburger menu the universal navigation method across all screen sizes. **Updated responsive breakpoints**: Changed hamburger menu from `{ xs: "flex", md: "none" }` to always display `"flex"`, removed desktop navigation that was `{ xs: "none", md: "flex" }`. **Added Privacy Policy, Terms, and Contact links**: Integrated three new navigation items in hamburger drawer menu positioned between About and GitHub links, maintaining logical menu hierarchy. **Enhanced accessibility**: All drawer navigation now includes proper icons (PrivacyTip, Gavel, ContactMail) alongside text labels for better visual recognition. **Simplified header layout**: Cleaner header design focused on logo/brand and universal hamburger menu, eliminating responsive complexity of showing/hiding different navigation elements. **Result**: Consistent navigation experience across all devices from mobile phones to 4K TVs, improved accessibility with icon-based menu items, simplified header code maintenance, and enhanced PWA-first design following mobile-first principles.
+- **2025-12-08:** **UNUSED ROOT MANIFEST REMOVAL** - **CLEANUP FIX** eliminating PWA display mode conflicts by removing duplicate manifest.json file. **Problem identified**: Two manifest.json files existed - root manifest (standalone mode, 7 icons, 1.1KB) and public/manifest.json (fullscreen mode, 10 icons, 1.9KB). **Solution implemented**: Deleted unused root manifest.json to prevent conflicting PWA configurations, maintaining only the active public/manifest.json with proper fullscreen mode and comprehensive icon system. **Verified configuration**: Confirmed HTML correctly points to `/Quizzard/manifest.json` which resolves to the public version with professional PWA setup. **Result**: Single source of truth for PWA configuration, eliminated potential browser confusion about which manifest to use, cleaner repository structure, and consistent fullscreen PWA experience across all platforms.
+- **2025-12-08:** **TYPESCRIPT CONFIGURATION ERROR FIX** - **BUILD SYSTEM FIX** resolving compiler error preventing successful builds. **Problem identified**: `tsconfig.app.json` contained invalid TypeScript compiler option `"erasableSyntaxOnly": true` causing "Unknown compiler option" error. **Solution implemented**: Removed the non-existent TypeScript compiler option while preserving all valid configuration options including strict type checking, unused parameter detection, and switch case validation. **Verification completed**: Confirmed successful builds with `npm run build` and `npm run dev` after fix. **Result**: Clean TypeScript compilation without errors, proper linting enforcement maintained, and stable development environment restored for continued feature development.
 
 ---
 
@@ -463,7 +465,7 @@ const theme = useMemo(
 2. **Logo bottom cropping** - Logo size exceeded container height constraints causing visual cutoff
 3. **Responsive sizing conflicts** - Fixed dimensions not compatible with MUI responsive breakpoints
 
-### Solution Applied
+### Solution Applied - Logo Sizing Fix
 
 #### 1. Aspect Ratio Preservation (`src/components/Header.tsx`, `src/components/Footer.tsx`)
 
@@ -502,7 +504,7 @@ const theme = useMemo(
 - Maintained same import paths to preserve responsive design integrity
 - Applied MUI best practices for responsive image handling
 
-### Key Principles Applied
+### Key Principles Applied - Logo Implementation
 
 1. **Aspect Ratio Preservation**: Use `width: "auto"` with responsive heights
 2. **Container Awareness**: Logo size must fit within parent container constraints
@@ -510,7 +512,7 @@ const theme = useMemo(
 4. **Object Fit Control**: Use `objectFit: "contain"` for proper scaling
 5. **Overflow Prevention**: `maxWidth` constraints prevent layout breaking
 
-### Result
+### Result - Logo Fix Complete
 
 - ✅ Logo displays in original aspect ratio without distortion
 - ✅ No bottom cropping or visual cutoff in header/footer
@@ -527,7 +529,7 @@ const theme = useMemo(
 2. **Persistent oval/circular border after menu close** - Focus ring and ripple effects remained visible after interaction
 3. **Inconsistent touch target sizes** - Button area was too small for accessible mobile interaction
 
-### Solution Applied
+### Solution Applied - Mobile Menu Fix
 
 #### 1. Enhanced Hamburger Menu Button (`src/components/Header.tsx`)
 
@@ -598,7 +600,7 @@ const theme = useMemo(
 
 Applied same styling principles to the drawer close button for consistent UX throughout the mobile menu system.
 
-### Key Principles Applied
+### Key Principles Applied - Mobile UX
 
 1. **Accessible Touch Targets**: Minimum 48x48px button areas following WCAG guidelines
 2. **Responsive Icon Sizing**: 28px icons on mobile (xs), 24px on desktop (sm+)
@@ -608,7 +610,7 @@ Applied same styling principles to the drawer close button for consistent UX thr
 
 ### Testing
 
-- ✅ Deployed to GitHub Pages: https://simeontsvetanov.github.io/Quizzard/
+- ✅ Deployed to GitHub Pages: <https://simeontsvetanov.github.io/Quizzard/>
 - ✅ Ready for mobile device testing
 - ✅ Hamburger menu icon now properly sized and accessible
 - ✅ No more persistent focus rings or oval borders after interaction
@@ -617,7 +619,7 @@ Applied same styling principles to the drawer close button for consistent UX thr
 
 ## GitHub Actions Automated Deployment Solution (2025-06-05)
 
-### Problem Solved
+### Problem Solved - GitHub Actions Deployment
 
 The GitHub Actions workflow for automated deployment to GitHub Pages was not triggering properly, causing deployment failures and requiring manual intervention for every code update.
 
@@ -627,7 +629,7 @@ The GitHub Actions workflow for automated deployment to GitHub Pages was not tri
 2. **Insufficient Permissions**: Workflow had `contents: read` permissions but needed `contents: write` to push to gh-pages
 3. **Workflow Logic Misunderstanding**: The workflow should trigger when source code changes (main branch), not when deployment happens (gh-pages branch)
 
-### Solution Applied
+### Solution Applied - GitHub Actions Fix
 
 #### 1. Fixed Workflow Trigger Configuration
 
@@ -759,25 +761,25 @@ npm run preview  # Test production build locally
 
 #### Common Issues & Solutions
 
-**1. Workflow Not Triggering**
+##### 1. Workflow Not Triggering
 
 - ✅ Check that trigger is set to `main` branch, not `gh-pages`
 - ✅ Verify workflow file is in `.github/workflows/` directory
 - ✅ Ensure workflow file has `.yml` or `.yaml` extension
 
-**2. Permission Denied Errors**
+##### 2. Permission Denied Errors
 
 - ✅ Verify `contents: write` permission is set
 - ✅ Check that `GITHUB_TOKEN` has repository access
 - ✅ Ensure repository has GitHub Pages enabled
 
-**3. Build Failures**
+##### 3. Build Failures
 
 - ✅ Test build locally first: `npm run build`
 - ✅ Check for TypeScript errors: `npm run type-check`
 - ✅ Verify all dependencies are in `package.json`
 
-**4. Deployment Succeeds But Site Not Updated**
+##### 4. Deployment Succeeds But Site Not Updated
 
 - ✅ Check GitHub Pages source is set to "Deploy from a branch: gh-pages"
 - ✅ Verify base URL configuration in `vite.config.ts`
@@ -867,6 +869,7 @@ npm run preview  # Test production build locally
 ### Architecture Transformation
 
 **Before Refactoring:**
+
 - **1 monolithic file** (773 lines) with mixed responsibilities
 - **5 unused files** (1,238 lines of dead code - 67% of codebase)
 - Poor separation of concerns (UI + logic + state mixed)
@@ -875,6 +878,7 @@ npm run preview  # Test production build locally
 - **Total: 1,851 lines** (including unused code)
 
 **After Refactoring:**
+
 - **15 focused files** with single responsibilities
 - **0 unused code** (complete elimination)
 - Clean separation: Components + Hooks + Utils + Types
@@ -884,7 +888,7 @@ npm run preview  # Test production build locally
 
 ### File Structure (New)
 
-```
+```text
 src/features/random-team-generator/
 ├── types/
 │   └── index.ts               # All types, constants, friend names
@@ -965,11 +969,13 @@ This refactoring transforms the Random Team Generator from a poorly organized mo
 ### **Development Workflow Documentation**
 
 **Before starting ANY work:**
+
 1. Read **DEVELOPMENT-STANDARDS.md** for current architecture patterns
 2. Check **PROJECT-CHARTER.md** for project status and context
 3. Follow the established patterns exactly
 
 **After completing work:**
+
 1. Update **PROJECT-CHARTER.md** with progress and decisions
 2. Update **DEVELOPMENT-STANDARDS.md** if new patterns were established
 3. Ensure all code follows the documented standards
@@ -990,6 +996,7 @@ This refactoring transforms the Random Team Generator from a poorly organized mo
 The project now uses the Material 3 (Material You) color system for both light and dark themes. All MUI components inherit these colors globally.
 
 **Palette keys:**
+
 - primary
 - secondary
 - tertiary
@@ -1003,20 +1010,24 @@ The project now uses the Material 3 (Material You) color system for both light a
 - text
 
 **How to use:**
+
 - Use MUI's color props: `<Button color="primary">`, `<Box bgcolor="background.paper">`, etc.
 - Reference the palette demo at `/palette-demo` to see all colors and usage examples.
 - Do not hardcode hex values; always use palette keys for consistency and accessibility.
 
 **Palette Demo:**
+
 - Visit `/palette-demo` in the app to view all theme colors, swatches, and example usage.
 - Copy code snippets directly from the demo page for new features.
 
 **Best Practices:**
+
 - All new features and pages should use MUI components and palette keys for color.
 - Typography, spacing, and transitions are set globally for a modern, accessible look.
 - Navigation highlighting, snackbar feedback, and micro-animations are now standard.
 
 **Light Theme Example:**
+
 - primary: #6750A4
 - secondary: #625B71
 - tertiary: #7D5260
@@ -1031,6 +1042,7 @@ The project now uses the Material 3 (Material You) color system for both light a
 - text secondary: #49454F
 
 **Dark Theme Example:**
+
 - primary: #D0BCFF
 - secondary: #CCC2DC
 - tertiary: #EFB8C8
@@ -1045,6 +1057,7 @@ The project now uses the Material 3 (Material You) color system for both light a
 - text secondary: #CAC4D0
 
 **UI/UX Improvements (2025-06-10):**
+
 - Material 3 palette and typography
 - Navigation highlighting in header/footer
 - Snackbar feedback for theme changes
@@ -1052,6 +1065,7 @@ The project now uses the Material 3 (Material You) color system for both light a
 - All changes are global and apply to new features automatically
 
 **Service Worker Registration (2025-06-10):**
+
 - The service worker (sw.js) is only registered in production builds (import.meta.env.PROD) to avoid caching issues during local development.
 - This ensures you always see the latest changes when running the dev server, but still get full PWA support and offline caching in production (GitHub Pages).
 - If you need to test the service worker locally, build the app for production and serve the dist folder.
