@@ -42,20 +42,68 @@ interface HeaderProps {
 }
 
 /**
+ * Get dynamic header text based on current route
+ * @param pathname - Current route pathname
+ * @returns Object with text and responsive font sizing
+ */
+const getDynamicHeaderText = (pathname: string) => {
+  // Debug: Log the pathname to see what we're actually getting
+  console.log('Current pathname:', pathname);
+  
+  // Remove base path if present to get the clean route
+  const cleanPath = pathname.replace('/Quizzard', '');
+  console.log('Clean path:', cleanPath);
+  
+  // Define text mappings with character counts for responsive sizing
+  // Using clean paths (without base path) for universal compatibility
+  const textMappings = {
+    '/': { text: 'QUIZZARD', chars: 8 },
+    '': { text: 'QUIZZARD', chars: 8 }, // Empty string for base route
+    '/random-team-generator': { text: 'RANDOM GENERATOR', chars: 16 },
+    '/points-counter': { text: 'POINTS COUNTER', chars: 14 },
+    '/quizzes': { text: 'QUIZZES', chars: 7 },
+  };
+
+  // Use clean path for matching, fallback to home
+  const mapping = textMappings[cleanPath as keyof typeof textMappings] || textMappings['/'];
+  
+  // Responsive font sizing based on text length
+  // Shorter text (≤8 chars): Standard size
+  // Medium text (9-14 chars): Slightly smaller 
+  // Longer text (≥15 chars): Much smaller to fit on mobile
+  const getFontSize = (chars: number) => {
+    if (chars <= 8) {
+      return { xs: '1.75rem', sm: '2.1rem' }; // Standard size (QUIZZARD, QUIZZES)
+    } else if (chars <= 14) {
+      return { xs: '1.4rem', sm: '1.8rem' }; // Medium size (POINTS COUNTER)
+    } else {
+      return { xs: '1.2rem', sm: '1.6rem' }; // Compact size (RANDOM GENERATOR)
+    }
+  };
+
+  return {
+    text: mapping.text,
+    fontSize: getFontSize(mapping.chars)
+  };
+};
+
+/**
  * Header Component
  * 
- * Application header with dynamic text that changes based on current route,
- * home icon, and hamburger menu navigation. Uses hamburger menu for all 
- * screen sizes to maintain consistent UX across mobile and desktop.
+ * Application header with dynamic text, logo, and hamburger menu navigation.
+ * Features dynamic text that changes based on current route with responsive
+ * font sizing to ensure text always fits between icons on all screen sizes.
+ * Uses hamburger menu for all screen sizes to maintain consistent UX
+ * across mobile and desktop.
  * 
- * Dynamic Header Text:
- * - Home page: "QUIZZARD"
- * - Random Team Generator: "RANDOM GENERATOR"
- * - Points Counter: "POINTS COUNTER"
- * - Quizzes: "QUIZZES"
+ * Dynamic Text Mappings:
+ * - Home (/): "QUIZZARD" - Standard size
+ * - Random Team Generator: "RANDOM GENERATOR" - Compact size for mobile
+ * - Points Counter: "POINTS COUNTER" - Medium size
+ * - Quizzes: "QUIZZES" - Standard size
  * 
  * Features:
- * - Route-aware dynamic header text with animated shimmer effect
+ * - Route-based dynamic header text with responsive sizing
  * - Always-visible hamburger menu (all screen sizes)
  * - Comprehensive navigation: Home, About, Privacy, Terms, Contact, GitHub, Support
  * - Theme selection dialog with light/dark/system options
@@ -67,6 +115,8 @@ interface HeaderProps {
  * @param onThemeChange - Callback for theme changes
  */
 const Header = ({ mode, onThemeChange }: HeaderProps) => {
+  const location = useLocation();
+  const dynamicHeader = getDynamicHeaderText(location.pathname);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [themeDialogOpen, setThemeDialogOpen] = useState(false);
   const [pendingTheme, setPendingTheme] = useState<"light" | "dark" | "system">(
@@ -78,21 +128,6 @@ const Header = ({ mode, onThemeChange }: HeaderProps) => {
   const themeBtnRef = useRef<HTMLButtonElement>(null);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const prevMode = useRef(mode);
-  
-  // Get current location for dynamic header text
-  const location = useLocation();
-  
-  /**
-   * Get header text based on current route
-   * @param pathname - Current route pathname
-   * @returns Appropriate header text for the current page
-   */
-  const getHeaderText = (pathname: string): string => {
-    if (pathname === '/random-team-generator') return 'RANDOM GENERATOR';
-    if (pathname === '/points-counter') return 'POINTS COUNTER';
-    if (pathname === '/quizzes') return 'QUIZZES';
-    return 'QUIZZARD'; // Default for home and other pages
-  };
 
   // Focus management: focus close button when Drawer opens
   useEffect(() => {
@@ -215,15 +250,17 @@ const Header = ({ mode, onThemeChange }: HeaderProps) => {
           <HomeRoundedIcon sx={{ fontSize: { xs: '1.75rem', sm: '2.1rem' } }} />
         </IconButton>
 
-        {/* Centered QUIZZARD Text (non-clickable) - Fixed vertical centering */}
+        {/* Centered Dynamic Text (non-clickable) - Route-based with responsive sizing */}
         <Box
           sx={{
             flex: 1,
             display: "flex",
             justifyContent: "center",
-            alignItems: "center", // FIXED: Perfect vertical centering
+            alignItems: "center",
             minWidth: 0,
             overflow: "hidden",
+            // Ensure proper spacing from icons
+            mx: { xs: 0.5, sm: 1 },
           }}
         >
           <Typography
@@ -231,12 +268,13 @@ const Header = ({ mode, onThemeChange }: HeaderProps) => {
             sx={{
               // Font family provided by theme - no manual override needed
               fontWeight: 700,
-              fontSize: { xs: '1.75rem', sm: '2.1rem' }, // Keep existing sizing standards per development requirements
+              fontSize: dynamicHeader.fontSize, // Dynamic responsive sizing based on route
               
-              // FIXED: Perfect vertical centering by removing default margins and line height
-              margin: 0, // Remove all default margins
-              lineHeight: 1, // Tight line height for perfect centering
+              // Perfect vertical centering
+              margin: 0,
+              lineHeight: 1,
               
+              // Shimmer animation effect
               background: 'linear-gradient(45deg, #1976d2, #42a5f5, #1976d2, #42a5f5)',
               backgroundSize: '400% 400%',
               backgroundClip: 'text',
@@ -257,9 +295,12 @@ const Header = ({ mode, onThemeChange }: HeaderProps) => {
               whiteSpace: "nowrap",
               overflow: "hidden",
               textOverflow: "ellipsis",
+              textAlign: "center",
+              // Ensure text fits between icons with proper constraints
+              maxWidth: "calc(100% - 16px)", // Account for margins
             }}
           >
-            {getHeaderText(location.pathname)}
+            {dynamicHeader.text}
           </Typography>
         </Box>
         {/* Hamburger Menu - Always visible for consistent UX */}

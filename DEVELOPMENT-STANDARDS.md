@@ -508,17 +508,17 @@ const headerElementSizing = {
 #### **5. Header Navigation Standards (REQUIRED)**
 
 ```typescript
-// ✅ REQUIRED: Three-element header layout
+// ✅ REQUIRED: Three-element header layout with dynamic text
 <Toolbar>
   {/* Left: Home icon (clickable, links to /) */}
   <IconButton component={RouterLink} to="/" aria-label="Home">
     <HomeRoundedIcon sx={{ fontSize: { xs: '1.75rem', sm: '2.1rem' } }} />
   </IconButton>
   
-  {/* Center: QUIZZARD text (non-clickable, animated) */}
+  {/* Center: Dynamic text (non-clickable, route-based) */}
   <Box sx={{ flex: 1, display: "flex", justifyContent: "center" }}>
-    <Typography sx={{ fontSize: { xs: '1.75rem', sm: '2.1rem' } }}>
-      QUIZZARD
+    <Typography sx={{ fontSize: dynamicHeader.fontSize }}>
+      {dynamicHeader.text}
     </Typography>
   </Box>
   
@@ -528,36 +528,75 @@ const headerElementSizing = {
   </IconButton>
 </Toolbar>
 
-// ✅ REQUIRED: Drawer animation configuration
-<Drawer
-  anchor="right"
-  open={drawerOpen}
-  onClose={handleDrawerToggle}
-  transitionDuration={300} // Smooth 300ms animation
-  // ❌ NEVER: Use conflicting animation properties
-  // ❌ NEVER: Override MUI's built-in animation system
->
+// ✅ REQUIRED: Dynamic header text system
+const getDynamicHeaderText = (pathname: string) => {
+  // Strip base path for universal compatibility
+  const cleanPath = pathname.replace('/Quizzard', '');
+  
+  // Character-based responsive font sizing
+  const getFontSize = (chars: number) => {
+    if (chars <= 8) return { xs: '1.75rem', sm: '2.1rem' };      // Standard
+    else if (chars <= 14) return { xs: '1.4rem', sm: '1.8rem' }; // Medium  
+    else return { xs: '1.2rem', sm: '1.6rem' };                 // Compact
+  };
+  
+  return { text: mapping.text, fontSize: getFontSize(mapping.chars) };
+};
 
-// ✅ REQUIRED: Symmetrical Icon Spacing
-// Both home and menu icons MUST have identical spacing from their respective edges
-// Avoid unnecessary wrapper containers and MUI edge props that create spacing asymmetry
-
-// ✅ CORRECT: Direct IconButton placement without edge props for symmetrical spacing
-<IconButton component={RouterLink} to="/" aria-label="Home">
-  <HomeRoundedIcon />
-</IconButton>
-<IconButton onClick={handleDrawerToggle} aria-label="menu">
-  <MenuOpenRoundedIcon />
-</IconButton>
-
-// ❌ NEVER: Use edge props that create automatic margin adjustments
-<IconButton edge="start"><HomeRoundedIcon /></IconButton>      // -12px left margin
-<IconButton edge="end"><MenuOpenRoundedIcon /></IconButton>    // -12px right margin
-
-// ❌ NEVER: Wrap one icon in Box while leaving the other unwrapped
-<IconButton><HomeRoundedIcon /></IconButton>
-<Box><IconButton><MenuOpenRoundedIcon /></IconButton></Box> // Creates asymmetry
+// ✅ REQUIRED: Route mappings for all tools
+const textMappings = {
+  '/': { text: 'QUIZZARD', chars: 8 },
+  '/random-team-generator': { text: 'RANDOM GENERATOR', chars: 16 },
+  '/points-counter': { text: 'POINTS COUNTER', chars: 14 },
+  '/quizzes': { text: 'QUIZZES', chars: 7 },
+};
 ```
+
+#### **6. Dynamic Header Text Standards (REQUIRED)**
+
+**Route-Based Text System:**
+- **Header text MUST change based on current route** to provide context-aware branding
+- **Universal path handling** for development (clean paths) and production (base paths)
+- **Character-based responsive font sizing** to ensure text fits between header icons
+- **Automatic fallback** to default "QUIZZARD" for unknown routes
+
+**Responsive Typography Tiers:**
+```typescript
+// ✅ REQUIRED: Three-tier responsive font sizing system
+const fontSizingTiers = {
+  // Short text (≤8 characters): QUIZZARD, QUIZZES
+  standard: { xs: '1.75rem', sm: '2.1rem' },
+  
+  // Medium text (9-14 characters): POINTS COUNTER  
+  medium: { xs: '1.4rem', sm: '1.8rem' },
+  
+  // Long text (≥15 characters): RANDOM GENERATOR
+  compact: { xs: '1.2rem', sm: '1.6rem' }
+};
+```
+
+**Implementation Requirements:**
+- **React Router integration**: Use `useLocation` hook for route detection
+- **Path normalization**: Strip base paths for consistent route matching
+- **TypeScript safety**: Full type definitions for text mappings and font sizes
+- **Debug logging**: Console output for development troubleshooting
+- **Shimmer animation**: Preserve existing header animation effects
+- **Mobile-first design**: Text must fit perfectly between icons on all screen sizes
+
+**Adding New Routes:**
+```typescript
+// ✅ REQUIRED: When adding new tools, update text mappings
+const textMappings = {
+  '/new-tool': { text: 'NEW TOOL NAME', chars: 13 }, // Specify character count
+  // Font size automatically calculated based on character count
+};
+```
+
+**Cross-Platform Compatibility:**
+- **Development environment**: Handles clean paths (`/quizzes`)
+- **Production environment**: Strips base path from full paths (`/Quizzard/quizzes`)
+- **Universal fallback**: Always defaults to home text for unmatched routes
+- **Performance optimized**: Efficient character-based calculation system
 
 ### **localStorage Patterns**
 

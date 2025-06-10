@@ -1277,3 +1277,79 @@ useEffect(() => {
 - ✅ **Accessibility maintenance**: All keyboard navigation and screen reader features preserved
 - ✅ **Performance optimization**: Reduced component count and simplified DOM structure
 - ✅ **Code quality**: Clean architecture with comprehensive documentation and comments
+
+**Dynamic Header Text System Implementation (2025-12-18):**
+
+**Major UX Enhancement - Route-Based Dynamic Header Text with Responsive Typography:**
+
+**Dynamic Text Functionality Achievement:**
+- **Successfully implemented route-based header text** that automatically changes based on current page:
+  - **Home** (`/`): `"QUIZZARD"` - Standard size (8 characters)
+  - **Random Team Generator** (`/random-team-generator`): `"RANDOM GENERATOR"` - Compact size (16 characters)
+  - **Points Counter** (`/points-counter`): `"POINTS COUNTER"` - Medium size (14 characters)
+  - **Quizzes** (`/quizzes`): `"QUIZZES"` - Standard size (7 characters)
+- **Universal path handling**: Works in both development and production environments by intelligently stripping base paths
+- **Automatic fallback**: Defaults to "QUIZZARD" for unknown routes
+- **Seamless navigation experience**: Text changes instantly when navigating between tools
+
+**Responsive Font Sizing System:**
+- **Character-based scaling algorithm**: Font size automatically adjusts based on text length to ensure perfect fit between header icons
+- **Three responsive tiers**:
+  - **Short text (≤8 chars)**: `xs: '1.75rem', sm: '2.1rem'` - Full size for "QUIZZARD" and "QUIZZES"
+  - **Medium text (9-14 chars)**: `xs: '1.4rem', sm: '1.8rem'` - Reduced size for "POINTS COUNTER"
+  - **Long text (≥15 chars)**: `xs: '1.2rem', sm: '1.6rem'` - Compact size for "RANDOM GENERATOR"
+- **Mobile-optimized**: Ensures all text fits perfectly between icons on smallest screen sizes
+- **Desktop scalable**: Maintains visual hierarchy and readability on larger displays
+
+**Technical Implementation Details:**
+
+```typescript
+// Dynamic Header Text with Universal Path Handling
+const getDynamicHeaderText = (pathname: string) => {
+  // Strip base path for universal compatibility (dev vs production)
+  const cleanPath = pathname.replace('/Quizzard', '');
+  
+  // Character-based responsive font sizing
+  const getFontSize = (chars: number) => {
+    if (chars <= 8) return { xs: '1.75rem', sm: '2.1rem' };      // Standard
+    else if (chars <= 14) return { xs: '1.4rem', sm: '1.8rem' }; // Medium
+    else return { xs: '1.2rem', sm: '1.6rem' };                 // Compact
+  };
+  
+  return { text: mapping.text, fontSize: getFontSize(mapping.chars) };
+};
+```
+
+**Cross-Platform Compatibility:**
+- **Development environment**: Handles clean paths without base prefixes
+- **Production environment**: Automatically strips `/Quizzard` base path for consistent routing
+- **Debug logging**: Console output for pathname detection and troubleshooting
+- **React Router integration**: Uses `useLocation` hook for real-time route detection
+
+**User Experience Improvements:**
+- ✅ **Context-aware branding**: Users instantly know which tool they're using
+- ✅ **Professional appearance**: Tool-specific headers create dedicated app sections
+- ✅ **Mobile-first design**: Text always fits perfectly between header icons
+- ✅ **Smooth transitions**: Automatic text changes with shimmer animation preserved
+- ✅ **Accessibility maintained**: All ARIA labels and keyboard navigation preserved
+- ✅ **Cross-device consistency**: Perfect scaling from mobile phones to desktop displays
+- ✅ **Development efficiency**: Single function handles all route detection and sizing logic
+
+**Files Modified:**
+- `src/shared/components/Header.tsx` - Implemented dynamic text system with responsive sizing
+- **Enhanced imports**: Added `useLocation` from React Router for route detection
+- **Universal compatibility**: Path normalization for development and production environments
+
+**Development Standards Integration:**
+- ✅ **Component architecture**: Clean separation of text logic and responsive sizing
+- ✅ **TypeScript safety**: Full type definitions for all text mappings and font sizes
+- ✅ **Performance optimization**: Efficient character-based calculation system
+- ✅ **Responsive design**: Follows established clamp() and breakpoint patterns
+- ✅ **Code documentation**: Comprehensive JSDoc comments and inline explanations
+- ✅ **Maintainable patterns**: Easy to add new routes and customize text mappings
+
+**Brand Identity Enhancement:**
+- ✅ **Tool-specific identity**: Each feature feels like a dedicated application section
+- ✅ **Visual hierarchy**: Font sizing creates appropriate emphasis for different content lengths
+- ✅ **Consistent branding**: Maintains shimmer animation and Material Design color scheme
+- ✅ **Navigation clarity**: Users always know their current location within the application platform
