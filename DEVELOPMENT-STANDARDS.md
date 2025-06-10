@@ -294,6 +294,22 @@ const headerElementSizing = {
   // ❌ NEVER: Use conflicting animation properties
   // ❌ NEVER: Override MUI's built-in animation system
 >
+
+// ✅ REQUIRED: Symmetrical Icon Spacing
+// Both home and menu icons MUST have identical spacing from their respective edges
+// Avoid unnecessary wrapper containers that create spacing asymmetry
+
+// ✅ CORRECT: Direct IconButton placement for symmetrical spacing
+<IconButton component={RouterLink} to="/" aria-label="Home">
+  <HomeRoundedIcon />
+</IconButton>
+<IconButton onClick={handleDrawerToggle} aria-label="menu">
+  <MenuOpenRoundedIcon />
+</IconButton>
+
+// ❌ NEVER: Wrap one icon in Box while leaving the other unwrapped
+<IconButton><HomeRoundedIcon /></IconButton>
+<Box><IconButton><MenuOpenRoundedIcon /></IconButton></Box> // Creates asymmetry
 ```
 
 ### **localStorage Patterns**

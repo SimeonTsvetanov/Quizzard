@@ -235,46 +235,38 @@ const Header = ({ mode, onThemeChange }: HeaderProps) => {
           </Typography>
         </Box>
         {/* Hamburger Menu - Always visible for consistent UX */}
-        <Box
+        <IconButton
+          color="inherit"
+          edge="end"
+          aria-label="menu"
+          onClick={handleDrawerToggle}
+          aria-haspopup="true"
+          aria-controls="quizzard-mobile-drawer"
           sx={{
-            display: "flex",
-            flexShrink: 0,
-            ml: 0,
+            padding: { xs: 0.25, sm: 0.5 },
+            minWidth: { xs: 36, sm: 44 },
+            minHeight: { xs: 36, sm: 44 },
+            "&:focus": {
+              outline: "none",
+            },
+            "&:focus-visible": {
+              outline: "2px solid",
+              outlineColor: "primary.main",
+              outlineOffset: 2,
+            },
+            "& .MuiTouchRipple-root": {
+              display: "none",
+            },
+            "&::after": {
+              display: "none",
+            },
+            "&:hover": {
+              backgroundColor: "rgba(255, 255, 255, 0.08)",
+            },
           }}
         >
-          <IconButton
-            color="inherit"
-            edge="end"
-            aria-label="menu"
-            onClick={handleDrawerToggle}
-            aria-haspopup="true"
-            aria-controls="quizzard-mobile-drawer"
-            sx={{
-              padding: { xs: 0.25, sm: 0.5 },
-              minWidth: { xs: 36, sm: 44 },
-              minHeight: { xs: 36, sm: 44 },
-              "&:focus": {
-                outline: "none",
-              },
-              "&:focus-visible": {
-                outline: "2px solid",
-                outlineColor: "primary.main",
-                outlineOffset: 2,
-              },
-              "& .MuiTouchRipple-root": {
-                display: "none",
-              },
-              "&::after": {
-                display: "none",
-              },
-              "&:hover": {
-                backgroundColor: "rgba(255, 255, 255, 0.08)",
-              },
-            }}
-          >
-            <MenuOpenRoundedIcon sx={{ fontSize: { xs: '1.75rem', sm: '2.1rem' } }} />
-          </IconButton>
-        </Box>
+          <MenuOpenRoundedIcon sx={{ fontSize: { xs: '1.75rem', sm: '2.1rem' } }} />
+        </IconButton>
       </Toolbar>
       {/* Drawer for navigation menu */}
       <Drawer
