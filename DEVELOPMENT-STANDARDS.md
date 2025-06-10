@@ -169,7 +169,7 @@ export const Button: React.FC<ButtonProps> = ({
 {
   "name": "Quizzard - Quiz Management Platform",
   "short_name": "Quizzard",
-  "display": "fullscreen",           // Full PWA experience
+  "display": "standalone",           // Balanced PWA experience without aggressive browser features
   "start_url": "/Quizzard/",
   "scope": "/Quizzard/",
   "orientation": "any",              // All device orientations
@@ -180,6 +180,12 @@ export const Button: React.FC<ButtonProps> = ({
 // ❌ NEVER: Multiple manifest.json files
 // Root manifest.json has been removed to prevent conflicts
 // Always use public/manifest.json as the single source of truth
+
+// ✅ PWA Display Mode Guidelines:
+// "standalone" - Recommended for most apps (app-like without browser UI)
+// "fullscreen" - Only for games/immersive apps (may trigger aggressive browser features)
+// "minimal-ui" - Fallback with minimal browser UI
+// "browser" - Regular web page experience
 ```
 
 #### **1. Theme Usage**

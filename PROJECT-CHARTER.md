@@ -1139,3 +1139,52 @@ useEffect(() => {
 - ✅ TypeScript type safety with proper generics
 - ✅ React hooks best practices (useCallback, useEffect)
 - ✅ No duplicate code or production risks
+
+**PWA Display Mode Change - Chrome Behavior Fix (2025-12-07):**
+
+**Issue Identified:**
+- PWA fullscreen mode triggered aggressive Chrome features:
+  - Translation popup on page refresh
+  - "Search with Google" popup on text selection
+- These behaviors only occurred in installed PWA mode, not in browser
+
+**Root Cause:**
+- `"display": "fullscreen"` in manifest.json enables enhanced Chrome PWA integration
+- Chrome treats fullscreen PWAs more like native apps with additional "helpful" features
+- These features are undesired for quiz management application
+
+**Solution Applied:**
+- Changed PWA display mode from `"fullscreen"` to `"standalone"`
+- Updated DEVELOPMENT-STANDARDS.md with PWA display mode guidelines
+- Maintains app-like experience while reducing aggressive browser behaviors
+
+**Technical Change:**
+```json
+// BEFORE (problematic):
+{
+  "display": "fullscreen"  // Triggers enhanced Chrome features
+}
+
+// AFTER (balanced):
+{
+  "display": "standalone"  // App-like without aggressive behaviors
+}
+```
+
+**Expected Results:**
+- ✅ Reduced translation popup frequency
+- ✅ Reduced text selection search popups
+- ✅ Maintains PWA app-like experience
+- ✅ Preserves all existing functionality
+- ✅ Better user experience for quiz management context
+
+**Display Mode Guidelines Added:**
+- `"standalone"` - Recommended for most apps (balanced experience)
+- `"fullscreen"` - Only for games/immersive apps (may trigger features)
+- `"minimal-ui"` - Fallback with minimal browser UI
+- `"browser"` - Regular web page experience
+
+**Files Modified:**
+- `public/manifest.json` - Changed display mode
+- `DEVELOPMENT-STANDARDS.md` - Added PWA display mode guidelines
+- `PROJECT-CHARTER.md` - Documented change and rationale
