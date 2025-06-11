@@ -33,7 +33,7 @@ import {
 } from '@mui/icons-material';
 import type { Team } from '../../types';
 import { GAME_CONSTANTS, FUNNY_TEAM_NAMES } from '../../types';
-import { STORAGE_KEYS } from '../../../../shared/utils/storageKeys';
+// STORAGE_KEYS not needed - using hook's internal state management
 
 /**
  * Props interface for TeamSetup component
@@ -321,12 +321,7 @@ export const TeamSetup: React.FC<TeamSetupProps> = ({
     }
   };
 
-  /**
-   * Gets count of filled teams
-   */
-  const getFilledTeamCount = (): number => {
-    return teams.filter(t => t.value.trim() !== '').length;
-  };
+  // Team count calculation used inline where needed
 
   /**
    * Gets header text based on game status

@@ -134,7 +134,7 @@ export const usePointsCounter = (): UsePointsCounterReturn => {
   const [error, setError] = useState<string | null>(null);
   
   // === INTERNAL STATE ===
-  const [isInEditMode, setIsInEditMode] = useState(false);
+  // Internal edit mode tracking removed - handled by gameStatus
 
   /**
    * Load Persisted Game State from localStorage
@@ -262,7 +262,6 @@ export const usePointsCounter = (): UsePointsCounterReturn => {
   const startGame = useCallback((newTeams: Team[], newRounds: number) => {
     setIsLoading(true);
     setError(null);
-    setIsInEditMode(false);
 
     try {
       // Validation: Minimum requirements
@@ -329,7 +328,6 @@ export const usePointsCounter = (): UsePointsCounterReturn => {
       setTeams([]);
       setRounds(GAME_CONSTANTS.DEFAULT_ROUNDS);
       setCurrentRound(1);
-      setIsInEditMode(false);
 
       console.log('Game ended, all data cleared');
       
@@ -351,7 +349,6 @@ export const usePointsCounter = (): UsePointsCounterReturn => {
    * UI will show setup screen but with existing data pre-filled.
    */
   const enterEditMode = useCallback(() => {
-    setIsInEditMode(true);
     setError(null);
     console.log('Entered edit mode');
   }, []);
@@ -425,7 +422,6 @@ export const usePointsCounter = (): UsePointsCounterReturn => {
         setCurrentRound(newRounds);
       }
       
-      setIsInEditMode(false);
       // Keep gameStatus as 'ON' - don't change it
 
       console.log(`Updated game setup: ${newTeams.length} teams, ${newRounds} rounds`);
