@@ -1,5 +1,5 @@
 // Service Worker for Quizzard PWA
-// VERSION: 2025-06-11T20:22:34Z
+// VERSION: 2025-06-11T20:46:36Z
 // Handles caching, updates, and offline functionality
 // Version updated: December 11, 2025 - Points Counter bug fixes + Vite asset caching
 
