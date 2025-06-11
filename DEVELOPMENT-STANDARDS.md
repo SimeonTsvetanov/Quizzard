@@ -1192,5 +1192,404 @@ const mobileOptimizedLayout = {
 };
 ```
 
+### **Points Counter Feature - Complete Implementation**
+
+#### **1. Feature Overview and Architecture (IMPLEMENTED)**
+
+The Points Counter is a comprehensive quiz scoring system that provides real-time team scoring with decimal precision support, round-by-round progression, and advanced features like live editing and leaderboard management.
+
+**Core Features Implemented:**
+- **ON/OFF Game State Logic**: Clean separation between setup mode and active game
+- **Decimal Scoring Support**: Full support for scores like 0.5, 1.25, 2.75 with 2 decimal places
+- **Auto-Save Functionality**: 500ms debounced localStorage persistence
+- **Edit Mode**: Live modification of teams and rounds without losing existing scores
+- **Responsive Design**: Mobile-first with single column on small screens, grid on desktop
+- **Modern UI**: Hover effects, focus states, gradient accents, marquee animations
+- **PWA Compatibility**: Offline support through localStorage
+
+**Technical Architecture:**
+```typescript
+// Primary Components Structure
+src/features/points-counter/
+├── pages/PointsCounter.tsx           // Main orchestrator component
+├── hooks/usePointsCounter.ts         // Complete game state management
+├── components/
+│   ├── TeamSetup/                    // Setup and edit mode interface
+│   ├── GameScreen/                   // Active game interface
+│   ├── TeamCard/                     // Individual team scoring cards
+│   ├── RoundNavigation/             // Round switching navigation
+│   └── Leaderboard/                 // Rankings and scoring display
+├── utils/gameUtils.ts               // Scoring calculations and utilities
+├── types/index.ts                   // Complete TypeScript definitions
+└── constants/                       // Game configuration constants
+```
+
+#### **2. Game State Management (IMPLEMENTED)**
+
+**usePointsCounter Hook - v2.0.0:**
+```typescript
+// Complete game state with ON/OFF logic
+interface GameData {
+  gameStatus: 'ON' | 'OFF';
+  teams: Team[];
+  rounds: number;
+  currentRound: number;
+  createdAt: number;
+  updatedAt: number;
+}
+
+// Key state management features:
+- Auto-save only when game is ON (prevents unnecessary localStorage writes)
+- 500ms debounced persistence following development standards
+- Complete data validation and error recovery
+- Migration support from legacy storage keys
+- Atomic localStorage updates (single JSON object)
+```
+
+**State Flow:**
+1. **OFF Mode**: Team setup screen, no auto-save, fresh game creation
+2. **ON Mode**: Active game screen, auto-save enabled, score tracking
+3. **Edit Mode**: Return to setup while keeping game ON, preserve existing scores
+
+#### **3. Decimal Scoring System (IMPLEMENTED)**
+
+**Technical Implementation:**
+```typescript
+// Game constants for scoring validation
+GAME_CONSTANTS = {
+  MIN_SCORE: -999,
+  MAX_SCORE: 999,
+  SCORE_DECIMAL_PLACES: 2,
+}
+
+// Utility functions
+isValidScore(score: number): boolean
+roundScore(score: number): number
+calculateTeamTotalScore(team: Team): number
+```
+
+**Features:**
+- Supports any decimal value: 0.5, 1.25, 2.75, 0.33, etc.
+- Automatic rounding to 2 decimal places for consistency
+- Real-time validation in input fields
+- Proper floating-point arithmetic handling
+- Range validation (-999 to 999)
+
+#### **4. User Interface Components (IMPLEMENTED)**
+
+**TeamCard Component - v2.0.0:**
+```typescript
+// Modern team card with marquee animation
+Features:
+- Marquee text animation for long team names (10s duration)
+- Smart overflow detection with window resize handling
+- Decimal score input with validation and error states
+- Hover/focus effects with gradient accent lines
+- Responsive sizing: 220-240px width, 145-165px height
+- Modern shadows and subtle animations
+
+// Marquee animation details:
+- Trigger: Only on hover/focus AND when text overflows
+- Pattern: Start (8%) → Scroll (42%) → Pause (35%) → Reset (15%)
+- Duration: 10 seconds for comfortable reading
+- Uses hardware acceleration (transform3d)
+```
+
+**GameScreen Component - v2.0.0:**
+```typescript
+// Main game interface following TeamSetup pattern
+Layout Structure:
+- Single card container with calc(100vh - 100px) height
+- Three sections: Navigation (top), Team grid (middle), Actions (bottom)
+- No borders/dividers anywhere for clean modern design
+- Responsive grid: Single column mobile, 2-4 columns desktop
+
+Action Buttons:
+- Leaderboard (primary): Shows ranking modal
+- Copy (secondary): Copies leaderboard to clipboard
+- Edit (info): Enters edit mode while keeping game ON
+- End Game (error): Confirmation dialog, clears all data
+```
+
+**TeamSetup Component - v2.1.0:**
+```typescript
+// Enhanced setup with edit mode support
+Dynamic Headers:
+- OFF Mode: "Teams Setup" + "Start Quiz Game"
+- ON Mode: "Edit Teams" + "Continue Game"
+
+Validation:
+- Minimum 1 team + 1 round with exact error message
+- Real-time validation feedback
+- Auto-expanding team inputs
+
+Edit Mode Features:
+- Pre-fills existing teams and rounds
+- Preserves existing scores when updating
+- Seamless transition back to game screen
+```
+
+#### **5. Storage Architecture (IMPLEMENTED)**
+
+**Centralized Storage Pattern:**
+```typescript
+// Single localStorage key for atomic updates
+STORAGE_KEYS.PC_GAME_STATE = 'pc-current-game-state'
+
+// Complete game data in single JSON object
+interface GameData {
+  gameStatus: 'ON' | 'OFF';
+  teams: Team[];
+  rounds: number;
+  currentRound: number;
+  createdAt: number;
+  updatedAt: number;
+}
+
+// Auto-save pattern (500ms debounced):
+useEffect(() => {
+  const timeoutId = setTimeout(() => {
+    if (gameStatus === 'ON' && teams.length > 0) {
+      saveGameState();
+    }
+  }, 500);
+  return () => clearTimeout(timeoutId);
+}, [gameStatus, teams, rounds, currentRound]);
+```
+
+**PWA Compatibility:**
+- Offline functionality through localStorage
+- Data persistence across browser sessions
+- Atomic updates prevent partial state corruption
+- Error handling with graceful fallbacks
+
+#### **6. Responsive Design Implementation (IMPLEMENTED)**
+
+**Mobile-First Approach:**
+```typescript
+// Team cards responsive layout
+Mobile (xs): Single column, centered cards
+Desktop (sm+): CSS Grid with 2-4 columns based on screen size
+
+// Responsive card sizing
+width: { xs: '100%', sm: 240, md: 220, lg: 230 }
+height: { xs: 145, sm: 165 }
+
+// Button responsive behavior
+Mobile: Icon-only buttons for space efficiency
+Desktop: Text + icon for better UX
+
+// Typography fluid scaling
+fontSize: 'clamp(1rem, 2.2vw, 1.2rem)' // Team names
+fontSize: 'clamp(0.8rem, 1.5vw, 0.875rem)' // Buttons
+```
+
+**Layout Patterns:**
+- Same calc(100vh - 100px) height as RTG for consistency
+- Single card container with maxWidth: clamp(280px, 90vw, 1200px)
+- Three-section flex layout with proper space distribution
+- Mobile safety padding and touch target optimization
+
+#### **7. Error Handling and Validation (IMPLEMENTED)**
+
+**Comprehensive Error Management:**
+```typescript
+// Validation with exact user-specified messages
+if (teams.length < 1 || rounds < 1) {
+  setError('Fill minimum one Team and at least 1 Round');
+}
+
+// Score validation with helpful feedback
+if (!isValidScore(score)) {
+  setError(`Score must be between ${MIN_SCORE} and ${MAX_SCORE}`);
+}
+
+// localStorage error handling
+try {
+  // Save operation
+} catch (error) {
+  console.error('Failed to save game state:', error);
+  setError('Failed to save game progress');
+}
+```
+
+**Error Recovery:**
+- Graceful fallback to fresh state on load errors
+- Input validation with visual feedback
+- Auto-reset invalid inputs to last valid values
+- User-friendly error messages with clear actions
+
+#### **8. Advanced Features (IMPLEMENTED)**
+
+**Edit Mode Functionality:**
+```typescript
+// Live game modification without data loss
+updateGameSetup(newTeams: Team[], newRounds: number) {
+  // Preserve existing team scores
+  // Add new teams with zero scores
+  // Extend rounds if count increased
+  // Maintain data integrity
+}
+
+// Smart team matching by name
+const existingTeam = teams.find(t => t.name === newTeam.name);
+```
+
+**Leaderboard System:**
+```typescript
+// Real-time ranking calculations
+interface LeaderboardEntry {
+  position: number;
+  team: Team;
+  pointsFromFirst: number;
+  isLeader: boolean;
+}
+
+// Features:
+- Trophy emojis for top 3 positions
+- Point differences from leader
+- Copy-to-clipboard functionality
+- Modal display with responsive design
+```
+
+**Marquee Animation System:**
+```typescript
+// Intelligent text overflow handling
+const shouldShowMarquee = textOverflows && (isHovered || isFocused);
+
+// CSS animation with optimal timing
+@keyframes marqueeScroll {
+  0%: Start position (beginning visible)
+  8%: Pause for reading (0.8s)
+  50%: Scroll to end (4.2s movement)
+  85%: Long pause at end (3.5s)
+  100%: Reset to start (1.5s)
+}
+```
+
+#### **9. Performance Optimizations (IMPLEMENTED)**
+
+**Efficient Rendering:**
+- React.memo for pure components where beneficial
+- Debounced auto-save prevents excessive localStorage writes
+- Hardware-accelerated animations using transform3d
+- Optimal re-render patterns with useCallback and useMemo
+
+**Memory Management:**
+- Proper event listener cleanup in useEffect
+- Efficient data structures for team and round management
+- Minimal state updates through computed values
+
+**Bundle Optimization:**
+- Lazy loading of modal components
+- Tree-shaking friendly exports
+- TypeScript compilation for optimal bundles
+
+#### **10. Testing and Quality Assurance (IMPLEMENTED)**
+
+**Code Quality Standards:**
+- 100% TypeScript coverage with strict mode
+- Comprehensive JSDoc documentation for all functions
+- Consistent error handling patterns
+- Development standards compliance
+
+**Manual Testing Coverage:**
+- Decimal scoring validation (0.5, 1.25, 2.75, etc.)
+- Edit mode with score preservation
+- Responsive design across breakpoints
+- Marquee animation triggers and timing
+- localStorage persistence and recovery
+- Error states and validation messages
+
+#### **11. Future Enhancement Roadmap**
+
+**Planned Features:**
+- Export functionality (JSON, CSV, PDF)
+- Team color customization
+- Advanced statistics and analytics
+- Undo/Redo functionality (10 action history)
+- Keyboard shortcuts support
+- Drag-and-drop team reordering
+
+**Technical Improvements:**
+- Unit test coverage with Jest and Testing Library
+- Integration tests for complete user workflows
+- Performance monitoring and metrics
+- A11y compliance improvements
+- PWA installation prompts
+
+#### **12. Usage Examples and Patterns**
+
+**Basic Usage:**
+```typescript
+// Start new game
+const teams = [
+  { id: '1', name: 'Team Alpha', totalScore: 0, roundScores: {} },
+  { id: '2', name: 'Team Beta', totalScore: 0, roundScores: {} }
+];
+startGame(teams, 5);
+
+// Update scores with decimal support
+updateTeamScore('team-1', 1, 2.5);
+updateTeamScore('team-2', 1, 1.75);
+```
+
+**Edit Mode Pattern:**
+```typescript
+// Enter edit mode while game is ON
+enterEditMode(); // Shows setup screen with existing data
+
+// Update setup without losing scores
+updateGameSetup(updatedTeams, newRoundCount);
+// Returns to game screen with preserved scores
+```
+
+**Error Handling Pattern:**
+```typescript
+// Comprehensive validation
+if (!validateSetup()) {
+  setError('Fill minimum one Team and at least 1 Round');
+  return;
+}
+
+// Score validation with helpful messages
+if (!isValidScore(score)) {
+  setError(`Score must be between ${MIN_SCORE} and ${MAX_SCORE}`);
+}
+```
+
+#### **13. Implementation Checklist (COMPLETED)**
+
+**✅ Core Functionality:**
+- [x] ON/OFF game state logic
+- [x] Dynamic header text based on game status
+- [x] Decimal scoring with 2 decimal places
+- [x] Minimum validation with exact error message
+- [x] Edit mode with existing data loading
+- [x] localStorage persistence with PWA compatibility
+- [x] Clear/End Game functionality
+
+**✅ User Interface:**
+- [x] TeamSetup styling pattern applied to GameScreen
+- [x] Mobile-responsive design with single column
+- [x] Team cards with marquee animation
+- [x] Action buttons with responsive icon/text display
+- [x] No borders/dividers anywhere
+- [x] Modern hover effects and animations
+
+**✅ Technical Implementation:**
+- [x] TypeScript interfaces and type safety
+- [x] Comprehensive error handling
+- [x] Development standards compliance
+- [x] PWA localStorage patterns
+- [x] Auto-save with 500ms debouncing
+- [x] Performance optimizations
+
+**✅ Documentation:**
+- [x] Complete code documentation
+- [x] Usage examples and patterns
+- [x] Architecture overview
+- [x] Development standards integration
+
 **Last Updated:** December 18, 2025  
 **Next Review:** January 18, 2026

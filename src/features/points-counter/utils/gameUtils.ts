@@ -1,0 +1,289 @@
+/**
+ * Points Counter Game Utilities
+ * 
+ * Core utility functions for managing quiz games, team generation,
+ * scoring calculations, and leaderboard operations.
+ * 
+ * @fileoverview Game management utilities for Points Counter
+ * @version 1.0.0
+ * @since December 2025
+ */
+
+import type { Team, GameState, Round, LeaderboardEntry } from '../types';
+import { FUNNY_TEAM_NAMES, GAME_CONSTANTS } from '../types';
+
+/**
+ * Generates a random selection of team names from the funny names pool
+ * Ensures no duplicate names are selected
+ * 
+ * @param count - Number of team names to generate
+ * @returns Array of unique funny team names
+ */
+export const generateRandomTeamNames = (count: number): string[] => {
+  const availableNames = [...FUNNY_TEAM_NAMES];
+  const selectedNames: string[] = [];
+  
+  // Ensure we don't request more names than available
+  const nameCount = Math.min(count, availableNames.length);
+  
+  for (let i = 0; i < nameCount; i++) {
+    const randomIndex = Math.floor(Math.random() * availableNames.length);
+    const selectedName = availableNames.splice(randomIndex, 1)[0];
+    selectedNames.push(selectedName);
+  }
+  
+  // If we need more names than available, generate generic ones
+  if (count > availableNames.length) {
+    for (let i = selectedNames.length; i < count; i++) {
+      selectedNames.push(`Team ${i + 1}`);
+    }
+  }
+  
+  return selectedNames;
+};
+
+/**
+ * Creates initial teams with random names or custom names
+ * 
+ * @param teamCount - Number of teams to create
+ * @param customNames - Optional array of custom team names
+ * @returns Array of initialized teams
+ */
+export const createInitialTeams = (teamCount: number, customNames?: string[]): Team[] => {
+  const names = customNames && customNames.length >= teamCount 
+    ? customNames.slice(0, teamCount)
+    : generateRandomTeamNames(teamCount);
+  
+  return names.map((name, index) => ({
+    id: `team-${Date.now()}-${index}`, // Unique ID with timestamp
+    name: name.trim() || `Team ${index + 1}`, // Fallback if name is empty
+    totalScore: 0,
+    roundScores: {},
+  }));
+};
+
+/**
+ * Calculates total score for a team across all rounds with decimal precision
+ * 
+ * @param team - Team to calculate score for
+ * @returns Total accumulated score with proper decimal handling
+ */
+export const calculateTeamTotalScore = (team: Team): number => {
+  const total = Object.values(team.roundScores).reduce((total, score) => total + score, 0);
+  // Round to avoid floating point precision issues
+  return roundScore(total);
+};
+
+/**
+ * Updates a team's score for a specific round and recalculates total
+ * 
+ * @param team - Team to update
+ * @param round - Round number
+ * @param score - Score to set for the round
+ * @returns Updated team object
+ */
+export const updateTeamScore = (team: Team, round: number, score: number): Team => {
+  const updatedTeam = {
+    ...team,
+    roundScores: {
+      ...team.roundScores,
+      [round]: score,
+    },
+  };
+  
+  // Recalculate total score
+  updatedTeam.totalScore = calculateTeamTotalScore(updatedTeam);
+  
+  return updatedTeam;
+};
+
+/**
+ * Sorts teams by total score (descending) for leaderboard display
+ * 
+ * @param teams - Array of teams to sort
+ * @returns Array of teams sorted by score (highest first)
+ */
+export const sortTeamsByScore = (teams: Team[]): Team[] => {
+  return [...teams].sort((a, b) => b.totalScore - a.totalScore);
+};
+
+/**
+ * Creates leaderboard entries with rankings and point differences
+ * 
+ * @param teams - Array of teams to rank
+ * @returns Array of leaderboard entries with positions
+ */
+export const createLeaderboard = (teams: Team[]): LeaderboardEntry[] => {
+  const sortedTeams = sortTeamsByScore(teams);
+  const topScore = sortedTeams[0]?.totalScore || 0;
+  
+  return sortedTeams.map((team, index) => ({
+    position: index + 1,
+    team,
+    pointsFromFirst: topScore - team.totalScore,
+    isLeader: index === 0,
+  }));
+};
+
+/**
+ * Formats leaderboard for clipboard sharing with nice formatting
+ * 
+ * @param leaderboard - Leaderboard entries to format
+ * @param roundNumber - Current round number for context
+ * @returns Formatted text string for sharing
+ */
+export const formatLeaderboardForSharing = (leaderboard: LeaderboardEntry[], roundNumber: number): string => {
+  const timestamp = new Date().toLocaleString();
+  let formatted = `🏆 QUIZ LEADERBOARD - Round ${roundNumber}\n`;
+  formatted += `Generated: ${timestamp}\n\n`;
+  
+  leaderboard.forEach(entry => {
+    const { position, team } = entry;
+    let positionEmoji = '';
+    
+    // Add emojis for top 3 positions
+    if (position === 1) positionEmoji = '🥇';
+    else if (position === 2) positionEmoji = '🥈';
+    else if (position === 3) positionEmoji = '🥉';
+    else positionEmoji = `${position}.`;
+    
+    formatted += `${positionEmoji} ${team.name}: ${team.totalScore} points\n`;
+  });
+  
+  formatted += `\n📊 Generated by Quizzard Points Counter`;
+  return formatted;
+};
+
+/**
+ * Validates if a score input is valid
+ * 
+ * @param score - Score value to validate
+ * @returns Boolean indicating if score is valid
+ */
+export const isValidScore = (score: number): boolean => {
+  return !isNaN(score) && 
+         score >= GAME_CONSTANTS.MIN_SCORE && 
+         score <= GAME_CONSTANTS.MAX_SCORE;
+};
+
+/**
+ * Rounds score to allowed decimal places
+ * 
+ * @param score - Score to round
+ * @returns Rounded score value
+ */
+export const roundScore = (score: number): number => {
+  return Math.round(score * Math.pow(10, GAME_CONSTANTS.SCORE_DECIMAL_PLACES)) / 
+         Math.pow(10, GAME_CONSTANTS.SCORE_DECIMAL_PLACES);
+};
+
+/**
+ * Creates a new round object
+ * 
+ * @param roundNumber - Round number to create
+ * @param teamIds - Array of team IDs to initialize scores for
+ * @returns New round object
+ */
+export const createNewRound = (roundNumber: number, teamIds: string[]): Round => {
+  const teamScores: Record<string, number> = {};
+  teamIds.forEach(teamId => {
+    teamScores[teamId] = 0;
+  });
+  
+  return {
+    number: roundNumber,
+    completed: false,
+    teamScores,
+  };
+};
+
+/**
+ * Creates initial game state with teams and first round
+ * 
+ * @param teams - Initial teams for the game
+ * @param totalRounds - Total number of rounds planned
+ * @returns Initial game state object
+ */
+export const createInitialGameState = (teams: Team[], totalRounds: number = GAME_CONSTANTS.DEFAULT_ROUNDS): GameState => {
+  const teamIds = teams.map(team => team.id);
+  const firstRound = createNewRound(1, teamIds);
+  
+  return {
+    teams,
+    rounds: [firstRound],
+    currentRound: 1,
+    totalRounds,
+    gameMode: 'setup',
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+  };
+};
+
+/**
+ * Updates game state with new score for a team in a specific round
+ * 
+ * @param gameState - Current game state
+ * @param teamId - ID of team to update
+ * @param round - Round number
+ * @param score - New score value
+ * @returns Updated game state
+ */
+export const updateGameScore = (
+  gameState: GameState, 
+  teamId: string, 
+  round: number, 
+  score: number
+): GameState => {
+  // Validate score
+  const validatedScore = isValidScore(score) ? roundScore(score) : 0;
+  
+  // Update teams array
+  const updatedTeams = gameState.teams.map(team => 
+    team.id === teamId ? updateTeamScore(team, round, validatedScore) : team
+  );
+  
+  // Update rounds array
+  const updatedRounds = gameState.rounds.map(r => 
+    r.number === round 
+      ? { ...r, teamScores: { ...r.teamScores, [teamId]: validatedScore } }
+      : r
+  );
+  
+  return {
+    ...gameState,
+    teams: updatedTeams,
+    rounds: updatedRounds,
+    updatedAt: Date.now(),
+  };
+};
+
+/**
+ * Copies formatted text to clipboard
+ * 
+ * @param text - Text to copy to clipboard
+ * @returns Promise resolving to success boolean
+ */
+export const copyToClipboard = async (text: string): Promise<boolean> => {
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } else {
+      // Fallback for older browsers or non-secure contexts
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-999999px';
+      textArea.style.top = '-999999px';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      const result = document.execCommand('copy');
+      document.body.removeChild(textArea);
+      return result;
+    }
+  } catch (error) {
+    console.error('Failed to copy to clipboard:', error);
+    return false;
+  }
+}; 

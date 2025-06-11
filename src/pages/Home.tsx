@@ -15,6 +15,10 @@ export default function Home() {
     navigate("/random-team-generator");
   };
 
+  const handlePointsCounter = () => {
+    navigate("/points-counter");
+  };
+
   const handleDisabledCardClick = () => {
     setSnackbarOpen(true);
   };
@@ -97,8 +101,7 @@ export default function Home() {
               icon={<ScoreboardIcon sx={{ fontSize: { xs: 54, sm: 61, md: 58 }, color: "secondary.main" }} />} // 20% bigger on mobile (45→54, 51→61)
               title="Points Counter"
               description="Track and manage scores for games, quizzes, or events. Simple, fast, and reliable."
-              onClick={handleDisabledCardClick}
-              disabled
+              onClick={handlePointsCounter}
             />
             <ToolCard
               icon={<QuizIcon sx={{ fontSize: { xs: 54, sm: 61, md: 58 }, color: "info.main" }} />} // 20% bigger on mobile (45→54, 51→61)
