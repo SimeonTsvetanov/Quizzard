@@ -933,6 +933,72 @@ try {
 - App manifest for installation
 - Responsive design for all screen sizes
 
+#### **iPhone PWA Safe Area Handling (REQUIRED)**
+
+```html
+<!-- ✅ REQUIRED: Enhanced viewport meta tag for iPhone safe areas -->
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+/>
+```
+
+```css
+/* ✅ REQUIRED: Global iOS safe area support in body */
+body {
+  /* iOS safe area support */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/* ✅ REQUIRED: Component-level safe area utility classes */
+.ios-safe-header {
+  padding-top: env(safe-area-inset-top, 0px) !important;
+}
+
+.ios-safe-footer {
+  padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+}
+
+.ios-safe-left {
+  padding-left: env(safe-area-inset-left, 0px) !important;
+}
+
+.ios-safe-right {
+  padding-right: env(safe-area-inset-right, 0px) !important;
+}
+
+.ios-width-safe {
+  max-width: calc(
+    100vw - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)
+  );
+  overflow-x: hidden;
+}
+```
+
+```typescript
+// ✅ REQUIRED: Apply safe area classes to Header/Footer components
+<AppBar className="ios-safe-header ios-safe-left ios-safe-right">
+<Footer className="ios-safe-footer ios-safe-left ios-safe-right ios-width-safe">
+<Box className="ios-width-safe"> // Main app container
+```
+
+**iPhone PWA Issues Addressed:**
+
+- **Footer below home indicator**: Fixed with `env(safe-area-inset-bottom)`
+- **Content width overflow**: Fixed with `ios-width-safe` class
+- **Notch/Dynamic Island interference**: Fixed with `env(safe-area-inset-top)`
+- **Landscape mode edge spacing**: Fixed with left/right inset handling
+
+**Testing Requirements:**
+
+- Test on multiple iPhone models (8, X, 12, 14, 15)
+- Test in both portrait and landscape orientations
+- Test with PWA installed vs browser mode
+- Verify no interference with Android/desktop display
+
 #### **Polyfills:**
 
 - Include polyfills for unsupported features

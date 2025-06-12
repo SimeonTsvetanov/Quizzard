@@ -1,8 +1,16 @@
 import { useEffect, useState } from "react";
 import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
-import { ThemeProvider, CssBaseline, Box, Snackbar, Alert, Button, IconButton } from "@mui/material";
-import CloseIcon from '@mui/icons-material/Close';
-import InstallMobileIcon from '@mui/icons-material/InstallMobile';
+import {
+  ThemeProvider,
+  CssBaseline,
+  Box,
+  Snackbar,
+  Alert,
+  Button,
+  IconButton,
+} from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
+import InstallMobileIcon from "@mui/icons-material/InstallMobile";
 import "./App.css";
 import { useTheme } from "./shared/hooks/useTheme";
 import Header from "./shared/components/Header";
@@ -18,16 +26,16 @@ import RandomTeamGeneratorPage from "./features/random-team-generator/pages/Rand
 import PointsCounter from "./features/points-counter/pages/PointsCounter";
 import Quizzes from "./features/quizzes/pages/Quizzes";
 
-const PWA_INSTALL_DISMISSED_KEY = 'user-settings-pwa-install-dismissed';
+const PWA_INSTALL_DISMISSED_KEY = "user-settings-pwa-install-dismissed";
 
 function App() {
   // Use our custom theme hook
   const { mode, theme, handleThemeChange } = useTheme();
-  
+
   // Loading screen state - only show on initial app startup
   const [showLoadingScreen, setShowLoadingScreen] = useState(() => {
     // Only show loading screen on initial visit or PWA launch
-    return !sessionStorage.getItem('app-loaded');
+    return !sessionStorage.getItem("app-loaded");
   });
 
   // Perform legacy storage migration on app startup
@@ -38,16 +46,20 @@ function App() {
 
   const location = useLocation();
   const navigate = useNavigate();
-  
+
   // PWA install prompt state
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
-  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'info' | 'warning' | 'error' }>({
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: "success" | "info" | "warning" | "error";
+  }>({
     open: false,
-    message: '',
-    severity: 'info'
+    message: "",
+    severity: "info",
   });
-  
+
   useEffect(() => {
     // Only process path params when the app loads with a search parameter
     if (location.search) {
@@ -73,7 +85,7 @@ function App() {
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e);
-      
+
       // Check if user has previously dismissed the install prompt
       const dismissed = localStorage.getItem(PWA_INSTALL_DISMISSED_KEY);
       if (!dismissed) {
@@ -87,15 +99,18 @@ function App() {
     const handleAppInstalled = () => {
       setShowInstallPrompt(false);
       setDeferredPrompt(null);
-      showSnackbarMessage('App installed successfully! 🎉', 'success');
+      showSnackbarMessage("App installed successfully! 🎉", "success");
     };
 
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    window.addEventListener('appinstalled', handleAppInstalled);
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    window.addEventListener("appinstalled", handleAppInstalled);
 
     return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-      window.removeEventListener('appinstalled', handleAppInstalled);
+      window.removeEventListener(
+        "beforeinstallprompt",
+        handleBeforeInstallPrompt
+      );
+      window.removeEventListener("appinstalled", handleAppInstalled);
     };
   }, []);
 
@@ -103,13 +118,13 @@ function App() {
     if (deferredPrompt) {
       deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice;
-      
-      if (outcome === 'accepted') {
-        showSnackbarMessage('Installing app...', 'info');
+
+      if (outcome === "accepted") {
+        showSnackbarMessage("Installing app...", "info");
       } else {
-        showSnackbarMessage('Install cancelled', 'info');
+        showSnackbarMessage("Install cancelled", "info");
       }
-      
+
       setDeferredPrompt(null);
       setShowInstallPrompt(false);
     }
@@ -117,16 +132,22 @@ function App() {
 
   const handleDismissInstall = () => {
     setShowInstallPrompt(false);
-    localStorage.setItem(PWA_INSTALL_DISMISSED_KEY, 'true');
-    showSnackbarMessage('You can install the app anytime from your browser menu', 'info');
+    localStorage.setItem(PWA_INSTALL_DISMISSED_KEY, "true");
+    showSnackbarMessage(
+      "You can install the app anytime from your browser menu",
+      "info"
+    );
   };
 
-  const showSnackbarMessage = (message: string, severity: 'success' | 'info' | 'warning' | 'error') => {
+  const showSnackbarMessage = (
+    message: string,
+    severity: "success" | "info" | "warning" | "error"
+  ) => {
     setSnackbar({ open: true, message, severity });
   };
 
   const handleCloseSnackbar = () => {
-    setSnackbar(prev => ({ ...prev, open: false }));
+    setSnackbar((prev) => ({ ...prev, open: false }));
   };
 
   /**
@@ -135,16 +156,16 @@ function App() {
    */
   const handleLoadingComplete = () => {
     setShowLoadingScreen(false);
-    sessionStorage.setItem('app-loaded', 'true');
+    sessionStorage.setItem("app-loaded", "true");
   };
 
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      
+
       {/* Quick Loading Screen - only on app startup */}
       {showLoadingScreen && (
-        <LoadingScreen 
+        <LoadingScreen
           onAnimationComplete={handleLoadingComplete}
           duration={1000} // Quick 1 second animation
         />
@@ -152,13 +173,14 @@ function App() {
 
       {/* Main app container with proper flex layout */}
       <Box
+        className="ios-width-safe"
         sx={{
           display: "flex",
           flexDirection: "column",
           minHeight: "100vh", // Set minimum height to fill viewport
           width: "100%",
           opacity: showLoadingScreen ? 0 : 1,
-          transition: 'opacity 0.3s ease',
+          transition: "opacity 0.3s ease",
         }}
       >
         {/* Header stays at the top */}
@@ -172,7 +194,7 @@ function App() {
             width: "100%",
             display: "flex",
             flexDirection: "column",
-            bgcolor: 'background.default', // Theme-aware background
+            bgcolor: "background.default", // Theme-aware background
           }}
         >
           <Routes>
@@ -181,7 +203,10 @@ function App() {
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/contact" element={<Contact />} />
-            <Route path="/random-team-generator" element={<RandomTeamGeneratorPage />} />
+            <Route
+              path="/random-team-generator"
+              element={<RandomTeamGeneratorPage />}
+            />
             <Route path="/points-counter" element={<PointsCounter />} />
             <Route path="/quizzes" element={<Quizzes />} />
           </Routes>
@@ -194,22 +219,22 @@ function App() {
       {/* PWA Install Prompt */}
       <Snackbar
         open={showInstallPrompt}
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
         sx={{ mt: 8 }}
       >
         <Alert
           severity="info"
           sx={{
-            width: '100%',
-            bgcolor: 'primary.main',
-            color: 'primary.contrastText',
-            '& .MuiAlert-icon': {
-              color: 'primary.contrastText'
-            }
+            width: "100%",
+            bgcolor: "primary.main",
+            color: "primary.contrastText",
+            "& .MuiAlert-icon": {
+              color: "primary.contrastText",
+            },
           }}
           icon={<InstallMobileIcon />}
           action={
-            <Box sx={{ display: 'flex', gap: 1 }}>
+            <Box sx={{ display: "flex", gap: 1 }}>
               <Button
                 color="inherit"
                 size="small"
@@ -238,10 +263,14 @@ function App() {
         open={snackbar.open}
         autoHideDuration={3000}
         onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
         sx={{ mt: 8 }}
       >
-        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
           {snackbar.message}
         </Alert>
       </Snackbar>

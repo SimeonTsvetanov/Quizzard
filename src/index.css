@@ -36,6 +36,12 @@ body {
   background: none;
   display: block;
   width: 100%;
+
+  /* iOS safe area support */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
 }
 
 #root {
@@ -100,4 +106,29 @@ h1 {
   .MuiIconButton-root::after {
     display: none;
   }
+}
+
+/* iOS PWA Safe Area Support */
+.ios-safe-header {
+  padding-top: env(safe-area-inset-top, 0px) !important;
+}
+
+.ios-safe-footer {
+  padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+}
+
+.ios-safe-left {
+  padding-left: env(safe-area-inset-left, 0px) !important;
+}
+
+.ios-safe-right {
+  padding-right: env(safe-area-inset-right, 0px) !important;
+}
+
+/* iOS width overflow prevention */
+.ios-width-safe {
+  max-width: calc(
+    100vw - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)
+  );
+  overflow-x: hidden;
 }

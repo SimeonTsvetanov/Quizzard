@@ -18,7 +18,7 @@ export default function Footer() {
   const scrollToTop = () => {
     window.scrollTo({
       top: 0,
-      behavior: "smooth"
+      behavior: "smooth",
     });
   };
 
@@ -31,6 +31,7 @@ export default function Footer() {
 
   return (
     <Box
+      className="ios-safe-footer ios-safe-left ios-safe-right ios-width-safe"
       sx={{
         py: { xs: 0.25, sm: 0.5 },
         px: { xs: 1, sm: 2 },
@@ -70,29 +71,30 @@ export default function Footer() {
         </IconButton>
 
         {/* Animated Copyright Text */}
-        <Typography 
-          variant="body2" 
-          sx={{ 
+        <Typography
+          variant="body2"
+          sx={{
             // Font family automatically provided by theme typography system
             fontWeight: 700,
-            fontSize: '1rem',
-            background: 'linear-gradient(45deg, #1976d2, #42a5f5, #1976d2, #42a5f5)',
-            backgroundSize: '400% 400%',
-            backgroundClip: 'text',
-            WebkitBackgroundClip: 'text',
-            color: 'transparent',
-            animation: 'shimmer 3s ease-in-out infinite',
-            '@keyframes shimmer': {
-              '0%': {
-                backgroundPosition: '0% 50%'
+            fontSize: "1rem",
+            background:
+              "linear-gradient(45deg, #1976d2, #42a5f5, #1976d2, #42a5f5)",
+            backgroundSize: "400% 400%",
+            backgroundClip: "text",
+            WebkitBackgroundClip: "text",
+            color: "transparent",
+            animation: "shimmer 3s ease-in-out infinite",
+            "@keyframes shimmer": {
+              "0%": {
+                backgroundPosition: "0% 50%",
               },
-              '50%': {
-                backgroundPosition: '100% 50%'
+              "50%": {
+                backgroundPosition: "100% 50%",
               },
-              '100%': {
-                backgroundPosition: '0% 50%'
-              }
-            }
+              "100%": {
+                backgroundPosition: "0% 50%",
+              },
+            },
           }}
         >
           QUIZZARD

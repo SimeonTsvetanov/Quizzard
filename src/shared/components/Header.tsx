@@ -48,60 +48,61 @@ interface HeaderProps {
  */
 const getDynamicHeaderText = (pathname: string) => {
   // Debug: Log the pathname to see what we're actually getting
-  console.log('Current pathname:', pathname);
-  
+  console.log("Current pathname:", pathname);
+
   // Remove base path if present to get the clean route
-  const cleanPath = pathname.replace('/Quizzard', '');
-  console.log('Clean path:', cleanPath);
-  
+  const cleanPath = pathname.replace("/Quizzard", "");
+  console.log("Clean path:", cleanPath);
+
   // Define text mappings with character counts for responsive sizing
   // Using clean paths (without base path) for universal compatibility
   const textMappings = {
-    '/': { text: 'QUIZZARD', chars: 8 },
-    '': { text: 'QUIZZARD', chars: 8 }, // Empty string for base route
-    '/random-team-generator': { text: 'RANDOM GENERATOR', chars: 16 },
-    '/points-counter': { text: 'POINTS COUNTER', chars: 14 },
-    '/quizzes': { text: 'QUIZZES', chars: 7 },
+    "/": { text: "QUIZZARD", chars: 8 },
+    "": { text: "QUIZZARD", chars: 8 }, // Empty string for base route
+    "/random-team-generator": { text: "RANDOM GENERATOR", chars: 16 },
+    "/points-counter": { text: "POINTS COUNTER", chars: 14 },
+    "/quizzes": { text: "QUIZZES", chars: 7 },
   };
 
   // Use clean path for matching, fallback to home
-  const mapping = textMappings[cleanPath as keyof typeof textMappings] || textMappings['/'];
-  
+  const mapping =
+    textMappings[cleanPath as keyof typeof textMappings] || textMappings["/"];
+
   // Responsive font sizing based on text length
   // Shorter text (≤8 chars): Standard size
-  // Medium text (9-14 chars): Slightly smaller 
+  // Medium text (9-14 chars): Slightly smaller
   // Longer text (≥15 chars): Much smaller to fit on mobile
   const getFontSize = (chars: number) => {
     if (chars <= 8) {
-      return { xs: '1.75rem', sm: '2.1rem' }; // Standard size (QUIZZARD, QUIZZES)
+      return { xs: "1.75rem", sm: "2.1rem" }; // Standard size (QUIZZARD, QUIZZES)
     } else if (chars <= 14) {
-      return { xs: '1.4rem', sm: '1.8rem' }; // Medium size (POINTS COUNTER)
+      return { xs: "1.4rem", sm: "1.8rem" }; // Medium size (POINTS COUNTER)
     } else {
-      return { xs: '1.2rem', sm: '1.6rem' }; // Compact size (RANDOM GENERATOR)
+      return { xs: "1.2rem", sm: "1.6rem" }; // Compact size (RANDOM GENERATOR)
     }
   };
 
   return {
     text: mapping.text,
-    fontSize: getFontSize(mapping.chars)
+    fontSize: getFontSize(mapping.chars),
   };
 };
 
 /**
  * Header Component
- * 
+ *
  * Application header with dynamic text, logo, and hamburger menu navigation.
  * Features dynamic text that changes based on current route with responsive
  * font sizing to ensure text always fits between icons on all screen sizes.
  * Uses hamburger menu for all screen sizes to maintain consistent UX
  * across mobile and desktop.
- * 
+ *
  * Dynamic Text Mappings:
  * - Home (/): "QUIZZARD" - Standard size
  * - Random Team Generator: "RANDOM GENERATOR" - Compact size for mobile
  * - Points Counter: "POINTS COUNTER" - Medium size
  * - Quizzes: "QUIZZES" - Standard size
- * 
+ *
  * Features:
  * - Route-based dynamic header text with responsive sizing
  * - Always-visible hamburger menu (all screen sizes)
@@ -110,7 +111,7 @@ const getDynamicHeaderText = (pathname: string) => {
  * - Focus management and keyboard navigation
  * - Responsive design following PWA-first principles
  * - Accessibility compliance with ARIA labels and roles
- * 
+ *
  * @param mode - Current theme mode (light/dark/system)
  * @param onThemeChange - Callback for theme changes
  */
@@ -198,6 +199,7 @@ const Header = ({ mode, onThemeChange }: HeaderProps) => {
       elevation={
         useScrollTrigger({ disableHysteresis: true, threshold: 0 }) ? 4 : 0
       }
+      className="ios-safe-header ios-safe-left ios-safe-right"
       sx={{
         bgcolor: theme.palette.background.default, // Match main body background
         color: theme.palette.text.primary,
@@ -247,7 +249,7 @@ const Header = ({ mode, onThemeChange }: HeaderProps) => {
             },
           }}
         >
-          <HomeRoundedIcon sx={{ fontSize: { xs: '1.75rem', sm: '2.1rem' } }} />
+          <HomeRoundedIcon sx={{ fontSize: { xs: "1.75rem", sm: "2.1rem" } }} />
         </IconButton>
 
         {/* Centered Dynamic Text (non-clickable) - Route-based with responsive sizing */}
@@ -269,29 +271,30 @@ const Header = ({ mode, onThemeChange }: HeaderProps) => {
               // Font family provided by theme - no manual override needed
               fontWeight: 700,
               fontSize: dynamicHeader.fontSize, // Dynamic responsive sizing based on route
-              
+
               // Perfect vertical centering
               margin: 0,
               lineHeight: 1,
-              
+
               // Shimmer animation effect
-              background: 'linear-gradient(45deg, #1976d2, #42a5f5, #1976d2, #42a5f5)',
-              backgroundSize: '400% 400%',
-              backgroundClip: 'text',
-              WebkitBackgroundClip: 'text',
-              color: 'transparent',
-              animation: 'shimmer 3s ease-in-out infinite',
-              '@keyframes shimmer': {
-                '0%': {
-                  backgroundPosition: '0% 50%'
+              background:
+                "linear-gradient(45deg, #1976d2, #42a5f5, #1976d2, #42a5f5)",
+              backgroundSize: "400% 400%",
+              backgroundClip: "text",
+              WebkitBackgroundClip: "text",
+              color: "transparent",
+              animation: "shimmer 3s ease-in-out infinite",
+              "@keyframes shimmer": {
+                "0%": {
+                  backgroundPosition: "0% 50%",
                 },
-                '50%': {
-                  backgroundPosition: '100% 50%'
+                "50%": {
+                  backgroundPosition: "100% 50%",
                 },
-                '100%': {
-                  backgroundPosition: '0% 50%'
-                }
-               },
+                "100%": {
+                  backgroundPosition: "0% 50%",
+                },
+              },
               whiteSpace: "nowrap",
               overflow: "hidden",
               textOverflow: "ellipsis",
@@ -333,7 +336,9 @@ const Header = ({ mode, onThemeChange }: HeaderProps) => {
             },
           }}
         >
-          <MenuOpenRoundedIcon sx={{ fontSize: { xs: '1.75rem', sm: '2.1rem' } }} />
+          <MenuOpenRoundedIcon
+            sx={{ fontSize: { xs: "1.75rem", sm: "2.1rem" } }}
+          />
         </IconButton>
       </Toolbar>
       {/* Drawer for navigation menu */}
@@ -571,9 +576,9 @@ const Header = ({ mode, onThemeChange }: HeaderProps) => {
                 fontWeight: 500,
                 boxShadow: pendingTheme === "light" ? 2 : 0,
                 border: "none",
-                '&:focus': { outline: 'none' },
-                '&:focus-visible': { outline: 'none' },
-                transition: 'background 0.2s, box-shadow 0.2s',
+                "&:focus": { outline: "none" },
+                "&:focus-visible": { outline: "none" },
+                transition: "background 0.2s, box-shadow 0.2s",
               }}
               aria-pressed={pendingTheme === "light"}
             >
@@ -590,9 +595,9 @@ const Header = ({ mode, onThemeChange }: HeaderProps) => {
                 fontWeight: 500,
                 boxShadow: pendingTheme === "dark" ? 2 : 0,
                 border: "none",
-                '&:focus': { outline: 'none' },
-                '&:focus-visible': { outline: 'none' },
-                transition: 'background 0.2s, box-shadow 0.2s',
+                "&:focus": { outline: "none" },
+                "&:focus-visible": { outline: "none" },
+                transition: "background 0.2s, box-shadow 0.2s",
               }}
               aria-pressed={pendingTheme === "dark"}
             >
@@ -609,9 +614,9 @@ const Header = ({ mode, onThemeChange }: HeaderProps) => {
                 fontWeight: 500,
                 boxShadow: pendingTheme === "system" ? 2 : 0,
                 border: "none",
-                '&:focus': { outline: 'none' },
-                '&:focus-visible': { outline: 'none' },
-                transition: 'background 0.2s, box-shadow 0.2s',
+                "&:focus": { outline: "none" },
+                "&:focus-visible": { outline: "none" },
+                transition: "background 0.2s, box-shadow 0.2s",
               }}
               aria-pressed={pendingTheme === "system"}
             >
@@ -627,8 +632,8 @@ const Header = ({ mode, onThemeChange }: HeaderProps) => {
             sx={{
               minWidth: 120,
               fontWeight: 600,
-              '&:focus': { outline: 'none' },
-              '&:focus-visible': { outline: 'none' },
+              "&:focus": { outline: "none" },
+              "&:focus-visible": { outline: "none" },
             }}
           >
             OK
