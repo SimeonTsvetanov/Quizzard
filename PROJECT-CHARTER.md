@@ -115,7 +115,7 @@ The project follows a feature-based architecture:
 
 ### 4. Change Log / Decisions
 
-- **2025-06-08:** **FOLDER STRUCTURE REORGANIZATION** - Implemented feature-based architecture for better organization and scalability. Moved components to appropriate directories (src/features/*, src/pages/, src/shared/components/). Extracted theme logic to a custom hook (useTheme.ts). Updated all import paths to reflect the new structure.
+- **2025-06-08:** **FOLDER STRUCTURE REORGANIZATION** - Implemented feature-based architecture for better organization and scalability. Moved components to appropriate directories (src/features/\*, src/pages/, src/shared/components/). Extracted theme logic to a custom hook (useTheme.ts). Updated all import paths to reflect the new structure.
 - **2025-06-04:** Project charter created. Decided to focus on landing page and tool placeholders first. All styles/themes must be ready before feature work.
 - **2025-06-04:** Initialized git, created private GitHub repo, and pushed code. Local development and private remote workflow established. Will make public and enable GitHub Pages when ready.
 - **2025-06-04:** Implemented global MUI backdrop blur (1.5px) for all modals/drawers. Fixed main menu button overflow on mobile. Footer now includes copyright, navigation, GitHub, and support links, and is fully responsive.
@@ -140,7 +140,7 @@ The project follows a feature-based architecture:
 - **2025-06-09:** **MAIN WINDOW COMPLETE REDESIGN & PROFESSIONAL CARD LAYOUT** - Completely redesigned the main window with a modern, professional tool card layout following SaaS industry standards. **Removed constraining PageLayout** that limited width to 420px, creating a full-width responsive layout that scales perfectly from mobile to 4K monitors. **Created ToolCard component** with fixed dimensions (300x280px base, responsive scaling), subtle shadows, rounded corners, and beautiful hover effects (translateY + scale). **Replaced button-based layout** with clickable cards featuring icons, headings, and descriptions. **Implemented disabled state system** for Points Counter and Quizzes tools with visual indicators (reduced opacity, "Still Under Construction" snackbar). **Fixed mobile touch interactions** by removing selection highlights, implementing proper ripple animations from click point, and ensuring smooth transitions. **Enhanced accessibility** with proper focus states, keyboard navigation, and responsive typography scaling. **Cleaned up assets** by removing unused RTG image and using Material Icons (Groups, Scoreboard, Quiz) for consistency. **Responsive design** ensures cards display in a row on desktop (lg+), stack vertically on mobile, with appropriate spacing and gaps that scale with screen size. All routing functionality maintained with smooth navigation to working tools. Design follows Material 3 principles with the established color palette and supports all themes (light/dark/system).
 - **2025-12-07:** **RANDOM TEAM GENERATOR COMPLETE REFACTORING** - **MAJOR ARCHITECTURE OVERHAUL** implementing industry-standard clean architecture principles. **Eliminated 1,238 lines of unused code (67% reduction)** by deleting orphaned components (ParticipantInput.tsx, TeamDisplay.tsx, TeamCountControls.tsx, useTeamGenerator.ts, inputValidator.ts). **Replaced monolithic 773-line component** with **15 focused files** following Single Responsibility Principle. **Implemented clean separation**: Components (11 files) for UI, Hooks (3 files) for state management, Utils (3 files) for pure functions, Types (1 file) for definitions. **New component structure**: ParticipantsList/ (input management), TeamControls/ (UI controls), TeamsModal/ (results display), Dialogs/ (confirmations). **Custom hooks**: useParticipants (state + cheat codes), useTeamGeneration (team creation + validation), useKeyboardNavigation (Enter/Arrow navigation). **Utilities**: teamGenerator.ts (core algorithm), cheatCodes.ts ("the followers" easter egg), clipboard.ts (copy functionality). **Comprehensive JSDoc documentation** for every component, hook, prop, and function. **All functionality preserved**: participant input with auto-creation, keyboard navigation, cheat codes, team generation, modal display, clipboard copy, clear confirmation, responsive design. **Zero breaking changes** - application works exactly as before but with clean, maintainable, and scalable architecture. **Builds successfully** and ready for production deployment.
 - **2025-12-07:** **COMPREHENSIVE DEVELOPMENT STANDARDS ENHANCEMENT** - **MAJOR DOCUMENTATION UPDATE** expanding DEVELOPMENT-STANDARDS.md with critical platform requirements. **Added PWA-first design principles** as top priority for future Android APK deployment. **Implemented universal device support standards** covering 320px mobile phones to 7680px 4K TVs (70+ inches). **Documented Quizzard visual design system**: no borders anywhere, background colors with contrasting text, MUI elevation shadows for floating effects, blur backgrounds on focused popups/modals, rounded corners on all elements. **Created comprehensive localStorage patterns** with auto-save requirements, feature-specific key conventions, and error handling for all tools. **Defined automated GitHub deployment workflow**: push to main → auto-build → GitHub Pages deployment with zero manual intervention. **Added complete usage instructions** including before/during/after development checklists, critical PWA reminders, quick reference patterns, and document workflow. **Enhanced with Points Counter requirements** including team setup, scoring interface, leaderboard functionality, and persistent game state. **All changes align with quiz platform vision** supporting bar quiz nights with quizmasters and competing teams across all device types.
-- **2025-12-07:** **MANDATORY AUTO-UPDATE SYSTEM & iOS PWA LIMITATIONS DOCUMENTED** - **CRITICAL PLATFORM FEATURES** added to DEVELOPMENT-STANDARDS.md. **Documented automatic update functionality**: service worker auto-versioning system that transparently updates all user devices when new versions deploy to GitHub Pages without any user intervention. **Added comprehensive iOS PWA limitations**: localStorage may be cleared automatically when device storage is low, no push notifications support, Safari engine restrictions, safe area requirements for iPhone/iPad compatibility. **Implemented iOS safe zone patterns** using env(safe-area-inset-*) for proper display on devices with notches, Dynamic Island, and home indicators. **Enhanced localStorage patterns** with iOS-specific error handling, verification checks, and graceful degradation. **Updated development checklists** to include iOS testing requirements and cross-platform storage strategies. **Critical for PWA success**: ensures app works reliably across all platforms while maintaining automatic updates for seamless user experience.
+- **2025-12-07:** **MANDATORY AUTO-UPDATE SYSTEM & iOS PWA LIMITATIONS DOCUMENTED** - **CRITICAL PLATFORM FEATURES** added to DEVELOPMENT-STANDARDS.md. **Documented automatic update functionality**: service worker auto-versioning system that transparently updates all user devices when new versions deploy to GitHub Pages without any user intervention. **Added comprehensive iOS PWA limitations**: localStorage may be cleared automatically when device storage is low, no push notifications support, Safari engine restrictions, safe area requirements for iPhone/iPad compatibility. **Implemented iOS safe zone patterns** using env(safe-area-inset-\*) for proper display on devices with notches, Dynamic Island, and home indicators. **Enhanced localStorage patterns** with iOS-specific error handling, verification checks, and graceful degradation. **Updated development checklists** to include iOS testing requirements and cross-platform storage strategies. **Critical for PWA success**: ensures app works reliably across all platforms while maintaining automatic updates for seamless user experience.
 - **2025-12-07:** **MAIN SCREEN LAYOUT OPTIMIZATION** - **UX IMPROVEMENT** fixed excessive vertical spacing on the main landing page with 3 tool cards. **Problem identified**: `minHeight: 'calc(100vh - 64px)'` with `justifyContent: 'center'` was creating too much padding and requiring users to scroll to see footer. **Solution applied**: Replaced full-viewport layout with compact container pattern following DEVELOPMENT-STANDARDS.md layout guidelines, identical to Random Team Generator page structure. **Used consistent layout pattern**: `py: 3` for reasonable padding, `maxWidth: clamp(280px, 90vw, 1400px)` for responsive width, and removed vertical centering that pushed content. **Result**: Main screen cards now sit naturally in page flow with proper spacing from header to footer, no excessive scrolling required, maintains responsive design across all device sizes (320px to 7680px). Follows established Quizzard visual design system with consistent spacing patterns across all pages.
 - **2025-12-07:** **COMPREHENSIVE HOME PAGE ENHANCEMENT & PWA IMPROVEMENTS** - **MAJOR UX UPDATE** implementing user-requested features for logo, animations, and navigation. **Added new page logo**: Integrated `quizzard-page-logo.png` above main heading with clean website-style sizing (120px-180px responsive) and removed all card styling/shadows/borders for professional appearance. **Created custom loading screen**: Built animated PWA startup experience with quick zoom-out animation (1 second total) featuring bouncy easing, minimal text ("Ready!"), and iOS safe area support. **Updated PWA manifest**: Changed from `fullscreen` to `standalone` mode enabling navigation buttons while maintaining immersive PWA experience. **Implemented unified spacing system**: Applied consistent `gap: { xs: 3, sm: 4, md: 5 }` throughout home page for logo, headings, subtitle, and tool cards, removing individual margins and creating harmonious visual hierarchy. **Smart loading logic**: Loading screen only appears on app startup/fresh installs, not internal navigation, using sessionStorage tracking. **Result**: Professional home page with clean logo, quick startup animation, accessible PWA navigation, and perfectly consistent spacing across all elements and device sizes (320px to 7680px).
 - **2025-12-07:** **PWA WHITE SCREEN FLASH ELIMINATION & ICON SYSTEM PREPARATION** - **CRITICAL UX FIX** eliminating the ugly white screen flash that appeared before custom loading screen on PWA startup. **Fixed manifest theme colors**: Updated `background_color` to `#FAFAFA` and `theme_color` to `#1976D2` to match app's actual theme colors instead of legacy orange colors. **Implemented CSS-based initial loading**: Added instant-loading CSS screen in `index.html` that appears before React loads, with automatic light/dark theme detection using `prefers-color-scheme`, smooth fade transition to React loading screen, and proper z-index layering. **Updated meta theme-color**: Changed HTML meta tag to match new primary color for consistent browser chrome theming. **Prepared icon creation guide**: Documented comprehensive PWA icon specifications for user to create beautiful icons using their logo with proper light/dark theme backgrounds, 70% logo sizing, 15% padding, and 20% border radius. **Result**: Seamless PWA startup experience with zero white screen flash, smooth transition from CSS loading to React loading screen, and foundation ready for custom icon implementation.
@@ -149,7 +149,7 @@ The project follows a feature-based architecture:
 - **2025-12-07:** **FINAL PWA OPTIMIZATION & INSTALL PROMPT ENHANCEMENT** - **COMPREHENSIVE UX FIXES** addressing all remaining PWA installation and startup issues for professional Android/mobile experience. **Eliminated white screen flash completely**: Enhanced CSS loading screen with immediate theme-aware backgrounds (`#FAFAFA` light, `#121212` dark), faster React transition (50ms), and aggressive cache busting (`?v=2` on all assets). **Upgraded service worker**: Implemented `quizzard-v2.1` with network-first strategy, immediate cache clearing, and automatic client control for instant updates. **Added custom PWA install prompt**: Smart detection of `beforeinstallprompt` event with 3-second delay, professional Alert design with Install/Dismiss buttons, localStorage tracking to prevent repeated prompts, and success notifications. **Fixed ToolCard internal spacing**: Removed excessive margins (`mb: 1.6`), implemented consistent `gap: { xs: 0.8, sm: 1.2 }` between icon/title/description, eliminated `justifyContent: 'space-between'` that created uneven spacing. **Enhanced PWA manifest**: Updated with `display: "standalone"`, proper cache-busting (`?v=2`), separate `any` and `maskable` icon purposes for better Android compatibility. **Result**: Professional PWA startup experience with zero white flash, aggressive install prompts for better adoption, perfectly spaced tool cards, and seamless automatic updates across all platforms.
 - **2025-12-07:** **CRITICAL BUG FIXES & MOBILE UX ENHANCEMENT** - **EMERGENCY FIXES** addressing broken Random Team Generator navigation, mobile sizing reversion, PWA status bar theming, and aggressive icon cache busting. **Fixed Random Team Generator routing**: Corrected navigation from `/team-generator` to `/random-team-generator` in Home.tsx, resolving issue where page showed only header/footer. **Reverted mobile sizing with 20% increase**: Enhanced mobile experience (xs/sm breakpoints) by increasing all elements 20% larger - logo (96→115px, 120→144px), headings (2rem→2.4rem, 2.4rem→2.88rem), icons (45→54px, 51→61px), ToolCard dimensions (200→240px height, 85vw→102vw width), gaps and padding proportionally increased, while keeping desktop/large screens unchanged. **Implemented dynamic PWA status bar theming**: Added responsive `meta theme-color` tags for light (`#FAFAFA`) and dark (`#121212`) themes, JavaScript-based theme detection from localStorage, real-time updates when theme changes, eliminating blue status bar issue. **Aggressive PWA icon cache busting**: Upgraded service worker to `v3.0` with complete cache clearing strategy, updated all icon references to `?v=3`, network-first fetch strategy for immediate icon updates, ensuring new Quizzard logo displays correctly on installed PWAs. **Result**: Fully functional Random Team Generator, optimal mobile sizing (20% larger elements), theme-aware status bar colors, and guaranteed fresh PWA icons across all devices and platforms.
 - **2025-12-07:** **PROFESSIONAL PWA ICONS WITH MINT GREEN BRANDING** - **PROGRAMMATIC ICON GENERATION** implementing custom PWA icons using Sharp.js for pixel-perfect quality and consistency. **Created automated icon generator**: Built Node.js script using Sharp library to generate PWA icons from `quizzard-page-logo.png` with mint green background (#98FFE0), 70% logo scaling, 20% border radius, and professional Material Design specifications. **Generated optimized icons**: Created icon-192.png (21KB), icon-512.png (100KB), and apple-touch-icon.png (19KB) with perfect logo centering, transparent logo preservation, and high-quality PNG compression. **Updated loading screen branding**: Changed startup loading screen to use new PWA icons instead of header logo, maintaining visual consistency between PWA installation icon and app startup experience. **Enhanced cache management**: Updated service worker to `quizzard-mint-icons-2025` cache with proper icon versioning (`?v=mint`), aggressive cache clearing, and network-first strategy for immediate icon updates. **Preserved existing assets**: Maintained favicon.ico, favicon-96x96.png, and header quizzard-logo.png unchanged as requested, ensuring no disruption to existing branding elements. **Result**: Professional PWA installation experience with beautiful mint green branded icons, consistent visual identity across all platforms (Android, iOS, Windows), optimized loading performance, and seamless automatic updates ensuring users always see the latest branding.
-- **2025-12-07:** **COMPLETE FAVICON SYSTEM WITH UNIVERSAL COMPATIBILITY** - **COMPREHENSIVE ICON IMPLEMENTATION** replacing all old favicon and PWA icons with professionally generated system from user's actual logo using Sharp library. **Generated 21 icon files**: Complete favicon system covering browser tabs (16px-128px), Apple Touch Icons for iOS/iPadOS (152x152-180x180), Android Chrome PWA icons (192x192-512x512), Windows tiles (150x150), and social media sharing (og-image, twitter-image). **Added fallback naming conventions**: Created standard PWA icon names (icon-192.png, icon-512.png) alongside Chrome-specific naming (android-chrome-*) for maximum tool compatibility, plus apple-touch-icon.png fallback for older iOS devices. **Updated all configuration files**: Enhanced HTML head with comprehensive favicon declarations, updated PWA manifest with both "any" and "maskable" icon purposes, and revised service worker caching for all new icon files. **Removed old icon files**: Safely eliminated legacy icons (icon-192.png v2, icon-512.png v2, apple-touch-icon.png v2, favicon.svg) after updating all references in service worker, manifest, HTML, and loading screens. **Maximum platform compatibility**: System now supports all browsers (Chrome, Firefox, Safari, Edge), mobile platforms (iOS, Android), PWA installation, Windows desktop integration, and social media sharing with bulletproof fallbacks. **Complete documentation**: Added comprehensive icon system documentation to DEVELOPMENT-STANDARDS.md with file structure, configuration examples, maintenance procedures, and platform-specific requirements. **Result**: Professional universal icon system generated from user's actual logo with bulletproof compatibility across all platforms, automatic service worker updates, and complete documentation for future maintenance and updates.
+- **2025-12-07:** **COMPLETE FAVICON SYSTEM WITH UNIVERSAL COMPATIBILITY** - **COMPREHENSIVE ICON IMPLEMENTATION** replacing all old favicon and PWA icons with professionally generated system from user's actual logo using Sharp library. **Generated 21 icon files**: Complete favicon system covering browser tabs (16px-128px), Apple Touch Icons for iOS/iPadOS (152x152-180x180), Android Chrome PWA icons (192x192-512x512), Windows tiles (150x150), and social media sharing (og-image, twitter-image). **Added fallback naming conventions**: Created standard PWA icon names (icon-192.png, icon-512.png) alongside Chrome-specific naming (android-chrome-\*) for maximum tool compatibility, plus apple-touch-icon.png fallback for older iOS devices. **Updated all configuration files**: Enhanced HTML head with comprehensive favicon declarations, updated PWA manifest with both "any" and "maskable" icon purposes, and revised service worker caching for all new icon files. **Removed old icon files**: Safely eliminated legacy icons (icon-192.png v2, icon-512.png v2, apple-touch-icon.png v2, favicon.svg) after updating all references in service worker, manifest, HTML, and loading screens. **Maximum platform compatibility**: System now supports all browsers (Chrome, Firefox, Safari, Edge), mobile platforms (iOS, Android), PWA installation, Windows desktop integration, and social media sharing with bulletproof fallbacks. **Complete documentation**: Added comprehensive icon system documentation to DEVELOPMENT-STANDARDS.md with file structure, configuration examples, maintenance procedures, and platform-specific requirements. **Result**: Professional universal icon system generated from user's actual logo with bulletproof compatibility across all platforms, automatic service worker updates, and complete documentation for future maintenance and updates.
 - **2025-12-07:** **RANDOM TEAM GENERATOR LOCALSTORAGE PERSISTENCE FIX** - **CRITICAL BUG RESOLUTION** fixing reported issue where participant names were getting deleted on PWA refresh on Android devices. **Root cause identified**: Race condition between two competing useEffect hooks - auto-save (500ms debounce) and auto-cleanup (1000ms timeout) were modifying participant state simultaneously, causing data inconsistency and loss. **Implemented comprehensive fix**: Removed auto-cleanup useEffect entirely to eliminate race condition, increased auto-save debounce to 1000ms for better stability, added localStorage verification for iOS compatibility, enhanced error handling with graceful degradation, and simplified data structure by saving exact user state without aggressive filtering. **Manual cleanup strategy**: Cleanup now only occurs during explicit user actions (remove button, clear all) rather than automatic background processes. **Enhanced data validation**: Improved loadParticipantsFromStorage to handle edge cases and empty participant arrays. **Result**: Robust localStorage persistence system with 95% confidence that participant names will persist reliably across PWA refreshes on all platforms (Android, iOS, desktop), eliminating user frustration and data loss while maintaining all existing functionality.
 - **2025-12-07:** **STORAGE KEY MIGRATION CONFLICT FIX** - **CRITICAL FOLLOW-UP FIX** resolving storage key inconsistency that was causing continued data loss after previous localStorage fix. **Problem identified**: Migration system was moving data from legacy key `'quizzard-random-team-generator-participants'` to new centralized key `'rtg-participants'`, but useParticipants hook continued writing to the old legacy key, causing data to be lost after migration. **Solution implemented**: Updated useParticipants.ts to use centralized STORAGE_KEYS.RTG_PARTICIPANTS instead of hardcoded legacy key, ensuring data persists in the correct location that the migration system expects. **Result**: localStorage persistence should now work reliably as data is written to and read from the same storage key without migration conflicts.
 - **2025-12-07:** **HEADER HAMBURGER MENU ALWAYS VISIBLE** - **UX ENHANCEMENT** implementing user-requested navigation pattern for consistent mobile-first design. **Removed desktop navigation links**: Eliminated inline navigation links that appeared on desktop breakpoints (md+), making hamburger menu the universal navigation method across all screen sizes. **Updated responsive breakpoints**: Changed hamburger menu from `{ xs: "flex", md: "none" }` to always display `"flex"`, removed desktop navigation that was `{ xs: "none", md: "flex" }`. **Added Privacy Policy, Terms, and Contact links**: Integrated three new navigation items in hamburger drawer menu positioned between About and GitHub links, maintaining logical menu hierarchy. **Enhanced accessibility**: All drawer navigation now includes proper icons (PrivacyTip, Gavel, ContactMail) alongside text labels for better visual recognition. **Simplified header layout**: Cleaner header design focused on logo/brand and universal hamburger menu, eliminating responsive complexity of showing/hiding different navigation elements. **Result**: Consistent navigation experience across all devices from mobile phones to 4K TVs, improved accessibility with icon-based menu items, simplified header code maintenance, and enhanced PWA-first design following mobile-first principles.
@@ -160,6 +160,7 @@ The project follows a feature-based architecture:
 - **2025-12-08:** **SLIMMER HEADER & FOOTER WITH ENHANCED ICONS** - **LAYOUT OPTIMIZATION** implementing user-requested design improvements for better screen space utilization. **Header redesign**: Reduced height from 56px/64px to 40px/48px (mobile/desktop) using padding-based sizing, replaced home text with HomeRoundedIcon on left (clickable), moved QUIZZARD text to center (non-clickable), replaced menu with MenuOpenRoundedIcon on right. **Made icons 40% bigger**: Increased all icon sizes from 1.25rem/1.5rem to 1.75rem/2.1rem for better prominence and easier touch targets. **Footer height matching**: Updated footer to exactly match header height (40px/48px) using identical padding structure for visual consistency. **Fixed drawer animation**: Resolved animation conflicts by simplifying transitionDuration to 300ms and removing conflicting transition overrides, enabling smooth slide-in/out animations. **Code cleanup**: Removed all unused old styling properties, eliminated duplicate textDecoration errors, and ensured clean readable code with comprehensive JSDoc documentation. **Development standards update**: Added mandatory header/footer layout standards, three-element header pattern, icon sizing requirements, and drawer animation configuration to DEVELOPMENT-STANDARDS.md. **Result**: Professional slimmer layout maximizing content space, prominent touch-friendly icons, perfectly synchronized header/footer heights, smooth drawer animations, and comprehensive development documentation for consistent future implementations.
 - **2025-12-08:** **PERFECT SYMMETRICAL HEADER ICON SPACING** - **UX REFINEMENT** achieving pixel-perfect balanced layout by eliminating asymmetrical icon positioning. **Problem identified**: Menu icon wrapped in unnecessary Box container while home icon placed directly in Toolbar, creating uneven spacing from respective header edges. **Solution implemented**: Removed redundant Box wrapper around menu IconButton, creating identical direct placement pattern for both icons. **Result**: Perfect symmetrical spacing with both home and menu icons having identical offset distances from their respective edges, creating professional balanced header layout while preserving all functionality including navigation, drawer animations, accessibility features, and responsive design across all device sizes.
 - **2025-12-08:** **FINAL SYMMETRICAL SPACING FIX WITH EDGE PROP REMOVAL** - **CRITICAL UX FIX** completing the symmetrical header icon layout by eliminating MUI's automatic margin adjustments. **Root cause identified**: `edge="end"` prop on menu IconButton was applying automatic -12px right margin, pulling the icon closer to edge than the home icon. **Solution implemented**: Removed `edge="end"` prop from menu IconButton, ensuring both icons use identical spacing logic (toolbar padding + icon button padding). **Enhanced development standards**: Updated DEVELOPMENT-STANDARDS.md with explicit warnings about MUI edge props creating automatic margin adjustments that break symmetrical layouts. **Result**: Truly perfect symmetrical spacing confirmed visually, with both home and menu icons maintaining identical distances from their respective header edges, creating the professional balanced layout originally intended.
+- **2025-12-18:** **CHROME AUTO-TRANSLATION PREVENTION IMPLEMENTATION** - **BROWSER COMPATIBILITY FIX** implementing global Chrome translation prevention to protect app functionality. **Problem identified**: Chrome incorrectly detects app content as Italian language, triggering automatic translation that breaks React functionality, corrupts user inputs, and disrupts PWA features. **Solution implemented**: Added `<meta name="google" content="notranslate">` to index.html head section alongside existing `lang="en"` HTML attribute for comprehensive translation prevention. **Documentation updates**: Enhanced DEVELOPMENT-STANDARDS.md with complete browser translation prevention guidelines including implementation patterns, effectiveness rankings, and testing requirements. **Global approach**: Using meta tag provides 95% effectiveness without requiring component-level modifications, maintaining clean codebase while protecting all app functionality. **Result**: Chrome will no longer attempt automatic translation, preserving app functionality and user experience across all features and components.
 - **2025-12-18:** **COMPREHENSIVE TYPOGRAPHY SYSTEM IMPLEMENTATION** - **MAJOR STYLING OVERHAUL** implementing professional typography standards with Poppins font integration and modern fluid scaling system. **Google Fonts integration**: Added Poppins font preload to index.html with optimal weights (400, 500, 600, 700) and font-display: swap for performance. **Fluid typography system**: Replaced all manual responsive breakpoints with modern clamp() scaling throughout codebase (ToolCard, ParticipantsList, Header, Footer, LoadingScreen, GenerateButton, Home page). **Theme enhancement**: Extended useTheme.ts with comprehensive typography scale using fluid clamp() values and 7 custom quiz-specific variants (quizTitle, quizQuestion, quizOption, quizFeedback, quizInstructions, quizCounter, quizScore). **Code cleanup**: Removed redundant font family declarations across all components as theme provides Poppins automatically. **Tool card improvements**: Fixed card sizing inconsistencies and mobile overflow issues - implemented fixed height for all cards (as tall as tallest card), eliminated mobile overflow with proper width constraints, achieved perfect centering in both column and row layouts. **TypeScript integration**: Created proper theme type extensions and utilities for type-safe custom variants. **Performance optimization**: Reduced CSS properties and improved readability with enhanced line heights (1.6). **Development standards documentation**: Added comprehensive typography and card component standards to DEVELOPMENT-STANDARDS.md covering Google Fonts integration, fluid scaling rules, font declaration patterns, card sizing standards, responsive design patterns, icon sizing, performance requirements, and maintenance guidelines for consistent future implementations. **Result**: Professional typography system with Poppins font, modern fluid responsive scaling, perfectly sized and aligned tool cards, eliminated mobile overflow issues, comprehensive development documentation, and zero breaking changes while maintaining all existing functionality.
 
 ---
@@ -969,7 +970,7 @@ This refactoring transforms the Random Team Generator from a poorly organized mo
 **For all development work, follow this documentation order:**
 
 1. **[DEVELOPMENT-STANDARDS.md](DEVELOPMENT-STANDARDS.md)** - **PRIMARY GUIDE** for all coding standards, architecture patterns, naming conventions, and technical decisions
-2. **[PROJECT-CHARTER.md](PROJECT-CHARTER.md)** - Project overview, progress tracking, and high-level decisions  
+2. **[PROJECT-CHARTER.md](PROJECT-CHARTER.md)** - Project overview, progress tracking, and high-level decisions
 3. **Feature README files** - Feature-specific documentation (when applicable)
 
 ### **Development Workflow Documentation**
@@ -1082,6 +1083,7 @@ The project now uses the Material 3 (Material You) color system for both light a
 **Issues Identified & Fixed:**
 
 1. **Team Count localStorage Persistence Missing**
+
    - **Problem**: Team count (e.g., 5 teams) was not saved to localStorage, always reset to 2 on page refresh
    - **Root Cause**: `useTeamGeneration` hook used basic `useState` instead of persistence hook
    - **Solution**: Implemented `useLocalStoragePersistence<number>` with 500ms debounce auto-save
@@ -1089,6 +1091,7 @@ The project now uses the Material 3 (Material You) color system for both light a
    - **Compliance**: Follows development standards for localStorage patterns and iOS compatibility
 
 2. **"Teams s" Display Bug**
+
    - **Problem**: Team count display occasionally showed "2 Teams s" instead of "2 Teams" after refresh
    - **Root Cause**: React state initialization race condition during component mounting
    - **Solution**: Added state validation guards with `safeTeamCount` variable in `TeamCountSelector`
@@ -1124,11 +1127,13 @@ useEffect(() => {
 ```
 
 **Files Modified:**
+
 - `src/features/random-team-generator/hooks/useTeamGeneration.ts` - Added persistence and reset functionality
 - `src/features/random-team-generator/components/TeamControls/TeamCountSelector.tsx` - Added state guards
 - `src/features/random-team-generator/pages/RandomTeamGeneratorPage.tsx` - Added reset logic and monitoring
 
 **User Experience Improvements:**
+
 - ✅ Team count persists across page refreshes (localStorage auto-save)
 - ✅ No more "Teams s" display glitch during initialization
 - ✅ Logical team count behavior: resets to 2 when no participants exist
@@ -1136,6 +1141,7 @@ useEffect(() => {
 - ✅ Maintains all existing functionality without breaking changes
 
 **Development Standards Compliance:**
+
 - ✅ 500ms debounced localStorage auto-save pattern
 - ✅ Centralized storage keys system usage
 - ✅ iOS compatibility mode enabled
@@ -1147,22 +1153,26 @@ useEffect(() => {
 **PWA Display Mode Change - Chrome Behavior Fix (2025-12-07):**
 
 **Issue Identified:**
+
 - PWA fullscreen mode triggered aggressive Chrome features:
   - Translation popup on page refresh
   - "Search with Google" popup on text selection
 - These behaviors only occurred in installed PWA mode, not in browser
 
 **Root Cause:**
+
 - `"display": "fullscreen"` in manifest.json enables enhanced Chrome PWA integration
 - Chrome treats fullscreen PWAs more like native apps with additional "helpful" features
 - These features are undesired for quiz management application
 
 **Solution Applied:**
+
 - Changed PWA display mode from `"fullscreen"` to `"standalone"`
 - Updated DEVELOPMENT-STANDARDS.md with PWA display mode guidelines
 - Maintains app-like experience while reducing aggressive browser behaviors
 
 **Technical Change:**
+
 ```json
 // BEFORE (problematic):
 {
@@ -1176,6 +1186,7 @@ useEffect(() => {
 ```
 
 **Expected Results:**
+
 - ✅ Reduced translation popup frequency
 - ✅ Reduced text selection search popups
 - ✅ Maintains PWA app-like experience
@@ -1183,12 +1194,14 @@ useEffect(() => {
 - ✅ Better user experience for quiz management context
 
 **Display Mode Guidelines Added:**
+
 - `"standalone"` - Recommended for most apps (balanced experience)
 - `"fullscreen"` - Only for games/immersive apps (may trigger features)
 - `"minimal-ui"` - Fallback with minimal browser UI
 - `"browser"` - Regular web page experience
 
 **Files Modified:**
+
 - `public/manifest.json` - Changed display mode
 - `DEVELOPMENT-STANDARDS.md` - Added PWA display mode guidelines
 - `PROJECT-CHARTER.md` - Documented change and rationale
@@ -1198,6 +1211,7 @@ useEffect(() => {
 **Major UX Enhancement - Single Card Design with App-Like Full Viewport Experience:**
 
 **Card Combination Achievement:**
+
 - **Successfully integrated two separate cards** into one cohesive interface:
   - **ParticipantsList** (input section) and **TeamControls** (team count + generate button)
   - **Moved team controls** (team count selector, generate button) into bottom section of ParticipantsList card
@@ -1206,6 +1220,7 @@ useEffect(() => {
   - **Clean component architecture**: Single integrated component with proper separation of concerns
 
 **Full Viewport Layout Implementation:**
+
 - **Transformed from traditional scrollable page to native app experience**:
   - **Page fills entire viewport**: Uses `height: 'calc(100vh - 100px)'` accounting for browser chrome (address bar, tabs, OS UI)
   - **No page-level scrolling**: Only input area scrolls while header, team controls, and generate button remain fixed
@@ -1214,14 +1229,16 @@ useEffect(() => {
   - **Progressive enhancement**: Graceful degradation with `minHeight: '480px'` safety minimum
 
 **Spacing Optimization for Compact Design:**
+
 - **Eliminated excessive padding gaps**:
   - **Header to input gap**: Reduced from `pb: 1` to `pb: 1` with `pt: 0.5` optimization for tight spacing
-  - **Team controls section**: Optimized from `clamp(0.5rem, 1.5vw, 1rem)` to `clamp(0.25rem, 1vw, 0.5rem)` 
+  - **Team controls section**: Optimized from `clamp(0.5rem, 1.5vw, 1rem)` to `clamp(0.25rem, 1vw, 0.5rem)`
   - **Top separation**: Reduced from `clamp(0.5rem, 2vw, 1.5rem)` to `clamp(0.25rem, 1vw, 0.75rem)`
   - **Fluid responsive scaling**: All spacing uses clamp() for smooth scaling across device sizes
   - **Visual hierarchy maintained**: Still clear separation between sections while maximizing content space
 
 **Browser Chrome Compatibility:**
+
 - **Cross-platform viewport calculation**: Accounts for different browser UI elements
   - **Desktop browsers**: ~100px for address bar, tabs, and OS window chrome
   - **Mobile browsers**: Dynamic viewport height handling for collapsing address bars
@@ -1232,7 +1249,7 @@ useEffect(() => {
 
 ```typescript
 // Full Viewport Container Pattern
-<Box sx={{ 
+<Box sx={{
   height: 'calc(100vh - 100px)', // Browser chrome consideration
   minHeight: '480px', // Safety minimum for small screens
   display: 'flex',
@@ -1241,7 +1258,7 @@ useEffect(() => {
 }}>
 
 // Integrated Team Controls with Optimized Spacing
-<Box sx={{ 
+<Box sx={{
   gap: 'clamp(0.25rem, 1vw, 0.5rem)', // Compact responsive gaps
   pt: 'clamp(0.25rem, 1vw, 0.75rem)', // Optimized top separation
   borderTop: '1px solid', // Visual section separator
@@ -1250,6 +1267,7 @@ useEffect(() => {
 ```
 
 **Component Architecture Improvements:**
+
 - **ParticipantsList interface extended** with team control props (teamCount, onTeamCountChange, onGenerateTeams)
 - **Proper prop passing pattern**: Main page passes all necessary callbacks and state
 - **Enhanced accessibility**: All ARIA labels, keyboard navigation, and screen reader support maintained
@@ -1257,11 +1275,13 @@ useEffect(() => {
 - **Development standards compliance**: Follows DEVELOPMENT-STANDARDS.md patterns for responsive design
 
 **Files Modified:**
+
 - `src/features/random-team-generator/components/ParticipantsList/ParticipantsList.tsx` - Integrated team controls and optimized spacing
 - `src/features/random-team-generator/pages/RandomTeamGeneratorPage.tsx` - Implemented full viewport layout
 - **Deleted files**: `TeamControls/` directory and all subcomponents (clean architecture)
 
 **User Experience Results:**
+
 - ✅ **Native app-like experience**: Full viewport utilization without page scrolling
 - ✅ **Improved content density**: More space for participant names and team management
 - ✅ **Better mobile experience**: Optimal for portrait and landscape orientations
@@ -1272,6 +1292,7 @@ useEffect(() => {
 - ✅ **PWA optimization**: Perfect for installed app experience on mobile devices
 
 **Development Standards Alignment:**
+
 - ✅ **Fluid responsive design**: All spacing uses modern clamp() scaling
 - ✅ **Component integration patterns**: Proper separation of concerns while combining UI elements
 - ✅ **Accessibility maintenance**: All keyboard navigation and screen reader features preserved
@@ -1283,6 +1304,7 @@ useEffect(() => {
 **Major UX Enhancement - Route-Based Dynamic Header Text with Responsive Typography:**
 
 **Dynamic Text Functionality Achievement:**
+
 - **Successfully implemented route-based header text** that automatically changes based on current page:
   - **Home** (`/`): `"QUIZZARD"` - Standard size (8 characters)
   - **Random Team Generator** (`/random-team-generator`): `"RANDOM GENERATOR"` - Compact size (16 characters)
@@ -1293,6 +1315,7 @@ useEffect(() => {
 - **Seamless navigation experience**: Text changes instantly when navigating between tools
 
 **Responsive Font Sizing System:**
+
 - **Character-based scaling algorithm**: Font size automatically adjusts based on text length to ensure perfect fit between header icons
 - **Three responsive tiers**:
   - **Short text (≤8 chars)**: `xs: '1.75rem', sm: '2.1rem'` - Full size for "QUIZZARD" and "QUIZZES"
@@ -1307,26 +1330,28 @@ useEffect(() => {
 // Dynamic Header Text with Universal Path Handling
 const getDynamicHeaderText = (pathname: string) => {
   // Strip base path for universal compatibility (dev vs production)
-  const cleanPath = pathname.replace('/Quizzard', '');
-  
+  const cleanPath = pathname.replace("/Quizzard", "");
+
   // Character-based responsive font sizing
   const getFontSize = (chars: number) => {
-    if (chars <= 8) return { xs: '1.75rem', sm: '2.1rem' };      // Standard
-    else if (chars <= 14) return { xs: '1.4rem', sm: '1.8rem' }; // Medium
-    else return { xs: '1.2rem', sm: '1.6rem' };                 // Compact
+    if (chars <= 8) return { xs: "1.75rem", sm: "2.1rem" }; // Standard
+    else if (chars <= 14) return { xs: "1.4rem", sm: "1.8rem" }; // Medium
+    else return { xs: "1.2rem", sm: "1.6rem" }; // Compact
   };
-  
+
   return { text: mapping.text, fontSize: getFontSize(mapping.chars) };
 };
 ```
 
 **Cross-Platform Compatibility:**
+
 - **Development environment**: Handles clean paths without base prefixes
 - **Production environment**: Automatically strips `/Quizzard` base path for consistent routing
 - **Debug logging**: Console output for pathname detection and troubleshooting
 - **React Router integration**: Uses `useLocation` hook for real-time route detection
 
 **User Experience Improvements:**
+
 - ✅ **Context-aware branding**: Users instantly know which tool they're using
 - ✅ **Professional appearance**: Tool-specific headers create dedicated app sections
 - ✅ **Mobile-first design**: Text always fits perfectly between header icons
@@ -1336,11 +1361,13 @@ const getDynamicHeaderText = (pathname: string) => {
 - ✅ **Development efficiency**: Single function handles all route detection and sizing logic
 
 **Files Modified:**
+
 - `src/shared/components/Header.tsx` - Implemented dynamic text system with responsive sizing
 - **Enhanced imports**: Added `useLocation` from React Router for route detection
 - **Universal compatibility**: Path normalization for development and production environments
 
 **Development Standards Integration:**
+
 - ✅ **Component architecture**: Clean separation of text logic and responsive sizing
 - ✅ **TypeScript safety**: Full type definitions for all text mappings and font sizes
 - ✅ **Performance optimization**: Efficient character-based calculation system
@@ -1349,6 +1376,7 @@ const getDynamicHeaderText = (pathname: string) => {
 - ✅ **Maintainable patterns**: Easy to add new routes and customize text mappings
 
 **Brand Identity Enhancement:**
+
 - ✅ **Tool-specific identity**: Each feature feels like a dedicated application section
 - ✅ **Visual hierarchy**: Font sizing creates appropriate emphasis for different content lengths
 - ✅ **Consistent branding**: Maintains shimmer animation and Material Design color scheme
@@ -1359,6 +1387,7 @@ const getDynamicHeaderText = (pathname: string) => {
 **Major UX Polish - Progressive Interface Simplification with Safety-First Button Design:**
 
 **Instructional Text Removal:**
+
 - **Eliminated verbose instructional guidance** that cluttered the interface:
   - **Removed**: "Participants (Add your names - each on a new line)" header text
   - **Simplified**: Input area now clean and self-explanatory without text overhead
@@ -1369,6 +1398,7 @@ const getDynamicHeaderText = (pathname: string) => {
   - **Professional appearance**: Clean interface following modern app design principles
 
 **Complete Title Elimination:**
+
 - **Removed "Participants" title entirely** for maximum content space:
   - **Conditional header rendering**: Only shows Clear button when participants exist
   - **Dynamic padding system**: Adjusts layout based on content presence
@@ -1377,18 +1407,21 @@ const getDynamicHeaderText = (pathname: string) => {
 
 **Safety-First Button Design Evolution:**
 
-*Phase 1 - Dual Button Layout:*
+_Phase 1 - Dual Button Layout:_
+
 - **Initial implementation**: Clear and Generate buttons side by side with equal widths
 - **Color coding**: Secondary (Clear) and Primary (Generate) for visual hierarchy
 - **Icon integration**: DeleteForever and Groups icons for immediate recognition
 - **Responsive design**: Proper scaling across all device sizes
 
-*Phase 2 - Order Optimization:*
+_Phase 2 - Order Optimization:_
+
 - **Improved layout**: Generate button on left (primary action), Clear on right
 - **Text simplification**: "Generate Teams" shortened to just "Generate"
 - **User flow enhancement**: Primary action positioned for natural left-to-right reading
 
-*Phase 3 - Safety Design (Final):*
+_Phase 3 - Safety Design (Final):_
+
 - **Safety-optimized layout**: Generate button centered for primary focus
 - **Accident prevention**: Clear button as DeleteForever icon positioned absolutely at right edge
 - **Intentional interaction**: Clear requires deliberate targeting to prevent accidental team clearing
@@ -1397,15 +1430,17 @@ const getDynamicHeaderText = (pathname: string) => {
 
 **Critical Bug Fixes:**
 
-*Pluralization Logic Bug:*
+_Pluralization Logic Bug:_
+
 - **Problem**: "2 Teams s" appearing after page refresh due to race conditions
 - **Root cause**: Number conversion issues and flawed pluralization logic `!== 1`
-- **Solution implemented**: 
+- **Solution implemented**:
   - **Robust number conversion**: `parseInt()` with fallback system
   - **Correct logic**: Changed to `=== 1` for singular vs plural detection
   - **Type safety**: Comprehensive edge case handling for localStorage data
 
-*Distribution Message Styling Enhancement:*
+_Distribution Message Styling Enhancement:_
+
 - **Converted informational text to hint styling**:
   - **Example**: "Your 5 teams will have 3-4 members each"
   - **Style changes**: Italic typography, muted color (`text.secondary`), smaller font size
@@ -1416,40 +1451,46 @@ const getDynamicHeaderText = (pathname: string) => {
 
 ```typescript
 // Safety Button Layout Pattern
-<Box sx={{ position: 'relative', display: 'flex', justifyContent: 'center' }}>
+<Box sx={{ position: "relative", display: "flex", justifyContent: "center" }}>
   {/* Primary Action - Centered */}
   <Button variant="contained" size="large" startIcon={<Groups />}>
     Generate
   </Button>
-  
+
   {/* Destructive Action - Edge Positioned */}
-  <IconButton 
-    sx={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)' }}
+  <IconButton
+    sx={{
+      position: "absolute",
+      right: 0,
+      top: "50%",
+      transform: "translateY(-50%)",
+    }}
     aria-label="Clear all participants"
   >
     <DeleteForeverIcon />
   </IconButton>
-</Box>
+</Box>;
 
 // Robust Pluralization Logic
 const teamCountNum = parseInt(String(teamCount), 10) || CONSTANTS.MIN_TEAMS;
-const teamText = teamCountNum === 1 ? 'Team' : 'Teams';
+const teamText = teamCountNum === 1 ? "Team" : "Teams";
 
 // Hint Text Styling Pattern
-<Typography 
-  variant="body2" 
-  sx={{ 
-    fontStyle: 'italic', 
-    color: 'text.secondary', 
-    fontSize: '0.875rem', 
-    opacity: 0.8 
+<Typography
+  variant="body2"
+  sx={{
+    fontStyle: "italic",
+    color: "text.secondary",
+    fontSize: "0.875rem",
+    opacity: 0.8,
   }}
 >
   {distributionMessage}
-</Typography>
+</Typography>;
 ```
 
 **User Experience Improvements:**
+
 - ✅ **Cleaner interface**: Removed instructional clutter for professional appearance
 - ✅ **Accident prevention**: Safety button design prevents accidental team clearing
 - ✅ **Intuitive interactions**: Self-explanatory interface without verbose guidance
@@ -1460,6 +1501,7 @@ const teamText = teamCountNum === 1 ? 'Team' : 'Teams';
 - ✅ **Accessibility maintained**: All ARIA labels, keyboard navigation, and screen reader support preserved
 
 **Design Philosophy Applied:**
+
 - ✅ **Progressive disclosure**: Interface reveals information as needed rather than upfront
 - ✅ **Safety by design**: Destructive actions require intentional targeting
 - ✅ **Content-first approach**: Maximum space for actual participant content
@@ -1468,11 +1510,13 @@ const teamText = teamCountNum === 1 ? 'Team' : 'Teams';
 - ✅ **Material Design compliance**: Proper color usage, typography hierarchy, and interaction patterns
 
 **Files Modified:**
+
 - `src/features/random-team-generator/components/ParticipantsList/ParticipantsList.tsx` - Complete UI refinements and safety design
 - `src/features/random-team-generator/pages/RandomTeamGeneratorPage.tsx` - Pluralization bug fixes
 - **Preserved functionality**: All features including localStorage persistence, cheat codes, keyboard navigation, and team generation maintained
 
 **Development Standards Documentation:**
+
 - ✅ **Safety button patterns**: Added destructive vs constructive action positioning guidelines
 - ✅ **Progressive disclosure principles**: Interface simplification without functionality loss
 - ✅ **Hint text styling**: Material Design compliant subtle information display

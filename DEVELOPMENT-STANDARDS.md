@@ -2,7 +2,7 @@
 
 **Version:** 2.2  
 **Last Updated:** December 18, 2025  
-**Status:** ACTIVE  
+**Status:** ACTIVE
 
 ## **📋 OVERVIEW**
 
@@ -145,16 +145,16 @@ const { participants, addParticipant } = useParticipants();
 ```typescript
 interface ButtonProps {
   children: React.ReactNode;
-  variant?: 'primary' | 'secondary';
+  variant?: "primary" | "secondary";
   onClick?: () => void;
   disabled?: boolean;
 }
 
 export const Button: React.FC<ButtonProps> = ({
   children,
-  variant = 'primary',
+  variant = "primary",
   onClick,
-  disabled = false
+  disabled = false,
 }) => {
   // Implementation
 };
@@ -166,12 +166,12 @@ export const Button: React.FC<ButtonProps> = ({
 
 ```html
 <!-- ✅ REQUIRED: Poppins font preload in index.html -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link 
-  href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" 
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
   rel="stylesheet"
->
+/>
 ```
 
 #### **2. Fluid Typography System (REQUIRED)**
@@ -196,22 +196,22 @@ sx={{
 const theme = createTheme({
   typography: {
     fontFamily: '"Poppins", "Roboto", "Helvetica", "Arial", sans-serif',
-    
+
     // Fluid scaling for all variants
-    h1: { fontSize: 'clamp(2rem, 5vw, 3.5rem)' },
-    h5: { fontSize: 'clamp(1.2rem, 3vw, 1.5rem)' },
-    body1: { fontSize: 'clamp(0.9rem, 2vw, 1rem)' },
-    button: { fontSize: 'clamp(0.8rem, 1.5vw, 0.875rem)' },
-    
+    h1: { fontSize: "clamp(2rem, 5vw, 3.5rem)" },
+    h5: { fontSize: "clamp(1.2rem, 3vw, 1.5rem)" },
+    body1: { fontSize: "clamp(0.9rem, 2vw, 1rem)" },
+    button: { fontSize: "clamp(0.8rem, 1.5vw, 0.875rem)" },
+
     // Custom quiz-specific variants
-    quizTitle: { fontSize: 'clamp(1.5rem, 3.5vw, 2rem)' },
-    quizQuestion: { fontSize: 'clamp(1.1rem, 2.5vw, 1.3rem)' },
-    quizOption: { fontSize: 'clamp(0.9rem, 2vw, 1rem)' },
-    quizFeedback: { fontSize: 'clamp(0.85rem, 1.8vw, 0.95rem)' },
-    quizInstructions: { fontSize: 'clamp(0.8rem, 1.5vw, 0.875rem)' },
-    quizCounter: { fontSize: 'clamp(0.75rem, 1.2vw, 0.8rem)' },
-    quizScore: { fontSize: 'clamp(1.2rem, 2.8vw, 1.6rem)' },
-  }
+    quizTitle: { fontSize: "clamp(1.5rem, 3.5vw, 2rem)" },
+    quizQuestion: { fontSize: "clamp(1.1rem, 2.5vw, 1.3rem)" },
+    quizOption: { fontSize: "clamp(0.9rem, 2vw, 1rem)" },
+    quizFeedback: { fontSize: "clamp(0.85rem, 1.8vw, 0.95rem)" },
+    quizInstructions: { fontSize: "clamp(0.8rem, 1.5vw, 0.875rem)" },
+    quizCounter: { fontSize: "clamp(0.75rem, 1.2vw, 0.8rem)" },
+    quizScore: { fontSize: "clamp(1.2rem, 2.8vw, 1.6rem)" },
+  },
 });
 ```
 
@@ -241,8 +241,8 @@ sx={{
 <Typography variant="quizInstructions">Helper Instructions</Typography>
 
 // ✅ REQUIRED: Override margins in layout contexts
-<Typography 
-  variant="h1" 
+<Typography
+  variant="h1"
   sx={{ marginBottom: 0 }} // Override theme margin when using gap system
 >
   Page Title
@@ -259,7 +259,7 @@ sx={{
   sx={{
     // All cards same height (as tall as tallest card)
     height: { xs: 280, sm: 320, md: 280 },
-    
+
     // No mobile overflow - always use 100% width on mobile
     width: { xs: '100%', sm: '100%', md: 280, lg: 256, xl: 304 },
     maxWidth: { xs: 384, sm: 384, md: 320, lg: 320, xl: 320 },
@@ -271,26 +271,28 @@ sx={{
 
 ```typescript
 // ✅ REQUIRED: Proper content distribution in fixed height
-<CardActionArea 
-  sx={{ 
-    height: '100%',
-    display: 'flex', 
-    flexDirection: 'column', 
-    alignItems: 'center',
-    justifyContent: 'space-between', // Distribute content evenly
+<CardActionArea
+  sx={{
+    height: "100%",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "space-between", // Distribute content evenly
     gap: { xs: 1, sm: 1.5, md: 1.2 },
   }}
 >
   {/* Icon Section - Top */}
   <Box sx={{ flexShrink: 0 }}>{icon}</Box>
-  
+
   {/* Text Content - Center with flex: 1 */}
-  <Box sx={{ 
-    flex: 1, 
-    display: 'flex', 
-    flexDirection: 'column',
-    justifyContent: 'center' 
-  }}>
+  <Box
+    sx={{
+      flex: 1,
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "center",
+    }}
+  >
     <Typography variant="h5">Title</Typography>
     <Typography variant="body2">Description</Typography>
   </Box>
@@ -335,7 +337,7 @@ gap: 'clamp(1rem, 3vw, 2rem)',
 
 ```typescript
 // ✅ REQUIRED: Gap-based spacing system
-<Box sx={{ 
+<Box sx={{
   display: 'flex',
   flexDirection: 'column',
   gap: { xs: 3, sm: 4, md: 3 }, // 20% bigger gaps on mobile
@@ -356,11 +358,11 @@ gap: 'clamp(1rem, 3vw, 2rem)',
 // ✅ REQUIRED: Icon sizing follows development standards
 const iconSizing = {
   // Header icons: 40% larger than default
-  header: { fontSize: { xs: '1.75rem', sm: '2.1rem' } },
-  
+  header: { fontSize: { xs: "1.75rem", sm: "2.1rem" } },
+
   // Card icons: 20% bigger on mobile for touch targets
   card: { fontSize: { xs: 54, sm: 61, md: 58 } },
-  
+
   // Standard icons: Base sizing
   standard: { fontSize: { xs: 24, sm: 28, md: 24 } },
 };
@@ -390,11 +392,11 @@ sx={{
 
 ```typescript
 // ✅ REQUIRED: Proper TypeScript integration
-import { useTheme } from '../shared/hooks/useTheme';
-import type { Theme } from '@mui/material/styles';
+import { useTheme } from "../shared/hooks/useTheme";
+import type { Theme } from "@mui/material/styles";
 
 // ✅ REQUIRED: Type-safe custom variants
-declare module '@mui/material/styles' {
+declare module "@mui/material/styles" {
   interface TypographyVariants {
     quizTitle: React.CSSProperties;
     quizQuestion: React.CSSProperties;
@@ -412,11 +414,11 @@ declare module '@mui/material/styles' {
 {
   "name": "Quizzard - Quiz Management Platform",
   "short_name": "Quizzard",
-  "display": "standalone",           // Balanced PWA experience without aggressive browser features
+  "display": "standalone", // Balanced PWA experience without aggressive browser features
   "start_url": "/Quizzard/",
   "scope": "/Quizzard/",
-  "orientation": "any",              // All device orientations
-  "background_color": "#1976D2",     // Theme primary color
+  "orientation": "any", // All device orientations
+  "background_color": "#1976D2", // Theme primary color
   "theme_color": "#1976D2"
 }
 
@@ -512,70 +514,73 @@ const headerElementSizing = {
 <Toolbar>
   {/* Left: Home icon (clickable, links to /) */}
   <IconButton component={RouterLink} to="/" aria-label="Home">
-    <HomeRoundedIcon sx={{ fontSize: { xs: '1.75rem', sm: '2.1rem' } }} />
+    <HomeRoundedIcon sx={{ fontSize: { xs: "1.75rem", sm: "2.1rem" } }} />
   </IconButton>
-  
+
   {/* Center: Dynamic text (non-clickable, route-based) */}
   <Box sx={{ flex: 1, display: "flex", justifyContent: "center" }}>
     <Typography sx={{ fontSize: dynamicHeader.fontSize }}>
       {dynamicHeader.text}
     </Typography>
   </Box>
-  
+
   {/* Right: Menu icon (always visible, opens drawer) */}
   <IconButton onClick={handleDrawerToggle} aria-label="menu">
-    <MenuOpenRoundedIcon sx={{ fontSize: { xs: '1.75rem', sm: '2.1rem' } }} />
+    <MenuOpenRoundedIcon sx={{ fontSize: { xs: "1.75rem", sm: "2.1rem" } }} />
   </IconButton>
-</Toolbar>
+</Toolbar>;
 
 // ✅ REQUIRED: Dynamic header text system
 const getDynamicHeaderText = (pathname: string) => {
   // Strip base path for universal compatibility
-  const cleanPath = pathname.replace('/Quizzard', '');
-  
+  const cleanPath = pathname.replace("/Quizzard", "");
+
   // Character-based responsive font sizing
   const getFontSize = (chars: number) => {
-    if (chars <= 8) return { xs: '1.75rem', sm: '2.1rem' };      // Standard
-    else if (chars <= 14) return { xs: '1.4rem', sm: '1.8rem' }; // Medium  
-    else return { xs: '1.2rem', sm: '1.6rem' };                 // Compact
+    if (chars <= 8) return { xs: "1.75rem", sm: "2.1rem" }; // Standard
+    else if (chars <= 14) return { xs: "1.4rem", sm: "1.8rem" }; // Medium
+    else return { xs: "1.2rem", sm: "1.6rem" }; // Compact
   };
-  
+
   return { text: mapping.text, fontSize: getFontSize(mapping.chars) };
 };
 
 // ✅ REQUIRED: Route mappings for all tools
 const textMappings = {
-  '/': { text: 'QUIZZARD', chars: 8 },
-  '/random-team-generator': { text: 'RANDOM GENERATOR', chars: 16 },
-  '/points-counter': { text: 'POINTS COUNTER', chars: 14 },
-  '/quizzes': { text: 'QUIZZES', chars: 7 },
+  "/": { text: "QUIZZARD", chars: 8 },
+  "/random-team-generator": { text: "RANDOM GENERATOR", chars: 16 },
+  "/points-counter": { text: "POINTS COUNTER", chars: 14 },
+  "/quizzes": { text: "QUIZZES", chars: 7 },
 };
 ```
 
 #### **6. Dynamic Header Text Standards (REQUIRED)**
 
 **Route-Based Text System:**
+
 - **Header text MUST change based on current route** to provide context-aware branding
 - **Universal path handling** for development (clean paths) and production (base paths)
 - **Character-based responsive font sizing** to ensure text fits between header icons
 - **Automatic fallback** to default "QUIZZARD" for unknown routes
 
 **Responsive Typography Tiers:**
+
 ```typescript
 // ✅ REQUIRED: Three-tier responsive font sizing system
 const fontSizingTiers = {
   // Short text (≤8 characters): QUIZZARD, QUIZZES
-  standard: { xs: '1.75rem', sm: '2.1rem' },
-  
-  // Medium text (9-14 characters): POINTS COUNTER  
-  medium: { xs: '1.4rem', sm: '1.8rem' },
-  
+  standard: { xs: "1.75rem", sm: "2.1rem" },
+
+  // Medium text (9-14 characters): POINTS COUNTER
+  medium: { xs: "1.4rem", sm: "1.8rem" },
+
   // Long text (≥15 characters): RANDOM GENERATOR
-  compact: { xs: '1.2rem', sm: '1.6rem' }
+  compact: { xs: "1.2rem", sm: "1.6rem" },
 };
 ```
 
 **Implementation Requirements:**
+
 - **React Router integration**: Use `useLocation` hook for route detection
 - **Path normalization**: Strip base paths for consistent route matching
 - **TypeScript safety**: Full type definitions for text mappings and font sizes
@@ -584,15 +589,17 @@ const fontSizingTiers = {
 - **Mobile-first design**: Text must fit perfectly between icons on all screen sizes
 
 **Adding New Routes:**
+
 ```typescript
 // ✅ REQUIRED: When adding new tools, update text mappings
 const textMappings = {
-  '/new-tool': { text: 'NEW TOOL NAME', chars: 13 }, // Specify character count
+  "/new-tool": { text: "NEW TOOL NAME", chars: 13 }, // Specify character count
   // Font size automatically calculated based on character count
 };
 ```
 
 **Cross-Platform Compatibility:**
+
 - **Development environment**: Handles clean paths (`/quizzes`)
 - **Production environment**: Strips base path from full paths (`/Quizzard/quizzes`)
 - **Universal fallback**: Always defaults to home text for unmatched routes
@@ -604,13 +611,15 @@ const textMappings = {
 
 ```typescript
 // ✅ REQUIRED: Use centralized storage key system
-import { STORAGE_KEYS } from '../constants/storage';
+import { STORAGE_KEYS } from "../constants/storage";
 
 // Save data
 localStorage.setItem(STORAGE_KEYS.RTG_PARTICIPANTS, JSON.stringify(data));
 
 // Load data
-const data = JSON.parse(localStorage.getItem(STORAGE_KEYS.RTG_PARTICIPANTS) || '[]');
+const data = JSON.parse(
+  localStorage.getItem(STORAGE_KEYS.RTG_PARTICIPANTS) || "[]"
+);
 ```
 
 #### **2. Auto-save Implementation**
@@ -619,7 +628,10 @@ const data = JSON.parse(localStorage.getItem(STORAGE_KEYS.RTG_PARTICIPANTS) || '
 // ✅ REQUIRED: 500ms debounced auto-save
 useEffect(() => {
   const timeoutId = setTimeout(() => {
-    localStorage.setItem(STORAGE_KEYS.RTG_PARTICIPANTS, JSON.stringify(participants));
+    localStorage.setItem(
+      STORAGE_KEYS.RTG_PARTICIPANTS,
+      JSON.stringify(participants)
+    );
   }, 500);
 
   return () => clearTimeout(timeoutId);
@@ -633,17 +645,19 @@ useEffect(() => {
 const loadParticipants = (): Participant[] => {
   // Try new centralized key first
   let data = localStorage.getItem(STORAGE_KEYS.RTG_PARTICIPANTS);
-  
+
   if (!data) {
     // Check legacy key and migrate
-    const legacyData = localStorage.getItem('quizzard-random-team-generator-participants');
+    const legacyData = localStorage.getItem(
+      "quizzard-random-team-generator-participants"
+    );
     if (legacyData) {
       localStorage.setItem(STORAGE_KEYS.RTG_PARTICIPANTS, legacyData);
-      localStorage.removeItem('quizzard-random-team-generator-participants');
+      localStorage.removeItem("quizzard-random-team-generator-participants");
       data = legacyData;
     }
   }
-  
+
   return data ? JSON.parse(data) : [];
 };
 ```
@@ -652,21 +666,22 @@ const loadParticipants = (): Participant[] => {
 
 ```typescript
 // ✅ PREFERRED: Use the standardized localStorage persistence hook
-import { useLocalStoragePersistence } from '../../../shared/hooks/useLocalStoragePersistence';
-import { STORAGE_KEYS } from '../../../shared/utils/storageKeys';
+import { useLocalStoragePersistence } from "../../../shared/hooks/useLocalStoragePersistence";
+import { STORAGE_KEYS } from "../../../shared/utils/storageKeys";
 
 // In your component or custom hook:
-const { value: teamCount, setValue: setTeamCountValue } = useLocalStoragePersistence<number>(
-  STORAGE_KEYS.RTG_TEAM_COUNT,
-  CONSTANTS.MIN_TEAMS, // default value
-  { 
-    debounceMs: 500,      // 500ms auto-save debounce
-    iosCompatMode: true   // iOS storage safety checks
-  }
-);
+const { value: teamCount, setValue: setTeamCountValue } =
+  useLocalStoragePersistence<number>(
+    STORAGE_KEYS.RTG_TEAM_COUNT,
+    CONSTANTS.MIN_TEAMS, // default value
+    {
+      debounceMs: 500, // 500ms auto-save debounce
+      iosCompatMode: true, // iOS storage safety checks
+    }
+  );
 
 // Use just like useState:
-const handleIncrement = () => setTeamCountValue(prev => prev + 1);
+const handleIncrement = () => setTeamCountValue((prev) => prev + 1);
 const resetToDefault = () => setTeamCountValue(CONSTANTS.MIN_TEAMS);
 ```
 
@@ -767,7 +782,7 @@ src/
 
 #### **1. JSDoc Comments**
 
-```typescript
+````typescript
 /**
  * Generates random teams from a list of participants
  * @param participants - Array of participant objects
@@ -785,7 +800,7 @@ export const generateTeams = (
 ): Team[] => {
   // Implementation
 };
-```
+````
 
 #### **2. README Files**
 
@@ -834,10 +849,10 @@ changes
 
 ```typescript
 try {
-  const data = JSON.parse(localStorage.getItem(key) || '[]');
+  const data = JSON.parse(localStorage.getItem(key) || "[]");
   return data;
 } catch (error) {
-  console.error('Failed to parse localStorage data:', error);
+  console.error("Failed to parse localStorage data:", error);
   return [];
 }
 ```
@@ -873,6 +888,35 @@ try {
 - No inline scripts or styles
 - Use proper CSP headers
 - Validate all external resources
+
+### **Browser Translation Prevention**
+
+#### **Chrome Auto-Translation Prevention (REQUIRED)**
+
+```html
+<!-- ✅ REQUIRED: HTML language declaration -->
+<html lang="en">
+  <!-- ✅ REQUIRED: Google no-translate meta tag -->
+  <meta name="google" content="notranslate" />
+
+  <!-- ✅ OPTIONAL: Additional language declaration for older browsers -->
+  <meta http-equiv="Content-Language" content="en" />
+</html>
+```
+
+#### **Implementation Guidelines**
+
+- **Global Protection**: Use `lang="en"` and `meta notranslate` for 95% effectiveness
+- **Component Protection**: Only needed for edge cases with dynamic content
+- **Testing**: Always test in Chrome incognito mode to verify translation prevention
+- **Priority**: Global settings first, component-level only if global fails
+
+#### **Why This Matters**
+
+- Chrome auto-translation breaks React functionality
+- User inputs become corrupted when translated
+- App state management fails with translated content
+- PWA functionality can be disrupted by translation attempts
 
 ### **Browser Compatibility**
 
@@ -970,16 +1014,18 @@ try {
 // ❌ AVOID: Static titles that consume valuable space
 <Typography variant="h6" sx={{ pb: 1 }}>
   Participants
-</Typography>
+</Typography>;
 
 // ✅ PREFERRED: Dynamic headers that adapt to content
-{participants.length > 0 ? (
-  <Box sx={{ display: 'flex', justifyContent: 'space-between', pb: 0.5 }}>
-    <Button size="small">Clear All</Button>
-  </Box>
-) : (
-  <Box sx={{ pb: 0.5 }} /> // Maintain spacing consistency
-)}
+{
+  participants.length > 0 ? (
+    <Box sx={{ display: "flex", justifyContent: "space-between", pb: 0.5 }}>
+      <Button size="small">Clear All</Button>
+    </Box>
+  ) : (
+    <Box sx={{ pb: 0.5 }} /> // Maintain spacing consistency
+  );
+}
 ```
 
 ### **Safety-First Button Design Patterns**
@@ -992,21 +1038,21 @@ try {
 
 <Box sx={{ position: 'relative', display: 'flex', justifyContent: 'center' }}>
   {/* Primary/Constructive Action - Centered for prominence */}
-  <Button 
-    variant="contained" 
-    size="large" 
+  <Button
+    variant="contained"
+    size="large"
     startIcon={<Groups />}
     sx={{ px: 4 }} // Larger touch target
   >
     Generate
   </Button>
-  
+
   {/* Destructive Action - Edge positioned to prevent accidents */}
-  <IconButton 
-    sx={{ 
-      position: 'absolute', 
-      right: 0, 
-      top: '50%', 
+  <IconButton
+    sx={{
+      position: 'absolute',
+      right: 0,
+      top: '50%',
       transform: 'translateY(-50%)',
       color: 'text.secondary' // Subtle color for less prominence
     }}
@@ -1030,25 +1076,25 @@ try {
 const actionButtonStyles = {
   // Primary/Safe actions - Maximum visibility
   primary: {
-    variant: 'contained',
-    size: 'large',
-    color: 'primary'
+    variant: "contained",
+    size: "large",
+    color: "primary",
   },
-  
+
   // Secondary/Neutral actions - Medium visibility
   secondary: {
-    variant: 'outlined',
-    size: 'medium',
-    color: 'primary'
+    variant: "outlined",
+    size: "medium",
+    color: "primary",
   },
-  
+
   // Destructive actions - Minimal visibility, intentional targeting required
   destructive: {
     component: IconButton, // Icon only for smaller target
-    color: 'text.secondary', // Muted color
-    'aria-label': 'required', // Accessibility compensation
-    sx: { fontSize: '1.2rem' } // Smaller than primary actions
-  }
+    color: "text.secondary", // Muted color
+    "aria-label": "required", // Accessibility compensation
+    sx: { fontSize: "1.2rem" }, // Smaller than primary actions
+  },
 };
 ```
 
@@ -1084,25 +1130,30 @@ const hintTextStyles = {
 
 ```typescript
 // ✅ REQUIRED: Smart content that adapts to user context
-const getDistributionMessage = (participantCount: number, teamCount: number) => {
+const getDistributionMessage = (
+  participantCount: number,
+  teamCount: number
+) => {
   if (participantCount === 0) return null; // No clutter when empty
-  
+
   const distribution = Math.ceil(participantCount / teamCount);
   const remainder = participantCount % teamCount;
-  
+
   if (remainder === 0) {
     return `Your ${teamCount} teams will have ${distribution} members each`;
   } else {
-    return `Your ${teamCount} teams will have ${distribution-1}-${distribution} members each`;
+    return `Your ${teamCount} teams will have ${
+      distribution - 1
+    }-${distribution} members each`;
   }
 };
 
 // Show only when relevant
-{distributionMessage && (
-  <Typography {...hintTextStyles}>
-    {distributionMessage}
-  </Typography>
-)}
+{
+  distributionMessage && (
+    <Typography {...hintTextStyles}>{distributionMessage}</Typography>
+  );
+}
 ```
 
 ### **Robust Data Conversion Patterns**
@@ -1119,10 +1170,10 @@ const safeNumberConversion = (value: unknown, fallback: number): number => {
 
 // Usage in pluralization logic:
 const teamCountNum = safeNumberConversion(teamCount, CONSTANTS.MIN_TEAMS);
-const teamText = teamCountNum === 1 ? 'Team' : 'Teams'; // Correct logic
+const teamText = teamCountNum === 1 ? "Team" : "Teams"; // Correct logic
 
 // ❌ AVOID: Unsafe conversion and flawed logic
-const teamText = teamCount !== 1 ? 'Teams' : 'Team'; // Broken for non-numbers
+const teamText = teamCount !== 1 ? "Teams" : "Team"; // Broken for non-numbers
 ```
 
 #### **2. localStorage Data Validation (REQUIRED)**
@@ -1133,15 +1184,15 @@ const loadPersistedData = <T>(key: string, fallback: T): T => {
   try {
     const stored = localStorage.getItem(key);
     if (!stored) return fallback;
-    
+
     const parsed = JSON.parse(stored);
-    
+
     // Type validation for expected data structure
     if (typeof parsed !== typeof fallback) {
       console.warn(`Invalid data type for ${key}, using fallback`);
       return fallback;
     }
-    
+
     return parsed;
   } catch (error) {
     console.error(`Failed to load ${key} from localStorage:`, error);
@@ -1152,15 +1203,15 @@ const loadPersistedData = <T>(key: string, fallback: T): T => {
 // Edge case handling for arrays
 const loadParticipants = (): Participant[] => {
   const data = loadPersistedData(STORAGE_KEYS.RTG_PARTICIPANTS, []);
-  
+
   // Ensure array structure
   if (!Array.isArray(data)) {
-    console.warn('Participants data is not an array, resetting');
+    console.warn("Participants data is not an array, resetting");
     return [];
   }
-  
+
   // Filter out invalid entries
-  return data.filter(p => p && typeof p.name === 'string' && p.name.trim());
+  return data.filter((p) => p && typeof p.name === "string" && p.name.trim());
 };
 ```
 
@@ -1173,22 +1224,22 @@ const loadParticipants = (): Participant[] => {
 const mobileOptimizedLayout = {
   // Remove non-essential headers on mobile
   conditionalHeaders: {
-    display: { xs: 'none', sm: 'flex' }, // Hide titles on mobile
-    '& + .content': { pt: { xs: 0, sm: 2 } } // Adjust spacing
+    display: { xs: "none", sm: "flex" }, // Hide titles on mobile
+    "& + .content": { pt: { xs: 0, sm: 2 } }, // Adjust spacing
   },
-  
+
   // Compact gaps for mobile density
   responsiveGaps: {
-    gap: 'clamp(0.25rem, 1vw, 0.5rem)', // Tight mobile, comfortable desktop
-    py: 'clamp(0.25rem, 1vw, 0.75rem)'  // Responsive padding
+    gap: "clamp(0.25rem, 1vw, 0.5rem)", // Tight mobile, comfortable desktop
+    py: "clamp(0.25rem, 1vw, 0.75rem)", // Responsive padding
   },
-  
+
   // Content-first approach
   maxContentSpace: {
-    minHeight: 0,           // Allow content to determine height
-    overflow: 'hidden',     // Prevent unwanted scrolling
-    px: { xs: 0.5, sm: 1 }  // Minimal horizontal padding
-  }
+    minHeight: 0, // Allow content to determine height
+    overflow: "hidden", // Prevent unwanted scrolling
+    px: { xs: 0.5, sm: 1 }, // Minimal horizontal padding
+  },
 };
 ```
 
@@ -1199,6 +1250,7 @@ const mobileOptimizedLayout = {
 The Points Counter is a comprehensive quiz scoring system that provides real-time team scoring with decimal precision support, round-by-round progression, and advanced features like live editing and leaderboard management.
 
 **Core Features Implemented:**
+
 - **ON/OFF Game State Logic**: Clean separation between setup mode and active game
 - **Decimal Scoring Support**: Full support for scores like 0.5, 1.25, 2.75 with 2 decimal places
 - **Auto-Save Functionality**: 500ms debounced localStorage persistence
@@ -1208,6 +1260,7 @@ The Points Counter is a comprehensive quiz scoring system that provides real-tim
 - **PWA Compatibility**: Offline support through localStorage
 
 **Technical Architecture:**
+
 ```typescript
 // Primary Components Structure
 src/features/points-counter/
@@ -1227,6 +1280,7 @@ src/features/points-counter/
 #### **2. Game State Management (IMPLEMENTED)**
 
 **usePointsCounter Hook - v2.0.0:**
+
 ```typescript
 // Complete game state with ON/OFF logic
 interface GameData {
@@ -1247,6 +1301,7 @@ interface GameData {
 ```
 
 **State Flow:**
+
 1. **OFF Mode**: Team setup screen, no auto-save, fresh game creation
 2. **ON Mode**: Active game screen, auto-save enabled, score tracking
 3. **Edit Mode**: Return to setup while keeping game ON, preserve existing scores
@@ -1254,6 +1309,7 @@ interface GameData {
 #### **3. Decimal Scoring System (IMPLEMENTED)**
 
 **Technical Implementation:**
+
 ```typescript
 // Game constants for scoring validation
 GAME_CONSTANTS = {
@@ -1269,6 +1325,7 @@ calculateTeamTotalScore(team: Team): number
 ```
 
 **Features:**
+
 - Supports any decimal value: 0.5, 1.25, 2.75, 0.33, etc.
 - Automatic rounding to 2 decimal places for consistency
 - Real-time validation in input fields
@@ -1278,6 +1335,7 @@ calculateTeamTotalScore(team: Team): number
 #### **4. User Interface Components (IMPLEMENTED)**
 
 **TeamCard Component - v2.0.0:**
+
 ```typescript
 // Modern team card with marquee animation
 Features:
@@ -1296,6 +1354,7 @@ Features:
 ```
 
 **GameScreen Component - v2.0.0:**
+
 ```typescript
 // Main game interface following TeamSetup pattern
 Layout Structure:
@@ -1312,6 +1371,7 @@ Action Buttons:
 ```
 
 **TeamSetup Component - v2.1.0:**
+
 ```typescript
 // Enhanced setup with edit mode support
 Dynamic Headers:
@@ -1332,13 +1392,14 @@ Edit Mode Features:
 #### **5. Storage Architecture (IMPLEMENTED)**
 
 **Centralized Storage Pattern:**
+
 ```typescript
 // Single localStorage key for atomic updates
-STORAGE_KEYS.PC_GAME_STATE = 'pc-current-game-state'
+STORAGE_KEYS.PC_GAME_STATE = "pc-current-game-state";
 
 // Complete game data in single JSON object
 interface GameData {
-  gameStatus: 'ON' | 'OFF';
+  gameStatus: "ON" | "OFF";
   teams: Team[];
   rounds: number;
   currentRound: number;
@@ -1349,7 +1410,7 @@ interface GameData {
 // Auto-save pattern (500ms debounced):
 useEffect(() => {
   const timeoutId = setTimeout(() => {
-    if (gameStatus === 'ON' && teams.length > 0) {
+    if (gameStatus === "ON" && teams.length > 0) {
       saveGameState();
     }
   }, 500);
@@ -1358,6 +1419,7 @@ useEffect(() => {
 ```
 
 **PWA Compatibility:**
+
 - Offline functionality through localStorage
 - Data persistence across browser sessions
 - Atomic updates prevent partial state corruption
@@ -1366,6 +1428,7 @@ useEffect(() => {
 #### **6. Responsive Design Implementation (IMPLEMENTED)**
 
 **Mobile-First Approach:**
+
 ```typescript
 // Team cards responsive layout
 Mobile (xs): Single column, centered cards
@@ -1385,6 +1448,7 @@ fontSize: 'clamp(0.8rem, 1.5vw, 0.875rem)' // Buttons
 ```
 
 **Layout Patterns:**
+
 - Same calc(100vh - 100px) height as RTG for consistency
 - Single card container with maxWidth: clamp(280px, 90vw, 1200px)
 - Three-section flex layout with proper space distribution
@@ -1393,10 +1457,11 @@ fontSize: 'clamp(0.8rem, 1.5vw, 0.875rem)' // Buttons
 #### **7. Error Handling and Validation (IMPLEMENTED)**
 
 **Comprehensive Error Management:**
+
 ```typescript
 // Validation with exact user-specified messages
 if (teams.length < 1 || rounds < 1) {
-  setError('Fill minimum one Team and at least 1 Round');
+  setError("Fill minimum one Team and at least 1 Round");
 }
 
 // Score validation with helpful feedback
@@ -1408,12 +1473,13 @@ if (!isValidScore(score)) {
 try {
   // Save operation
 } catch (error) {
-  console.error('Failed to save game state:', error);
-  setError('Failed to save game progress');
+  console.error("Failed to save game state:", error);
+  setError("Failed to save game progress");
 }
 ```
 
 **Error Recovery:**
+
 - Graceful fallback to fresh state on load errors
 - Input validation with visual feedback
 - Auto-reset invalid inputs to last valid values
@@ -1422,6 +1488,7 @@ try {
 #### **8. Advanced Features (IMPLEMENTED)**
 
 **Edit Mode Functionality:**
+
 ```typescript
 // Live game modification without data loss
 updateGameSetup(newTeams: Team[], newRounds: number) {
@@ -1436,6 +1503,7 @@ const existingTeam = teams.find(t => t.name === newTeam.name);
 ```
 
 **Leaderboard System:**
+
 ```typescript
 // Real-time ranking calculations
 interface LeaderboardEntry {
@@ -1453,6 +1521,7 @@ interface LeaderboardEntry {
 ```
 
 **Marquee Animation System:**
+
 ```typescript
 // Intelligent text overflow handling
 const shouldShowMarquee = textOverflows && (isHovered || isFocused);
@@ -1470,17 +1539,20 @@ const shouldShowMarquee = textOverflows && (isHovered || isFocused);
 #### **9. Performance Optimizations (IMPLEMENTED)**
 
 **Efficient Rendering:**
+
 - React.memo for pure components where beneficial
 - Debounced auto-save prevents excessive localStorage writes
 - Hardware-accelerated animations using transform3d
 - Optimal re-render patterns with useCallback and useMemo
 
 **Memory Management:**
+
 - Proper event listener cleanup in useEffect
 - Efficient data structures for team and round management
 - Minimal state updates through computed values
 
 **Bundle Optimization:**
+
 - Lazy loading of modal components
 - Tree-shaking friendly exports
 - TypeScript compilation for optimal bundles
@@ -1488,12 +1560,14 @@ const shouldShowMarquee = textOverflows && (isHovered || isFocused);
 #### **10. Testing and Quality Assurance (IMPLEMENTED)**
 
 **Code Quality Standards:**
+
 - 100% TypeScript coverage with strict mode
 - Comprehensive JSDoc documentation for all functions
 - Consistent error handling patterns
 - Development standards compliance
 
 **Manual Testing Coverage:**
+
 - Decimal scoring validation (0.5, 1.25, 2.75, etc.)
 - Edit mode with score preservation
 - Responsive design across breakpoints
@@ -1504,6 +1578,7 @@ const shouldShowMarquee = textOverflows && (isHovered || isFocused);
 #### **11. Future Enhancement Roadmap**
 
 **Planned Features:**
+
 - Export functionality (JSON, CSV, PDF)
 - Team color customization
 - Advanced statistics and analytics
@@ -1512,6 +1587,7 @@ const shouldShowMarquee = textOverflows && (isHovered || isFocused);
 - Drag-and-drop team reordering
 
 **Technical Improvements:**
+
 - Unit test coverage with Jest and Testing Library
 - Integration tests for complete user workflows
 - Performance monitoring and metrics
@@ -1521,20 +1597,22 @@ const shouldShowMarquee = textOverflows && (isHovered || isFocused);
 #### **12. Usage Examples and Patterns**
 
 **Basic Usage:**
+
 ```typescript
 // Start new game
 const teams = [
-  { id: '1', name: 'Team Alpha', totalScore: 0, roundScores: {} },
-  { id: '2', name: 'Team Beta', totalScore: 0, roundScores: {} }
+  { id: "1", name: "Team Alpha", totalScore: 0, roundScores: {} },
+  { id: "2", name: "Team Beta", totalScore: 0, roundScores: {} },
 ];
 startGame(teams, 5);
 
 // Update scores with decimal support
-updateTeamScore('team-1', 1, 2.5);
-updateTeamScore('team-2', 1, 1.75);
+updateTeamScore("team-1", 1, 2.5);
+updateTeamScore("team-2", 1, 1.75);
 ```
 
 **Edit Mode Pattern:**
+
 ```typescript
 // Enter edit mode while game is ON
 enterEditMode(); // Shows setup screen with existing data
@@ -1545,10 +1623,11 @@ updateGameSetup(updatedTeams, newRoundCount);
 ```
 
 **Error Handling Pattern:**
+
 ```typescript
 // Comprehensive validation
 if (!validateSetup()) {
-  setError('Fill minimum one Team and at least 1 Round');
+  setError("Fill minimum one Team and at least 1 Round");
   return;
 }
 
@@ -1561,6 +1640,7 @@ if (!isValidScore(score)) {
 #### **13. Implementation Checklist (COMPLETED)**
 
 **✅ Core Functionality:**
+
 - [x] ON/OFF game state logic
 - [x] Dynamic header text based on game status
 - [x] Decimal scoring with 2 decimal places
@@ -1570,6 +1650,7 @@ if (!isValidScore(score)) {
 - [x] Clear/End Game functionality
 
 **✅ User Interface:**
+
 - [x] TeamSetup styling pattern applied to GameScreen
 - [x] Mobile-responsive design with single column
 - [x] Team cards with marquee animation
@@ -1578,6 +1659,7 @@ if (!isValidScore(score)) {
 - [x] Modern hover effects and animations
 
 **✅ Technical Implementation:**
+
 - [x] TypeScript interfaces and type safety
 - [x] Comprehensive error handling
 - [x] Development standards compliance
@@ -1586,6 +1668,7 @@ if (!isValidScore(score)) {
 - [x] Performance optimizations
 
 **✅ Documentation:**
+
 - [x] Complete code documentation
 - [x] Usage examples and patterns
 - [x] Architecture overview
