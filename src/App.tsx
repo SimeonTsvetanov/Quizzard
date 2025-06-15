@@ -1,5 +1,11 @@
 import { useEffect, useState } from "react";
-import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
+import {
+  Routes,
+  Route,
+  useLocation,
+  useNavigate,
+  Navigate,
+} from "react-router-dom";
 import {
   ThemeProvider,
   CssBaseline,
@@ -25,6 +31,7 @@ import Contact from "./pages/Contact";
 import RandomTeamGeneratorPage from "./features/random-team-generator/pages/RandomTeamGeneratorPage";
 import PointsCounter from "./features/points-counter/pages/PointsCounter";
 import Quizzes from "./features/quizzes/pages/Quizzes";
+import FinalQuestionPage from "./features/final-question/pages/FinalQuestionPage";
 
 const PWA_INSTALL_DISMISSED_KEY = "user-settings-pwa-install-dismissed";
 
@@ -209,6 +216,8 @@ function App() {
             />
             <Route path="/points-counter" element={<PointsCounter />} />
             <Route path="/quizzes" element={<Quizzes />} />
+            <Route path="/final-question" element={<FinalQuestionPage />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Box>
 

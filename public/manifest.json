@@ -1,18 +1,33 @@
 {
-  "name": "Quizzard - Quiz Management Platform",
   "short_name": "Quizzard",
+  "name": "Quizzard - Quiz Tools",
   "description": "Create and manage quizzes for interactive quiz nights, team competitions, and events",
-  "start_url": "/Quizzard/?source=pwa",
+  "start_url": "/Quizzard/",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#FAFAFA",
-  "theme_color": "#1976D2",
+  "background_color": "#ffffff",
+  "theme_color": "#1976d2",
   "scope": "/Quizzard/",
   "categories": ["games", "entertainment", "education"],
   "lang": "en-US",
   "dir": "ltr",
   "prefer_related_applications": false,
   "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "logo192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "logo512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    },
     {
       "src": "/Quizzard/android-chrome-192x192.png",
       "sizes": "192x192",
@@ -27,14 +42,14 @@
     },
     {
       "src": "/Quizzard/android-chrome-192x192.png",
-      "sizes": "192x192", 
+      "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
       "src": "/Quizzard/android-chrome-512x512.png",
       "sizes": "512x512",
-      "type": "image/png", 
+      "type": "image/png",
       "purpose": "maskable"
     },
     {

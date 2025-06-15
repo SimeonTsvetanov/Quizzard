@@ -1,43 +1,57 @@
-import { StrictMode } from "react"; // a tool for highlighting potential problems in the app during development.
-import { createRoot } from "react-dom/client"; // Imports the function to create a root React rendering context for the app (the modern way in React 18+)
-import "./index.css"; // Imports the global CSS styles, so they apply to your whole app.
-import App from "./App.tsx"; // Imports the main React component, which contains the app UI and logic.
-import { BrowserRouter } from "react-router-dom"; // Import BrowserRouter for routing
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { BrowserRouter } from "react-router-dom";
+import { ThemeProvider } from "@mui/material/styles";
+import CssBaseline from "@mui/material/CssBaseline";
+import App from "./App";
+import theme from "./theme";
 
-// Register service worker for PWA auto-update (only in production)
-if (import.meta.env.PROD && "serviceWorker" in navigator) {
+// Update theme color meta tag
+const updateThemeColor = (color: string) => {
+  const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+  if (metaThemeColor) {
+    metaThemeColor.setAttribute("content", color);
+  } else {
+    const meta = document.createElement("meta");
+    meta.name = "theme-color";
+    meta.content = color;
+    document.head.appendChild(meta);
+  }
+};
+
+// Initialize theme color
+updateThemeColor(theme.palette.primary.main);
+
+// Register service worker
+if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    // First unregister all existing service workers to fix theme issues
-    navigator.serviceWorker.getRegistrations().then((registrations) => {
-      registrations.forEach((registration) => {
-        console.log('Unregistering old service worker for theme fix');
-        registration.unregister();
+    navigator.serviceWorker
+      .register("/Quizzard/service-worker.js")
+      .then((registration) => {
+        console.log(
+          "ServiceWorker registration successful with scope: ",
+          registration.scope
+        );
+      })
+      .catch((error) => {
+        console.log("ServiceWorker registration failed: ", error);
       });
-      
-      // Then register fresh service worker with cache busting
-      navigator.serviceWorker
-        .register("/Quizzard/sw.js?v=fixed-theme-2025")
-        .then(() => {
-          console.log('Fresh service worker registered for theme fix');
-          // Listen for updates from the service worker
-          navigator.serviceWorker.addEventListener("message", (event) => {
-            if (event.data && event.data.type === "SW_UPDATED") {
-              // Auto-reload the page to get the latest version
-              window.location.reload();
-            }
-          });
-        })
-        .catch((registrationError) => {
-          console.log("SW registration failed:", registrationError);
-        });
-    });
   });
 }
 
-createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <BrowserRouter basename="/Quizzard/">
-      <App />
+// Get the base URL from the current location
+const getBaseUrl = () => {
+  const path = window.location.pathname;
+  return path.startsWith("/Quizzard") ? "/Quizzard" : "";
+};
+
+ReactDOM.createRoot(document.getElementById("root")!).render(
+  <React.StrictMode>
+    <BrowserRouter basename={getBaseUrl()}>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <App />
+      </ThemeProvider>
     </BrowserRouter>
-  </StrictMode>
+  </React.StrictMode>
 );

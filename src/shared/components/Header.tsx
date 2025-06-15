@@ -62,6 +62,7 @@ const getDynamicHeaderText = (pathname: string) => {
     "/random-team-generator": { text: "RANDOM GENERATOR", chars: 16 },
     "/points-counter": { text: "POINTS COUNTER", chars: 14 },
     "/quizzes": { text: "QUIZZES", chars: 7 },
+    "/final-question": { text: "FINAL QUESTION", chars: 13 },
   };
 
   // Use clean path for matching, fallback to home

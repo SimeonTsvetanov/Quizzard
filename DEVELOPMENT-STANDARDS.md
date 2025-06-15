@@ -1,7 +1,7 @@
 # 📘 **QUIZZARD DEVELOPMENT STANDARDS**
 
-**Version:** 2.2  
-**Last Updated:** December 18, 2025  
+**Version:** 2.3  
+**Last Updated:** December 19, 2025  
 **Status:** ACTIVE
 
 ## **📋 OVERVIEW**
@@ -1753,3 +1753,73 @@ if (!isValidScore(score)) {
 - On tablet/desktop (sm and up), use standard MUI `Button` with icon and text
 - This pattern ensures professional, visually balanced, and accessible UI for mobile users, following Material Design and MUI best practices
 - See `src/features/points-counter/components/GameScreen/GameScreen.tsx` for implementation example
+
+### **Final Question Tool Standards**
+
+#### **1. Question Generation Architecture**
+
+- Use clean architecture with separation of concerns:
+  - `pages/` - Main page components
+  - `components/` - Reusable UI components
+  - `hooks/` - Custom hooks for state management
+  - `utils/` - Question generation utilities
+  - `types/` - TypeScript type definitions
+
+#### **2. Component Structure**
+
+```typescript
+// ✅ REQUIRED: Component organization
+src/features/final-question/
+  ├── pages/
+  │   └── FinalQuestionPage.tsx
+  ├── components/
+  │   ├── FinalQuestionCard/
+  │   │   └── FinalQuestionCard.tsx
+  │   └── FinalQuestionModal/
+  │       └── FinalQuestionModal.tsx
+  ├── hooks/
+  │   └── useQuestionGeneration.ts
+  ├── utils/
+  │   └── questionGenerator.ts
+  └── types/
+      └── index.ts
+```
+
+#### **3. Question Generation Rules**
+
+- Implement offline-first approach:
+  - Cache generated questions in IndexedDB
+  - Use service worker for offline support
+  - Implement fallback mechanisms
+- Follow TypeScript strict mode
+- Use proper error boundaries
+- Implement loading states
+- Add proper accessibility attributes
+
+#### **4. UI/UX Standards**
+
+- Use Material-UI components exclusively
+- Implement responsive design for all screen sizes
+- Follow Material Design guidelines
+- Use proper spacing and typography
+- Implement proper loading states
+- Add proper error handling
+- Use proper animations and transitions
+
+#### **5. Performance Requirements**
+
+- Implement proper code splitting
+- Use proper caching strategies
+- Optimize bundle size
+- Implement proper lazy loading
+- Use proper memoization
+- Implement proper error boundaries
+
+#### **6. Testing Requirements**
+
+- Write unit tests for all components
+- Write integration tests for main features
+- Test offline functionality
+- Test error handling
+- Test accessibility
+- Test performance
