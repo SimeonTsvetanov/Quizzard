@@ -36,7 +36,6 @@ export const DIFFICULTY_POINTS = {
   hard: 300,
 } as const;
 
-export type QuestionCategory = (typeof QUESTION_CATEGORIES)[number];
 export type Difficulty = keyof typeof DIFFICULTY_POINTS;
 
 /**
@@ -60,34 +59,34 @@ export class QuestionGenerator {
   private static readonly mockQuestions: Record<string, FinalQuestion[]> = {
     "General Knowledge": [
       {
+        id: "1",
         question: "What is the capital of France?",
         answer: "Paris",
         category: "General Knowledge",
         difficulty: "easy",
-        language: "en",
       },
       {
+        id: "2",
         question: "Who painted the Mona Lisa?",
         answer: "Leonardo da Vinci",
         category: "General Knowledge",
         difficulty: "medium",
-        language: "en",
       },
     ],
     Science: [
       {
+        id: "3",
         question: "What is the chemical symbol for water?",
         answer: "H2O",
         category: "Science",
         difficulty: "easy",
-        language: "en",
       },
       {
+        id: "4",
         question: "What is the speed of light?",
         answer: "299,792,458 meters per second",
         category: "Science",
         difficulty: "hard",
-        language: "en",
       },
     ],
   };
@@ -125,11 +124,11 @@ export class QuestionGenerator {
 
     if (filteredQuestions.length === 0) {
       return {
+        id: Math.random().toString(36).substring(7),
         question: "Sample question",
         answer: "Sample answer",
         category: selectedCategory,
         difficulty: selectedDifficulty,
-        language: "en",
       };
     }
 

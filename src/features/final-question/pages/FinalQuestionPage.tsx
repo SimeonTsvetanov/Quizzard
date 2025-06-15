@@ -11,24 +11,42 @@
  * - Provide snackbar feedback for user actions
  */
 
-import { Box, Container, Typography, Button, Stack } from "@mui/material";
+import {
+  Box,
+  Container,
+  Typography,
+  Button,
+  Stack,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  TextField,
+  IconButton,
+  Tooltip,
+  Paper,
+  Divider,
+} from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
 import { useQuestionGeneration } from "../hooks";
 import { FinalQuestionCard, FinalQuestionModal } from "../components";
 import { useSnackbar } from "../../../shared/hooks/useSnackbar";
 
 /**
  * Final Question Page Component
- * Displays the final question interface with question generation and display functionality
+ * Displays the final question interface with settings and question generation functionality
  */
 const FinalQuestionPage = () => {
   const {
     question,
     isLoading,
-    error,
     isModalOpen,
     setIsModalOpen,
     generateNewQuestion,
     refreshQuestion,
+    settings,
+    updateSettings,
+    clearSettings,
   } = useQuestionGeneration();
 
   const { showSnackbar } = useSnackbar();
@@ -56,29 +74,125 @@ const FinalQuestionPage = () => {
     }
   };
 
+  const handleClearAll = () => {
+    clearSettings();
+    showSnackbar("Settings cleared", "info");
+  };
+
   return (
     <Container maxWidth="md">
       <Box py={4}>
-        <Typography variant="h4" component="h1" gutterBottom>
+        <Typography variant="h4" component="h1" gutterBottom align="center">
           Final Question
         </Typography>
 
+        {/* Settings Section */}
+        <Paper
+          elevation={2}
+          sx={{
+            p: 3,
+            mb: 3,
+            borderRadius: 2,
+          }}
+        >
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              mb: 2,
+            }}
+          >
+            <Typography variant="h6" component="h2">
+              Settings
+            </Typography>
+            <Tooltip title="Clear all settings">
+              <IconButton
+                onClick={handleClearAll}
+                color="error"
+                size="small"
+                aria-label="Clear all settings"
+              >
+                <DeleteIcon />
+              </IconButton>
+            </Tooltip>
+          </Box>
+
+          <Stack spacing={3}>
+            {/* Difficulty Selection */}
+            <FormControl fullWidth>
+              <InputLabel id="difficulty-label">Difficulty</InputLabel>
+              <Select
+                labelId="difficulty-label"
+                value={settings.difficulty || ""}
+                label="Difficulty"
+                onChange={(e) => updateSettings({ difficulty: e.target.value })}
+              >
+                <MenuItem value="">Random</MenuItem>
+                <MenuItem value="easy">Easy</MenuItem>
+                <MenuItem value="medium">Medium</MenuItem>
+                <MenuItem value="hard">Hard</MenuItem>
+              </Select>
+            </FormControl>
+
+            {/* Language Selection */}
+            <FormControl fullWidth>
+              <InputLabel id="language-label">Language</InputLabel>
+              <Select
+                labelId="language-label"
+                value={settings.language || ""}
+                label="Language"
+                onChange={(e) => updateSettings({ language: e.target.value })}
+              >
+                <MenuItem value="">Default</MenuItem>
+                <MenuItem value="en">English</MenuItem>
+                <MenuItem value="es">Spanish</MenuItem>
+                <MenuItem value="fr">French</MenuItem>
+                <MenuItem value="de">German</MenuItem>
+              </Select>
+            </FormControl>
+
+            {/* Category Input */}
+            <TextField
+              fullWidth
+              label="Category (optional)"
+              placeholder="e.g., Science, History, Sports..."
+              value={settings.category || ""}
+              onChange={(e) =>
+                updateSettings({ category: e.target.value as any })
+              }
+              helperText="Leave empty for random category"
+            />
+          </Stack>
+        </Paper>
+
+        <Divider sx={{ mb: 3 }} />
+
+        {/* Question Display */}
         <Stack spacing={3}>
           {question && (
             <FinalQuestionCard question={question} isRefreshing={isLoading} />
           )}
 
+          {/* Generate Button */}
           <Button
             variant="contained"
             color="primary"
             onClick={handleGenerateQuestion}
             disabled={isLoading}
             fullWidth
+            size="large"
+            sx={{
+              py: 1.5,
+              fontSize: "1.1rem",
+              fontWeight: 600,
+            }}
           >
-            {isLoading ? "Generating..." : "Generate New Question"}
+            {isLoading ? "Generating..." : "Generate Final Question"}
           </Button>
         </Stack>
 
+        {/* Modal */}
         <FinalQuestionModal
           open={isModalOpen}
           onClose={() => setIsModalOpen(false)}
@@ -86,7 +200,14 @@ const FinalQuestionPage = () => {
           isRefreshing={isLoading}
           isGenerating={isLoading}
           onRefresh={handleRefreshQuestion}
-          onCopy={() => {}}
+          onCopy={() => {
+            if (question) {
+              navigator.clipboard.writeText(
+                `Q: ${question.question}\nA: ${question.answer}`
+              );
+              showSnackbar("Question copied to clipboard!", "success");
+            }
+          }}
         />
       </Box>
     </Container>
