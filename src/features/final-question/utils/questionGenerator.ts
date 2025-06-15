@@ -11,7 +11,7 @@
  * - Support multiple languages
  */
 
-import { Question } from "../types";
+import type { Question } from "../types";
 
 /**
  * Question categories with their respective emojis

@@ -12,20 +12,12 @@
  */
 
 import { useState, useCallback } from "react";
-import { Question } from "../types";
+import type { Question, QuestionCategory } from "../types";
 import { QuestionGenerator } from "../utils/questionGenerator";
 
 interface QuestionSettings {
   difficulty?: "easy" | "medium" | "hard";
-  category?:
-    | "General Knowledge"
-    | "Science"
-    | "History"
-    | "Geography"
-    | "Literature"
-    | "Sports"
-    | "Entertainment"
-    | "Technology";
+  category?: QuestionCategory;
   language?: string;
 }
 

@@ -23,12 +23,16 @@ import {
   MenuItem,
   IconButton,
   Tooltip,
+  Container,
+  Typography,
+  Stack,
 } from "@mui/material";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useSnackbar } from "../../../shared/hooks/useSnackbar";
-import { useQuestionGeneration } from "../hooks/useQuestionGeneration";
-import { FinalQuestionModal } from "../components";
+import { useQuestionGeneration } from "../hooks";
+import { FinalQuestionCard, FinalQuestionModal } from "../components";
+import type { Question } from "../types";
 import { useState, useCallback } from "react";
 
 /**
@@ -39,36 +43,33 @@ import { useState, useCallback } from "react";
  *
  * @returns JSX element for the complete Final Question page
  */
-export default function FinalQuestionPage() {
-  // Settings state
-  const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">(
-    "medium"
-  );
-  const [language, setLanguage] = useState("en");
-  const [category, setCategory] = useState("");
-
-  const { snackbar, showSnackbar, hideSnackbar } = useSnackbar();
-
+const FinalQuestionPage = () => {
   const {
     question,
-    generationState,
-    modalOpen,
+    isLoading,
+    error,
+    settings,
+    isModalOpen,
+    setIsModalOpen,
     generateQuestion,
     refreshQuestion,
-    closeModal,
+    updateSettings,
+    clearSettings,
   } = useQuestionGeneration();
+
+  const { snackbar, showSnackbar, hideSnackbar } = useSnackbar();
 
   /**
    * Handle question generation with feedback
    */
   const handleGenerateQuestion = useCallback(async () => {
     try {
-      await generateQuestion(difficulty, category);
+      await generateQuestion();
       showSnackbar("Question generated successfully!", "success");
     } catch (error) {
       showSnackbar("Error generating question. Please try again.", "error");
     }
-  }, [difficulty, category, generateQuestion, showSnackbar]);
+  }, [generateQuestion, showSnackbar]);
 
   /**
    * Handle question refresh with feedback
@@ -101,174 +102,60 @@ export default function FinalQuestionPage() {
    * Clear all settings
    */
   const handleClearAll = useCallback(() => {
-    setDifficulty("medium");
-    setLanguage("en");
-    setCategory("");
+    clearSettings();
     showSnackbar("Settings cleared", "info");
-  }, [showSnackbar]);
+  }, [clearSettings, showSnackbar]);
 
   return (
-    <>
-      {/* Full Viewport Container - App-like Layout */}
+    <Container maxWidth="sm">
       <Box
         sx={{
-          height: "calc(100vh - 100px)",
-          minHeight: "480px",
+          minHeight: "100vh",
           display: "flex",
           flexDirection: "column",
-          bgcolor: "background.default",
-          overflow: "hidden",
+          alignItems: "center",
+          justifyContent: "center",
+          py: 4,
         }}
       >
-        {/* Main Content Area */}
-        <Box
-          sx={{
-            flex: 1,
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            p: { xs: 1, sm: 2 },
-            overflow: "hidden",
-          }}
-        >
-          <Box
-            sx={{
-              width: "100%",
-              maxWidth: {
-                xs: "calc(100vw - 16px)",
-                sm: "clamp(280px, 50vw, 600px)",
-              },
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: 3,
-            }}
+        <Typography variant="h4" component="h1" gutterBottom>
+          Final Question
+        </Typography>
+
+        <Stack spacing={2} width="100%" alignItems="center">
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleGenerateQuestion}
+            disabled={isLoading}
+            fullWidth
           >
-            {/* Settings Section */}
-            <Box
-              sx={{
-                width: "100%",
-                display: "flex",
-                flexDirection: "column",
-                gap: 2,
-                p: 2,
-                bgcolor: "background.paper",
-                borderRadius: 2,
-                boxShadow: (theme) => theme.shadows[1],
-              }}
-            >
-              {/* Difficulty Selection */}
-              <FormControl fullWidth>
-                <InputLabel>Difficulty</InputLabel>
-                <Select
-                  value={difficulty}
-                  label="Difficulty"
-                  onChange={(e) =>
-                    setDifficulty(e.target.value as "easy" | "medium" | "hard")
-                  }
-                >
-                  <MenuItem value="easy">Easy</MenuItem>
-                  <MenuItem value="medium">Medium</MenuItem>
-                  <MenuItem value="hard">Hard</MenuItem>
-                </Select>
-              </FormControl>
+            {isLoading ? "Generating..." : "Generate Question"}
+          </Button>
 
-              {/* Language Selection */}
-              <FormControl fullWidth>
-                <InputLabel>Language</InputLabel>
-                <Select
-                  value={language}
-                  label="Language"
-                  onChange={(e) => setLanguage(e.target.value)}
-                >
-                  <MenuItem value="en">English</MenuItem>
-                  <MenuItem value="bg">Bulgarian</MenuItem>
-                </Select>
-              </FormControl>
+          {error && (
+            <Typography color="error" variant="body2">
+              {error}
+            </Typography>
+          )}
 
-              {/* Category Input */}
-              <TextField
-                fullWidth
-                label="Category (optional)"
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                placeholder="Leave empty for random category"
-              />
+          {question && (
+            <FinalQuestionCard
+              question={question}
+              onRefresh={handleRefreshQuestion}
+              isLoading={isLoading}
+            />
+          )}
+        </Stack>
 
-              {/* Action Buttons */}
-              <Box
-                sx={{
-                  display: "flex",
-                  gap: 2,
-                  justifyContent: "center",
-                  mt: 1,
-                }}
-              >
-                <Button
-                  variant="contained"
-                  startIcon={<HelpOutlineIcon />}
-                  onClick={handleGenerateQuestion}
-                  disabled={generationState.isGenerating}
-                  sx={{
-                    px: { xs: 4, sm: 6 },
-                    py: { xs: 1.5, sm: 1.25 },
-                    fontSize: "clamp(0.8rem, 1.2vw, 0.875rem)",
-                    borderRadius: 2,
-                    boxShadow: (theme) => theme.shadows[2],
-                    "&:hover": {
-                      boxShadow: (theme) => theme.shadows[4],
-                      transform: "translateY(-1px)",
-                      transition: "all 0.2s ease-in-out",
-                    },
-                    "&:active": {
-                      transform: "translateY(0px)",
-                    },
-                    "&.Mui-disabled": {
-                      boxShadow: (theme) => theme.shadows[1],
-                      transform: "none",
-                    },
-                  }}
-                  aria-label={
-                    generationState.isGenerating
-                      ? "Generating question, please wait"
-                      : "Generate question"
-                  }
-                  title={
-                    generationState.isGenerating
-                      ? "Generating question..."
-                      : "Generate a new final question"
-                  }
-                >
-                  {generationState.isGenerating
-                    ? "Generating..."
-                    : "Generate Question"}
-                </Button>
-
-                <Tooltip title="Clear all settings">
-                  <IconButton
-                    onClick={handleClearAll}
-                    color="error"
-                    aria-label="Clear all settings"
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </Tooltip>
-              </Box>
-            </Box>
-          </Box>
-        </Box>
+        <FinalQuestionModal
+          open={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          question={question}
+          onRefresh={handleRefreshQuestion}
+          isLoading={isLoading}
+        />
       </Box>
-
-      {/* Question Modal */}
-      <FinalQuestionModal
-        open={modalOpen}
-        question={question}
-        isRefreshing={generationState.isRefreshing}
-        isGenerating={generationState.isGenerating}
-        onClose={closeModal}
-        onRefresh={handleRefreshQuestion}
-        onCopy={handleCopyQuestion}
-      />
 
       {/* Snackbar for User Feedback */}
       <Snackbar
@@ -285,6 +172,8 @@ export default function FinalQuestionPage() {
           {snackbar.message}
         </Alert>
       </Snackbar>
-    </>
+    </Container>
   );
-}
+};
+
+export default FinalQuestionPage;
