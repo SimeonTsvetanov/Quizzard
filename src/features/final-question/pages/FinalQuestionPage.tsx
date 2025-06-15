@@ -13,84 +13,58 @@
 
 import { Box, Container, Typography, Button, Stack } from "@mui/material";
 import { useQuestionGeneration } from "../hooks";
-import { FinalQuestionCard, FinalQuestionModal } from "../components";
+import { FinalQuestionCard } from "../components/FinalQuestionCard";
+import { FinalQuestionModal } from "../components/FinalQuestionModal";
 import { useSnackbar } from "../../../shared/hooks/useSnackbar";
-import { useCallback } from "react";
 
 /**
- * Final Question page component
- * Displays the final question generation interface
+ * Final Question Page Component
+ * Displays the final question interface with question generation and display functionality
  */
-const FinalQuestionPage = () => {
+export const FinalQuestionPage = () => {
   const {
     question,
     isLoading,
     error,
     isModalOpen,
     setIsModalOpen,
-    generateQuestion,
+    generateNewQuestion,
     refreshQuestion,
   } = useQuestionGeneration();
 
-  const { snackbar, showSnackbar } = useSnackbar();
+  const { showSnackbar } = useSnackbar();
 
-  /**
-   * Handle question generation with feedback
-   */
-  const handleGenerateQuestion = useCallback(async () => {
+  const handleGenerateQuestion = async () => {
     try {
-      await generateQuestion();
-      showSnackbar("Question generated successfully!", "success");
-    } catch (error) {
-      showSnackbar("Error generating question. Please try again.", "error");
+      await generateNewQuestion();
+      setIsModalOpen(true);
+    } catch (err) {
+      showSnackbar(
+        err instanceof Error ? err.message : "Failed to generate question",
+        "error"
+      );
     }
-  }, [generateQuestion, showSnackbar]);
+  };
 
-  /**
-   * Handle question refresh with feedback
-   */
-  const handleRefreshQuestion = useCallback(async () => {
+  const handleRefreshQuestion = async () => {
     try {
       await refreshQuestion();
-      showSnackbar("Question refreshed successfully!", "success");
-    } catch (error) {
-      showSnackbar("Error refreshing question. Please try again.", "error");
+    } catch (err) {
+      showSnackbar(
+        err instanceof Error ? err.message : "Failed to refresh question",
+        "error"
+      );
     }
-  }, [refreshQuestion, showSnackbar]);
+  };
 
   return (
-    <Container maxWidth="sm">
-      <Box
-        sx={{
-          minHeight: "100vh",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          py: 4,
-        }}
-      >
+    <Container maxWidth="md">
+      <Box py={4}>
         <Typography variant="h4" component="h1" gutterBottom>
           Final Question
         </Typography>
 
-        <Stack spacing={2} width="100%" alignItems="center">
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleGenerateQuestion}
-            disabled={isLoading}
-            fullWidth
-          >
-            {isLoading ? "Generating..." : "Generate Question"}
-          </Button>
-
-          {error && (
-            <Typography color="error" variant="body2">
-              {error}
-            </Typography>
-          )}
-
+        <Stack spacing={3}>
           {question && (
             <FinalQuestionCard
               question={question}
@@ -98,20 +72,26 @@ const FinalQuestionPage = () => {
               isLoading={isLoading}
             />
           )}
+
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleGenerateQuestion}
+            disabled={isLoading}
+            fullWidth
+          >
+            {isLoading ? "Generating..." : "Generate New Question"}
+          </Button>
         </Stack>
 
         <FinalQuestionModal
           open={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           question={question}
-          onRefresh={handleRefreshQuestion}
           isLoading={isLoading}
+          error={error}
         />
-
-        {snackbar}
       </Box>
     </Container>
   );
 };
-
-export default FinalQuestionPage;

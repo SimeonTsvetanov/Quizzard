@@ -11,7 +11,7 @@
  * - Support multiple languages
  */
 
-import type { Question } from "../types";
+import { FinalQuestion, QuestionCategory } from "../types";
 
 /**
  * Question categories with their respective emojis
@@ -57,19 +57,21 @@ export class QuestionGenerator {
 
   private static readonly difficulties = ["easy", "medium", "hard"] as const;
 
-  private static readonly mockQuestions: Record<string, Question[]> = {
+  private static readonly mockQuestions: Record<string, FinalQuestion[]> = {
     "General Knowledge": [
       {
         question: "What is the capital of France?",
         answer: "Paris",
         category: "General Knowledge",
         difficulty: "easy",
+        language: "en",
       },
       {
         question: "Who painted the Mona Lisa?",
         answer: "Leonardo da Vinci",
         category: "General Knowledge",
         difficulty: "medium",
+        language: "en",
       },
     ],
     Science: [
@@ -78,12 +80,14 @@ export class QuestionGenerator {
         answer: "H2O",
         category: "Science",
         difficulty: "easy",
+        language: "en",
       },
       {
         question: "What is the speed of light?",
         answer: "299,792,458 meters per second",
         category: "Science",
         difficulty: "hard",
+        language: "en",
       },
     ],
   };
@@ -94,7 +98,7 @@ export class QuestionGenerator {
   public static getRandomQuestion(
     category?: (typeof QuestionGenerator.categories)[number],
     difficulty?: (typeof QuestionGenerator.difficulties)[number]
-  ): Question {
+  ): FinalQuestion {
     const availableCategories = category
       ? [category]
       : QuestionGenerator.categories;
@@ -125,6 +129,7 @@ export class QuestionGenerator {
         answer: "Sample answer",
         category: selectedCategory,
         difficulty: selectedDifficulty,
+        language: "en",
       };
     }
 
@@ -151,3 +156,35 @@ export class QuestionGenerator {
     ];
   }
 }
+
+interface QuestionSettings {
+  difficulty?: string;
+  category?: QuestionCategory;
+  language?: string;
+}
+
+/**
+ * Generate a question based on the provided settings
+ * @param settings - Question generation settings
+ * @returns Promise resolving to a FinalQuestion
+ */
+export const generateQuestion = async (
+  settings: QuestionSettings = {}
+): Promise<FinalQuestion> => {
+  // Simulate API delay
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+
+  const id = Math.random().toString(36).substring(7);
+  const category = settings.category || "General Knowledge";
+  const difficulty = settings.difficulty || "medium";
+  const language = settings.language || "en";
+
+  return {
+    id,
+    question: `Sample question for ${category} (${difficulty})`,
+    answer: "Sample answer",
+    category: category as QuestionCategory,
+    difficulty,
+    language,
+  };
+};
