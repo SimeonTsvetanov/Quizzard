@@ -14,7 +14,6 @@
 import { Box, Container, Typography, Button, Stack } from "@mui/material";
 import { useQuestionGeneration } from "../hooks";
 import { FinalQuestionCard, FinalQuestionModal } from "../components";
-import type { Question } from "../types";
 import { useSnackbar } from "../../../shared/hooks/useSnackbar";
 import { useCallback } from "react";
 
@@ -27,16 +26,13 @@ const FinalQuestionPage = () => {
     question,
     isLoading,
     error,
-    settings,
     isModalOpen,
     setIsModalOpen,
     generateQuestion,
     refreshQuestion,
-    updateSettings,
-    clearSettings,
   } = useQuestionGeneration();
 
-  const { snackbar, showSnackbar, hideSnackbar } = useSnackbar();
+  const { snackbar, showSnackbar } = useSnackbar();
 
   /**
    * Handle question generation with feedback
@@ -61,14 +57,6 @@ const FinalQuestionPage = () => {
       showSnackbar("Error refreshing question. Please try again.", "error");
     }
   }, [refreshQuestion, showSnackbar]);
-
-  /**
-   * Clear all settings
-   */
-  const handleClearAll = useCallback(() => {
-    clearSettings();
-    showSnackbar("Settings cleared", "info");
-  }, [clearSettings, showSnackbar]);
 
   return (
     <Container maxWidth="sm">
