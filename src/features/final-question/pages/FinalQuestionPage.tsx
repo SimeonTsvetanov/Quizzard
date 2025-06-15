@@ -11,37 +11,16 @@
  * - Provide snackbar feedback for user actions
  */
 
-import {
-  Box,
-  Button,
-  Snackbar,
-  Alert,
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  IconButton,
-  Tooltip,
-  Container,
-  Typography,
-  Stack,
-} from "@mui/material";
-import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
-import DeleteIcon from "@mui/icons-material/Delete";
-import { useSnackbar } from "../../../shared/hooks/useSnackbar";
+import { Box, Container, Typography, Button, Stack } from "@mui/material";
 import { useQuestionGeneration } from "../hooks";
 import { FinalQuestionCard, FinalQuestionModal } from "../components";
 import type { Question } from "../types";
-import { useState, useCallback } from "react";
+import { useSnackbar } from "../../../shared/hooks/useSnackbar";
+import { useCallback } from "react";
 
 /**
- * FinalQuestionPage Component
- *
- * The main page component that brings together all the feature pieces.
- * Uses custom hooks for state management and coordinates between components.
- *
- * @returns JSX element for the complete Final Question page
+ * Final Question page component
+ * Displays the final question generation interface
  */
 const FinalQuestionPage = () => {
   const {
@@ -77,26 +56,11 @@ const FinalQuestionPage = () => {
   const handleRefreshQuestion = useCallback(async () => {
     try {
       await refreshQuestion();
-      showSnackbar("Question refreshed!", "success");
+      showSnackbar("Question refreshed successfully!", "success");
     } catch (error) {
       showSnackbar("Error refreshing question. Please try again.", "error");
     }
   }, [refreshQuestion, showSnackbar]);
-
-  /**
-   * Copy question to clipboard
-   */
-  const handleCopyQuestion = useCallback(async () => {
-    if (!question) return;
-
-    try {
-      const text = `Question: ${question.question}\nAnswer: ${question.answer}`;
-      await navigator.clipboard.writeText(text);
-      showSnackbar("Question copied to clipboard! 📋", "success");
-    } catch (error) {
-      showSnackbar("Failed to copy question", "error");
-    }
-  }, [question, showSnackbar]);
 
   /**
    * Clear all settings
@@ -155,23 +119,9 @@ const FinalQuestionPage = () => {
           onRefresh={handleRefreshQuestion}
           isLoading={isLoading}
         />
-      </Box>
 
-      {/* Snackbar for User Feedback */}
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={4000}
-        onClose={hideSnackbar}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
-      >
-        <Alert
-          onClose={hideSnackbar}
-          severity={snackbar.severity}
-          variant="filled"
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
+        {snackbar}
+      </Box>
     </Container>
   );
 };
