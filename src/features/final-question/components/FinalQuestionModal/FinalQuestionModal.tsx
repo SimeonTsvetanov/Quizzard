@@ -51,6 +51,7 @@ export const FinalQuestionModal = ({
       maxWidth="sm"
       fullWidth
       aria-labelledby="final-question-modal-title"
+      disableRestoreFocus
       PaperProps={{
         sx: {
           borderRadius: 2,

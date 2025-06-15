@@ -102,7 +102,9 @@ export const generateQuestionWithGemini = async (
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
   if (!apiKey) {
     console.error("❌ No API key found");
-    throw new Error("API key not configured");
+    throw new Error(
+      "AI service is temporarily unavailable. Please try again later."
+    );
   }
 
   console.log("✅ API key found, length:", apiKey.length);
@@ -331,12 +333,15 @@ export const isGeminiAvailable = (): boolean => {
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
   const isOnline = navigator.onLine;
 
-  console.log("🔍 Gemini API Check:", {
-    hasApiKey: !!apiKey,
-    apiKeyLength: apiKey?.length || 0,
-    isOnline,
-    apiKeyPreview: apiKey ? `${apiKey.substring(0, 10)}...` : "NOT_SET",
-  });
+  // Only log in development to avoid exposing API key info in production
+  if (import.meta.env.DEV) {
+    console.log("🔍 Gemini API Check:", {
+      hasApiKey: !!apiKey,
+      apiKeyLength: apiKey?.length || 0,
+      isOnline,
+      apiKeyPreview: apiKey ? `${apiKey.substring(0, 10)}...` : "NOT_SET",
+    });
+  }
 
   return !!(apiKey && isOnline);
 };
