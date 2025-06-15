@@ -1,19 +1,19 @@
 /**
  * Game Screen Component - Active Quiz Game Interface
- * 
+ *
  * Main interface for the active quiz game experience providing:
  * - Round navigation at the top for switching between quiz rounds
  * - Responsive team cards grid for score input and display
  * - Action buttons for game management (Leaderboard, Copy, Edit, End Game)
  * - Modal dialogs for leaderboard display and confirmation actions
  * - Error handling and user feedback
- * 
+ *
  * Layout Structure:
  * - Fixed height container using calc(100vh - 100px) for browser compatibility
  * - Single card container following TeamSetup styling pattern
  * - Three-section layout: Navigation top, Team grid center, Actions bottom
  * - Mobile-responsive design with single-column on small screens
- * 
+ *
  * Features:
  * - Decimal scoring support through team cards
  * - Real-time leaderboard calculations
@@ -21,13 +21,13 @@
  * - Edit mode for live game modifications
  * - Confirmation dialogs for destructive actions
  * - No borders/dividers anywhere for clean modern design
- * 
+ *
  * @fileoverview Main game interface component for Points Counter
  * @version 2.0.0
  * @since December 2025
  */
 
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Box,
   Button,
@@ -37,23 +37,24 @@ import {
   DialogActions,
   Typography,
   Alert,
-} from '@mui/material';
+  IconButton,
+} from "@mui/material";
 import {
   Leaderboard as LeaderboardIcon,
   ContentCopy as CopyIcon,
   Edit as EditIcon,
   Stop as EndIcon,
-} from '@mui/icons-material';
-import { RoundNavigation } from '../RoundNavigation/RoundNavigation';
-import { TeamCard } from '../TeamCard/TeamCard';
-import { Leaderboard } from '../Leaderboard/Leaderboard';
+} from "@mui/icons-material";
+import { RoundNavigation } from "../RoundNavigation/RoundNavigation";
+import { TeamCard } from "../TeamCard/TeamCard";
+import { Leaderboard } from "../Leaderboard/Leaderboard";
 
 /**
  * Props Interface for GameScreen Component
  */
 interface GameScreenProps {
   /** Current game state ('ON' for active game) */
-  gameState: 'ON' | 'OFF';
+  gameState: "ON" | "OFF";
   /** Array of teams with scores and round data */
   teams: any[];
   /** Total number of rounds configured for this game */
@@ -78,10 +79,10 @@ interface GameScreenProps {
 
 /**
  * Game Screen Component
- * 
+ *
  * Renders the main game interface with responsive layout and modern design.
  * Handles all game interactions including scoring, navigation, and game management.
- * 
+ *
  * Usage Example:
  * ```tsx
  * <GameScreen
@@ -119,7 +120,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
 
   /**
    * Copy Leaderboard to Clipboard
-   * 
+   *
    * Formats current leaderboard as plain text and copies to clipboard.
    * Provides user feedback through console logging.
    * Falls back gracefully if clipboard API is not available.
@@ -128,22 +129,23 @@ export const GameScreen: React.FC<GameScreenProps> = ({
     try {
       // Format leaderboard as plain text
       const leaderboardText = leaderboard
-        .map((entry, index) => 
-          `${index + 1}. ${entry.team.name} - ${entry.team.totalScore} points`
+        .map(
+          (entry, index) =>
+            `${index + 1}. ${entry.team.name} - ${entry.team.totalScore} points`
         )
-        .join('\n');
+        .join("\n");
 
       // Attempt to copy to clipboard
       await navigator.clipboard.writeText(leaderboardText);
-      console.log('Leaderboard copied to clipboard');
+      console.log("Leaderboard copied to clipboard");
     } catch (error) {
-      console.warn('Failed to copy leaderboard to clipboard:', error);
+      console.warn("Failed to copy leaderboard to clipboard:", error);
     }
   };
 
   /**
    * Handle End Game Action
-   * 
+   *
    * Closes confirmation dialog and triggers game end callback.
    * Provides clean separation between UI state and business logic.
    */
@@ -157,12 +159,12 @@ export const GameScreen: React.FC<GameScreenProps> = ({
       sx={{
         // === PAGE LAYOUT ===
         // Account for browser chrome - Same height pattern as TeamSetup
-        height: 'calc(100vh - 100px)',
-        minHeight: '480px',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'flex-start',
-        bgcolor: 'background.default',
+        height: "calc(100vh - 100px)",
+        minHeight: "480px",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "flex-start",
+        bgcolor: "background.default",
         px: { xs: 1, sm: 2 },
         py: { xs: 1, sm: 2 },
       }}
@@ -170,36 +172,36 @@ export const GameScreen: React.FC<GameScreenProps> = ({
       {/* === MAIN CARD CONTAINER === */}
       <Box
         sx={{
-          width: '100%',
-          maxWidth: 'clamp(280px, 90vw, 1200px)', // Same maxWidth pattern as TeamSetup
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
+          width: "100%",
+          maxWidth: "clamp(280px, 90vw, 1200px)", // Same maxWidth pattern as TeamSetup
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
         }}
       >
         <Box
           sx={{
             flex: 1,
-            display: 'flex',
-            flexDirection: 'column',
-            bgcolor: 'background.paper',
+            display: "flex",
+            flexDirection: "column",
+            bgcolor: "background.paper",
             borderRadius: 3,
             boxShadow: 3,
-            overflow: 'hidden',
+            overflow: "hidden",
           }}
         >
           {/* === ERROR ALERT SECTION === */}
           {error && (
             <Box sx={{ px: { xs: 2, sm: 3 }, pt: { xs: 1.5, sm: 2 }, pb: 0.5 }}>
-              <Alert 
-                severity="error" 
+              <Alert
+                severity="error"
                 onClose={onClearError}
-                sx={{ 
-                  fontSize: 'clamp(0.8rem, 1.5vw, 0.875rem)',
+                sx={{
+                  fontSize: "clamp(0.8rem, 1.5vw, 0.875rem)",
                   borderRadius: 2,
-                  '& .MuiAlert-message': {
-                    display: 'flex',
-                    alignItems: 'center',
+                  "& .MuiAlert-message": {
+                    display: "flex",
+                    alignItems: "center",
                   },
                 }}
               >
@@ -214,7 +216,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
             sx={{
               flexShrink: 0,
               p: { xs: 1, sm: 2 }, // TeamSetup padding pattern
-              pb: 'clamp(0.25rem, 1vw, 0.75rem)', // TeamSetup bottom padding
+              pb: "clamp(0.25rem, 1vw, 0.75rem)", // TeamSetup bottom padding
             }}
           >
             <RoundNavigation
@@ -230,32 +232,32 @@ export const GameScreen: React.FC<GameScreenProps> = ({
               flex: 1,
               px: { xs: 1, sm: 2 },
               pb: { xs: 1, sm: 2 },
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              overflow: 'auto',
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              overflow: "auto",
             }}
           >
             {teams.length > 0 ? (
               <Box
                 sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
                   gap: { xs: 2, sm: 3 },
-                  width: '100%',
+                  width: "100%",
                   // === RESPONSIVE GRID LAYOUT ===
                   // Mobile: Single column, centered cards
                   // Desktop: Multi-column grid layout
-                  '@media (min-width: 600px)': {
-                    display: 'grid',
+                  "@media (min-width: 600px)": {
+                    display: "grid",
                     gridTemplateColumns: {
-                      sm: 'repeat(2, 1fr)',  // 2 columns on small screens
-                      md: 'repeat(3, 1fr)',  // 3 columns on medium screens
-                      lg: 'repeat(4, 1fr)',  // 4 columns on large screens
+                      sm: "repeat(2, 1fr)", // 2 columns on small screens
+                      md: "repeat(3, 1fr)", // 3 columns on medium screens
+                      lg: "repeat(4, 1fr)", // 4 columns on large screens
                     },
-                    justifyItems: 'center',
-                    alignItems: 'stretch',
+                    justifyItems: "center",
+                    alignItems: "stretch",
                   },
                 }}
               >
@@ -271,16 +273,16 @@ export const GameScreen: React.FC<GameScreenProps> = ({
             ) : (
               <Box
                 sx={{
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  height: '100%',
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  height: "100%",
                 }}
               >
                 <Typography
                   variant="body1"
                   color="text.secondary"
-                  sx={{ fontStyle: 'italic' }}
+                  sx={{ fontStyle: "italic" }}
                 >
                   No teams configured
                 </Typography>
@@ -293,145 +295,214 @@ export const GameScreen: React.FC<GameScreenProps> = ({
             sx={{
               flexShrink: 0,
               p: { xs: 1, sm: 2 }, // TeamSetup padding pattern
-              pt: 'clamp(0.25rem, 1vw, 0.75rem)', // TeamSetup top padding
+              pt: "clamp(0.25rem, 1vw, 0.75rem)", // TeamSetup top padding
             }}
           >
             <Box
               sx={{
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                gap: { xs: 1, sm: 2 },
-                flexWrap: 'wrap', // Allow wrapping on very small screens
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                gap: { xs: 2.5, sm: 2 },
+                flexWrap: "nowrap",
+                width: "100%",
               }}
             >
               {/* === LEADERBOARD BUTTON === */}
-              <Button
-                variant="contained"
-                size="small"
-                startIcon={<LeaderboardIcon />}
-                onClick={() => setShowLeaderboard(true)}
-                sx={{
-                  fontSize: 'clamp(0.8rem, 1.5vw, 0.875rem)',
-                  px: { xs: 1, sm: 2 },
-                  py: { xs: 0.5, sm: 0.75 },
-                  borderRadius: 2,
-                  boxShadow: 'none',
-                  bgcolor: 'primary.main',
-                  border: 'none',
-                  '&:hover': {
-                    boxShadow: 'none',
-                    bgcolor: 'primary.dark',
-                    border: 'none',
-                  },
-                  '& .MuiButton-startIcon': {
-                    display: { xs: 'none', sm: 'flex' }, // Hide icon on mobile when text shown
-                  },
-                  minWidth: { xs: 'auto', sm: 'auto' },
-                }}
-              >
-                {/* Responsive button content */}
-                <Box sx={{ display: { xs: 'none', sm: 'block' } }}>Leaderboard</Box>
-                <Box sx={{ display: { xs: 'block', sm: 'none' } }}>
-                  <LeaderboardIcon fontSize="small" />
-                </Box>
-              </Button>
-              
+              <Box sx={{ display: { xs: "flex", sm: "none" } }}>
+                <IconButton
+                  onClick={() => setShowLeaderboard(true)}
+                  aria-label="Leaderboard"
+                  sx={{
+                    width: 48,
+                    height: 48,
+                    fontSize: 28,
+                    bgcolor: "primary.main",
+                    color: "primary.contrastText",
+                    "&:hover": { bgcolor: "primary.dark" },
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    p: 0,
+                  }}
+                >
+                  <LeaderboardIcon
+                    fontSize="inherit"
+                    sx={{ lineHeight: 1, verticalAlign: "middle" }}
+                  />
+                </IconButton>
+              </Box>
+              <Box sx={{ display: { xs: "none", sm: "flex" } }}>
+                <Button
+                  variant="contained"
+                  size="small"
+                  startIcon={<LeaderboardIcon />}
+                  onClick={() => setShowLeaderboard(true)}
+                  sx={{
+                    fontSize: "clamp(0.8rem, 1.5vw, 0.875rem)",
+                    px: 2,
+                    py: 0.75,
+                    borderRadius: 2,
+                    boxShadow: "none",
+                    bgcolor: "primary.main",
+                    border: "none",
+                    "&:hover": {
+                      boxShadow: "none",
+                      bgcolor: "primary.dark",
+                      border: "none",
+                    },
+                  }}
+                >
+                  Leaderboard
+                </Button>
+              </Box>
               {/* === COPY BUTTON === */}
-              <Button
-                variant="contained"
-                size="small"
-                startIcon={<CopyIcon />}
-                onClick={handleCopyLeaderboard}
-                sx={{
-                  fontSize: 'clamp(0.8rem, 1.5vw, 0.875rem)',
-                  px: { xs: 1, sm: 2 },
-                  py: { xs: 0.5, sm: 0.75 },
-                  borderRadius: 2,
-                  boxShadow: 'none',
-                  bgcolor: 'secondary.main',
-                  color: 'secondary.contrastText',
-                  border: 'none',
-                  '&:hover': {
-                    boxShadow: 'none',
-                    bgcolor: 'secondary.dark',
-                    border: 'none',
-                  },
-                  '& .MuiButton-startIcon': {
-                    display: { xs: 'none', sm: 'flex' }, // Hide icon on mobile when text shown
-                  },
-                  minWidth: { xs: 'auto', sm: 'auto' },
-                }}
-              >
-                <Box sx={{ display: { xs: 'none', sm: 'block' } }}>Copy</Box>
-                <Box sx={{ display: { xs: 'block', sm: 'none' } }}>
-                  <CopyIcon fontSize="small" />
-                </Box>
-              </Button>
-              
+              <Box sx={{ display: { xs: "flex", sm: "none" } }}>
+                <IconButton
+                  onClick={handleCopyLeaderboard}
+                  aria-label="Copy"
+                  sx={{
+                    width: 48,
+                    height: 48,
+                    fontSize: 28,
+                    bgcolor: "secondary.main",
+                    color: "secondary.contrastText",
+                    "&:hover": { bgcolor: "secondary.dark" },
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    p: 0,
+                  }}
+                >
+                  <CopyIcon
+                    fontSize="inherit"
+                    sx={{ lineHeight: 1, verticalAlign: "middle" }}
+                  />
+                </IconButton>
+              </Box>
+              <Box sx={{ display: { xs: "none", sm: "flex" } }}>
+                <Button
+                  variant="contained"
+                  size="small"
+                  startIcon={<CopyIcon />}
+                  onClick={handleCopyLeaderboard}
+                  sx={{
+                    fontSize: "clamp(0.8rem, 1.5vw, 0.875rem)",
+                    px: 2,
+                    py: 0.75,
+                    borderRadius: 2,
+                    boxShadow: "none",
+                    bgcolor: "secondary.main",
+                    color: "secondary.contrastText",
+                    border: "none",
+                    "&:hover": {
+                      boxShadow: "none",
+                      bgcolor: "secondary.dark",
+                      border: "none",
+                    },
+                  }}
+                >
+                  Copy
+                </Button>
+              </Box>
               {/* === EDIT BUTTON === */}
-              <Button
-                variant="contained"
-                size="small"
-                startIcon={<EditIcon />}
-                onClick={onEditTeams}
-                sx={{
-                  fontSize: 'clamp(0.8rem, 1.5vw, 0.875rem)',
-                  px: { xs: 1, sm: 2 },
-                  py: { xs: 0.5, sm: 0.75 },
-                  borderRadius: 2,
-                  boxShadow: 'none',
-                  bgcolor: 'info.main',
-                  color: 'info.contrastText',
-                  border: 'none',
-                  '&:hover': {
-                    boxShadow: 'none',
-                    bgcolor: 'info.dark',
-                    border: 'none',
-                  },
-                  '& .MuiButton-startIcon': {
-                    display: { xs: 'none', sm: 'flex' }, // Hide icon on mobile when text shown
-                  },
-                  minWidth: { xs: 'auto', sm: 'auto' },
-                }}
-              >
-                <Box sx={{ display: { xs: 'none', sm: 'block' } }}>Edit</Box>
-                <Box sx={{ display: { xs: 'block', sm: 'none' } }}>
-                  <EditIcon fontSize="small" />
-                </Box>
-              </Button>
-              
+              <Box sx={{ display: { xs: "flex", sm: "none" } }}>
+                <IconButton
+                  onClick={onEditTeams}
+                  aria-label="Edit"
+                  sx={{
+                    width: 48,
+                    height: 48,
+                    fontSize: 28,
+                    bgcolor: "info.main",
+                    color: "info.contrastText",
+                    "&:hover": { bgcolor: "info.dark" },
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    p: 0,
+                  }}
+                >
+                  <EditIcon
+                    fontSize="inherit"
+                    sx={{ lineHeight: 1, verticalAlign: "middle" }}
+                  />
+                </IconButton>
+              </Box>
+              <Box sx={{ display: { xs: "none", sm: "flex" } }}>
+                <Button
+                  variant="contained"
+                  size="small"
+                  startIcon={<EditIcon />}
+                  onClick={onEditTeams}
+                  sx={{
+                    fontSize: "clamp(0.8rem, 1.5vw, 0.875rem)",
+                    px: 2,
+                    py: 0.75,
+                    borderRadius: 2,
+                    boxShadow: "none",
+                    bgcolor: "info.main",
+                    color: "info.contrastText",
+                    border: "none",
+                    "&:hover": {
+                      boxShadow: "none",
+                      bgcolor: "info.dark",
+                      border: "none",
+                    },
+                  }}
+                >
+                  Edit
+                </Button>
+              </Box>
               {/* === END GAME BUTTON === */}
-              <Button
-                variant="contained"
-                size="small"
-                startIcon={<EndIcon />}
-                onClick={() => setShowEndGameDialog(true)}
-                sx={{
-                  fontSize: 'clamp(0.8rem, 1.5vw, 0.875rem)',
-                  px: { xs: 1, sm: 2 },
-                  py: { xs: 0.5, sm: 0.75 },
-                  borderRadius: 2,
-                  boxShadow: 'none',
-                  bgcolor: 'error.main',
-                  color: 'error.contrastText',
-                  border: 'none',
-                  '&:hover': {
-                    boxShadow: 'none',
-                    bgcolor: 'error.dark',
-                    border: 'none',
-                  },
-                  '& .MuiButton-startIcon': {
-                    display: { xs: 'none', sm: 'flex' }, // Hide icon on mobile when text shown
-                  },
-                  minWidth: { xs: 'auto', sm: 'auto' },
-                }}
-              >
-                <Box sx={{ display: { xs: 'none', sm: 'block' } }}>End Game</Box>
-                <Box sx={{ display: { xs: 'block', sm: 'none' } }}>
-                  <EndIcon fontSize="small" />
-                </Box>
-              </Button>
+              <Box sx={{ display: { xs: "flex", sm: "none" } }}>
+                <IconButton
+                  onClick={() => setShowEndGameDialog(true)}
+                  aria-label="End Game"
+                  sx={{
+                    width: 48,
+                    height: 48,
+                    fontSize: 28,
+                    bgcolor: "error.main",
+                    color: "error.contrastText",
+                    "&:hover": { bgcolor: "error.dark" },
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    p: 0,
+                  }}
+                >
+                  <EndIcon
+                    fontSize="inherit"
+                    sx={{ lineHeight: 1, verticalAlign: "middle" }}
+                  />
+                </IconButton>
+              </Box>
+              <Box sx={{ display: { xs: "none", sm: "flex" } }}>
+                <Button
+                  variant="contained"
+                  size="small"
+                  startIcon={<EndIcon />}
+                  onClick={() => setShowEndGameDialog(true)}
+                  sx={{
+                    fontSize: "clamp(0.8rem, 1.5vw, 0.875rem)",
+                    px: 2,
+                    py: 0.75,
+                    borderRadius: 2,
+                    boxShadow: "none",
+                    bgcolor: "error.main",
+                    color: "error.contrastText",
+                    border: "none",
+                    "&:hover": {
+                      boxShadow: "none",
+                      bgcolor: "error.dark",
+                      border: "none",
+                    },
+                  }}
+                >
+                  End Game
+                </Button>
+              </Box>
             </Box>
           </Box>
         </Box>
@@ -446,20 +517,20 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         PaperProps={{
           sx: {
             borderRadius: 2,
-            maxHeight: '80vh',
+            maxHeight: "80vh",
           },
         }}
       >
         <DialogTitle
           sx={{
-            textAlign: 'center',
+            textAlign: "center",
             fontWeight: 600,
-            fontSize: 'clamp(1.2rem, 3vw, 1.5rem)',
+            fontSize: "clamp(1.2rem, 3vw, 1.5rem)",
           }}
         >
           Leaderboard
         </DialogTitle>
-        
+
         <DialogContent sx={{ p: 0 }}>
           <Leaderboard
             teams={teams}
@@ -467,10 +538,10 @@ export const GameScreen: React.FC<GameScreenProps> = ({
             showDetails={true}
           />
         </DialogContent>
-        
+
         <DialogActions
           sx={{
-            justifyContent: 'center',
+            justifyContent: "center",
             gap: 2,
             p: 2,
           }}
@@ -479,14 +550,14 @@ export const GameScreen: React.FC<GameScreenProps> = ({
             variant="outlined"
             startIcon={<CopyIcon />}
             onClick={handleCopyLeaderboard}
-            sx={{ border: 'none' }}
+            sx={{ border: "none" }}
           >
             Copy to Clipboard
           </Button>
           <Button
             variant="contained"
             onClick={() => setShowLeaderboard(false)}
-            sx={{ border: 'none' }}
+            sx={{ border: "none" }}
           >
             Close
           </Button>
@@ -504,30 +575,31 @@ export const GameScreen: React.FC<GameScreenProps> = ({
       >
         <DialogTitle
           sx={{
-            textAlign: 'center',
+            textAlign: "center",
             fontWeight: 600,
-            color: 'error.main',
+            color: "error.main",
           }}
         >
           End Game?
         </DialogTitle>
-        
+
         <DialogContent>
           <Typography
             variant="body1"
             sx={{
-              textAlign: 'center',
-              color: 'text.secondary',
+              textAlign: "center",
+              color: "text.secondary",
               lineHeight: 1.6,
             }}
           >
-            Are you sure you want to end the current game? All progress will be lost.
+            Are you sure you want to end the current game? All progress will be
+            lost.
           </Typography>
         </DialogContent>
-        
+
         <DialogActions
           sx={{
-            justifyContent: 'center',
+            justifyContent: "center",
             gap: 2,
             p: 2,
           }}
@@ -535,7 +607,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
           <Button
             variant="outlined"
             onClick={() => setShowEndGameDialog(false)}
-            sx={{ border: 'none' }}
+            sx={{ border: "none" }}
           >
             Cancel
           </Button>
@@ -543,7 +615,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
             variant="contained"
             color="error"
             onClick={handleEndGame}
-            sx={{ border: 'none' }}
+            sx={{ border: "none" }}
           >
             End Game
           </Button>
@@ -551,4 +623,4 @@ export const GameScreen: React.FC<GameScreenProps> = ({
       </Dialog>
     </Box>
   );
-}; 
+};

@@ -891,7 +891,7 @@ try {
 
 ### **Browser Translation Prevention**
 
-#### **Chrome Auto-Translation Prevention (REQUIRED)**
+#### **1. Chrome Auto-Translation Prevention (REQUIRED)**
 
 ```html
 <!-- ✅ REQUIRED: HTML language declaration -->
@@ -1742,3 +1742,14 @@ if (!isValidScore(score)) {
 
 **Last Updated:** December 18, 2025  
 **Next Review:** January 18, 2026
+
+### **Points Counter Mobile Action Buttons (REQUIRED)**
+
+- On mobile (xs), all Points Counter action buttons (Leaderboard, Copy, Edit, End Game) must use MUI `IconButton` with:
+  - `width: 48px`, `height: 48px`, `fontSize: 28px` for large, accessible touch targets
+  - Icon uses `fontSize="inherit"`, `lineHeight: 1`, `verticalAlign: 'middle'` for perfect centering
+  - Remove extra padding with `p: 0` on IconButton
+  - Use `display: flex`, `alignItems: center`, `justifyContent: center` for visual balance
+- On tablet/desktop (sm and up), use standard MUI `Button` with icon and text
+- This pattern ensures professional, visually balanced, and accessible UI for mobile users, following Material Design and MUI best practices
+- See `src/features/points-counter/components/GameScreen/GameScreen.tsx` for implementation example
