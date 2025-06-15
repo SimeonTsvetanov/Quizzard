@@ -25,11 +25,10 @@ import {
   IconButton,
   Tooltip,
   Paper,
-  Divider,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useQuestionGeneration } from "../hooks";
-import { FinalQuestionCard, FinalQuestionModal } from "../components";
+import { FinalQuestionModal } from "../components";
 import { useSnackbar } from "../../../shared/hooks/useSnackbar";
 
 /**
@@ -86,21 +85,23 @@ const FinalQuestionPage = () => {
           Final Question
         </Typography>
 
-        {/* Settings Section */}
+        {/* Single Card with Settings and Generate Button */}
         <Paper
           elevation={2}
           sx={{
             p: 3,
-            mb: 3,
             borderRadius: 2,
+            maxWidth: 600,
+            mx: "auto",
           }}
         >
+          {/* Settings Header */}
           <Box
             sx={{
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              mb: 2,
+              mb: 3,
             }}
           >
             <Typography variant="h6" component="h2">
@@ -163,34 +164,26 @@ const FinalQuestionPage = () => {
               }
               helperText="Leave empty for random category"
             />
+
+            {/* Generate Button */}
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleGenerateQuestion}
+              disabled={isLoading}
+              fullWidth
+              size="large"
+              sx={{
+                py: 1.5,
+                fontSize: "1.1rem",
+                fontWeight: 600,
+                mt: 2,
+              }}
+            >
+              {isLoading ? "Generating..." : "Generate Final Question"}
+            </Button>
           </Stack>
         </Paper>
-
-        <Divider sx={{ mb: 3 }} />
-
-        {/* Question Display */}
-        <Stack spacing={3}>
-          {question && (
-            <FinalQuestionCard question={question} isRefreshing={isLoading} />
-          )}
-
-          {/* Generate Button */}
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleGenerateQuestion}
-            disabled={isLoading}
-            fullWidth
-            size="large"
-            sx={{
-              py: 1.5,
-              fontSize: "1.1rem",
-              fontWeight: 600,
-            }}
-          >
-            {isLoading ? "Generating..." : "Generate Final Question"}
-          </Button>
-        </Stack>
 
         {/* Modal */}
         <FinalQuestionModal
