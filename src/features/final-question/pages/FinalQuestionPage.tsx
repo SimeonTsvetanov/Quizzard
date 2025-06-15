@@ -34,7 +34,6 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import WifiOffIcon from "@mui/icons-material/WifiOff";
 import WifiIcon from "@mui/icons-material/Wifi";
 import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
-import SpeedIcon from "@mui/icons-material/Speed";
 import { useQuestionGeneration } from "../hooks";
 import { FinalQuestionModal } from "../components";
 import { useSnackbar } from "../../../shared/hooks/useSnackbar";
