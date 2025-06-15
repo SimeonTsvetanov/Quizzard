@@ -12,7 +12,7 @@
  */
 
 import { useState } from "react";
-import { FinalQuestion, QuestionCategory } from "../types";
+import type { FinalQuestion, QuestionCategory } from "../types";
 import { generateQuestion } from "../utils/questionGenerator";
 
 interface QuestionSettings {

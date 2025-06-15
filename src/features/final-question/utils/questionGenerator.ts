@@ -11,7 +11,7 @@
  * - Support multiple languages
  */
 
-import { FinalQuestion, QuestionCategory } from "../types";
+import type { FinalQuestion, QuestionCategory } from "../types";
 
 /**
  * Question categories with their respective emojis
@@ -177,14 +177,12 @@ export const generateQuestion = async (
   const id = Math.random().toString(36).substring(7);
   const category = settings.category || "General Knowledge";
   const difficulty = settings.difficulty || "medium";
-  const language = settings.language || "en";
 
   return {
     id,
     question: `Sample question for ${category} (${difficulty})`,
     answer: "Sample answer",
-    category: category as QuestionCategory,
-    difficulty,
-    language,
+    category,
+    difficulty: difficulty as "easy" | "medium" | "hard",
   };
 };

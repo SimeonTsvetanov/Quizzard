@@ -13,15 +13,14 @@
 
 import { Box, Container, Typography, Button, Stack } from "@mui/material";
 import { useQuestionGeneration } from "../hooks";
-import { FinalQuestionCard } from "../components/FinalQuestionCard";
-import { FinalQuestionModal } from "../components/FinalQuestionModal";
+import { FinalQuestionCard, FinalQuestionModal } from "../components";
 import { useSnackbar } from "../../../shared/hooks/useSnackbar";
 
 /**
  * Final Question Page Component
  * Displays the final question interface with question generation and display functionality
  */
-export const FinalQuestionPage = () => {
+const FinalQuestionPage = () => {
   const {
     question,
     isLoading,
@@ -66,11 +65,7 @@ export const FinalQuestionPage = () => {
 
         <Stack spacing={3}>
           {question && (
-            <FinalQuestionCard
-              question={question}
-              onRefresh={handleRefreshQuestion}
-              isLoading={isLoading}
-            />
+            <FinalQuestionCard question={question} isRefreshing={isLoading} />
           )}
 
           <Button
@@ -88,10 +83,14 @@ export const FinalQuestionPage = () => {
           open={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           question={question}
-          isLoading={isLoading}
-          error={error}
+          isRefreshing={isLoading}
+          isGenerating={isLoading}
+          onRefresh={handleRefreshQuestion}
+          onCopy={() => {}}
         />
       </Box>
     </Container>
   );
 };
+
+export default FinalQuestionPage;
