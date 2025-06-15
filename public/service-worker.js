@@ -1,11 +1,11 @@
 const CACHE_NAME = "quizzard-cache-v1";
 const urlsToCache = [
-  "/",
-  "/index.html",
-  "/manifest.json",
-  "/favicon.ico",
-  "/logo192.png",
-  "/logo512.png",
+  "/Quizzard/",
+  "/Quizzard/index.html",
+  "/Quizzard/manifest.json",
+  "/Quizzard/favicon.ico",
+  "/Quizzard/logo192.png",
+  "/Quizzard/logo512.png",
 ];
 
 self.addEventListener("install", (event) => {

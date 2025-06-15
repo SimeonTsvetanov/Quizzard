@@ -25,21 +25,34 @@ import {
   IconButton,
   Tooltip,
   Paper,
+  Alert,
+  Chip,
+  LinearProgress,
+  Collapse,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
+import WifiOffIcon from "@mui/icons-material/WifiOff";
+import WifiIcon from "@mui/icons-material/Wifi";
+import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
+import SpeedIcon from "@mui/icons-material/Speed";
 import { useQuestionGeneration } from "../hooks";
 import { FinalQuestionModal } from "../components";
 import { useSnackbar } from "../../../shared/hooks/useSnackbar";
 
 /**
  * Final Question Page Component
- * Displays the final question interface with settings and question generation functionality
+ * Displays the final question interface with settings and AI-powered question generation
  */
 const FinalQuestionPage = () => {
   const {
     question,
     isLoading,
+    isWaiting,
+    statusMessage,
+    error,
+    isOnline,
     isModalOpen,
+    rateLimitInfo,
     setIsModalOpen,
     generateNewQuestion,
     refreshQuestion,
@@ -51,10 +64,26 @@ const FinalQuestionPage = () => {
   const { showSnackbar } = useSnackbar();
 
   const handleGenerateQuestion = async () => {
+    console.log("🎯 Handle generate question called");
+
+    if (!isOnline) {
+      showSnackbar(
+        "Internet connection required to generate questions",
+        "error"
+      );
+      return;
+    }
+
     try {
       await generateNewQuestion();
+      console.log("✅ Question generation completed");
+
+      // Open modal immediately after successful generation
+      // The question state will be updated by the hook
       setIsModalOpen(true);
+      console.log("🎉 Modal opened");
     } catch (err) {
+      console.error("❌ Error in handleGenerateQuestion:", err);
       showSnackbar(
         err instanceof Error ? err.message : "Failed to generate question",
         "error"
@@ -63,6 +92,14 @@ const FinalQuestionPage = () => {
   };
 
   const handleRefreshQuestion = async () => {
+    if (!isOnline) {
+      showSnackbar(
+        "Internet connection required to refresh questions",
+        "error"
+      );
+      return;
+    }
+
     try {
       await refreshQuestion();
     } catch (err) {
@@ -78,12 +115,90 @@ const FinalQuestionPage = () => {
     showSnackbar("Settings cleared", "info");
   };
 
+  // Get button text based on current state
+  const getButtonText = () => {
+    if (isWaiting) return "Please Wait...";
+    if (isLoading) return "Generating with AI...";
+    if (!isOnline) return "Internet Required";
+    return "Generate Final Question";
+  };
+
   return (
     <Container maxWidth="md">
       <Box py={4}>
         <Typography variant="h4" component="h1" gutterBottom align="center">
           Final Question
         </Typography>
+
+        {/* Combined Connection Status and Rate Limit */}
+        <Box display="flex" justifyContent="center" mb={2}>
+          <Chip
+            icon={isOnline ? <WifiIcon /> : <WifiOffIcon />}
+            label={
+              isOnline
+                ? `Online - AI Ready | ${rateLimitInfo.requestsRemaining}/15 RPM`
+                : "Offline - Internet Required"
+            }
+            color={
+              isOnline
+                ? rateLimitInfo.isNearLimit
+                  ? "warning"
+                  : "success"
+                : "error"
+            }
+            variant="outlined"
+          />
+        </Box>
+
+        {/* Status Message */}
+        <Collapse in={!!statusMessage}>
+          <Alert
+            severity={isWaiting ? "info" : "success"}
+            sx={{ mb: 2 }}
+            icon={isWaiting ? <HourglassEmptyIcon /> : undefined}
+          >
+            {statusMessage}
+          </Alert>
+        </Collapse>
+
+        {/* Loading Progress */}
+        {(isLoading || isWaiting) && (
+          <Box sx={{ mb: 2 }}>
+            <LinearProgress
+              variant={isWaiting ? "indeterminate" : "query"}
+              color={isWaiting ? "warning" : "primary"}
+            />
+          </Box>
+        )}
+
+        {/* Error Alert */}
+        {error && (
+          <Alert severity="error" sx={{ mb: 3 }}>
+            {error}
+          </Alert>
+        )}
+
+        {/* Offline Warning */}
+        {!isOnline && (
+          <Alert severity="warning" sx={{ mb: 3 }}>
+            Internet connection is required to generate questions using AI.
+            Please check your connection and try again.
+          </Alert>
+        )}
+
+        {/* Rate Limit Warning */}
+        {rateLimitInfo.isNearLimit && isOnline && (
+          <Alert severity="warning" sx={{ mb: 3 }}>
+            You're approaching the rate limit ({rateLimitInfo.requestsRemaining}{" "}
+            requests remaining).
+            {rateLimitInfo.timeUntilReset > 0 &&
+              ` Limit resets in ${Math.floor(
+                rateLimitInfo.timeUntilReset / 60
+              )}:${(rateLimitInfo.timeUntilReset % 60)
+                .toString()
+                .padStart(2, "0")}.`}
+          </Alert>
+        )}
 
         {/* Single Card with Settings and Generate Button */}
         <Paper
@@ -93,6 +208,8 @@ const FinalQuestionPage = () => {
             borderRadius: 2,
             maxWidth: 600,
             mx: "auto",
+            opacity: isWaiting ? 0.8 : 1,
+            transition: "opacity 0.3s ease",
           }}
         >
           {/* Settings Header */}
@@ -105,7 +222,7 @@ const FinalQuestionPage = () => {
             }}
           >
             <Typography variant="h6" component="h2">
-              Settings
+              AI Question Settings
             </Typography>
             <Tooltip title="Clear all settings">
               <IconButton
@@ -113,6 +230,7 @@ const FinalQuestionPage = () => {
                 color="error"
                 size="small"
                 aria-label="Clear all settings"
+                disabled={isLoading || isWaiting}
               >
                 <DeleteIcon />
               </IconButton>
@@ -121,7 +239,7 @@ const FinalQuestionPage = () => {
 
           <Stack spacing={3}>
             {/* Difficulty Selection */}
-            <FormControl fullWidth>
+            <FormControl fullWidth disabled={isLoading || isWaiting}>
               <InputLabel id="difficulty-label">Difficulty</InputLabel>
               <Select
                 labelId="difficulty-label"
@@ -137,7 +255,7 @@ const FinalQuestionPage = () => {
             </FormControl>
 
             {/* Language Selection */}
-            <FormControl fullWidth>
+            <FormControl fullWidth disabled={isLoading || isWaiting}>
               <InputLabel id="language-label">Language</InputLabel>
               <Select
                 labelId="language-label"
@@ -145,11 +263,9 @@ const FinalQuestionPage = () => {
                 label="Language"
                 onChange={(e) => updateSettings({ language: e.target.value })}
               >
-                <MenuItem value="">Default</MenuItem>
-                <MenuItem value="en">English</MenuItem>
-                <MenuItem value="es">Spanish</MenuItem>
-                <MenuItem value="fr">French</MenuItem>
-                <MenuItem value="de">German</MenuItem>
+                <MenuItem value="">English (Default)</MenuItem>
+                <MenuItem value="English">English</MenuItem>
+                <MenuItem value="Bulgarian">Bulgarian</MenuItem>
               </Select>
             </FormControl>
 
@@ -159,10 +275,9 @@ const FinalQuestionPage = () => {
               label="Category (optional)"
               placeholder="e.g., Science, History, Sports..."
               value={settings.category || ""}
-              onChange={(e) =>
-                updateSettings({ category: e.target.value as any })
-              }
+              onChange={(e) => updateSettings({ category: e.target.value })}
               helperText="Leave empty for random category"
+              disabled={isLoading || isWaiting}
             />
 
             {/* Generate Button */}
@@ -170,7 +285,7 @@ const FinalQuestionPage = () => {
               variant="contained"
               color="primary"
               onClick={handleGenerateQuestion}
-              disabled={isLoading}
+              disabled={isLoading || isWaiting || !isOnline}
               fullWidth
               size="large"
               sx={{
@@ -180,8 +295,24 @@ const FinalQuestionPage = () => {
                 mt: 2,
               }}
             >
-              {isLoading ? "Generating..." : "Generate Final Question"}
+              {getButtonText()}
             </Button>
+
+            {/* AI Info */}
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              align="center"
+              sx={{ mt: 1 }}
+            >
+              Powered by Google Gemini AI • Supports English & Bulgarian
+              {isOnline && (
+                <>
+                  <br />
+                  Rate limit: 15 requests/minute
+                </>
+              )}
+            </Typography>
           </Stack>
         </Paper>
 
