@@ -11,16 +11,22 @@
  * - Manage loading states
  */
 
-import { useState } from "react";
-import type { FinalQuestion } from "../types";
+import { useState, useCallback } from "react";
+import { Question } from "../types";
 import { QuestionGenerator } from "../utils/questionGenerator";
 
-interface Question {
-  question: string;
-  answer: string;
-  difficulty: "easy" | "medium" | "hard";
-  category: string;
-  points: number;
+interface QuestionSettings {
+  difficulty?: "easy" | "medium" | "hard";
+  category?:
+    | "General Knowledge"
+    | "Science"
+    | "History"
+    | "Geography"
+    | "Literature"
+    | "Sports"
+    | "Entertainment"
+    | "Technology";
+  language?: string;
 }
 
 interface GenerationState {
@@ -35,10 +41,10 @@ interface UseQuestionGenerationProps {
 }
 
 interface QuestionGenerationHook {
-  question: FinalQuestion | null;
+  question: Question | null;
   generationState: GenerationState;
   modalOpen: boolean;
-  setQuestion: (question: FinalQuestion | null) => void;
+  setQuestion: (question: Question | null) => void;
   generateQuestion: (
     difficulty?: "easy" | "medium" | "hard",
     category?: string
@@ -46,6 +52,9 @@ interface QuestionGenerationHook {
   refreshQuestion: () => Promise<void>;
   openModal: () => void;
   closeModal: () => void;
+  settings: QuestionSettings;
+  updateSettings: (newSettings: Partial<QuestionSettings>) => void;
+  clearSettings: () => void;
 }
 
 /**
@@ -58,13 +67,14 @@ interface QuestionGenerationHook {
 export const useQuestionGeneration = (
   props?: UseQuestionGenerationProps
 ): QuestionGenerationHook => {
-  const [question, setQuestion] = useState<FinalQuestion | null>(null);
+  const [question, setQuestion] = useState<Question | null>(null);
   const [generationState, setGenerationState] = useState<GenerationState>({
     isGenerating: false,
     isRefreshing: false,
     error: null,
   });
   const [modalOpen, setModalOpen] = useState(false);
+  const [settings, setSettings] = useState<QuestionSettings>({});
 
   /**
    * Generate a new question
@@ -72,44 +82,44 @@ export const useQuestionGeneration = (
    * @param difficulty - Optional difficulty level
    * @param category - Optional category
    */
-  const generateQuestion = async (
-    difficulty?: "easy" | "medium" | "hard",
-    category?: string
-  ) => {
-    try {
-      setGenerationState((prev) => ({
-        ...prev,
-        isGenerating: true,
-        error: null,
-      }));
+  const generateQuestion = useCallback(
+    async (difficulty?: "easy" | "medium" | "hard", category?: string) => {
+      try {
+        setGenerationState((prev) => ({
+          ...prev,
+          isGenerating: true,
+          error: null,
+        }));
 
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+        // Simulate API delay
+        await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      const newQuestion = QuestionGenerator.generateQuestion(
-        difficulty || props?.initialDifficulty,
-        category || props?.initialCategory
-      );
+        const newQuestion = QuestionGenerator.getRandomQuestion(
+          category || props?.initialCategory,
+          difficulty || props?.initialDifficulty
+        );
 
-      setQuestion(newQuestion);
-      setModalOpen(true);
-    } catch (error) {
-      setGenerationState((prev) => ({
-        ...prev,
-        error:
-          error instanceof Error
-            ? error.message
-            : "Failed to generate question",
-      }));
-    } finally {
-      setGenerationState((prev) => ({ ...prev, isGenerating: false }));
-    }
-  };
+        setQuestion(newQuestion);
+        setModalOpen(true);
+      } catch (error) {
+        setGenerationState((prev) => ({
+          ...prev,
+          error:
+            error instanceof Error
+              ? error.message
+              : "Failed to generate question",
+        }));
+      } finally {
+        setGenerationState((prev) => ({ ...prev, isGenerating: false }));
+      }
+    },
+    [props]
+  );
 
   /**
    * Refresh the current question
    */
-  const refreshQuestion = async () => {
+  const refreshQuestion = useCallback(async () => {
     if (!question) return;
 
     try {
@@ -122,9 +132,9 @@ export const useQuestionGeneration = (
       // Simulate API delay
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      const newQuestion = QuestionGenerator.generateQuestion(
-        question.difficulty,
-        question.category
+      const newQuestion = QuestionGenerator.getRandomQuestion(
+        question.category,
+        question.difficulty
       );
 
       setQuestion(newQuestion);
@@ -137,7 +147,7 @@ export const useQuestionGeneration = (
     } finally {
       setGenerationState((prev) => ({ ...prev, isRefreshing: false }));
     }
-  };
+  }, [question]);
 
   /**
    * Open the question modal
@@ -153,6 +163,23 @@ export const useQuestionGeneration = (
     setModalOpen(false);
   };
 
+  /**
+   * Update question settings
+   */
+  const updateSettings = useCallback(
+    (newSettings: Partial<QuestionSettings>) => {
+      setSettings((prev) => ({ ...prev, ...newSettings }));
+    },
+    []
+  );
+
+  /**
+   * Clear all settings
+   */
+  const clearSettings = useCallback(() => {
+    setSettings({});
+  }, []);
+
   return {
     question,
     generationState,
@@ -162,5 +189,8 @@ export const useQuestionGeneration = (
     refreshQuestion,
     openModal,
     closeModal,
+    settings,
+    updateSettings,
+    clearSettings,
   };
 };

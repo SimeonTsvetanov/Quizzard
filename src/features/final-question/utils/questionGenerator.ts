@@ -11,7 +11,7 @@
  * - Support multiple languages
  */
 
-import type { FinalQuestion } from "../types";
+import { Question } from "../types";
 
 /**
  * Question categories with their respective emojis
@@ -39,58 +39,115 @@ export const DIFFICULTY_POINTS = {
 export type QuestionCategory = (typeof QUESTION_CATEGORIES)[number];
 export type Difficulty = keyof typeof DIFFICULTY_POINTS;
 
-interface Question {
-  question: string;
-  answer: string;
-  difficulty: Difficulty;
-  category: QuestionCategory;
-  points: number;
-}
-
 /**
- * QuestionGenerator class for creating final questions
+ * Utility class for generating questions
+ * Currently uses mock data, but structured for future API integration
  */
 export class QuestionGenerator {
+  private static readonly categories = [
+    "General Knowledge",
+    "Science",
+    "History",
+    "Geography",
+    "Literature",
+    "Sports",
+    "Entertainment",
+    "Technology",
+  ] as const;
+
+  private static readonly difficulties = ["easy", "medium", "hard"] as const;
+
+  private static readonly mockQuestions: Record<string, Question[]> = {
+    "General Knowledge": [
+      {
+        question: "What is the capital of France?",
+        answer: "Paris",
+        category: "General Knowledge",
+        difficulty: "easy",
+      },
+      {
+        question: "Who painted the Mona Lisa?",
+        answer: "Leonardo da Vinci",
+        category: "General Knowledge",
+        difficulty: "medium",
+      },
+    ],
+    Science: [
+      {
+        question: "What is the chemical symbol for water?",
+        answer: "H2O",
+        category: "Science",
+        difficulty: "easy",
+      },
+      {
+        question: "What is the speed of light?",
+        answer: "299,792,458 meters per second",
+        category: "Science",
+        difficulty: "hard",
+      },
+    ],
+  };
+
   /**
-   * Generate a random final question
-   *
-   * @param difficulty - Optional difficulty level
-   * @param category - Optional question category
-   * @returns A randomly generated final question
+   * Get a random question based on category and difficulty
    */
-  static generateQuestion(
-    difficulty?: Difficulty,
-    category?: QuestionCategory
+  public static getRandomQuestion(
+    category?: (typeof QuestionGenerator.categories)[number],
+    difficulty?: (typeof QuestionGenerator.difficulties)[number]
   ): Question {
-    const selectedDifficulty = difficulty || this.getRandomDifficulty();
-    const selectedCategory = category || this.getRandomCategory();
-    const points = DIFFICULTY_POINTS[selectedDifficulty];
+    const availableCategories = category
+      ? [category]
+      : QuestionGenerator.categories;
 
-    // TODO: Replace with actual API call
-    // For now, return a mock question
-    return {
-      question: `What is the capital of France?`,
-      answer: "Paris",
-      difficulty: selectedDifficulty,
-      category: selectedCategory,
-      points,
-    };
+    const selectedCategory =
+      availableCategories[
+        Math.floor(Math.random() * availableCategories.length)
+      ];
+
+    const questions = QuestionGenerator.mockQuestions[selectedCategory] || [];
+
+    const availableDifficulties = difficulty
+      ? [difficulty]
+      : QuestionGenerator.difficulties;
+
+    const selectedDifficulty =
+      availableDifficulties[
+        Math.floor(Math.random() * availableDifficulties.length)
+      ];
+
+    const filteredQuestions = questions.filter(
+      (q) => q.difficulty === selectedDifficulty
+    );
+
+    if (filteredQuestions.length === 0) {
+      return {
+        question: "Sample question",
+        answer: "Sample answer",
+        category: selectedCategory,
+        difficulty: selectedDifficulty,
+      };
+    }
+
+    return filteredQuestions[
+      Math.floor(Math.random() * filteredQuestions.length)
+    ];
   }
 
   /**
-   * Get a random category from the available categories
+   * Get a random category
    */
-  static getRandomCategory(): QuestionCategory {
-    const randomIndex = Math.floor(Math.random() * QUESTION_CATEGORIES.length);
-    return QUESTION_CATEGORIES[randomIndex];
+  public static getRandomCategory(): (typeof QuestionGenerator.categories)[number] {
+    return QuestionGenerator.categories[
+      Math.floor(Math.random() * QuestionGenerator.categories.length)
+    ];
   }
 
   /**
-   * Get a random difficulty level
+   * Get a random difficulty
    */
-  static getRandomDifficulty(): Difficulty {
-    const difficulties = Object.keys(DIFFICULTY_POINTS) as Difficulty[];
-    const randomIndex = Math.floor(Math.random() * difficulties.length);
-    return difficulties[randomIndex];
+  public static getRandomDifficulty(): (typeof QuestionGenerator.difficulties)[number] {
+    return QuestionGenerator.difficulties[
+      Math.floor(Math.random() * QuestionGenerator.difficulties.length)
+    ];
   }
 }

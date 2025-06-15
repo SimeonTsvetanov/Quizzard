@@ -49,3 +49,22 @@ export interface FinalQuestionModalProps {
   /** Handle copy question action */
   onCopy: () => void;
 }
+
+export type QuestionCategory =
+  | "General Knowledge"
+  | "Science"
+  | "History"
+  | "Geography"
+  | "Literature"
+  | "Sports"
+  | "Entertainment"
+  | "Technology";
+
+export type QuestionDifficulty = "easy" | "medium" | "hard";
+
+export interface Question {
+  question: string;
+  answer: string;
+  category: QuestionCategory;
+  difficulty: QuestionDifficulty;
+}
