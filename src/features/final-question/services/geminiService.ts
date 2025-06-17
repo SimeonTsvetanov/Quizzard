@@ -1,20 +1,31 @@
 /**
  * Gemini AI Service
  *
- * Handles communication with Google Gemini API for question generation.
- * Supports multilingual question generation with difficulty and category control.
- * Includes intelligent rate limiting and retry logic.
+ * Comprehensive service for handling communication with Google Gemini API.
+ * Provides intelligent question generation with advanced features:
+ * - Multilingual support (English, Bulgarian)
+ * - Difficulty and category control
+ * - Session-based duplicate prevention
+ * - Geographic fact-checking for accuracy
+ * - Intelligent rate limiting with user feedback
+ * - Real-time countdown timers during waits
+ *
+ * @fileoverview Google Gemini AI integration service
+ * @version 2.0.0
+ * @since December 2025
  */
 
-import type { FinalQuestion, QuestionCategory } from "../types";
+import type {
+  FinalQuestion,
+  GeminiQuestionParams,
+  RateLimitInfo,
+  SessionQuestion,
+} from "../types";
 
-interface QuestionGenerationParams {
-  difficulty?: string;
-  language?: string;
-  category?: QuestionCategory | string;
-  previousQuestions?: Array<{ question: string; answer: string }>;
-}
-
+/**
+ * Response structure from Google Gemini API
+ * Represents the JSON format returned by the API service
+ */
 interface GeminiResponse {
   candidates: Array<{
     content: {
@@ -25,7 +36,11 @@ interface GeminiResponse {
   }>;
 }
 
-interface RateLimitInfo {
+/**
+ * Internal rate limiting information for immediate checks
+ * Used for pre-request validation and user feedback
+ */
+interface InternalRateLimitInfo {
   isRateLimited: boolean;
   retryAfter?: number;
   message?: string;
@@ -40,8 +55,11 @@ const MIN_REQUEST_INTERVAL = 4000; // 4 seconds between requests to be safe
 
 /**
  * Check if we're approaching or at rate limits
+ * Validates against both per-minute limits and minimum request intervals
+ *
+ * @returns Object containing rate limit status and wait time information
  */
-function checkRateLimit(): RateLimitInfo {
+function checkRateLimit(): InternalRateLimitInfo {
   const now = Date.now();
 
   // Reset counter if window has passed
@@ -79,6 +97,9 @@ function checkRateLimit(): RateLimitInfo {
 
 /**
  * Wait for the specified number of seconds
+ *
+ * @param seconds - Number of seconds to wait
+ * @returns Promise that resolves after the specified time
  */
 function wait(seconds: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, seconds * 1000));
@@ -86,9 +107,21 @@ function wait(seconds: number): Promise<void> {
 
 /**
  * Generate a question using Google Gemini API with enhanced prompts and variability
+ *
+ * Main function for generating AI-powered questions with comprehensive features:
+ * - Rate limiting with real-time countdown feedback
+ * - Session-based duplicate prevention
+ * - Enhanced prompts with fact-checking
+ * - Geographic accuracy corrections
+ * - Multilingual support
+ *
+ * @param params - Question generation parameters including difficulty, language, category, and session history
+ * @param onStatusUpdate - Optional callback for real-time status updates during generation
+ * @returns Promise resolving to a complete FinalQuestion object
+ * @throws Error if API key missing, network unavailable, or generation fails
  */
 export const generateQuestionWithGemini = async (
-  params: QuestionGenerationParams = {},
+  params: GeminiQuestionParams = {} as GeminiQuestionParams,
   onStatusUpdate?: (message: string, isWaiting: boolean) => void
 ): Promise<FinalQuestion> => {
   try {
@@ -244,11 +277,26 @@ export const generateQuestionWithGemini = async (
 /**
  * Create an enhanced prompt for Gemini API with better instructions and previous questions context
  */
+/**
+ * Creates an enhanced prompt for Gemini AI with context and fact-checking
+ *
+ * Builds comprehensive prompts that include:
+ * - User preferences for difficulty, language, and category
+ * - Session history to prevent duplicate questions
+ * - Category-specific fact-checking instructions
+ * - Geographic accuracy requirements (especially for Bulgarian content)
+ *
+ * @param difficulty - Desired difficulty level
+ * @param language - Target language for the question
+ * @param category - Preferred category or topic
+ * @param previousQuestions - Array of previously generated questions to avoid duplicates
+ * @returns Complete prompt string for AI generation
+ */
 function createEnhancedGeminiPrompt(
   difficulty: string,
   language: string,
   category: string,
-  previousQuestions: Array<{ question: string; answer: string }>
+  previousQuestions: SessionQuestion[]
 ): string {
   const languageInstruction =
     language.toLowerCase() === "bulgarian"
@@ -302,6 +350,12 @@ Do not include any other text, explanations, or formatting outside the JSON obje
 
 /**
  * Get enhanced difficulty-specific instructions with more variation
+ *
+ * Provides detailed instructions to the AI about question complexity,
+ * knowledge requirements, and reasoning depth for each difficulty level.
+ *
+ * @param difficulty - Target difficulty level (easy, medium, hard, or random)
+ * @returns Detailed difficulty instruction for AI prompt
  */
 function getEnhancedDifficultyInstruction(difficulty: string): string {
   switch (difficulty.toLowerCase()) {
@@ -317,6 +371,12 @@ function getEnhancedDifficultyInstruction(difficulty: string): string {
 
 /**
  * Get fact-checking instructions based on category
+ *
+ * Provides category-specific fact-checking instructions to ensure accuracy.
+ * Includes special handling for Bulgarian geography to correct common AI errors.
+ *
+ * @param category - Question category to generate fact-checking instructions for
+ * @returns Category-specific fact-checking instruction text
  */
 function getFactCheckingInstruction(category: string): string {
   const lowerCategory = category.toLowerCase();
@@ -358,6 +418,12 @@ function getFactCheckingInstruction(category: string): string {
 
 /**
  * Parse Gemini response and extract question data
+ *
+ * Safely parses JSON response from Gemini AI and extracts question data.
+ * Includes robust error handling and fallback mechanisms.
+ *
+ * @param text - Raw text response from Gemini API
+ * @returns Parsed question data with fallback for parsing errors
  */
 function parseGeminiResponse(text: string): {
   question: string;
@@ -403,6 +469,11 @@ function parseGeminiResponse(text: string): {
 
 /**
  * Check if the Gemini API is available
+ *
+ * Validates both API key availability and network connectivity.
+ * Provides safe logging that doesn't expose API keys in production.
+ *
+ * @returns True if API key exists and device is online
  */
 export const isGeminiAvailable = (): boolean => {
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
@@ -423,6 +494,11 @@ export const isGeminiAvailable = (): boolean => {
 
 /**
  * Get current rate limit status for UI display
+ *
+ * Provides real-time information about API usage for user interface.
+ * Calculates remaining requests, reset time, and warning thresholds.
+ *
+ * @returns Object with current rate limiting status and timing information
  */
 export const getRateLimitStatus = (): {
   requestsRemaining: number;

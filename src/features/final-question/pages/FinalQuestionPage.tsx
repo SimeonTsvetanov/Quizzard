@@ -63,9 +63,11 @@ const FinalQuestionPage = () => {
 
   const { showSnackbar } = useSnackbar();
 
+  /**
+   * Handles the generation of a new final question
+   * Validates online status, generates question via hook, and opens modal
+   */
   const handleGenerateQuestion = async () => {
-    console.log("🎯 Handle generate question called");
-
     if (!isOnline) {
       showSnackbar(
         "Internet connection required to generate questions",
@@ -76,14 +78,10 @@ const FinalQuestionPage = () => {
 
     try {
       await generateNewQuestion();
-      console.log("✅ Question generation completed");
-
       // Open modal immediately after successful generation
-      // The question state will be updated by the hook
       setIsModalOpen(true);
-      console.log("🎉 Modal opened");
     } catch (err) {
-      console.error("❌ Error in handleGenerateQuestion:", err);
+      console.error("Error generating question:", err);
       showSnackbar(
         err instanceof Error ? err.message : "Failed to generate question",
         "error"
@@ -91,6 +89,10 @@ const FinalQuestionPage = () => {
     }
   };
 
+  /**
+   * Handles refreshing the current question with a new one
+   * Validates online status and refreshes via hook
+   */
   const handleRefreshQuestion = async () => {
     if (!isOnline) {
       showSnackbar(
@@ -110,12 +112,18 @@ const FinalQuestionPage = () => {
     }
   };
 
+  /**
+   * Clears all question generation settings and provides user feedback
+   */
   const handleClearAll = () => {
     clearSettings();
     showSnackbar("Settings cleared", "info");
   };
 
-  // Get button text based on current state
+  /**
+   * Get dynamic button text based on current application state
+   * Provides clear feedback to users about what's happening
+   */
   const getButtonText = () => {
     if (isWaiting) return "Please Wait...";
     if (isLoading) return "Generating with AI...";

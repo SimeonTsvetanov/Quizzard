@@ -13,38 +13,54 @@
  */
 
 import { useState, useEffect } from "react";
-import type { FinalQuestion, QuestionCategory } from "../types";
+import type {
+  FinalQuestion,
+  QuestionGenerationSettings,
+  RateLimitInfo,
+  SessionQuestion,
+} from "../types";
 import {
   generateQuestionWithGemini,
   isGeminiAvailable,
   getRateLimitStatus,
 } from "../services/geminiService";
 
-interface QuestionSettings {
-  difficulty?: string;
-  category?: QuestionCategory | string;
-  language?: string;
-}
-
+/**
+ * Return type interface for the useQuestionGeneration hook
+ *
+ * Provides all state values and control functions needed by components
+ * to manage question generation and display.
+ */
 interface QuestionGenerationHook {
+  /** Currently generated question (null if none generated) */
   question: FinalQuestion | null;
+  /** Whether a question is being generated */
   isLoading: boolean;
+  /** Whether waiting due to rate limiting */
   isWaiting: boolean;
+  /** Current status message for user feedback */
   statusMessage: string;
+  /** Current error message (null if no error) */
   error: string | null;
+  /** Whether the device is online and can reach AI service */
   isOnline: boolean;
+  /** Whether the question modal is currently open */
   isModalOpen: boolean;
-  rateLimitInfo: {
-    requestsRemaining: number;
-    timeUntilReset: number;
-    isNearLimit: boolean;
-  };
+  /** Current rate limiting information from AI service */
+  rateLimitInfo: RateLimitInfo;
+  /** Number of questions generated in current session */
   sessionQuestionCount: number;
+  /** Function to control modal visibility */
   setIsModalOpen: (isOpen: boolean) => void;
+  /** Function to generate a new question */
   generateNewQuestion: () => Promise<void>;
+  /** Function to refresh the current question */
   refreshQuestion: () => Promise<void>;
-  settings: QuestionSettings;
-  updateSettings: (newSettings: Partial<QuestionSettings>) => void;
+  /** Current question generation settings */
+  settings: QuestionGenerationSettings;
+  /** Function to update generation settings */
+  updateSettings: (newSettings: Partial<QuestionGenerationSettings>) => void;
+  /** Function to clear all settings */
   clearSettings: () => void;
 }
 
@@ -69,14 +85,17 @@ export const useQuestionGeneration = (): QuestionGenerationHook => {
     timeUntilReset: 0,
     isNearLimit: false,
   });
-  const [settings, setSettings] = useState<QuestionSettings>({
+  // User settings for question generation
+  const [settings, setSettings] = useState<QuestionGenerationSettings>({
     difficulty: "",
     language: "",
     category: "",
   });
-  
-  // Session-based question history (max 20 questions)
-  const [sessionQuestions, setSessionQuestions] = useState<Array<{ question: string; answer: string }>>([]);
+
+  // Session-based question history to prevent duplicates (max 20 questions)
+  const [sessionQuestions, setSessionQuestions] = useState<SessionQuestion[]>(
+    []
+  );
 
   // Monitor online/offline status
   useEffect(() => {
@@ -112,7 +131,10 @@ export const useQuestionGeneration = (): QuestionGenerationHook => {
     }
   }, [isModalOpen]);
 
-  // Status update callback for the API service
+  /**
+   * Status update callback for the Gemini API service
+   * Handles real-time feedback during question generation including countdown timers
+   */
   const handleStatusUpdate = (message: string, waiting: boolean) => {
     setStatusMessage(message);
     setIsWaiting(waiting);
@@ -121,18 +143,17 @@ export const useQuestionGeneration = (): QuestionGenerationHook => {
     }
   };
 
+  /**
+   * Generates a new question using the Gemini AI service
+   * Validates prerequisites and handles the complete generation flow
+   */
   const generateNewQuestion = async () => {
-    console.log("🎯 Generate new question called");
-
     if (!isOnline) {
-      console.log("❌ Not online");
       setError("Internet connection required to generate questions");
       return;
     }
 
     const geminiAvailable = isGeminiAvailable();
-    console.log("🔍 Gemini available:", geminiAvailable);
-
     if (!geminiAvailable) {
       setError("AI service is not available. Please check your connection.");
       return;
@@ -156,13 +177,15 @@ export const useQuestionGeneration = (): QuestionGenerationHook => {
         params,
         handleStatusUpdate
       );
-      console.log("✅ Generated question:", newQuestion);
       setQuestion(newQuestion);
       setStatusMessage("Question generated successfully!");
-      
+
       // Add to session history (keep max 20 questions)
-      setSessionQuestions(prev => {
-        const updated = [...prev, { question: newQuestion.question, answer: newQuestion.answer }];
+      setSessionQuestions((prev) => {
+        const updated = [
+          ...prev,
+          { question: newQuestion.question, answer: newQuestion.answer },
+        ];
         return updated.slice(-20); // Keep only last 20 questions
       });
 
@@ -182,6 +205,10 @@ export const useQuestionGeneration = (): QuestionGenerationHook => {
     }
   };
 
+  /**
+   * Refreshes the current question with a new one
+   * Uses existing question settings or generates a new one if none exists
+   */
   const refreshQuestion = async () => {
     if (!question) {
       await generateNewQuestion();
@@ -213,10 +240,13 @@ export const useQuestionGeneration = (): QuestionGenerationHook => {
       );
       setQuestion(newQuestion);
       setStatusMessage("Question refreshed successfully!");
-      
+
       // Add to session history (keep max 20 questions)
-      setSessionQuestions(prev => {
-        const updated = [...prev, { question: newQuestion.question, answer: newQuestion.answer }];
+      setSessionQuestions((prev) => {
+        const updated = [
+          ...prev,
+          { question: newQuestion.question, answer: newQuestion.answer },
+        ];
         return updated.slice(-20); // Keep only last 20 questions
       });
 
@@ -236,12 +266,20 @@ export const useQuestionGeneration = (): QuestionGenerationHook => {
     }
   };
 
-  const updateSettings = (newSettings: Partial<QuestionSettings>) => {
+  /**
+   * Updates question generation settings with new values
+   * Merges new settings with existing ones and clears any previous errors
+   */
+  const updateSettings = (newSettings: Partial<QuestionGenerationSettings>) => {
     setSettings((prev) => ({ ...prev, ...newSettings }));
     // Clear any previous errors when settings change
     setError(null);
   };
 
+  /**
+   * Clears all question generation settings and resets state
+   * Also clears session history, errors, and status messages
+   */
   const clearSettings = () => {
     setSettings({
       difficulty: "",
