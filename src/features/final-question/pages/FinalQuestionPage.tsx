@@ -52,6 +52,7 @@ const FinalQuestionPage = () => {
     isOnline,
     isModalOpen,
     rateLimitInfo,
+    sessionQuestionCount,
     setIsModalOpen,
     generateNewQuestion,
     refreshQuestion,
@@ -130,7 +131,13 @@ const FinalQuestionPage = () => {
         </Typography>
 
         {/* Combined Connection Status and Rate Limit */}
-        <Box display="flex" justifyContent="center" mb={2}>
+        <Box
+          display="flex"
+          justifyContent="center"
+          gap={1}
+          mb={2}
+          flexWrap="wrap"
+        >
           <Chip
             icon={isOnline ? <WifiIcon /> : <WifiOffIcon />}
             label={
@@ -147,6 +154,16 @@ const FinalQuestionPage = () => {
             }
             variant="outlined"
           />
+          {sessionQuestionCount > 0 && (
+            <Chip
+              label={`Session: ${sessionQuestionCount} question${
+                sessionQuestionCount !== 1 ? "s" : ""
+              }`}
+              color="info"
+              variant="outlined"
+              size="small"
+            />
+          )}
         </Box>
 
         {/* Status Message */}
@@ -308,7 +325,7 @@ const FinalQuestionPage = () => {
               {isOnline && (
                 <>
                   <br />
-                  Rate limit: 15 requests/minute
+                  Rate limit: 15 requests/minute • Smart duplicate prevention
                 </>
               )}
             </Typography>

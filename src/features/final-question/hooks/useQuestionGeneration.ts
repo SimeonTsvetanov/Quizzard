@@ -39,6 +39,7 @@ interface QuestionGenerationHook {
     timeUntilReset: number;
     isNearLimit: boolean;
   };
+  sessionQuestionCount: number;
   setIsModalOpen: (isOpen: boolean) => void;
   generateNewQuestion: () => Promise<void>;
   refreshQuestion: () => Promise<void>;
@@ -73,6 +74,9 @@ export const useQuestionGeneration = (): QuestionGenerationHook => {
     language: "",
     category: "",
   });
+  
+  // Session-based question history (max 20 questions)
+  const [sessionQuestions, setSessionQuestions] = useState<Array<{ question: string; answer: string }>>([]);
 
   // Monitor online/offline status
   useEffect(() => {
@@ -99,6 +103,14 @@ export const useQuestionGeneration = (): QuestionGenerationHook => {
 
     return () => clearInterval(interval);
   }, []);
+
+  // Clear session history when modal is closed
+  useEffect(() => {
+    if (!isModalOpen) {
+      // Clear session history when modal is closed to free memory
+      setSessionQuestions([]);
+    }
+  }, [isModalOpen]);
 
   // Status update callback for the API service
   const handleStatusUpdate = (message: string, waiting: boolean) => {
@@ -132,11 +144,12 @@ export const useQuestionGeneration = (): QuestionGenerationHook => {
     setStatusMessage("Preparing to generate question...");
 
     try {
-      // Prepare parameters for Gemini API
+      // Prepare parameters for Gemini API with session history
       const params = {
         difficulty: settings.difficulty || "medium",
         language: settings.language || "English",
         category: settings.category || "random",
+        previousQuestions: sessionQuestions, // Pass session history to avoid duplicates
       };
 
       const newQuestion = await generateQuestionWithGemini(
@@ -146,6 +159,12 @@ export const useQuestionGeneration = (): QuestionGenerationHook => {
       console.log("✅ Generated question:", newQuestion);
       setQuestion(newQuestion);
       setStatusMessage("Question generated successfully!");
+      
+      // Add to session history (keep max 20 questions)
+      setSessionQuestions(prev => {
+        const updated = [...prev, { question: newQuestion.question, answer: newQuestion.answer }];
+        return updated.slice(-20); // Keep only last 20 questions
+      });
 
       // Clear status message after a short delay
       setTimeout(() => {
@@ -180,11 +199,12 @@ export const useQuestionGeneration = (): QuestionGenerationHook => {
     setStatusMessage("Refreshing question...");
 
     try {
-      // Use the same settings as the current question
+      // Use the same settings as the current question with session history
       const params = {
         difficulty: settings.difficulty || question.difficulty || "medium",
         language: settings.language || "English",
         category: settings.category || question.category || "random",
+        previousQuestions: sessionQuestions, // Pass session history to avoid duplicates
       };
 
       const newQuestion = await generateQuestionWithGemini(
@@ -193,6 +213,12 @@ export const useQuestionGeneration = (): QuestionGenerationHook => {
       );
       setQuestion(newQuestion);
       setStatusMessage("Question refreshed successfully!");
+      
+      // Add to session history (keep max 20 questions)
+      setSessionQuestions(prev => {
+        const updated = [...prev, { question: newQuestion.question, answer: newQuestion.answer }];
+        return updated.slice(-20); // Keep only last 20 questions
+      });
 
       // Clear status message after a short delay
       setTimeout(() => {
@@ -224,6 +250,8 @@ export const useQuestionGeneration = (): QuestionGenerationHook => {
     });
     setError(null);
     setStatusMessage("");
+    // Clear session history when settings are cleared
+    setSessionQuestions([]);
   };
 
   return {
@@ -235,6 +263,7 @@ export const useQuestionGeneration = (): QuestionGenerationHook => {
     isOnline,
     isModalOpen,
     rateLimitInfo,
+    sessionQuestionCount: sessionQuestions.length,
     setIsModalOpen,
     generateNewQuestion,
     refreshQuestion,

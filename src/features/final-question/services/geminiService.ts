@@ -12,6 +12,7 @@ interface QuestionGenerationParams {
   difficulty?: string;
   language?: string;
   category?: QuestionCategory | string;
+  previousQuestions?: Array<{ question: string; answer: string }>;
 }
 
 interface GeminiResponse {
@@ -84,62 +85,90 @@ function wait(seconds: number): Promise<void> {
 }
 
 /**
- * Generate a question using Google Gemini API with intelligent rate limiting
+ * Generate a question using Google Gemini API with enhanced prompts and variability
  */
 export const generateQuestionWithGemini = async (
   params: QuestionGenerationParams = {},
   onStatusUpdate?: (message: string, isWaiting: boolean) => void
 ): Promise<FinalQuestion> => {
-  console.log("🚀 Starting question generation with params:", params);
+  try {
+    // Check rate limiting first
+    const rateLimitCheck = checkRateLimit();
+    if (rateLimitCheck.isRateLimited) {
+      const waitTime = rateLimitCheck.retryAfter || 4;
 
-  // Check if online
-  if (!navigator.onLine) {
-    console.error("❌ Not online");
-    throw new Error("Internet connection required to generate questions");
-  }
+      if (onStatusUpdate) {
+        onStatusUpdate(
+          `Please wait ${waitTime} seconds before generating another question...`,
+          true
+        );
 
-  // Check API key
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-  if (!apiKey) {
-    console.error("❌ No API key found");
-    throw new Error(
-      "AI service is temporarily unavailable. Please try again later."
-    );
-  }
+        // Show countdown during wait
+        for (let i = waitTime; i > 0; i--) {
+          onStatusUpdate(
+            `Please wait ${i} second${
+              i > 1 ? "s" : ""
+            } before generating another question...`,
+            true
+          );
+          await wait(1);
+        }
+      } else {
+        await wait(waitTime);
+      }
 
-  console.log("✅ API key found, length:", apiKey.length);
+      if (onStatusUpdate) {
+        onStatusUpdate("Generating your question...", false);
+      }
+    }
 
-  // Check rate limits
-  const rateLimitCheck = checkRateLimit();
-  if (rateLimitCheck.isRateLimited && rateLimitCheck.retryAfter) {
-    if (onStatusUpdate) {
-      onStatusUpdate(
-        rateLimitCheck.message || "Rate limited, waiting...",
-        true
+    // Check API key
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+    if (!apiKey) {
+      console.error("❌ No API key found");
+      throw new Error(
+        "AI service is temporarily unavailable. Please try again later."
       );
     }
 
-    // Wait for the required time
-    await wait(rateLimitCheck.retryAfter);
+    // Check online status
+    if (!navigator.onLine) {
+      throw new Error("Internet connection required");
+    }
+
+    // Update request tracking
+    requestCount++;
+    lastRequestTime = Date.now();
 
     if (onStatusUpdate) {
       onStatusUpdate("Generating your question...", false);
     }
-  }
 
-  const {
-    difficulty = "medium",
-    language = "English",
-    category = "random",
-  } = params;
+    // Create enhanced prompt with previous questions and better instructions
+    const prompt = createEnhancedGeminiPrompt(
+      params.difficulty || "medium",
+      params.language || "English",
+      params.category || "random",
+      params.previousQuestions || []
+    );
 
-  // Construct the prompt for Gemini
-  const prompt = createGeminiPrompt(difficulty, language, category);
-
-  try {
-    // Update request tracking
-    lastRequestTime = Date.now();
-    requestCount++;
+    const requestBody = {
+      contents: [
+        {
+          parts: [
+            {
+              text: prompt,
+            },
+          ],
+        },
+      ],
+      generationConfig: {
+        temperature: 0.9, // Higher temperature for more variability
+        topK: 40,
+        topP: 0.95,
+        maxOutputTokens: 1024,
+      },
+    };
 
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
@@ -148,33 +177,16 @@ export const generateQuestionWithGemini = async (
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                {
-                  text: prompt,
-                },
-              ],
-            },
-          ],
-          generationConfig: {
-            temperature: 0.7,
-            topK: 40,
-            topP: 0.95,
-            maxOutputTokens: 1024,
-          },
-        }),
+        body: JSON.stringify(requestBody),
       }
     );
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
 
-      // Handle specific rate limit errors from API
+      // Handle rate limiting from Google's side
       if (response.status === 429) {
-        const retryAfter = response.headers.get("Retry-After");
-        const waitTime = retryAfter ? parseInt(retryAfter) : 60;
+        const waitTime = 4;
 
         if (onStatusUpdate) {
           onStatusUpdate(
@@ -230,12 +242,13 @@ export const generateQuestionWithGemini = async (
 };
 
 /**
- * Create a structured prompt for Gemini API
+ * Create an enhanced prompt for Gemini API with better instructions and previous questions context
  */
-function createGeminiPrompt(
+function createEnhancedGeminiPrompt(
   difficulty: string,
   language: string,
-  category: string
+  category: string,
+  previousQuestions: Array<{ question: string; answer: string }>
 ): string {
   const languageInstruction =
     language.toLowerCase() === "bulgarian"
@@ -247,13 +260,34 @@ function createGeminiPrompt(
       ? "Choose a random general knowledge topic."
       : `Generate a question about the category: ${category}`;
 
-  const difficultyInstruction = getDifficultyInstruction(difficulty);
+  const difficultyInstruction = getEnhancedDifficultyInstruction(difficulty);
 
-  return `You are a quiz master assistant. Generate a single quiz question and its answer.
+  // Add previous questions context to avoid duplicates
+  let previousQuestionsContext = "";
+  if (previousQuestions.length > 0) {
+    const recentQuestions = previousQuestions.slice(-10); // Last 10 questions
+    previousQuestionsContext = `\n\nIMPORTANT: Do NOT repeat any of these recently asked questions. Generate something completely different:\n${recentQuestions
+      .map((q, i) => `${i + 1}. ${q.question}`)
+      .join("\n")}`;
+  }
+
+  // Enhanced fact-checking instructions
+  const factCheckingInstruction = getFactCheckingInstruction(category);
+
+  return `You are an expert quiz master with access to accurate, up-to-date information. Generate a single quiz question and its answer.
 
 ${languageInstruction}
 ${categoryInstruction}
 ${difficultyInstruction}
+${factCheckingInstruction}
+${previousQuestionsContext}
+
+CRITICAL REQUIREMENTS:
+- The answer must be 100% factually correct and verifiable
+- For geographic questions, double-check all facts (heights, locations, names)
+- Avoid controversial or ambiguous topics
+- Make the question engaging and educational
+- Ensure the question is unique and not repetitive
 
 IMPORTANT: Respond ONLY with a valid JSON object in this exact format:
 {
@@ -267,18 +301,59 @@ Do not include any other text, explanations, or formatting outside the JSON obje
 }
 
 /**
- * Get difficulty-specific instructions
+ * Get enhanced difficulty-specific instructions with more variation
  */
-function getDifficultyInstruction(difficulty: string): string {
+function getEnhancedDifficultyInstruction(difficulty: string): string {
   switch (difficulty.toLowerCase()) {
     case "easy":
-      return "Make this an EASY question that most people would know. Use basic, well-known facts.";
+      return "Make this an EASY question that most people would know. Use basic, well-known facts that are commonly taught in school or widely known in popular culture.";
     case "hard":
-      return "Make this a HARD question that requires specialized knowledge or complex reasoning. Use obscure facts or multi-step thinking.";
+      return "Make this a HARD question that requires specialized knowledge, advanced education, or deep expertise in a specific field. Use complex concepts, technical details, or obscure historical facts.";
     case "medium":
     default:
-      return "Make this a MEDIUM difficulty question that requires some knowledge but is not too obscure.";
+      return "Make this a MEDIUM difficulty question that requires some general knowledge and thinking. It should be challenging but not impossible for an educated person to answer.";
   }
+}
+
+/**
+ * Get fact-checking instructions based on category
+ */
+function getFactCheckingInstruction(category: string): string {
+  const lowerCategory = category.toLowerCase();
+
+  if (
+    lowerCategory.includes("geography") ||
+    lowerCategory.includes("смолян") ||
+    lowerCategory.includes("bulgaria") ||
+    lowerCategory.includes("mountain") ||
+    lowerCategory.includes("peak")
+  ) {
+    return `\nFACT-CHECKING FOR GEOGRAPHY: 
+- For Bulgarian geography: Verify all mountain peaks, heights, and locations
+- For Smolyan region: The highest peak near Smolyan is Perelik (2,191m), NOT Snezhanka
+- Snezhanka is near Pamporovo but is NOT the highest peak in the Smolyan area
+- Always verify geographical facts against reliable sources
+- Double-check all numerical data (heights, distances, populations)`;
+  }
+
+  if (lowerCategory.includes("history")) {
+    return `\nFACT-CHECKING FOR HISTORY: 
+- Verify all dates, names, and historical events
+- Ensure chronological accuracy
+- Cross-reference multiple historical sources`;
+  }
+
+  if (lowerCategory.includes("science")) {
+    return `\nFACT-CHECKING FOR SCIENCE: 
+- Verify all scientific facts and figures
+- Ensure formulas and laws are correct
+- Use current scientific understanding`;
+  }
+
+  return `\nFACT-CHECKING: 
+- Verify all facts before including them
+- Use reliable, authoritative sources
+- Avoid outdated or disputed information`;
 }
 
 /**
