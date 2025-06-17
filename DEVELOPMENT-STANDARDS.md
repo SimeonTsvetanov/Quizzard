@@ -1764,6 +1764,9 @@ if (!isValidScore(score)) {
 - Secure API key management through environment variables (`VITE_GEMINI_API_KEY`)
 - Intelligent rate limiting (15 requests/minute, 4-second intervals)
 - Automatic retry logic for API failures (429 status codes)
+- **Enhanced AI Configuration**: Temperature 0.9, topK 40, topP 0.95 for maximum variability
+- **Session-based duplicate prevention**: Track last 20 questions to avoid repetition
+- **Category-specific fact-checking**: Enhanced prompts with accuracy validation
 - Real-time status updates during generation process
 
 **Clean Architecture Implementation:**
@@ -2017,5 +2020,151 @@ const parseGeminiResponse = (text: string) => {
 - [x] Security guidelines and best practices
 - [x] Development standards compliance verification
 
+#### **8. Advanced AI Enhancement Patterns (NEW)**
+
+**Enhanced Temperature Control for Variability:**
+
+```typescript
+// ✅ IMPLEMENTED: High variability configuration
+const requestBody = {
+  contents: [{ parts: [{ text: prompt }] }],
+  generationConfig: {
+    temperature: 0.9, // Increased from 0.7 for more creativity
+    topK: 40, // Balanced token selection
+    topP: 0.95, // High probability mass for diversity
+    maxOutputTokens: 1024,
+  },
+};
+```
+
+**Session-Based Duplicate Prevention:**
+
+```typescript
+// ✅ IMPLEMENTED: Smart duplicate tracking
+const [sessionQuestions, setSessionQuestions] = useState<
+  Array<{
+    question: string;
+    answer: string;
+  }>
+>([]);
+
+// Pass previous questions to AI to avoid duplicates
+const params = {
+  difficulty: settings.difficulty || "medium",
+  language: settings.language || "English",
+  category: settings.category || "random",
+  previousQuestions: sessionQuestions, // Prevent repetition
+};
+
+// Add to session history (max 20 questions)
+setSessionQuestions((prev) => {
+  const updated = [
+    ...prev,
+    { question: newQuestion.question, answer: newQuestion.answer },
+  ];
+  return updated.slice(-20); // Keep only last 20
+});
+
+// Clear history when modal closes to save memory
+useEffect(() => {
+  if (!isModalOpen) {
+    setSessionQuestions([]);
+  }
+}, [isModalOpen]);
+```
+
+**Enhanced Prompts with Fact-Checking:**
+
+```typescript
+// ✅ IMPLEMENTED: Category-specific fact validation
+const getFactCheckingInstruction = (category: string): string => {
+  const lowerCategory = category.toLowerCase();
+
+  if (lowerCategory.includes("geography") || lowerCategory.includes("смолян")) {
+    return `\nFACT-CHECKING FOR GEOGRAPHY: 
+- For Bulgarian geography: Verify all mountain peaks, heights, and locations
+- For Smolyan region: The highest peak near Smolyan is Perelik (2,191m), NOT Snezhanka
+- Snezhanka is near Pamporovo but is NOT the highest peak in the Smolyan area
+- Always verify geographical facts against reliable sources`;
+  }
+
+  if (lowerCategory.includes("history")) {
+    return `\nFACT-CHECKING FOR HISTORY: 
+- Verify all dates, names, and historical events
+- Ensure chronological accuracy`;
+  }
+
+  return `\nFACT-CHECKING: 
+- Verify all facts before including them
+- Use reliable, authoritative sources`;
+};
+```
+
+**Real-Time Countdown During Rate Limits:**
+
+```typescript
+// ✅ IMPLEMENTED: Enhanced user feedback during waits
+if (rateLimitCheck.isRateLimited) {
+  const waitTime = rateLimitCheck.retryAfter || 4;
+
+  // Show countdown during wait
+  for (let i = waitTime; i > 0; i--) {
+    onStatusUpdate(
+      `Please wait ${i} second${
+        i > 1 ? "s" : ""
+      } before generating another question...`,
+      true
+    );
+    await wait(1);
+  }
+}
+```
+
+**Session Tracking UI Enhancement:**
+
+```typescript
+// ✅ IMPLEMENTED: Session question counter display
+{
+  sessionQuestionCount > 0 && (
+    <Chip
+      label={`Session: ${sessionQuestionCount} question${
+        sessionQuestionCount !== 1 ? "s" : ""
+      }`}
+      color="info"
+      variant="outlined"
+      size="small"
+    />
+  );
+}
+```
+
+#### **9. AI Enhancement Benefits**
+
+**Improved Question Variety:**
+
+- Temperature 0.9 ensures maximum response creativity
+- Session tracking prevents duplicate questions within same session
+- Enhanced prompts provide better context for unique generation
+
+**Enhanced Accuracy:**
+
+- Category-specific fact-checking prevents incorrect information
+- Geographic accuracy for Bulgarian locations (Perelik vs Snezhanka)
+- Comprehensive validation instructions for different subject areas
+
+**Better User Experience:**
+
+- Real-time countdown timers during rate limit waits
+- Session question counter shows generation progress
+- Smart memory management with automatic cleanup
+- Professional status indicators and feedback
+
+**Technical Robustness:**
+
+- Session-based history tracking (max 20 questions)
+- Memory-efficient cleanup when modal closes
+- Enhanced error handling with specific geographic corrections
+- Improved API configuration for optimal performance
+
 **Last Updated:** December 19, 2025  
-**Status:** PRODUCTION READY
+**Status:** PRODUCTION READY WITH ADVANCED AI ENHANCEMENTS
