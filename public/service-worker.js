@@ -1,72 +1,70 @@
 // Service Worker for Quizzard PWA
 // VERSION: __SW_VERSION__
 // Handles caching, updates, and offline functionality
-// Version updated: December 7, 2025 - Black bar fix and manifest update
+// Version updated: December 22, 2025 - Development and Production compatibility
+
+// Detect if we're in development or production
+const isDevelopment =
+  location.hostname === "localhost" || location.hostname === "127.0.0.1";
+const basePath = isDevelopment ? "" : "/Quizzard";
 
 const CACHE_NAME = "quizzard-complete-icons-2025";
 const urlsToCache = [
-  "/Quizzard/",
-  "/Quizzard/index.html",
-  "/Quizzard/manifest.json",
+  `${basePath}/`,
+  `${basePath}/index.html`,
+  `${basePath}/manifest.json`,
   // New favicon system - all sizes
-  "/Quizzard/favicon.ico",
-  "/Quizzard/favicon-16x16.png",
-  "/Quizzard/favicon-32x32.png",
-  "/Quizzard/favicon-48x48.png",
-  "/Quizzard/favicon-64x64.png",
-  "/Quizzard/favicon-96x96.png",
-  "/Quizzard/favicon-128x128.png",
+  `${basePath}/favicon.ico`,
+  `${basePath}/favicon-16x16.png`,
+  `${basePath}/favicon-32x32.png`,
+  `${basePath}/favicon-48x48.png`,
+  `${basePath}/favicon-64x64.png`,
+  `${basePath}/favicon-96x96.png`,
+  `${basePath}/favicon-128x128.png`,
   // Apple Touch Icons - all sizes + fallback
-  "/Quizzard/apple-touch-icon.png",
-  "/Quizzard/apple-touch-icon-152x152.png",
-  "/Quizzard/apple-touch-icon-167x167.png",
-  "/Quizzard/apple-touch-icon-180x180.png",
+  `${basePath}/apple-touch-icon.png`,
+  `${basePath}/apple-touch-icon-152x152.png`,
+  `${basePath}/apple-touch-icon-167x167.png`,
+  `${basePath}/apple-touch-icon-180x180.png`,
   // Android Chrome Icons - all sizes
-  "/Quizzard/android-chrome-192x192.png",
-  "/Quizzard/android-chrome-256x256.png",
-  "/Quizzard/android-chrome-512x512.png",
+  `${basePath}/android-chrome-192x192.png`,
+  `${basePath}/android-chrome-256x256.png`,
+  `${basePath}/android-chrome-512x512.png`,
   // Standard PWA naming (fallback)
-  "/Quizzard/icon-192.png",
-  "/Quizzard/icon-512.png",
+  `${basePath}/icon-192.png`,
+  `${basePath}/icon-512.png`,
   // Windows Tiles
-  "/Quizzard/mstile-150x150.png",
+  `${basePath}/mstile-150x150.png`,
   // Social Media
-  "/Quizzard/og-image.png",
-  "/Quizzard/twitter-image.png",
+  `${basePath}/og-image.png`,
+  `${basePath}/twitter-image.png`,
   // Main logo file
-  "/Quizzard/quizzard-logo.png",
+  `${basePath}/quizzard-logo.png`,
 ];
 
-// Install event - aggressive cache clearing for theme fix
+// Install event - cache essential resources
 self.addEventListener("install", (event) => {
+  console.log("Service Worker installing...");
   event.waitUntil(
-    // First clear ALL existing caches to fix theme colors
     caches
-      .keys()
-      .then((cacheNames) => {
-        return Promise.all(
-          cacheNames.map((cacheName) => {
-            console.log("Deleting old cache for theme fix:", cacheName);
-            return caches.delete(cacheName);
-          })
-        );
-      })
-      .then(() => {
-        // Then create fresh cache with updated manifest
-        return caches.open(CACHE_NAME);
-      })
+      .open(CACHE_NAME)
       .then((cache) => {
+        console.log("Caching essential resources");
         return cache.addAll(urlsToCache);
       })
       .then(() => {
-        // Force immediate activation
+        console.log("Service Worker installed successfully");
         return self.skipWaiting();
+      })
+      .catch((error) => {
+        console.error("Service Worker installation failed:", error);
       })
   );
 });
 
-// Activate event - remove old caches immediately
+// Activate event - clean up old caches
 self.addEventListener("activate", (event) => {
+  console.log("Service Worker activating...");
   event.waitUntil(
     caches
       .keys()
@@ -74,26 +72,44 @@ self.addEventListener("activate", (event) => {
         return Promise.all(
           cacheNames.map((cacheName) => {
             if (cacheName !== CACHE_NAME) {
-              console.log("Deleting old cache during activate:", cacheName);
+              console.log("Deleting old cache:", cacheName);
               return caches.delete(cacheName);
             }
           })
         );
       })
       .then(() => {
-        // Take control of all clients immediately
+        console.log("Service Worker activated successfully");
         return self.clients.claim();
+      })
+      .catch((error) => {
+        console.error("Service Worker activation failed:", error);
       })
   );
 });
 
-// Fetch event - always try network first to avoid cache issues
+// Fetch event - network first with cache fallback
 self.addEventListener("fetch", (event) => {
+  // Skip non-GET requests
+  if (event.request.method !== "GET") {
+    return;
+  }
+
+  // Skip requests to external domains
+  if (!event.request.url.startsWith(location.origin)) {
+    return;
+  }
+
+  // Skip Vite HMR requests in development
+  if (isDevelopment && event.request.url.includes("?t=")) {
+    return;
+  }
+
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        // If network request succeeds, cache it
-        if (response.status === 200) {
+        // Only cache successful responses
+        if (response && response.status === 200 && response.type === "basic") {
           const responseClone = response.clone();
           caches.open(CACHE_NAME).then((cache) => {
             cache.put(event.request, responseClone);
@@ -102,8 +118,17 @@ self.addEventListener("fetch", (event) => {
         return response;
       })
       .catch(() => {
-        // If network fails, try cache
-        return caches.match(event.request);
+        // Network failed, try cache
+        return caches.match(event.request).then((response) => {
+          if (response) {
+            return response;
+          }
+          // If not in cache, return a basic offline page
+          if (event.request.destination === "document") {
+            return caches.match(`${basePath}/index.html`);
+          }
+          return new Response("Offline", { status: 503 });
+        });
       })
   );
 });
@@ -129,8 +154,8 @@ self.addEventListener("push", (event) => {
     const data = event.data.json();
     const options = {
       body: data.body,
-      icon: "/Quizzard/android-chrome-192x192.png",
-      badge: "/Quizzard/favicon-96x96.png",
+      icon: `${basePath}/android-chrome-192x192.png`,
+      badge: `${basePath}/favicon-96x96.png`,
       vibrate: [100, 50, 100],
       data: {
         dateOfArrival: Date.now(),
@@ -140,12 +165,12 @@ self.addEventListener("push", (event) => {
         {
           action: "explore",
           title: "Open Quizzard",
-          icon: "/Quizzard/android-chrome-192x192.png",
+          icon: `${basePath}/android-chrome-192x192.png`,
         },
         {
           action: "close",
           title: "Close",
-          icon: "/Quizzard/favicon-96x96.png",
+          icon: `${basePath}/favicon-96x96.png`,
         },
       ],
     };
@@ -159,6 +184,6 @@ self.addEventListener("notificationclick", (event) => {
   event.notification.close();
 
   if (event.action === "explore") {
-    event.waitUntil(clients.openWindow("/Quizzard/"));
+    event.waitUntil(clients.openWindow(`${basePath}/`));
   }
 });

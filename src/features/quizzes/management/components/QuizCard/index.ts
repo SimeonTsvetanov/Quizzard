@@ -9,5 +9,5 @@
  * @since December 2025
  */
 
-export { QuizCard } from "./QuizCard";
+export { QuizCard, default as QuizCardDefault } from "./QuizCard";
 export type { QuizCardProps } from "./QuizCard";

@@ -66,7 +66,7 @@ interface NavigationDrawerProps {
  * Provides comprehensive app navigation with focus management and
  * accessibility features. Handles both internal routing and external links.
  */
-export const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
+const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
   open,
   onClose,
   currentTheme,
@@ -280,3 +280,5 @@ export const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
     </Drawer>
   );
 };
+
+export default NavigationDrawer;

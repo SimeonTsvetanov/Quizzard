@@ -18,7 +18,7 @@
  * @since December 2025
  */
 
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef } from "react";
 import {
   Box,
   Button,
@@ -29,7 +29,7 @@ import {
   IconButton,
   Alert,
   Chip,
-} from '@mui/material';
+} from "@mui/material";
 import {
   CloudUpload as UploadIcon,
   Delete as DeleteIcon,
@@ -37,9 +37,9 @@ import {
   AudioFile as AudioIcon,
   VideoFile as VideoIcon,
   FilePresent as FileIcon,
-} from '@mui/icons-material';
-import type { MediaUploadProps, MediaFile } from '../../types';
-import { FILE_SIZE_LIMITS, SUPPORTED_MEDIA_TYPES } from '../../types';
+} from "@mui/icons-material";
+import type { MediaUploadProps, MediaFile } from "../../types";
+import { FILE_SIZE_LIMITS, SUPPORTED_MEDIA_TYPES } from "../../types";
 
 /**
  * Media Upload Component
@@ -61,9 +61,9 @@ export const MediaUpload: React.FC<MediaUploadProps> = ({
    * Get file type icon
    */
   const getFileIcon = (type: string) => {
-    if (type.startsWith('image/')) return <ImageIcon />;
-    if (type.startsWith('audio/')) return <AudioIcon />;
-    if (type.startsWith('video/')) return <VideoIcon />;
+    if (type.startsWith("image/")) return <ImageIcon />;
+    if (type.startsWith("audio/")) return <AudioIcon />;
+    if (type.startsWith("video/")) return <VideoIcon />;
     return <FileIcon />;
   };
 
@@ -71,11 +71,11 @@ export const MediaUpload: React.FC<MediaUploadProps> = ({
    * Format file size for display
    */
   const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) return "0 Bytes";
     const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
   /**
@@ -83,13 +83,13 @@ export const MediaUpload: React.FC<MediaUploadProps> = ({
    */
   const validateFile = (file: File): string | null => {
     // Check file type
-    const fileExtension = file.name.split('.').pop()?.toLowerCase() || '';
-    const isValidType = acceptedTypes.some(type => 
-      file.type === type || fileExtension === type.replace('.', '')
+    const fileExtension = file.name.split(".").pop()?.toLowerCase() || "";
+    const isValidType = acceptedTypes.some(
+      (type) => file.type === type || fileExtension === type.replace(".", "")
     );
-    
+
     if (!isValidType) {
-      return `Invalid file type. Accepted types: ${acceptedTypes.join(', ')}`;
+      return `Invalid file type. Accepted types: ${acceptedTypes.join(", ")}`;
     }
 
     // Check file size
@@ -104,16 +104,16 @@ export const MediaUpload: React.FC<MediaUploadProps> = ({
    * Generate thumbnail for images and videos
    */
   const generateThumbnail = async (file: File): Promise<string | undefined> => {
-    if (file.type.startsWith('image/')) {
+    if (file.type.startsWith("image/")) {
       return new Promise((resolve) => {
         const reader = new FileReader();
         reader.onload = (e) => {
           const img = new Image();
           img.onload = () => {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
             const maxSize = 200;
-            
+
             let { width, height } = img;
             if (width > height) {
               if (width > maxSize) {
@@ -126,29 +126,29 @@ export const MediaUpload: React.FC<MediaUploadProps> = ({
                 height = maxSize;
               }
             }
-            
+
             canvas.width = width;
             canvas.height = height;
             ctx?.drawImage(img, 0, 0, width, height);
-            resolve(canvas.toDataURL('image/jpeg', 0.7));
+            resolve(canvas.toDataURL("image/jpeg", 0.7));
           };
           img.src = e.target?.result as string;
         };
         reader.readAsDataURL(file);
       });
     }
-    
-    if (file.type.startsWith('video/')) {
+
+    if (file.type.startsWith("video/")) {
       return new Promise((resolve) => {
-        const video = document.createElement('video');
+        const video = document.createElement("video");
         video.onloadedmetadata = () => {
           video.currentTime = 1; // Seek to 1 second for thumbnail
         };
         video.onseeked = () => {
-          const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
+          const canvas = document.createElement("canvas");
+          const ctx = canvas.getContext("2d");
           const maxSize = 200;
-          
+
           let { videoWidth: width, videoHeight: height } = video;
           if (width > height) {
             if (width > maxSize) {
@@ -161,13 +161,13 @@ export const MediaUpload: React.FC<MediaUploadProps> = ({
               height = maxSize;
             }
           }
-          
+
           canvas.width = width;
           canvas.height = height;
           ctx?.drawImage(video, 0, 0, width, height);
-          resolve(canvas.toDataURL('image/jpeg', 0.7));
+          resolve(canvas.toDataURL("image/jpeg", 0.7));
         };
-        
+
         const reader = new FileReader();
         reader.onload = (e) => {
           video.src = e.target?.result as string;
@@ -175,7 +175,7 @@ export const MediaUpload: React.FC<MediaUploadProps> = ({
         reader.readAsDataURL(file);
       });
     }
-    
+
     return undefined;
   };
 
@@ -183,20 +183,20 @@ export const MediaUpload: React.FC<MediaUploadProps> = ({
    * Get audio/video duration
    */
   const getMediaDuration = async (file: File): Promise<number | undefined> => {
-    if (file.type.startsWith('audio/') || file.type.startsWith('video/')) {
+    if (file.type.startsWith("audio/") || file.type.startsWith("video/")) {
       return new Promise((resolve) => {
-        const media = file.type.startsWith('audio/') 
-          ? new Audio() 
-          : document.createElement('video');
-        
+        const media = file.type.startsWith("audio/")
+          ? new Audio()
+          : document.createElement("video");
+
         media.onloadedmetadata = () => {
           resolve(media.duration);
         };
-        
+
         media.onerror = () => {
           resolve(undefined);
         };
-        
+
         const reader = new FileReader();
         reader.onload = (e) => {
           media.src = e.target?.result as string;
@@ -240,7 +240,9 @@ export const MediaUpload: React.FC<MediaUploadProps> = ({
 
           // Create MediaFile object
           const mediaFile: MediaFile = {
-            id: `media_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            id: `media_${Date.now()}_${Math.random()
+              .toString(36)
+              .substr(2, 9)}`,
             filename: file.name,
             type: fileType,
             size: file.size,
@@ -254,8 +256,8 @@ export const MediaUpload: React.FC<MediaUploadProps> = ({
           setUploadProgress(100);
           onFileUpload(mediaFile);
         } catch (error) {
-          console.error('Error processing file:', error);
-          onUploadError('Failed to process file. Please try again.');
+          console.error("Error processing file:", error);
+          onUploadError("Failed to process file. Please try again.");
         } finally {
           setIsUploading(false);
           setUploadProgress(0);
@@ -263,15 +265,15 @@ export const MediaUpload: React.FC<MediaUploadProps> = ({
       };
 
       reader.onerror = () => {
-        onUploadError('Failed to read file. Please try again.');
+        onUploadError("Failed to read file. Please try again.");
         setIsUploading(false);
         setUploadProgress(0);
       };
 
       reader.readAsDataURL(file);
     } catch (error) {
-      console.error('Error processing file:', error);
-      onUploadError('Failed to process file. Please try again.');
+      console.error("Error processing file:", error);
+      onUploadError("Failed to process file. Please try again.");
       setIsUploading(false);
       setUploadProgress(0);
     }
@@ -282,7 +284,7 @@ export const MediaUpload: React.FC<MediaUploadProps> = ({
    */
   const handleFileSelect = useCallback((files: FileList | null) => {
     if (!files || files.length === 0) return;
-    
+
     const file = files[0];
     processFile(file);
   }, []);
@@ -300,11 +302,14 @@ export const MediaUpload: React.FC<MediaUploadProps> = ({
     setIsDragging(false);
   }, []);
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    handleFileSelect(e.dataTransfer.files);
-  }, [handleFileSelect]);
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      setIsDragging(false);
+      handleFileSelect(e.dataTransfer.files);
+    },
+    [handleFileSelect]
+  );
 
   /**
    * Handle click to select file
@@ -325,16 +330,16 @@ export const MediaUpload: React.FC<MediaUploadProps> = ({
    */
   const handleRemoveFile = () => {
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
     // Call with empty data to remove
     onFileUpload({
-      id: '',
-      filename: '',
+      id: "",
+      filename: "",
       type: fileType,
       size: 0,
-      data: '',
-      mimeType: '',
+      data: "",
+      mimeType: "",
       createdAt: new Date(),
     });
   };
@@ -343,63 +348,68 @@ export const MediaUpload: React.FC<MediaUploadProps> = ({
    * Get accepted file types string for display
    */
   const getAcceptedTypesDisplay = () => {
-    const types = SUPPORTED_MEDIA_TYPES[`${fileType}s` as keyof typeof SUPPORTED_MEDIA_TYPES];
-    return types.map(type => `.${type}`).join(', ');
+    const types =
+      SUPPORTED_MEDIA_TYPES[
+        `${fileType}s` as keyof typeof SUPPORTED_MEDIA_TYPES
+      ];
+    return types.map((type) => `.${type}`).join(", ");
   };
 
   return (
-    <Box sx={{ width: '100%' }}>
+    <Box sx={{ width: "100%" }}>
       <input
         ref={fileInputRef}
-        type=\"file\"
-        accept={acceptedTypes.join(',')}
+        type="file"
+        accept={acceptedTypes.join(",")}
         onChange={handleFileInputChange}
-        style={{ display: 'none' }}
+        style={{ display: "none" }}
         aria-label={`Upload ${fileType} file`}
       />
 
       {currentFile && currentFile.id ? (
         <Card sx={{ mb: 2 }}>
           <CardContent>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
               {getFileIcon(currentFile.mimeType)}
               <Box sx={{ flexGrow: 1 }}>
-                <Typography variant=\"subtitle2\" noWrap>
+                <Typography variant="subtitle2" noWrap>
                   {currentFile.filename}
                 </Typography>
-                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', mt: 1 }}>
-                  <Chip 
-                    label={formatFileSize(currentFile.size)} 
-                    size=\"small\" 
-                    variant=\"outlined\"
+                <Box
+                  sx={{ display: "flex", gap: 1, alignItems: "center", mt: 1 }}
+                >
+                  <Chip
+                    label={formatFileSize(currentFile.size)}
+                    size="small"
+                    variant="outlined"
                   />
                   {currentFile.duration && (
-                    <Chip 
-                      label={`${Math.round(currentFile.duration)}s`} 
-                      size=\"small\" 
-                      variant=\"outlined\"
+                    <Chip
+                      label={`${Math.round(currentFile.duration)}s`}
+                      size="small"
+                      variant="outlined"
                     />
                   )}
                 </Box>
               </Box>
               {currentFile.thumbnail && (
                 <Box
-                  component=\"img\"
+                  component="img"
                   src={currentFile.thumbnail}
-                  alt=\"Thumbnail\"
+                  alt="Thumbnail"
                   sx={{
                     width: 60,
                     height: 60,
-                    objectFit: 'cover',
+                    objectFit: "cover",
                     borderRadius: 1,
                   }}
                 />
               )}
               <IconButton
                 onClick={handleRemoveFile}
-                color=\"error\"
-                size=\"small\"
-                aria-label=\"Remove file\"
+                color="error"
+                size="small"
+                aria-label="Remove file"
               >
                 <DeleteIcon />
               </IconButton>
@@ -410,14 +420,14 @@ export const MediaUpload: React.FC<MediaUploadProps> = ({
         <Card
           sx={{
             border: 2,
-            borderStyle: 'dashed',
-            borderColor: isDragging ? 'primary.main' : 'grey.300',
-            bgcolor: isDragging ? 'primary.light' : 'background.paper',
-            cursor: 'pointer',
-            transition: 'all 0.3s ease',
-            '&:hover': {
-              borderColor: 'primary.main',
-              bgcolor: 'primary.light',
+            borderStyle: "dashed",
+            borderColor: isDragging ? "primary.main" : "grey.300",
+            bgcolor: isDragging ? "primary.light" : "background.paper",
+            cursor: "pointer",
+            transition: "all 0.3s ease",
+            "&:hover": {
+              borderColor: "primary.main",
+              bgcolor: "primary.light",
             },
           }}
           onClick={handleClick}
@@ -425,22 +435,22 @@ export const MediaUpload: React.FC<MediaUploadProps> = ({
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
         >
-          <CardContent sx={{ textAlign: 'center', py: 4 }}>
-            <UploadIcon sx={{ fontSize: 48, color: 'primary.main', mb: 2 }} />
-            <Typography variant=\"h6\" gutterBottom>
+          <CardContent sx={{ textAlign: "center", py: 4 }}>
+            <UploadIcon sx={{ fontSize: 48, color: "primary.main", mb: 2 }} />
+            <Typography variant="h6" gutterBottom>
               Upload {fileType.charAt(0).toUpperCase() + fileType.slice(1)} File
             </Typography>
-            <Typography variant=\"body2\" color=\"text.secondary\" gutterBottom>
+            <Typography variant="body2" color="text.secondary" gutterBottom>
               Drag and drop a file here, or click to select
             </Typography>
-            <Typography variant=\"caption\" display=\"block\" sx={{ mt: 1 }}>
+            <Typography variant="caption" display="block" sx={{ mt: 1 }}>
               Accepted formats: {getAcceptedTypesDisplay()}
             </Typography>
-            <Typography variant=\"caption\" display=\"block\">
+            <Typography variant="caption" display="block">
               Maximum size: {formatFileSize(maxFileSize)}
             </Typography>
             <Button
-              variant=\"contained\"
+              variant="contained"
               startIcon={<UploadIcon />}
               sx={{ mt: 2 }}
               disabled={isUploading}
@@ -453,12 +463,12 @@ export const MediaUpload: React.FC<MediaUploadProps> = ({
 
       {isUploading && (
         <Box sx={{ mt: 2 }}>
-          <Typography variant=\"body2\" color=\"text.secondary\" gutterBottom>
+          <Typography variant="body2" color="text.secondary" gutterBottom>
             Processing file...
           </Typography>
-          <LinearProgress variant=\"determinate\" value={uploadProgress} />
+          <LinearProgress variant="determinate" value={uploadProgress} />
         </Box>
       )}
     </Box>
   );
-}; 
+};

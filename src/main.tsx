@@ -23,8 +23,15 @@ updateThemeColor(theme.palette.primary.main);
 // Register service worker
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
+    // Determine service worker path based on environment
+    const isDevelopment =
+      location.hostname === "localhost" || location.hostname === "127.0.0.1";
+    const swPath = isDevelopment
+      ? "/service-worker.js"
+      : "/Quizzard/service-worker.js";
+
     navigator.serviceWorker
-      .register("/Quizzard/service-worker.js")
+      .register(swPath)
       .then((registration) => {
         console.log(
           "ServiceWorker registration successful with scope: ",
@@ -39,8 +46,9 @@ if ("serviceWorker" in navigator) {
 
 // Get the base URL from the current location
 const getBaseUrl = () => {
-  const path = window.location.pathname;
-  return path.startsWith("/Quizzard") ? "/Quizzard" : "";
+  const isDevelopment =
+    location.hostname === "localhost" || location.hostname === "127.0.0.1";
+  return isDevelopment ? "" : "/Quizzard";
 };
 
 ReactDOM.createRoot(document.getElementById("root")!).render(

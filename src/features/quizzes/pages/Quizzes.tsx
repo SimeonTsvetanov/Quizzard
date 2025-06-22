@@ -52,7 +52,8 @@ import { QuizGrid, QuizActions } from "../management/components";
 import { StorageModal } from "../management/components/StorageStatus";
 import { useQuizzesPageStateWithStorage } from "../management/hooks";
 import type { QuizzesPageProps } from "../types";
-import { ErrorBoundary } from "react-error-boundary";
+import type { QuizCategory, QuizDifficulty } from "../types";
+import { ErrorBoundary } from "../../../shared/components";
 
 /**
  * Main Quizzes Page Component (ENHANCED WITH STORAGE)
@@ -84,32 +85,158 @@ export const Quizzes: React.FC<QuizzesPageProps> = ({
 
   // Combine quizzes and drafts for display
   const allQuizzes = React.useMemo(() => {
+    // Helper to validate category
+    const validCategories: QuizCategory[] = [
+      "general",
+      "sports",
+      "history",
+      "science",
+      "geography",
+      "entertainment",
+      "literature",
+      "art",
+      "music",
+      "technology",
+      "custom",
+    ];
+    const sanitizeCategory = (cat: any): QuizCategory => {
+      if (
+        typeof cat === "string" &&
+        validCategories.includes(cat as QuizCategory)
+      ) {
+        return cat as QuizCategory;
+      }
+      return "general";
+    };
+
+    // Helper to sanitize difficulty
+    const sanitizeDifficulty = (diff: any): QuizDifficulty => {
+      if (
+        typeof diff === "string" &&
+        ["easy", "medium", "hard"].includes(diff)
+      ) {
+        return diff as QuizDifficulty;
+      }
+      return "medium";
+    };
+
+    // Helper to sanitize estimated duration
+    const sanitizeDuration = (duration: any): number => {
+      if (typeof duration === "number" && !isNaN(duration)) {
+        return Math.max(1, Math.min(1000, duration)); // Clamp between 1-1000 minutes
+      }
+      if (duration && typeof duration.valueOf === "function") {
+        const value = duration.valueOf();
+        if (typeof value === "number" && !isNaN(value)) {
+          return Math.max(1, Math.min(1000, value));
+        }
+      }
+      return 10; // Default 10 minutes
+    };
+
+    // Helper to sanitize dates
+    const sanitizeDate = (date: any): Date => {
+      if (date instanceof Date) {
+        return date;
+      }
+      if (typeof date === "string" || typeof date === "number") {
+        const parsed = new Date(date);
+        if (!isNaN(parsed.getTime())) {
+          return parsed;
+        }
+      }
+      return new Date();
+    };
+
+    // Helper to sanitize settings
+    const sanitizeSettings = (settings: any) => {
+      const defaultSettings = {
+        defaultTimeLimit: 1,
+        defaultPoints: 1,
+        defaultBreakingTime: 5,
+      };
+
+      if (settings && typeof settings === "object") {
+        return {
+          defaultTimeLimit:
+            typeof settings.defaultTimeLimit === "number"
+              ? settings.defaultTimeLimit
+              : defaultSettings.defaultTimeLimit,
+          defaultPoints:
+            typeof settings.defaultPoints === "number"
+              ? settings.defaultPoints
+              : defaultSettings.defaultPoints,
+          defaultBreakingTime:
+            typeof settings.defaultBreakingTime === "number"
+              ? settings.defaultBreakingTime
+              : defaultSettings.defaultBreakingTime,
+        };
+      }
+      return defaultSettings;
+    };
+
+    // Helper to sanitize rounds
+    const sanitizeRounds = (rounds: any): any[] => {
+      if (Array.isArray(rounds)) {
+        return rounds.filter((round) => round && typeof round === "object");
+      }
+      return [];
+    };
+
+    // Helper to sanitize tags
+    const sanitizeTags = (tags: any): string[] => {
+      if (Array.isArray(tags)) {
+        return tags.filter((tag) => typeof tag === "string").slice(0, 10); // Limit to 10 tags
+      }
+      return [];
+    };
+
+    const defaultSettings = {
+      defaultTimeLimit: 1,
+      defaultPoints: 1,
+      defaultBreakingTime: 5,
+    };
+
     // Convert drafts to Quiz format with isDraft flag
     const draftQuizzes = drafts
-      .filter((draft) => draft.id && draft.title)
-      .map(
-        (draft) =>
-          ({
-            ...draft,
-            id: draft.id!,
-            title: draft.title || "Untitled Draft",
-            description: draft.description || "Draft quiz in progress...",
-            rounds: draft.rounds || [],
-            category: draft.category || "General",
-            difficulty: draft.difficulty || "medium",
-            tags: (draft as any).tags || [],
-            status: "draft" as const,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            isDraft: true,
-          } as any)
-      );
+      .filter((draft) => draft && draft.id && draft.title)
+      .map((draft) => ({
+        ...draft,
+        id: String(draft.id || ""),
+        title: String(draft.title || "Untitled Draft"),
+        description: String(draft.description || "Draft quiz in progress..."),
+        rounds: sanitizeRounds(draft.rounds),
+        category: sanitizeCategory(draft.category),
+        difficulty: sanitizeDifficulty(draft.difficulty),
+        tags: sanitizeTags((draft as any).tags),
+        status: "draft" as const,
+        createdAt: sanitizeDate(draft.createdAt),
+        updatedAt: sanitizeDate(draft.updatedAt),
+        isDraft: true,
+        estimatedDuration: sanitizeDuration(draft.estimatedDuration),
+        settings: sanitizeSettings(draft.settings),
+      }));
 
     // Combine and sort by most recently updated
-    return [...quizzes, ...draftQuizzes].sort(
-      (a, b) =>
-        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-    );
+    return [...quizzes, ...draftQuizzes]
+      .map((q) => ({
+        ...q,
+        id: String(q.id || ""),
+        title: String(q.title || "Untitled Quiz"),
+        description: String(q.description || ""),
+        rounds: sanitizeRounds(q.rounds),
+        estimatedDuration: sanitizeDuration(q.estimatedDuration),
+        createdAt: sanitizeDate(q.createdAt),
+        updatedAt: sanitizeDate(q.updatedAt),
+        category: sanitizeCategory(q.category),
+        difficulty: sanitizeDifficulty(q.difficulty),
+        tags: sanitizeTags((q as any).tags),
+        settings: sanitizeSettings(q.settings),
+      }))
+      .sort(
+        (a, b) =>
+          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+      );
   }, [quizzes, drafts]);
 
   const totalQuizCount = allQuizzes.length;
@@ -164,9 +291,16 @@ export const Quizzes: React.FC<QuizzesPageProps> = ({
               </IconButton>
             }
           >
-            Storage is nearly full ({Math.round(storageUsage.usagePercentage)}%
-            used). Consider cleaning up old drafts or exporting quizzes to free
-            up space.
+            Storage is nearly full (
+            {(() => {
+              const usage = storageUsage?.usagePercentage;
+              if (typeof usage === "number" && !isNaN(usage)) {
+                return Math.round(Math.max(0, Math.min(100, usage)));
+              }
+              return 0;
+            })()}
+            % used). Consider cleaning up old drafts or exporting quizzes to
+            free up space.
           </Alert>
         )}
 
@@ -264,3 +398,6 @@ export const Quizzes: React.FC<QuizzesPageProps> = ({
     </ErrorBoundary>
   );
 };
+
+// Add default export for React.lazy()
+export default Quizzes;

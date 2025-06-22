@@ -11,7 +11,7 @@ import { Link as RouterLink, useLocation } from "react-router-dom";
 import MenuOpenRoundedIcon from "@mui/icons-material/MenuOpenRounded";
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
 import { useState } from "react";
-import { NavigationDrawer } from "./NavigationDrawer";
+import NavigationDrawer from "./NavigationDrawer";
 import { ThemeSelectionDialog } from "./ThemeSelectionDialog";
 import { getDynamicHeaderText } from "../utils/headerUtils";
 

@@ -9,5 +9,5 @@
  * @since December 2025
  */
 
-export { QuizGrid } from "./QuizGrid";
+export { QuizGrid, default as QuizGridDefault } from "./QuizGrid";
 export type { QuizGridProps } from "./QuizGrid";

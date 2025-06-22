@@ -156,7 +156,13 @@ export const QuizCard: React.FC<QuizCardProps> = ({
 
             {/* Quiz title and description */}
             <Typography variant="h6" component="h3" gutterBottom noWrap>
-              {quiz.title}
+              {(() => {
+                const title = quiz.title;
+                if (typeof title === "string") {
+                  return title;
+                }
+                return "Untitled Quiz";
+              })()}
             </Typography>
             <Typography
               variant="body2"
@@ -169,29 +175,67 @@ export const QuizCard: React.FC<QuizCardProps> = ({
                 overflow: "hidden",
               }}
             >
-              {quiz.description || "No description provided"}
+              {(() => {
+                const desc = quiz.description;
+                if (typeof desc === "string") {
+                  return desc || "No description provided";
+                }
+                return "No description provided";
+              })()}
             </Typography>
 
             {/* Quiz metadata chips */}
             <Box display="flex" flexWrap="wrap" gap={1} mb={2}>
               <Chip
                 size="small"
-                label={quiz.difficulty}
-                color={getDifficultyColor(quiz.difficulty)}
+                label={(() => {
+                  const diff = quiz.difficulty;
+                  if (
+                    typeof diff === "string" &&
+                    ["easy", "medium", "hard"].includes(diff)
+                  ) {
+                    return diff;
+                  }
+                  return "medium";
+                })()}
+                color={getDifficultyColor(
+                  (() => {
+                    const diff = quiz.difficulty;
+                    if (
+                      typeof diff === "string" &&
+                      ["easy", "medium", "hard"].includes(diff)
+                    ) {
+                      return diff;
+                    }
+                    return "medium";
+                  })()
+                )}
                 variant="outlined"
                 icon={<DifficultyIcon fontSize="small" />}
               />
               <Chip
                 size="small"
-                label={quiz.category}
+                label={(() => {
+                  const cat = quiz.category;
+                  if (typeof cat === "string") {
+                    return cat;
+                  }
+                  return "general";
+                })()}
                 variant="outlined"
                 icon={<CategoryIcon fontSize="small" />}
               />
               <Chip
                 size="small"
-                label={`${
-                  quiz.rounds?.flatMap((r) => r.questions).length || 0
-                } Q`}
+                label={`${(() => {
+                  const rounds = quiz.rounds;
+                  if (Array.isArray(rounds)) {
+                    return (
+                      rounds.flatMap((r) => r?.questions || []).length || 0
+                    );
+                  }
+                  return 0;
+                })()} Q`}
                 variant="outlined"
                 icon={<QuizIcon fontSize="small" />}
               />
@@ -206,7 +250,21 @@ export const QuizCard: React.FC<QuizCardProps> = ({
               <Box display="flex" alignItems="center" gap={1}>
                 <ScheduleIcon fontSize="small" color="action" />
                 <Typography variant="caption" color="text.secondary">
-                  ~{quiz.estimatedDuration}m
+                  ~
+                  {(() => {
+                    const duration = quiz.estimatedDuration;
+                    if (typeof duration === "number" && !isNaN(duration)) {
+                      return Math.max(1, Math.min(1000, duration));
+                    }
+                    if (duration && typeof duration.valueOf === "function") {
+                      const value = duration.valueOf();
+                      if (typeof value === "number" && !isNaN(value)) {
+                        return Math.max(1, Math.min(1000, value));
+                      }
+                    }
+                    return 10; // Default fallback
+                  })()}
+                  m
                 </Typography>
               </Box>
             </Box>
@@ -233,3 +291,5 @@ export const QuizCard: React.FC<QuizCardProps> = ({
     </Grid>
   );
 };
+
+export default QuizCard;

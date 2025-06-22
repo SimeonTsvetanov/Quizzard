@@ -23,6 +23,7 @@ import { useTheme } from "./shared/hooks/useTheme";
 import Header from "./shared/components/Header";
 import Footer from "./shared/components/Footer";
 import { LoadingScreen } from "./shared/components/LoadingScreen";
+import { ErrorBoundary } from "./shared/components";
 import { performLegacyStorageMigration } from "./shared/utils/storageKeys";
 
 // Lazy load all route components for better performance
@@ -228,81 +229,83 @@ function App() {
             bgcolor: "background.default", // Theme-aware background
           }}
         >
-          <Routes>
-            <Route
-              path="/"
-              element={
-                <Suspense fallback={<RouteLoadingFallback />}>
-                  <Home />
-                </Suspense>
-              }
-            />
-            <Route
-              path="/about"
-              element={
-                <Suspense fallback={<RouteLoadingFallback />}>
-                  <About />
-                </Suspense>
-              }
-            />
-            <Route
-              path="/privacy"
-              element={
-                <Suspense fallback={<RouteLoadingFallback />}>
-                  <PrivacyPolicy />
-                </Suspense>
-              }
-            />
-            <Route
-              path="/terms"
-              element={
-                <Suspense fallback={<RouteLoadingFallback />}>
-                  <Terms />
-                </Suspense>
-              }
-            />
-            <Route
-              path="/contact"
-              element={
-                <Suspense fallback={<RouteLoadingFallback />}>
-                  <Contact />
-                </Suspense>
-              }
-            />
-            <Route
-              path="/random-team-generator"
-              element={
-                <Suspense fallback={<RouteLoadingFallback />}>
-                  <RandomTeamGeneratorPage />
-                </Suspense>
-              }
-            />
-            <Route
-              path="/points-counter"
-              element={
-                <Suspense fallback={<RouteLoadingFallback />}>
-                  <PointsCounter />
-                </Suspense>
-              }
-            />
-            <Route
-              path="/quizzes"
-              element={
-                <Suspense fallback={<RouteLoadingFallback />}>
-                  <Quizzes />
-                </Suspense>
-              }
-            />
-            <Route
-              path="/final-question"
-              element={
-                <Suspense fallback={<RouteLoadingFallback />}>
-                  <FinalQuestionPage />
-                </Suspense>
-              }
-            />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+          <ErrorBoundary>
+            <Routes>
+              <Route
+                path="/"
+                element={
+                  <Suspense fallback={<RouteLoadingFallback />}>
+                    <Home />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="/about"
+                element={
+                  <Suspense fallback={<RouteLoadingFallback />}>
+                    <About />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="/privacy"
+                element={
+                  <Suspense fallback={<RouteLoadingFallback />}>
+                    <PrivacyPolicy />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="/terms"
+                element={
+                  <Suspense fallback={<RouteLoadingFallback />}>
+                    <Terms />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="/contact"
+                element={
+                  <Suspense fallback={<RouteLoadingFallback />}>
+                    <Contact />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="/random-team-generator"
+                element={
+                  <Suspense fallback={<RouteLoadingFallback />}>
+                    <RandomTeamGeneratorPage />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="/points-counter"
+                element={
+                  <Suspense fallback={<RouteLoadingFallback />}>
+                    <PointsCounter />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="/quizzes"
+                element={
+                  <Suspense fallback={<RouteLoadingFallback />}>
+                    <Quizzes />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="/final-question"
+                element={
+                  <Suspense fallback={<RouteLoadingFallback />}>
+                    <FinalQuestionPage />
+                  </Suspense>
+                }
+              />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </ErrorBoundary>
         </Box>
 
         {/* Footer stays at the bottom */}

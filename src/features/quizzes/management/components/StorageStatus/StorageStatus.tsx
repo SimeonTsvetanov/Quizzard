@@ -259,3 +259,5 @@ export const StorageStatus: React.FC<StorageStatusProps> = ({
     </Box>
   );
 };
+
+export default StorageStatus;

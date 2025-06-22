@@ -18,13 +18,22 @@ export default defineConfig(({ mode }) => {
     );
   }
 
+  // Determine base path based on environment
+  const isDevelopment = mode === "development";
+  const base = isDevelopment ? "/" : "/Quizzard/";
+
   return {
     plugins,
-    base: "/Quizzard/",
+    base,
     server: {
       port: 5173,
       strictPort: true,
       host: true,
+      // Fix WebSocket connection issues in development
+      hmr: {
+        port: 5173,
+        host: "localhost",
+      },
     },
     build: {
       outDir: "dist",

@@ -9,5 +9,5 @@
  * @since December 2025
  */
 
-export { QuizActions } from "./QuizActions";
+export { QuizActions, default as QuizActionsDefault } from "./QuizActions";
 export type { QuizActionsProps } from "./QuizActions";

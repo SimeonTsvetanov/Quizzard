@@ -174,3 +174,5 @@ export const QuizGrid: React.FC<QuizGridProps> = ({
     </Grid>
   );
 };
+
+export default QuizGrid;

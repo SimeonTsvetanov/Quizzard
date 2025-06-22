@@ -212,3 +212,5 @@ export const QuizActions: React.FC<QuizActionsProps> = ({
     </>
   );
 };
+
+export default QuizActions;
