@@ -1,0 +1,2 @@
+import{j as s,$ as a,a0 as e}from"./mui-Ry66bPeD.js";function i({children:t,maxWidth:o="xs",textAlign:r="left"}){return s.jsx(a,{maxWidth:o,disableGutters:!0,sx:{mt:6,px:{xs:1,sm:2},width:"100%",bgcolor:"background.default"},children:s.jsx(e,{elevation:3,sx:{p:{xs:2,sm:4},textAlign:r,width:"100%",maxWidth:{xs:"100%",sm:420},mx:"auto",boxSizing:"border-box",bgcolor:"background.paper"},children:t})})}export{i as P};
+//# sourceMappingURL=PageLayout-C3s-o3wj.js.map

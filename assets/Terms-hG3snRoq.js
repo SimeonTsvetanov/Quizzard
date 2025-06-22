@@ -1,0 +1,2 @@
+import{j as o,B as a,I as s,_ as e,v as r}from"./mui-Ry66bPeD.js";import{P as n}from"./PageLayout-C3s-o3wj.js";import{u as i}from"./index-BSQTm7K0.js";import"./vendor-Csw2ODfV.js";function l(){const t=i();return o.jsxs(n,{children:[o.jsx(a,{sx:{mb:2},children:o.jsx(s,{"aria-label":"back",onClick:()=>t(-1),children:o.jsx(e,{})})}),o.jsx(r,{variant:"h4",component:"h1",gutterBottom:!0,children:"Terms"}),o.jsx(r,{variant:"body1",children:"Terms of Service content coming soon..."})]})}export{l as default};
+//# sourceMappingURL=Terms-hG3snRoq.js.map
