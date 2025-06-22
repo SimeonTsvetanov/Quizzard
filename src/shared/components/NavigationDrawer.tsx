@@ -127,11 +127,13 @@ const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
       onClose={onClose}
       ref={drawerRef}
       sx={{
+        zIndex: 1500, // Ensure drawer appears above modal content
         "& .MuiDrawer-paper": {
           width: 280,
           bgcolor: "background.paper",
           borderLeft: "1px solid",
           borderColor: "divider",
+          zIndex: 1500, // Ensure paper also has high z-index
         },
       }}
     >

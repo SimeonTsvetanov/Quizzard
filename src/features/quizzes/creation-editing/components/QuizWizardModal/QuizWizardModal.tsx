@@ -200,8 +200,10 @@ export const QuizWizardModal: React.FC<QuizWizardProps> = ({
         TransitionComponent={Fade}
         transitionDuration={300}
       >
-        {/* Main App Header - with proper theme integration */}
-        <Header mode={mode} onThemeChange={handleThemeChange} />
+        {/* Main App Header - with proper theme integration and z-index */}
+        <Box sx={{ zIndex: 1400, position: "relative" }}>
+          <Header mode={mode} onThemeChange={handleThemeChange} />
+        </Box>
 
         {/* Main content area - scrollable */}
         <DialogContent

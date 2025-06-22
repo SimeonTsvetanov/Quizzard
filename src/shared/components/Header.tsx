@@ -78,7 +78,7 @@ const Header = ({ mode, onThemeChange }: HeaderProps) => {
         top: 0,
         left: 0,
         right: 0,
-        zIndex: theme.zIndex.appBar,
+        zIndex: 1400, // Ensure header is above modal content
         transition: theme.transitions.create(
           ["box-shadow", "background-color"],
           {
