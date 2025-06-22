@@ -1,6 +1,5 @@
-import { Typography, Box, Snackbar, Alert } from "@mui/material";
+import { Typography, Box } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
 import ToolCard from "../shared/components/ToolCard";
 import QuizIcon from "@mui/icons-material/Quiz";
 import ScoreboardIcon from "@mui/icons-material/Scoreboard";
@@ -10,7 +9,6 @@ import quizzardPageLogo from "../shared/assets/quizzard-page-logo.png";
 
 export default function Home() {
   const navigate = useNavigate();
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
 
   const handleRandomTeamGenerator = () => {
     navigate("/random-team-generator");
@@ -20,8 +18,8 @@ export default function Home() {
     navigate("/points-counter");
   };
 
-  const handleDisabledCardClick = () => {
-    setSnackbarOpen(true);
+  const handleQuizzes = () => {
+    navigate("/quizzes");
   };
 
   return (
@@ -145,35 +143,12 @@ export default function Home() {
                 />
               } // 20% bigger on mobile (45→54, 51→61)
               title="Quizzes"
-              description="Build and play custom quizzes with friends or solo. Fun, interactive, and coming soon!"
-              onClick={handleDisabledCardClick}
-              disabled
+              description="UNDER CONSTRUCTION!!!"
+              onClick={handleQuizzes}
             />
           </Box>
         </Box>
       </Box>
-
-      {/* Snackbar for disabled cards - NOW AT TOP */}
-      <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={3000}
-        onClose={() => setSnackbarOpen(false)}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
-      >
-        <Alert
-          severity="info"
-          sx={{
-            width: "100%",
-            "& .MuiAlert-message": {
-              // Font family inherited from theme typography system
-              fontWeight: 500,
-              fontSize: "clamp(0.9rem, 1.8vw, 1rem)", // Fluid sizing for responsive alerts
-            },
-          }}
-        >
-          Still Under Construction
-        </Alert>
-      </Snackbar>
     </>
   );
 }

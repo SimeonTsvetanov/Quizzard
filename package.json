@@ -5,19 +5,27 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
-    "lint": "eslint .",
+    "build": "tsc && vite build",
+    "build:analyze": "tsc && vite build --mode analyze",
     "preview": "vite preview",
-    "deploy": "npm run build && gh-pages -d dist",
-    "setup": "node scripts/setup-api.js"
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint:fix": "eslint . --ext ts,tsx --fix",
+    "type-check": "tsc --noEmit",
+    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
+    "generate-favicons": "node scripts/generate-favicons.js",
+    "generate-icons": "node scripts/generate-icons.js",
+    "setup-api": "node scripts/setup-api.js"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@mui/icons-material": "^7.1.1",
     "@mui/material": "^7.1.1",
+    "pptxgenjs": "^4.0.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-error-boundary": "^6.0.0",
     "react-router-dom": "^7.6.2"
   },
   "devDependencies": {
@@ -32,6 +40,7 @@
     "eslint-plugin-react-refresh": "^0.4.19",
     "gh-pages": "^6.3.0",
     "globals": "^16.0.0",
+    "rollup-plugin-visualizer": "^6.0.3",
     "sharp": "^0.34.2",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.30.1",

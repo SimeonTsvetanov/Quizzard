@@ -23,7 +23,7 @@ import {
   generateQuestionWithGemini,
   isGeminiAvailable,
   getRateLimitStatus,
-} from "../services/geminiService";
+} from "../services/geminiServiceNew";
 
 /**
  * Return type interface for the useQuestionGeneration hook

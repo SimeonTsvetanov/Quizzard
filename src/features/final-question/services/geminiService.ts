@@ -18,7 +18,6 @@
 import type {
   FinalQuestion,
   GeminiQuestionParams,
-  RateLimitInfo,
   SessionQuestion,
 } from "../types";
 
@@ -479,14 +478,15 @@ export const isGeminiAvailable = (): boolean => {
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
   const isOnline = navigator.onLine;
 
-  // Only log in development to avoid exposing API key info in production
-  if (import.meta.env.DEV) {
+  // Only log once per session in development to avoid console spam
+  if (import.meta.env.DEV && !(window as any).__GEMINI_LOGGED) {
     console.log("🔍 Gemini API Check:", {
       hasApiKey: !!apiKey,
       apiKeyLength: apiKey?.length || 0,
       isOnline,
       apiKeyPreview: apiKey ? `${apiKey.substring(0, 10)}...` : "NOT_SET",
     });
+    (window as any).__GEMINI_LOGGED = true;
   }
 
   return !!(apiKey && isOnline);

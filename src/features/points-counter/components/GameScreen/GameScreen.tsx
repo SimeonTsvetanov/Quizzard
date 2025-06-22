@@ -28,26 +28,12 @@
  */
 
 import React, { useState } from "react";
-import {
-  Box,
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Typography,
-  Alert,
-  IconButton,
-} from "@mui/material";
-import {
-  Leaderboard as LeaderboardIcon,
-  ContentCopy as CopyIcon,
-  Edit as EditIcon,
-  Stop as EndIcon,
-} from "@mui/icons-material";
+import { Box, Typography, Alert } from "@mui/material";
 import { RoundNavigation } from "../RoundNavigation/RoundNavigation";
 import { TeamCard } from "../TeamCard/TeamCard";
-import { Leaderboard } from "../Leaderboard/Leaderboard";
+import { GameActionButtons } from "./GameActionButtons";
+import { LeaderboardModal } from "./LeaderboardModal";
+import { EndGameConfirmDialog } from "./EndGameConfirmDialog";
 
 /**
  * Props Interface for GameScreen Component
@@ -291,336 +277,30 @@ export const GameScreen: React.FC<GameScreenProps> = ({
           </Box>
 
           {/* === ACTION BUTTONS SECTION === */}
-          <Box
-            sx={{
-              flexShrink: 0,
-              p: { xs: 1, sm: 2 }, // TeamSetup padding pattern
-              pt: "clamp(0.25rem, 1vw, 0.75rem)", // TeamSetup top padding
-            }}
-          >
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                gap: { xs: 2.5, sm: 2 },
-                flexWrap: "nowrap",
-                width: "100%",
-              }}
-            >
-              {/* === LEADERBOARD BUTTON === */}
-              <Box sx={{ display: { xs: "flex", sm: "none" } }}>
-                <IconButton
-                  onClick={() => setShowLeaderboard(true)}
-                  aria-label="Leaderboard"
-                  sx={{
-                    width: 48,
-                    height: 48,
-                    fontSize: 28,
-                    bgcolor: "primary.main",
-                    color: "primary.contrastText",
-                    "&:hover": { bgcolor: "primary.dark" },
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    p: 0,
-                  }}
-                >
-                  <LeaderboardIcon
-                    fontSize="inherit"
-                    sx={{ lineHeight: 1, verticalAlign: "middle" }}
-                  />
-                </IconButton>
-              </Box>
-              <Box sx={{ display: { xs: "none", sm: "flex" } }}>
-                <Button
-                  variant="contained"
-                  size="small"
-                  startIcon={<LeaderboardIcon />}
-                  onClick={() => setShowLeaderboard(true)}
-                  sx={{
-                    fontSize: "clamp(0.8rem, 1.5vw, 0.875rem)",
-                    px: 2,
-                    py: 0.75,
-                    borderRadius: 2,
-                    boxShadow: "none",
-                    bgcolor: "primary.main",
-                    border: "none",
-                    "&:hover": {
-                      boxShadow: "none",
-                      bgcolor: "primary.dark",
-                      border: "none",
-                    },
-                  }}
-                >
-                  Leaderboard
-                </Button>
-              </Box>
-              {/* === COPY BUTTON === */}
-              <Box sx={{ display: { xs: "flex", sm: "none" } }}>
-                <IconButton
-                  onClick={handleCopyLeaderboard}
-                  aria-label="Copy"
-                  sx={{
-                    width: 48,
-                    height: 48,
-                    fontSize: 28,
-                    bgcolor: "secondary.main",
-                    color: "secondary.contrastText",
-                    "&:hover": { bgcolor: "secondary.dark" },
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    p: 0,
-                  }}
-                >
-                  <CopyIcon
-                    fontSize="inherit"
-                    sx={{ lineHeight: 1, verticalAlign: "middle" }}
-                  />
-                </IconButton>
-              </Box>
-              <Box sx={{ display: { xs: "none", sm: "flex" } }}>
-                <Button
-                  variant="contained"
-                  size="small"
-                  startIcon={<CopyIcon />}
-                  onClick={handleCopyLeaderboard}
-                  sx={{
-                    fontSize: "clamp(0.8rem, 1.5vw, 0.875rem)",
-                    px: 2,
-                    py: 0.75,
-                    borderRadius: 2,
-                    boxShadow: "none",
-                    bgcolor: "secondary.main",
-                    color: "secondary.contrastText",
-                    border: "none",
-                    "&:hover": {
-                      boxShadow: "none",
-                      bgcolor: "secondary.dark",
-                      border: "none",
-                    },
-                  }}
-                >
-                  Copy
-                </Button>
-              </Box>
-              {/* === EDIT BUTTON === */}
-              <Box sx={{ display: { xs: "flex", sm: "none" } }}>
-                <IconButton
-                  onClick={onEditTeams}
-                  aria-label="Edit"
-                  sx={{
-                    width: 48,
-                    height: 48,
-                    fontSize: 28,
-                    bgcolor: "info.main",
-                    color: "info.contrastText",
-                    "&:hover": { bgcolor: "info.dark" },
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    p: 0,
-                  }}
-                >
-                  <EditIcon
-                    fontSize="inherit"
-                    sx={{ lineHeight: 1, verticalAlign: "middle" }}
-                  />
-                </IconButton>
-              </Box>
-              <Box sx={{ display: { xs: "none", sm: "flex" } }}>
-                <Button
-                  variant="contained"
-                  size="small"
-                  startIcon={<EditIcon />}
-                  onClick={onEditTeams}
-                  sx={{
-                    fontSize: "clamp(0.8rem, 1.5vw, 0.875rem)",
-                    px: 2,
-                    py: 0.75,
-                    borderRadius: 2,
-                    boxShadow: "none",
-                    bgcolor: "info.main",
-                    color: "info.contrastText",
-                    border: "none",
-                    "&:hover": {
-                      boxShadow: "none",
-                      bgcolor: "info.dark",
-                      border: "none",
-                    },
-                  }}
-                >
-                  Edit
-                </Button>
-              </Box>
-              {/* === END GAME BUTTON === */}
-              <Box sx={{ display: { xs: "flex", sm: "none" } }}>
-                <IconButton
-                  onClick={() => setShowEndGameDialog(true)}
-                  aria-label="End Game"
-                  sx={{
-                    width: 48,
-                    height: 48,
-                    fontSize: 28,
-                    bgcolor: "error.main",
-                    color: "error.contrastText",
-                    "&:hover": { bgcolor: "error.dark" },
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    p: 0,
-                  }}
-                >
-                  <EndIcon
-                    fontSize="inherit"
-                    sx={{ lineHeight: 1, verticalAlign: "middle" }}
-                  />
-                </IconButton>
-              </Box>
-              <Box sx={{ display: { xs: "none", sm: "flex" } }}>
-                <Button
-                  variant="contained"
-                  size="small"
-                  startIcon={<EndIcon />}
-                  onClick={() => setShowEndGameDialog(true)}
-                  sx={{
-                    fontSize: "clamp(0.8rem, 1.5vw, 0.875rem)",
-                    px: 2,
-                    py: 0.75,
-                    borderRadius: 2,
-                    boxShadow: "none",
-                    bgcolor: "error.main",
-                    color: "error.contrastText",
-                    border: "none",
-                    "&:hover": {
-                      boxShadow: "none",
-                      bgcolor: "error.dark",
-                      border: "none",
-                    },
-                  }}
-                >
-                  End Game
-                </Button>
-              </Box>
-            </Box>
-          </Box>
+          <GameActionButtons
+            onShowLeaderboard={() => setShowLeaderboard(true)}
+            onCopyLeaderboard={handleCopyLeaderboard}
+            onEditTeams={onEditTeams}
+            onShowEndGameDialog={() => setShowEndGameDialog(true)}
+          />
         </Box>
       </Box>
 
-      {/* === LEADERBOARD MODAL === */}
-      <Dialog
+      {/* === MODALS === */}
+      <LeaderboardModal
         open={showLeaderboard}
         onClose={() => setShowLeaderboard(false)}
-        maxWidth="sm"
-        fullWidth
-        PaperProps={{
-          sx: {
-            borderRadius: 2,
-            maxHeight: "80vh",
-          },
-        }}
-      >
-        <DialogTitle
-          sx={{
-            textAlign: "center",
-            fontWeight: 600,
-            fontSize: "clamp(1.2rem, 3vw, 1.5rem)",
-          }}
-        >
-          Leaderboard
-        </DialogTitle>
+        teams={teams}
+        currentRound={currentRound}
+        totalRounds={rounds}
+        onCopyLeaderboard={handleCopyLeaderboard}
+      />
 
-        <DialogContent sx={{ p: 0 }}>
-          <Leaderboard
-            teams={teams}
-            currentRound={currentRound}
-            showDetails={true}
-          />
-        </DialogContent>
-
-        <DialogActions
-          sx={{
-            justifyContent: "center",
-            gap: 2,
-            p: 2,
-          }}
-        >
-          <Button
-            variant="outlined"
-            startIcon={<CopyIcon />}
-            onClick={handleCopyLeaderboard}
-            sx={{ border: "none" }}
-          >
-            Copy to Clipboard
-          </Button>
-          <Button
-            variant="contained"
-            onClick={() => setShowLeaderboard(false)}
-            sx={{ border: "none" }}
-          >
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* === END GAME CONFIRMATION DIALOG === */}
-      <Dialog
+      <EndGameConfirmDialog
         open={showEndGameDialog}
         onClose={() => setShowEndGameDialog(false)}
-        maxWidth="sm"
-        PaperProps={{
-          sx: { borderRadius: 2 },
-        }}
-      >
-        <DialogTitle
-          sx={{
-            textAlign: "center",
-            fontWeight: 600,
-            color: "error.main",
-          }}
-        >
-          End Game?
-        </DialogTitle>
-
-        <DialogContent>
-          <Typography
-            variant="body1"
-            sx={{
-              textAlign: "center",
-              color: "text.secondary",
-              lineHeight: 1.6,
-            }}
-          >
-            Are you sure you want to end the current game? All progress will be
-            lost.
-          </Typography>
-        </DialogContent>
-
-        <DialogActions
-          sx={{
-            justifyContent: "center",
-            gap: 2,
-            p: 2,
-          }}
-        >
-          <Button
-            variant="outlined"
-            onClick={() => setShowEndGameDialog(false)}
-            sx={{ border: "none" }}
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="contained"
-            color="error"
-            onClick={handleEndGame}
-            sx={{ border: "none" }}
-          >
-            End Game
-          </Button>
-        </DialogActions>
-      </Dialog>
+        onConfirm={handleEndGame}
+      />
     </Box>
   );
 };

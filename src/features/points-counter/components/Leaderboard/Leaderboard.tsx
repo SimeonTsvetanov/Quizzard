@@ -1,302 +1,373 @@
 /**
- * Leaderboard Component for Points Counter
- * 
- * Displays team rankings with styled positions, scores, and point differences.
- * Features trophy emojis for top 3 positions and responsive design.
- * 
- * @fileoverview Leaderboard display component
- * @version 1.0.0
+ * Leaderboard Component - v3.0.0
+ *
+ * Displays team rankings with beautiful card-based design
+ * Features modern styling, position indicators, and responsive layout
+ * Optimized for full-screen modal display with proper space utilization
+ *
+ * @fileoverview Modern leaderboard with enhanced visual design
+ * @version 3.0.0 - Complete redesign for beauty and space efficiency
  * @since December 2025
  */
 
-import React from 'react';
+import React from "react";
 import {
   Box,
-  Card,
   Typography,
   List,
   ListItem,
-  ListItemText,
+  Card,
+  CardContent,
+  Avatar,
   Chip,
   Divider,
-} from '@mui/material';
-// Types imported in utils
-import { createLeaderboard } from '../../utils/gameUtils';
+} from "@mui/material";
+import {
+  EmojiEvents as TrophyIcon,
+  Star as StarIcon,
+  TrendingUp as TrendingUpIcon,
+} from "@mui/icons-material";
+import type { Team } from "../../types";
+import { formatScore } from "../../utils/gameUtils";
 
 /**
- * Props interface for Leaderboard component
+ * Props for Leaderboard component
  */
 interface LeaderboardProps {
-  /** Array of teams to display in leaderboard */
-  teams: any[];
-  /** Current round number for context */
+  teams: Team[];
   currentRound: number;
-  /** Whether to show detailed breakdown */
+  totalRounds?: number; // Optional for backward compatibility
   showDetails?: boolean;
 }
 
 /**
+ * Leaderboard entry interface
+ */
+interface LeaderboardEntry {
+  position: number;
+  team: Team;
+  pointsFromFirst: number;
+  isLeader: boolean;
+}
+
+/**
+ * Get position styling based on rank
+ */
+const getPositionStyling = (position: number) => {
+  switch (position) {
+    case 1:
+      return {
+        bgcolor: "linear-gradient(135deg, #FFD700 0%, #FFA500 100%)",
+        color: "#000",
+        icon: "🥇",
+        chipColor: "warning" as const,
+      };
+    case 2:
+      return {
+        bgcolor: "linear-gradient(135deg, #C0C0C0 0%, #A9A9A9 100%)",
+        color: "#000",
+        icon: "🥈",
+        chipColor: "default" as const,
+      };
+    case 3:
+      return {
+        bgcolor: "linear-gradient(135deg, #CD7F32 0%, #A0522D 100%)",
+        color: "#fff",
+        icon: "🥉",
+        chipColor: "default" as const,
+      };
+    default:
+      return {
+        bgcolor: "background.paper",
+        color: "text.primary",
+        icon: null,
+        chipColor: "default" as const,
+      };
+  }
+};
+
+/**
  * Leaderboard Component
- * Displays team rankings with positions and scores
  */
 export const Leaderboard: React.FC<LeaderboardProps> = ({
   teams,
   currentRound,
+  totalRounds,
   showDetails = false,
 }) => {
-  // Create leaderboard entries with rankings
-  const leaderboard = createLeaderboard(teams);
+  // Calculate leaderboard entries with rankings
+  const leaderboardEntries: LeaderboardEntry[] = React.useMemo(() => {
+    const sortedTeams = [...teams].sort((a, b) => b.totalScore - a.totalScore);
+    const topScore = sortedTeams[0]?.totalScore || 0;
 
-  /**
-   * Gets position emoji or number for ranking display
-   */
-  const getPositionDisplay = (position: number): string => {
-    switch (position) {
-      case 1:
-        return '🥇';
-      case 2:
-        return '🥈';
-      case 3:
-        return '🥉';
-      default:
-        return `${position}.`;
+    return sortedTeams.map((team, index) => ({
+      position: index + 1,
+      team,
+      pointsFromFirst: topScore - team.totalScore,
+      isLeader: index === 0,
+    }));
+  }, [teams]);
+
+  // Determine round display text
+  const getRoundDisplayText = (): string => {
+    if (totalRounds && currentRound === totalRounds) {
+      return "Final Round";
     }
+    return `Round ${currentRound}`;
   };
 
-  /**
-   * Gets background color for position styling
-   */
-  const getPositionColor = (position: number): string => {
-    switch (position) {
-      case 1:
-        return 'gold';
-      case 2:
-        return 'silver';
-      case 3:
-        return '#CD7F32'; // Bronze
-      default:
-        return 'transparent';
-    }
-  };
-
-  /**
-   * Formats score display with proper decimal places
-   */
-  const formatScore = (score: number): string => {
-    return score % 1 === 0 ? score.toString() : score.toFixed(2);
-  };
-
-  if (leaderboard.length === 0) {
+  if (teams.length === 0) {
     return (
       <Box
         sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          py: 4,
+          textAlign: "center",
+          py: 8,
+          color: "text.secondary",
         }}
       >
-        <Typography
-          variant="body1"
-          color="text.secondary"
-          sx={{ fontStyle: 'italic' }}
-        >
-          No teams to display
+        <TrophyIcon sx={{ fontSize: 64, mb: 2, opacity: 0.5 }} />
+        <Typography variant="h6">No teams to display</Typography>
+        <Typography variant="body2">
+          Start adding teams to see the leaderboard
         </Typography>
       </Box>
     );
   }
 
   return (
-    <Box>
-      {/* Leaderboard Header */}
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          mb: 3,
-          gap: 1,
-        }}
-      >
-        <Typography
-          variant="h4"
-          sx={{
-            fontSize: 'clamp(1.5rem, 4vw, 2rem)',
-            fontWeight: 700,
-            textAlign: 'center',
-          }}
-        >
-          🏆 Leaderboard
-        </Typography>
-        
-        <Chip
-          label={`Round ${currentRound}`}
-          color="primary"
-          variant="outlined"
-          size="small"
-          sx={{
-            fontSize: 'clamp(0.8rem, 1.5vw, 0.9rem)',
-            fontWeight: 600,
-          }}
-        />
-      </Box>
-
-      {/* Leaderboard List */}
-      <Card
-        sx={{
-          backgroundColor: 'background.paper',
-          boxShadow: 3,
-          borderRadius: 2,
-        }}
-      >
-        <List sx={{ p: 0 }}>
-          {leaderboard.map((entry, index) => (
-            <React.Fragment key={entry.team.id}>
-              <ListItem
-                sx={{
-                  py: { xs: 2, sm: 2.5 },
-                  px: { xs: 2, sm: 3 },
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 2,
-                  backgroundColor: entry.position <= 3 
-                    ? `${getPositionColor(entry.position)}15` // 15% opacity
-                    : 'transparent',
-                  border: entry.isLeader ? '2px solid' : 'none',
-                  borderColor: entry.isLeader ? 'primary.main' : 'transparent',
-                  borderRadius: entry.isLeader ? 1 : 0,
-                  mx: entry.isLeader ? 1 : 0,
-                  my: entry.isLeader ? 0.5 : 0,
-                }}
-              >
-                {/* Position Display */}
-                <Box
-                  sx={{
-                    minWidth: { xs: 40, sm: 50 },
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                  }}
-                >
-                  <Typography
-                    variant="h6"
-                    sx={{
-                      fontSize: 'clamp(1.2rem, 3vw, 1.5rem)',
-                      fontWeight: 700,
-                    }}
-                  >
-                    {getPositionDisplay(entry.position)}
-                  </Typography>
-                </Box>
-
-                {/* Team Name and Details */}
-                <ListItemText
-                  primary={
-                    <Typography
-                      variant="h6"
-                      sx={{
-                        fontSize: 'clamp(1rem, 2.5vw, 1.2rem)',
-                        fontWeight: entry.isLeader ? 700 : 600,
-                        color: entry.isLeader ? 'primary.main' : 'text.primary',
-                      }}
-                    >
-                      {entry.team.name}
-                    </Typography>
-                  }
-                  secondary={
-                    entry.pointsFromFirst > 0 && !entry.isLeader ? (
-                      <Typography
-                        variant="body2"
-                        color="text.secondary"
-                        sx={{
-                          fontSize: 'clamp(0.8rem, 1.5vw, 0.85rem)',
-                          fontStyle: 'italic',
-                        }}
-                      >
-                        -{entry.pointsFromFirst} from leader
-                      </Typography>
-                    ) : entry.isLeader ? (
-                      <Typography
-                        variant="body2"
-                        color="primary.main"
-                        sx={{
-                          fontSize: 'clamp(0.8rem, 1.5vw, 0.85rem)',
-                          fontWeight: 600,
-                        }}
-                      >
-                        Leading!
-                      </Typography>
-                    ) : null
-                  }
-                />
-
-                {/* Score Display */}
-                <Box
-                  sx={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'flex-end',
-                    minWidth: { xs: 80, sm: 100 },
-                  }}
-                >
-                  <Chip
-                    label={formatScore(entry.team.totalScore)}
-                    color={entry.isLeader ? 'primary' : 'default'}
-                    variant={entry.isLeader ? 'filled' : 'outlined'}
-                    sx={{
-                      fontSize: 'clamp(0.9rem, 2vw, 1.1rem)',
-                      fontWeight: 700,
-                      minWidth: { xs: 60, sm: 80 },
-                    }} 
-                  />
-                  
-                  <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    sx={{
-                      mt: 0.5,
-                      fontSize: 'clamp(0.7rem, 1.2vw, 0.75rem)',
-                    }}
-                  >
-                    points
-                  </Typography>
-                </Box>
-              </ListItem>
-
-              {/* Divider between entries (except last) */}
-              {index < leaderboard.length - 1 && (
-                <Divider sx={{ mx: 2 }} />
-              )}
-            </React.Fragment>
-          ))}
-        </List>
-      </Card>
-
-      {/* Additional Stats */}
+    <Box sx={{ width: "100%" }}>
+      {/* Stats Header */}
       {showDetails && (
         <Box
           sx={{
-            mt: 3,
+            display: "flex",
+            justifyContent: "space-around",
+            mb: 3,
             p: 2,
-            backgroundColor: 'background.paper',
-            borderRadius: 1,
-            border: '1px solid',
-            borderColor: 'divider',
+            bgcolor: "rgba(25, 118, 210, 0.1)",
+            borderRadius: 2,
+            border: "1px solid rgba(25, 118, 210, 0.2)",
           }}
         >
-          <Typography
-            variant="body2"
-            color="text.secondary"
+          <Box sx={{ textAlign: "center" }}>
+            <Typography variant="h4" color="primary" fontWeight={700}>
+              {teams.length}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Teams
+            </Typography>
+          </Box>
+          <Box sx={{ textAlign: "center" }}>
+            <Typography variant="h4" color="primary" fontWeight={700}>
+              {getRoundDisplayText()}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Current Round
+            </Typography>
+          </Box>
+          <Box sx={{ textAlign: "center" }}>
+            <Typography variant="h4" color="primary" fontWeight={700}>
+              {formatScore(Math.max(...teams.map((t) => t.totalScore)))}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Top Score
+            </Typography>
+          </Box>
+        </Box>
+      )}
+
+      {/* Teams List */}
+      <List sx={{ p: 0, gap: 2, display: "flex", flexDirection: "column" }}>
+        {leaderboardEntries.map((entry, index) => {
+          const styling = getPositionStyling(entry.position);
+
+          return (
+            <Card
+              key={entry.team.id}
+              sx={{
+                background:
+                  entry.position <= 3 ? styling.bgcolor : "background.paper",
+                border: entry.isLeader
+                  ? "2px solid #1976d2"
+                  : "1px solid rgba(0,0,0,0.12)",
+                borderRadius: 3,
+                overflow: "visible",
+                position: "relative",
+                transition: "all 0.3s ease",
+                "&:hover": {
+                  transform: "translateY(-2px)",
+                  boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
+                },
+              }}
+            >
+              <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: { xs: 2, sm: 3 },
+                  }}
+                >
+                  {/* Position Avatar */}
+                  <Avatar
+                    sx={{
+                      width: { xs: 50, sm: 60 },
+                      height: { xs: 50, sm: 60 },
+                      bgcolor:
+                        entry.position <= 3
+                          ? "rgba(255,255,255,0.9)"
+                          : "primary.main",
+                      color: entry.position <= 3 ? "#000" : "#fff",
+                      fontSize: "clamp(1.2rem, 3vw, 1.8rem)",
+                      fontWeight: 700,
+                      border: entry.isLeader ? "3px solid #1976d2" : "none",
+                    }}
+                  >
+                    {styling.icon || entry.position}
+                  </Avatar>
+
+                  {/* Team Info */}
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1,
+                        mb: 0.5,
+                      }}
+                    >
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          fontSize: "clamp(1rem, 2.5vw, 1.3rem)",
+                          fontWeight: entry.isLeader ? 700 : 600,
+                          color: styling.color,
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          flex: 1,
+                        }}
+                      >
+                        {entry.team.name}
+                      </Typography>
+
+                      {entry.isLeader && (
+                        <StarIcon
+                          sx={{
+                            color: "#FFD700",
+                            fontSize: "clamp(1rem, 2.5vw, 1.2rem)",
+                          }}
+                        />
+                      )}
+                    </Box>
+
+                    {/* Progress Info */}
+                    {showDetails && entry.pointsFromFirst > 0 && (
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: styling.color,
+                          opacity: 0.8,
+                          fontSize: "clamp(0.75rem, 1.8vw, 0.85rem)",
+                        }}
+                      >
+                        {formatScore(entry.pointsFromFirst)} behind leader
+                      </Typography>
+                    )}
+                  </Box>
+
+                  {/* Score Display */}
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "flex-end",
+                      gap: 1,
+                    }}
+                  >
+                    <Chip
+                      label={formatScore(entry.team.totalScore)}
+                      color={entry.isLeader ? "primary" : styling.chipColor}
+                      variant={entry.isLeader ? "filled" : "outlined"}
+                      sx={{
+                        fontSize: "clamp(0.9rem, 2vw, 1.1rem)",
+                        fontWeight: 700,
+                        minWidth: { xs: 70, sm: 85 },
+                        height: { xs: 32, sm: 36 },
+                      }}
+                    />
+
+                    {showDetails && entry.team.totalScore > 0 && (
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 0.5,
+                          color: styling.color,
+                          opacity: 0.7,
+                        }}
+                      >
+                        <TrendingUpIcon sx={{ fontSize: 16 }} />
+                        <Typography variant="caption">
+                          {Object.keys(entry.team.roundScores).length} rounds
+                        </Typography>
+                      </Box>
+                    )}
+                  </Box>
+                </Box>
+              </CardContent>
+
+              {/* Leader Badge */}
+              {entry.isLeader && (
+                <Box
+                  sx={{
+                    position: "absolute",
+                    top: -8,
+                    right: 16,
+                    bgcolor: "#1976d2",
+                    color: "white",
+                    px: 1.5,
+                    py: 0.5,
+                    borderRadius: 2,
+                    fontSize: "0.75rem",
+                    fontWeight: 600,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 0.5,
+                    zIndex: 1,
+                  }}
+                >
+                  <TrophyIcon sx={{ fontSize: 14 }} />
+                  LEADER
+                </Box>
+              )}
+            </Card>
+          );
+        })}
+      </List>
+
+      {/* Footer Statistics */}
+      {showDetails && teams.length > 3 && (
+        <>
+          <Divider sx={{ my: 3 }} />
+          <Box
             sx={{
-              textAlign: 'center',
-              fontSize: 'clamp(0.8rem, 1.5vw, 0.875rem)',
+              textAlign: "center",
+              py: 2,
+              bgcolor: "rgba(0,0,0,0.02)",
+              borderRadius: 2,
             }}
           >
-            Total Teams: {leaderboard.length} • Current Round: {currentRound}
-          </Typography>
-        </Box>
+            <Typography variant="body2" color="text.secondary">
+              {teams.length} teams competing • {getRoundDisplayText()} • Total
+              points:{" "}
+              {formatScore(
+                teams.reduce((sum, team) => sum + team.totalScore, 0)
+              )}
+            </Typography>
+          </Box>
+        </>
       )}
     </Box>
   );
-}; 
+};

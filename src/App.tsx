@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, lazy, Suspense } from "react";
 import {
   Routes,
   Route,
@@ -14,6 +14,7 @@ import {
   Alert,
   Button,
   IconButton,
+  CircularProgress,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import InstallMobileIcon from "@mui/icons-material/InstallMobile";
@@ -23,15 +24,38 @@ import Header from "./shared/components/Header";
 import Footer from "./shared/components/Footer";
 import { LoadingScreen } from "./shared/components/LoadingScreen";
 import { performLegacyStorageMigration } from "./shared/utils/storageKeys";
-import Home from "./pages/Home";
-import About from "./pages/About";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
-import Terms from "./pages/Terms";
-import Contact from "./pages/Contact";
-import RandomTeamGeneratorPage from "./features/random-team-generator/pages/RandomTeamGeneratorPage";
-import PointsCounter from "./features/points-counter/pages/PointsCounter";
-import Quizzes from "./features/quizzes/pages/Quizzes";
-import FinalQuestionPage from "./features/final-question/pages/FinalQuestionPage";
+
+// Lazy load all route components for better performance
+const Home = lazy(() => import("./pages/Home"));
+const About = lazy(() => import("./pages/About"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const Terms = lazy(() => import("./pages/Terms"));
+const Contact = lazy(() => import("./pages/Contact"));
+const RandomTeamGeneratorPage = lazy(
+  () => import("./features/random-team-generator/pages/RandomTeamGeneratorPage")
+);
+const PointsCounter = lazy(
+  () => import("./features/points-counter/pages/PointsCounter")
+);
+const Quizzes = lazy(() => import("./features/quizzes/pages/Quizzes"));
+const FinalQuestionPage = lazy(
+  () => import("./features/final-question/pages/FinalQuestionPage")
+);
+
+// Loading fallback component for lazy-loaded routes
+const RouteLoadingFallback = () => (
+  <Box
+    sx={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      minHeight: "calc(100vh - 120px)", // Account for header and footer
+      flexGrow: 1,
+    }}
+  >
+    <CircularProgress size={48} />
+  </Box>
+);
 
 const PWA_INSTALL_DISMISSED_KEY = "user-settings-pwa-install-dismissed";
 
@@ -205,18 +229,78 @@ function App() {
           }}
         >
           <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/privacy" element={<PrivacyPolicy />} />
-            <Route path="/terms" element={<Terms />} />
-            <Route path="/contact" element={<Contact />} />
+            <Route
+              path="/"
+              element={
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <Home />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/about"
+              element={
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <About />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/privacy"
+              element={
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <PrivacyPolicy />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/terms"
+              element={
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <Terms />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/contact"
+              element={
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <Contact />
+                </Suspense>
+              }
+            />
             <Route
               path="/random-team-generator"
-              element={<RandomTeamGeneratorPage />}
+              element={
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <RandomTeamGeneratorPage />
+                </Suspense>
+              }
             />
-            <Route path="/points-counter" element={<PointsCounter />} />
-            <Route path="/quizzes" element={<Quizzes />} />
-            <Route path="/final-question" element={<FinalQuestionPage />} />
+            <Route
+              path="/points-counter"
+              element={
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <PointsCounter />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/quizzes"
+              element={
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <Quizzes />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/final-question"
+              element={
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <FinalQuestionPage />
+                </Suspense>
+              }
+            />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Box>

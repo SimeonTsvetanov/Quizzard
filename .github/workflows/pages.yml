@@ -30,7 +30,7 @@ jobs:
       - name: Set SW version
         run: |
           VERSION=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-          sed -i "s/__SW_VERSION__/$VERSION/" public/sw.js
+          sed -i "s/__SW_VERSION__/$VERSION/" public/service-worker.js
 
       - name: Build
         env:
