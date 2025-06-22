@@ -34,6 +34,7 @@ import {
 import {
   Edit as EditIcon,
   Save as SaveIcon,
+  Delete as DeleteIcon,
   Category as CategoryIcon,
   QuestionAnswer as QuestionIcon,
   Timer as TimerIcon,
@@ -69,7 +70,9 @@ export const QuizWizardModal: React.FC<QuizWizardProps> = ({
   // === LOCAL STATE ===
   const [showBasicInfo, setShowBasicInfo] = useState(true);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // === ENHANCED WIZARD STATE WITH INDEXEDDB ===
   const {
@@ -159,6 +162,56 @@ export const QuizWizardModal: React.FC<QuizWizardProps> = ({
    */
   const handleCancelSave = useCallback(() => {
     setShowSaveDialog(false);
+  }, []);
+
+  /**
+   * Handles clicking the Delete Quiz button
+   * Shows the delete confirmation dialog
+   */
+  const handleDeleteQuiz = useCallback(() => {
+    if (editQuiz) {
+      setShowDeleteDialog(true);
+    }
+  }, [editQuiz]);
+
+  /**
+   * Handles confirming the delete action
+   * Deletes the quiz and closes the modal
+   */
+  const handleConfirmDelete = useCallback(async () => {
+    if (!editQuiz) return;
+
+    setIsDeleting(true);
+
+    try {
+      // Import the delete functionality from the storage service
+      const { indexedDBService } = await import(
+        "../../management/services/indexedDBService"
+      );
+      const result = await indexedDBService.deleteQuiz(editQuiz.id);
+
+      if (result.success) {
+        // Close the modal and notify parent
+        onCancel();
+        // You might want to add a callback for successful deletion
+        // onQuizDeleted?.(editQuiz.id);
+      } else {
+        throw new Error(result.error || "Failed to delete quiz");
+      }
+    } catch (error) {
+      console.error("Error deleting quiz:", error);
+      // Keep dialog open on error
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteDialog(false);
+    }
+  }, [editQuiz, onCancel]);
+
+  /**
+   * Handles canceling the delete action
+   */
+  const handleCancelDelete = useCallback(() => {
+    setShowDeleteDialog(false);
   }, []);
 
   // === RENDER ===
@@ -264,109 +317,167 @@ export const QuizWizardModal: React.FC<QuizWizardProps> = ({
 
         {/* Floating Action Buttons - only show when not in basic info mode */}
         {!showBasicInfo && (
-          <Box
-            sx={{
-              position: "fixed",
-              bottom: { xs: 16, sm: 24 },
-              right: { xs: 16, sm: 24 },
-              display: "flex",
-              flexDirection: "row",
-              gap: 2,
-              zIndex: 1300,
-            }}
-          >
-            {/* Edit Quiz Button */}
-            <Box
-              sx={{
-                display: { xs: "block", sm: "none" },
-              }}
-            >
-              <Fab
-                color="secondary"
-                onClick={handleEditQuiz}
+          <>
+            {/* Delete Quiz Button - only show when editing existing quiz */}
+            {editQuiz && (
+              <Box
                 sx={{
-                  boxShadow: 3,
-                  "&:hover": {
-                    boxShadow: 6,
-                  },
+                  position: "fixed",
+                  bottom: { xs: 16, sm: 24 },
+                  left: { xs: 16, sm: 24 },
+                  zIndex: 1300,
                 }}
               >
-                <EditIcon />
-              </Fab>
-            </Box>
-            <Box
-              sx={{
-                display: { xs: "none", sm: "block" },
-              }}
-            >
-              <Button
-                variant="contained"
-                color="secondary"
-                onClick={handleEditQuiz}
-                startIcon={<EditIcon />}
-                sx={{
-                  boxShadow: 3,
-                  "&:hover": {
-                    boxShadow: 6,
-                  },
-                  minWidth: 120,
-                  height: 56,
-                }}
-              >
-                Edit Quiz
-              </Button>
-            </Box>
+                {/* Mobile: FAB */}
+                <Box
+                  sx={{
+                    display: { xs: "block", sm: "none" },
+                  }}
+                >
+                  <Fab
+                    color="error"
+                    onClick={handleDeleteQuiz}
+                    sx={{
+                      boxShadow: 3,
+                      "&:hover": {
+                        boxShadow: 6,
+                      },
+                    }}
+                  >
+                    <DeleteIcon />
+                  </Fab>
+                </Box>
+                {/* Desktop: Button */}
+                <Box
+                  sx={{
+                    display: { xs: "none", sm: "block" },
+                  }}
+                >
+                  <Button
+                    variant="contained"
+                    color="error"
+                    onClick={handleDeleteQuiz}
+                    startIcon={<DeleteIcon />}
+                    sx={{
+                      boxShadow: 3,
+                      "&:hover": {
+                        boxShadow: 6,
+                      },
+                      minWidth: 120,
+                      height: 56,
+                    }}
+                  >
+                    Delete Quiz
+                  </Button>
+                </Box>
+              </Box>
+            )}
 
-            {/* Save Quiz Button */}
+            {/* Right side buttons */}
             <Box
               sx={{
-                display: { xs: "block", sm: "none" },
+                position: "fixed",
+                bottom: { xs: 16, sm: 24 },
+                right: { xs: 16, sm: 24 },
+                display: "flex",
+                flexDirection: "row",
+                gap: 2,
+                zIndex: 1300,
               }}
             >
-              <Fab
-                color="primary"
-                onClick={handleSaveQuiz}
-                disabled={!canSave}
+              {/* Edit Quiz Button */}
+              <Box
                 sx={{
-                  boxShadow: 3,
-                  "&:hover": {
-                    boxShadow: 6,
-                  },
-                  "&.Mui-disabled": {
-                    bgcolor: "action.disabled",
-                  },
+                  display: { xs: "block", sm: "none" },
                 }}
               >
-                <SaveIcon />
-              </Fab>
-            </Box>
-            <Box
-              sx={{
-                display: { xs: "none", sm: "block" },
-              }}
-            >
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleSaveQuiz}
-                disabled={!canSave}
-                startIcon={<SaveIcon />}
+                <Fab
+                  color="secondary"
+                  onClick={handleEditQuiz}
+                  sx={{
+                    boxShadow: 3,
+                    "&:hover": {
+                      boxShadow: 6,
+                    },
+                  }}
+                >
+                  <EditIcon />
+                </Fab>
+              </Box>
+              <Box
                 sx={{
-                  boxShadow: 3,
-                  "&:hover": {
-                    boxShadow: 6,
-                  },
-                  "&.Mui-disabled": {
-                    bgcolor: "action.disabled",
-                  },
-                  minWidth: 120,
-                  height: 56,
+                  display: { xs: "none", sm: "block" },
                 }}
               >
-                Save Quiz
-              </Button>
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  onClick={handleEditQuiz}
+                  startIcon={<EditIcon />}
+                  sx={{
+                    boxShadow: 3,
+                    "&:hover": {
+                      boxShadow: 6,
+                    },
+                    minWidth: 120,
+                    height: 56,
+                  }}
+                >
+                  Edit Quiz
+                </Button>
+              </Box>
+
+              {/* Save Quiz Button */}
+              <Box
+                sx={{
+                  display: { xs: "block", sm: "none" },
+                }}
+              >
+                <Fab
+                  color="primary"
+                  onClick={handleSaveQuiz}
+                  disabled={!canSave}
+                  sx={{
+                    boxShadow: 3,
+                    "&:hover": {
+                      boxShadow: 6,
+                    },
+                    "&.Mui-disabled": {
+                      bgcolor: "action.disabled",
+                    },
+                  }}
+                >
+                  <SaveIcon />
+                </Fab>
+              </Box>
+              <Box
+                sx={{
+                  display: { xs: "none", sm: "block" },
+                }}
+              >
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={handleSaveQuiz}
+                  disabled={!canSave}
+                  startIcon={<SaveIcon />}
+                  sx={{
+                    boxShadow: 3,
+                    "&:hover": {
+                      boxShadow: 6,
+                    },
+                    "&.Mui-disabled": {
+                      bgcolor: "action.disabled",
+                    },
+                    minWidth: 120,
+                    height: 56,
+                  }}
+                >
+                  Save Quiz
+                </Button>
+              </Box>
             </Box>
-          </Box>
+          </>
         )}
 
         {/* Save Confirmation Dialog */}
@@ -482,6 +593,128 @@ export const QuizWizardModal: React.FC<QuizWizardProps> = ({
               startIcon={isSubmitting ? null : <SaveIcon />}
             >
               {isSubmitting ? "Saving..." : "Save Quiz"}
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Delete Confirmation Dialog */}
+        <Dialog
+          open={showDeleteDialog}
+          onClose={handleCancelDelete}
+          maxWidth="sm"
+          fullWidth
+          PaperProps={{
+            sx: {
+              borderRadius: 2,
+              boxShadow: 24,
+            },
+          }}
+        >
+          <DialogTitle
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 2,
+              pb: 2,
+            }}
+          >
+            <DeleteIcon color="error" />
+            <Typography variant="h6" fontWeight={600}>
+              Delete Quiz
+            </Typography>
+          </DialogTitle>
+
+          <DialogContent sx={{ pb: 2 }}>
+            <Typography variant="body1" paragraph>
+              Are you sure you want to delete this quiz?
+            </Typography>
+
+            <Card
+              variant="outlined"
+              sx={{
+                mb: 3,
+                bgcolor: "background.paper",
+                border: "1px solid",
+                borderColor: "divider",
+              }}
+            >
+              <CardContent>
+                <Typography variant="h6" gutterBottom fontWeight={600}>
+                  {editQuiz?.title}
+                </Typography>
+
+                {editQuiz?.description && (
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    paragraph
+                    sx={{ mb: 2 }}
+                  >
+                    {editQuiz.description}
+                  </Typography>
+                )}
+
+                <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 2 }}>
+                  <Chip
+                    icon={<CategoryIcon />}
+                    label={editQuiz?.category || "General"}
+                    size="small"
+                    variant="outlined"
+                  />
+                  <Chip
+                    icon={<TimerIcon />}
+                    label={`${editQuiz?.rounds?.length || 0} Round${
+                      (editQuiz?.rounds?.length || 0) !== 1 ? "s" : ""
+                    }`}
+                    size="small"
+                    variant="filled"
+                    color="secondary"
+                  />
+                  <Chip
+                    icon={<QuestionIcon />}
+                    label={`${
+                      editQuiz?.rounds?.flatMap((r) => r.questions).length || 0
+                    } Question${
+                      (editQuiz?.rounds?.flatMap((r) => r.questions).length ||
+                        0) !== 1
+                        ? "s"
+                        : ""
+                    }`}
+                    size="small"
+                    variant="filled"
+                    color="primary"
+                  />
+                </Box>
+              </CardContent>
+            </Card>
+
+            <Typography
+              variant="body2"
+              color="error"
+              textAlign="center"
+              fontWeight={500}
+            >
+              This action cannot be undone. The quiz will be permanently
+              deleted.
+            </Typography>
+          </DialogContent>
+
+          <DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>
+            <Button
+              onClick={handleCancelDelete}
+              variant="outlined"
+              disabled={isDeleting}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleConfirmDelete}
+              variant="contained"
+              color="error"
+              disabled={isDeleting}
+              startIcon={isDeleting ? null : <DeleteIcon />}
+            >
+              {isDeleting ? "Deleting..." : "Delete Quiz"}
             </Button>
           </DialogActions>
         </Dialog>
