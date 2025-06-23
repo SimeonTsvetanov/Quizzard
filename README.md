@@ -72,6 +72,11 @@ The platform's core strength lies in its comprehensive **quiz creation system** 
 - **📈 Analytics** - Quiz statistics and performance tracking
 - **🔄 Version Control** - Draft management and revision history
 
+## Presentation Export
+
+- Only Google Slides and JSON export are supported for presentations.
+- PowerPoint export is no longer supported and has been removed from the codebase and documentation.
+
 ---
 
 ## 🛠️ Tools Overview

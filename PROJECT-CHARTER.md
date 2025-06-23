@@ -2046,3 +2046,11 @@ The update system provides a seamless way for users to check for and apply appli
    - Update analytics
 
 // ... existing code ...
+
+## 🚫 PowerPoint Export Policy
+
+- PowerPoint export is no longer supported in Quizzard.
+- All PowerPoint-related code, dependencies, and documentation must be removed.
+- Only Google Slides and JSON export are allowed for presentation export.
+
+// ... existing code ...
