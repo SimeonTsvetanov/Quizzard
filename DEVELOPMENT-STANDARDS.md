@@ -542,8 +542,8 @@ declare module "@mui/material/styles" {
   "name": "Quizzard - Quiz Management Platform",
   "short_name": "Quizzard",
   "display": "standalone", // Balanced PWA experience without aggressive browser features
-  "start_url": "/Quizzard/",
-  "scope": "/Quizzard/",
+  "start_url": "/quizzard/",
+  "scope": "/quizzard/",
   "orientation": "any", // All device orientations
   "background_color": "#1976D2", // Theme primary color
   "theme_color": "#1976D2"
@@ -660,7 +660,7 @@ const headerElementSizing = {
 // ✅ REQUIRED: Dynamic header text system
 const getDynamicHeaderText = (pathname: string) => {
   // Strip base path for universal compatibility
-  const cleanPath = pathname.replace("/Quizzard", "");
+  const cleanPath = pathname.replace("/quizzard", "");
 
   // Character-based responsive font sizing
   const getFontSize = (chars: number) => {
@@ -728,7 +728,7 @@ const textMappings = {
 **Cross-Platform Compatibility:**
 
 - **Development environment**: Handles clean paths (`/quizzes`)
-- **Production environment**: Strips base path from full paths (`/Quizzard/quizzes`)
+- **Production environment**: Strips base path from full paths (`/quizzard/quizzes`)
 - **Universal fallback**: Always defaults to home text for unmatched routes
 - **Performance optimized**: Efficient character-based calculation system
 

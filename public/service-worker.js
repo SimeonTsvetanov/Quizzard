@@ -6,7 +6,7 @@
 // Detect if we're in development or production
 const isDevelopment =
   location.hostname === "localhost" || location.hostname === "127.0.0.1";
-const basePath = isDevelopment ? "" : "/Quizzard";
+const basePath = isDevelopment ? "" : "/quizzard";
 
 const CACHE_NAME = "quizzard-complete-icons-2025";
 const urlsToCache = [

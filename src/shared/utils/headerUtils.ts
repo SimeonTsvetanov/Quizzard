@@ -42,7 +42,7 @@ export const getDynamicHeaderText = (pathname: string): HeaderTextConfig => {
   console.log("Current pathname:", pathname);
 
   // Remove base path if present to get the clean route
-  const cleanPath = pathname.replace("/Quizzard", "");
+  const cleanPath = pathname.replace("/quizzard", "");
   console.log("Clean path:", cleanPath);
 
   // Define text mappings with character counts for responsive sizing

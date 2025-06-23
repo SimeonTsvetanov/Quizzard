@@ -36,7 +36,7 @@ import {
   Download as DownloadIcon,
   Add as AddIcon,
 } from "@mui/icons-material";
-import { QuizWizardModal } from "../../../creation-editing/components/QuizWizardModal/QuizWizardModal";
+import { QuizWizardModal } from "../../../creation-editing/components";
 import type { Quiz } from "../../types";
 
 /**
@@ -179,6 +179,10 @@ export const QuizActions: React.FC<QuizActionsProps> = ({
           onQuizCreated={onQuizCreated}
           onCancel={onWizardCancel}
           editQuiz={editingQuiz || undefined}
+          onQuizDeleted={() => {
+            // Force refresh after deletion
+            window.location.reload();
+          }}
         />
       )}
 

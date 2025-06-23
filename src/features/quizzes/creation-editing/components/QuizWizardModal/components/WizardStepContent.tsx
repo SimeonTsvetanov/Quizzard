@@ -18,8 +18,8 @@ import {
 } from "@mui/icons-material";
 
 // Import wizard step components
-import { BasicInfoStep } from "../steps/BasicInfoStep";
-import { RoundsQuestionsStep } from "../steps/QuestionsStep";
+import { BasicInfoStep } from "../../../steps/BasicInfoStep";
+import { RoundsQuestionsStep } from "../../../steps/QuestionsStep";
 
 /**
  * Props for WizardStepContent component

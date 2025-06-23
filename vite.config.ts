@@ -20,7 +20,7 @@ export default defineConfig(({ mode }) => {
 
   // Determine base path based on environment
   const isDevelopment = mode === "development";
-  const base = isDevelopment ? "/" : "/Quizzard/";
+  const base = isDevelopment ? "/" : "/quizzard/"; // Use '/quizzard/' for GitHub Pages; change to '/' for custom domains
 
   return {
     plugins,

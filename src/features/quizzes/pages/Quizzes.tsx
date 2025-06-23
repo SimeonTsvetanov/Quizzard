@@ -52,7 +52,7 @@ import { QuizGrid, QuizActions } from "../management/components";
 import { StorageModal } from "../management/components/StorageStatus";
 import { useQuizzesPageStateWithStorage } from "../management/hooks";
 import type { QuizzesPageProps } from "../types";
-import type { QuizCategory, QuizDifficulty } from "../types";
+import type { Quiz, QuizCategory, QuizDifficulty, Round } from "../types";
 import { ErrorBoundary } from "../../../shared/components";
 
 /**
@@ -65,20 +65,10 @@ import { ErrorBoundary } from "../../../shared/components";
  * @param props - Component props
  * @returns JSX element representing the quizzes page
  */
-export const Quizzes: React.FC<QuizzesPageProps> = ({
-  initialQuiz: _initialQuiz,
-}) => {
+export const Quizzes: React.FC<QuizzesPageProps> = () => {
   // Use storage-enhanced state management hook
-  const {
-    quizzes,
-    drafts,
-    isLoading,
-    error,
-    state,
-    actions,
-    storageUsage,
-    isInitialized,
-  } = useQuizzesPageStateWithStorage();
+  const { quizzes, drafts, isLoading, error, state, actions, storageUsage } =
+    useQuizzesPageStateWithStorage();
 
   // Storage modal state
   const [storageModalOpen, setStorageModalOpen] = React.useState(false);
@@ -112,7 +102,7 @@ export const Quizzes: React.FC<QuizzesPageProps> = ({
       "technology",
       "custom",
     ];
-    const sanitizeCategory = (cat: any): QuizCategory => {
+    const sanitizeCategory = (cat: unknown): QuizCategory => {
       if (
         typeof cat === "string" &&
         validCategories.includes(cat as QuizCategory)
@@ -123,7 +113,7 @@ export const Quizzes: React.FC<QuizzesPageProps> = ({
     };
 
     // Helper to sanitize difficulty
-    const sanitizeDifficulty = (diff: any): QuizDifficulty => {
+    const sanitizeDifficulty = (diff: unknown): QuizDifficulty => {
       if (
         typeof diff === "string" &&
         ["easy", "medium", "hard"].includes(diff)
@@ -134,11 +124,16 @@ export const Quizzes: React.FC<QuizzesPageProps> = ({
     };
 
     // Helper to sanitize estimated duration
-    const sanitizeDuration = (duration: any): number => {
+    const sanitizeDuration = (duration: unknown): number => {
       if (typeof duration === "number" && !isNaN(duration)) {
         return Math.max(1, Math.min(1000, duration)); // Clamp between 1-1000 minutes
       }
-      if (duration && typeof duration.valueOf === "function") {
+      if (
+        duration &&
+        typeof duration === "object" &&
+        "valueOf" in duration &&
+        typeof duration.valueOf === "function"
+      ) {
         const value = duration.valueOf();
         if (typeof value === "number" && !isNaN(value)) {
           return Math.max(1, Math.min(1000, value));
@@ -148,7 +143,7 @@ export const Quizzes: React.FC<QuizzesPageProps> = ({
     };
 
     // Helper to sanitize dates
-    const sanitizeDate = (date: any): Date => {
+    const sanitizeDate = (date: unknown): Date => {
       if (date instanceof Date) {
         return date;
       }
@@ -162,7 +157,7 @@ export const Quizzes: React.FC<QuizzesPageProps> = ({
     };
 
     // Helper to sanitize settings
-    const sanitizeSettings = (settings: any) => {
+    const sanitizeSettings = (settings: unknown) => {
       const defaultSettings = {
         defaultTimeLimit: 1,
         defaultPoints: 1,
@@ -170,18 +165,19 @@ export const Quizzes: React.FC<QuizzesPageProps> = ({
       };
 
       if (settings && typeof settings === "object") {
+        const settingsObj = settings as Record<string, unknown>;
         return {
           defaultTimeLimit:
-            typeof settings.defaultTimeLimit === "number"
-              ? settings.defaultTimeLimit
+            typeof settingsObj.defaultTimeLimit === "number"
+              ? settingsObj.defaultTimeLimit
               : defaultSettings.defaultTimeLimit,
           defaultPoints:
-            typeof settings.defaultPoints === "number"
-              ? settings.defaultPoints
+            typeof settingsObj.defaultPoints === "number"
+              ? settingsObj.defaultPoints
               : defaultSettings.defaultPoints,
           defaultBreakingTime:
-            typeof settings.defaultBreakingTime === "number"
-              ? settings.defaultBreakingTime
+            typeof settingsObj.defaultBreakingTime === "number"
+              ? settingsObj.defaultBreakingTime
               : defaultSettings.defaultBreakingTime,
         };
       }
@@ -189,15 +185,17 @@ export const Quizzes: React.FC<QuizzesPageProps> = ({
     };
 
     // Helper to sanitize rounds
-    const sanitizeRounds = (rounds: any): any[] => {
+    const sanitizeRounds = (rounds: unknown): Round[] => {
       if (Array.isArray(rounds)) {
-        return rounds.filter((round) => round && typeof round === "object");
+        return rounds.filter(
+          (round) => round && typeof round === "object"
+        ) as Round[];
       }
       return [];
     };
 
     // Helper to sanitize tags
-    const sanitizeTags = (tags: any): string[] => {
+    const sanitizeTags = (tags: unknown): string[] => {
       if (Array.isArray(tags)) {
         return tags.filter((tag) => typeof tag === "string").slice(0, 10); // Limit to 10 tags
       }
@@ -221,7 +219,7 @@ export const Quizzes: React.FC<QuizzesPageProps> = ({
         rounds: sanitizeRounds(draft.rounds),
         category: sanitizeCategory(draft.category),
         difficulty: sanitizeDifficulty(draft.difficulty),
-        tags: sanitizeTags((draft as any).tags),
+        tags: sanitizeTags((draft as unknown as Record<string, unknown>).tags),
         status: "draft" as const,
         createdAt: sanitizeDate(draft.createdAt),
         updatedAt: sanitizeDate(draft.updatedAt),
@@ -243,7 +241,7 @@ export const Quizzes: React.FC<QuizzesPageProps> = ({
         updatedAt: sanitizeDate(q.updatedAt),
         category: sanitizeCategory(q.category),
         difficulty: sanitizeDifficulty(q.difficulty),
-        tags: sanitizeTags((q as any).tags),
+        tags: sanitizeTags((q as unknown as Record<string, unknown>).tags),
         settings: sanitizeSettings(q.settings),
       }))
       .sort(

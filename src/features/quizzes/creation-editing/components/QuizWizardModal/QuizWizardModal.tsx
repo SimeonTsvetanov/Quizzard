@@ -59,11 +59,9 @@ import { RoundsQuestionsStep } from "../../steps/QuestionsStep";
  * @param props - Component props including callbacks and optional edit quiz
  * @returns JSX element representing the simplified wizard modal
  */
-export const QuizWizardModal: React.FC<QuizWizardProps> = ({
-  onQuizCreated,
-  onCancel,
-  editQuiz,
-}) => {
+export const QuizWizardModal: React.FC<
+  QuizWizardProps & { onQuizDeleted?: (id: string) => void }
+> = ({ onQuizCreated, onCancel, editQuiz, onQuizDeleted }) => {
   // === THEME INTEGRATION ===
   const { mode, handleThemeChange } = useTheme();
 
@@ -73,6 +71,7 @@ export const QuizWizardModal: React.FC<QuizWizardProps> = ({
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isOpen, setIsOpen] = useState(true); // Local state to control modal open/close
 
   // === ENHANCED WIZARD STATE WITH INDEXEDDB ===
   const {
@@ -106,9 +105,11 @@ export const QuizWizardModal: React.FC<QuizWizardProps> = ({
     if (hasChanges) {
       // Auto-save happens in the background, just close
       setTimeout(() => {
+        setIsOpen(false);
         onCancel();
       }, 100);
     } else {
+      setIsOpen(false);
       onCancel();
     }
   }, [draftQuiz.title, totalQuestions, onCancel]);
@@ -191,10 +192,9 @@ export const QuizWizardModal: React.FC<QuizWizardProps> = ({
       const result = await indexedDBService.deleteQuiz(editQuiz.id);
 
       if (result.success) {
-        // Close the modal and notify parent
+        // Notify parent of deletion before closing
+        if (onQuizDeleted) onQuizDeleted(editQuiz.id);
         onCancel();
-        // You might want to add a callback for successful deletion
-        // onQuizDeleted?.(editQuiz.id);
       } else {
         throw new Error(result.error || "Failed to delete quiz");
       }
@@ -205,7 +205,7 @@ export const QuizWizardModal: React.FC<QuizWizardProps> = ({
       setIsDeleting(false);
       setShowDeleteDialog(false);
     }
-  }, [editQuiz, onCancel]);
+  }, [editQuiz, onCancel, onQuizDeleted]);
 
   /**
    * Handles canceling the delete action
@@ -238,7 +238,7 @@ export const QuizWizardModal: React.FC<QuizWizardProps> = ({
       }
     >
       <Dialog
-        open={true}
+        open={isOpen}
         onClose={handleClose}
         fullScreen
         PaperProps={{

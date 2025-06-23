@@ -1,25 +1,26 @@
 /**
  * useLocalStoragePersistence Hook
- * 
+ *
  * Standard hook for managing localStorage state with automatic persistence.
  * Provides debounced auto-save functionality, error handling, and iOS safety checks.
- * 
+ *
  * This hook is the foundation for all data persistence in Quizzard following
  * the development standards for consistent localStorage management across features.
- * 
+ *
  * Features:
  * - Automatic debounced saving (default 500ms)
  * - iOS localStorage quota handling
  * - Error boundary with graceful degradation
  * - Type-safe operations with generics
  * - Validation for data integrity
- * 
+ *
  * @fileoverview Standardized localStorage persistence hook
  * @version 1.0.0
  * @since December 2025
  */
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback } from "react";
+import type { DataObject } from "../types";
 
 /**
  * Configuration options for the localStorage persistence hook
@@ -30,7 +31,7 @@ interface UseLocalStoragePersistenceOptions {
   /** Whether to validate data before saving */
   validate?: boolean;
   /** Custom validation function for the stored data */
-  validator?: (value: any) => boolean;
+  validator?: (value: T) => boolean;
   /** Whether to enable iOS-specific safety checks */
   iosCompatMode?: boolean;
 }
@@ -56,17 +57,17 @@ interface UseLocalStoragePersistenceReturn<T> {
 /**
  * Custom debounce implementation for localStorage operations
  * Prevents excessive writes during rapid state changes
- * 
+ *
  * @param func - Function to debounce
  * @param delay - Delay in milliseconds
  * @returns Debounced function
  */
-const debounce = <T extends (...args: any[]) => void>(
+const debounce = <T extends (...args: unknown[]) => void>(
   func: T,
   delay: number
 ): ((...args: Parameters<T>) => void) => {
   let timeoutId: number;
-  
+
   return (...args: Parameters<T>) => {
     clearTimeout(timeoutId);
     timeoutId = window.setTimeout(() => func(...args), delay);
@@ -76,32 +77,32 @@ const debounce = <T extends (...args: any[]) => void>(
 /**
  * Validates if data can be safely JSON stringified and parsed
  * Prevents circular references and invalid data from being stored
- * 
+ *
  * @param value - Value to validate
  * @returns boolean indicating if value is safe to store
  */
-const isValidForStorage = (value: any): boolean => {
+const isValidForStorage = (value: unknown): boolean => {
   try {
     JSON.stringify(value);
     return true;
   } catch (error) {
-    console.warn('Invalid data for localStorage storage:', error);
+    console.warn("Invalid data for localStorage storage:", error);
     return false;
   }
 };
 
 /**
  * Custom hook for localStorage persistence with auto-save
- * 
+ *
  * Manages state synchronization with localStorage, providing automatic
  * persistence with debouncing, error handling, and iOS compatibility.
- * 
+ *
  * @template T - Type of data being stored
  * @param key - localStorage key to use for storage
  * @param defaultValue - Default value if no stored data exists
  * @param options - Configuration options for the hook
  * @returns Object containing value, setter, and utility functions
- * 
+ *
  * @example
  * ```typescript
  * const [participants, setParticipants] = useLocalStoragePersistence(
@@ -111,7 +112,7 @@ const isValidForStorage = (value: any): boolean => {
  * );
  * ```
  */
-export const useLocalStoragePersistence = <T>(
+export const useLocalStoragePersistence = <T = DataObject>(
   key: string,
   defaultValue: T,
   options: UseLocalStoragePersistenceOptions = {}
@@ -120,7 +121,7 @@ export const useLocalStoragePersistence = <T>(
     debounceMs = 500,
     validate = true,
     validator,
-    iosCompatMode = true
+    iosCompatMode = true,
   } = options;
 
   // State management
@@ -129,19 +130,21 @@ export const useLocalStoragePersistence = <T>(
       const stored = localStorage.getItem(key);
       if (stored) {
         const parsed = JSON.parse(stored);
-        
+
         // Run custom validation if provided
         if (validator && !validator(parsed)) {
-          console.warn(`Stored data for key "${key}" failed validation, using default`);
+          console.warn(
+            `Stored data for key "${key}" failed validation, using default`
+          );
           return defaultValue;
         }
-        
+
         return parsed;
       }
     } catch (error) {
       console.warn(`Error loading data for key "${key}":`, error);
     }
-    
+
     return defaultValue;
   });
 
@@ -150,59 +153,62 @@ export const useLocalStoragePersistence = <T>(
 
   /**
    * Saves data to localStorage with error handling and iOS compatibility
-   * 
+   *
    * @param dataToSave - Data to save to localStorage
    */
-  const saveToStorage = useCallback((dataToSave: T): void => {
-    if (!key) {
-      console.warn('No storage key provided, skipping save');
-      return;
-    }
-
-    setIsSaving(true);
-    setLastError(null);
-
-    try {
-      // Validate data before saving if enabled
-      if (validate && !isValidForStorage(dataToSave)) {
-        throw new Error('Data is not valid for storage');
+  const saveToStorage = useCallback(
+    (dataToSave: T): void => {
+      if (!key) {
+        console.warn("No storage key provided, skipping save");
+        return;
       }
 
-      // Run custom validation if provided
-      if (validator && !validator(dataToSave)) {
-        throw new Error('Data failed custom validation');
-      }
+      setIsSaving(true);
+      setLastError(null);
 
-      const serialized = JSON.stringify(dataToSave);
-      localStorage.setItem(key, serialized);
-
-      // iOS safety check - verify data was actually saved
-      if (iosCompatMode) {
-        const verification = localStorage.getItem(key);
-        if (!verification || verification !== serialized) {
-          throw new Error('iOS storage quota exceeded or blocked');
+      try {
+        // Validate data before saving if enabled
+        if (validate && !isValidForStorage(dataToSave)) {
+          throw new Error("Data is not valid for storage");
         }
-      }
 
-      console.debug(`Successfully saved data to localStorage key: ${key}`);
-      
-    } catch (error) {
-      const errorMsg = error instanceof Error ? error : new Error('Unknown storage error');
-      setLastError(errorMsg);
-      
-      // iOS-specific error messaging
-      if (iosCompatMode && errorMsg.message.includes('quota')) {
-        console.warn(
-          'Unable to save data. iPhone/iPad storage may be full.',
-          'Consider clearing app data or freeing device storage.'
-        );
-      } else {
-        console.warn(`localStorage save failed for key "${key}":`, errorMsg);
+        // Run custom validation if provided
+        if (validator && !validator(dataToSave)) {
+          throw new Error("Data failed custom validation");
+        }
+
+        const serialized = JSON.stringify(dataToSave);
+        localStorage.setItem(key, serialized);
+
+        // iOS safety check - verify data was actually saved
+        if (iosCompatMode) {
+          const verification = localStorage.getItem(key);
+          if (!verification || verification !== serialized) {
+            throw new Error("iOS storage quota exceeded or blocked");
+          }
+        }
+
+        console.debug(`Successfully saved data to localStorage key: ${key}`);
+      } catch (error) {
+        const errorMsg =
+          error instanceof Error ? error : new Error("Unknown storage error");
+        setLastError(errorMsg);
+
+        // iOS-specific error messaging
+        if (iosCompatMode && errorMsg.message.includes("quota")) {
+          console.warn(
+            "Unable to save data. iPhone/iPad storage may be full.",
+            "Consider clearing app data or freeing device storage."
+          );
+        } else {
+          console.warn(`localStorage save failed for key "${key}":`, errorMsg);
+        }
+      } finally {
+        setIsSaving(false);
       }
-    } finally {
-      setIsSaving(false);
-    }
-  }, [key, validate, validator, iosCompatMode]);
+    },
+    [key, validate, validator, iosCompatMode]
+  );
 
   /**
    * Debounced save function to prevent excessive localStorage writes
@@ -216,21 +222,25 @@ export const useLocalStoragePersistence = <T>(
   /**
    * Updates the value and triggers auto-save
    * Supports both direct values and updater functions
-   * 
+   *
    * @param newValue - New value or function to update the value
    */
-  const setValue = useCallback((newValue: T | ((prevValue: T) => T)): void => {
-    setValueState(prevValue => {
-      const updatedValue = typeof newValue === 'function' 
-        ? (newValue as (prevValue: T) => T)(prevValue)
-        : newValue;
-      
-      // Trigger debounced save with new value
-      debouncedSave(updatedValue);
-      
-      return updatedValue;
-    });
-  }, [debouncedSave]);
+  const setValue = useCallback(
+    (newValue: T | ((prevValue: T) => T)): void => {
+      setValueState((prevValue) => {
+        const updatedValue =
+          typeof newValue === "function"
+            ? (newValue as (prevValue: T) => T)(prevValue)
+            : newValue;
+
+        // Trigger debounced save with new value
+        debouncedSave(updatedValue);
+
+        return updatedValue;
+      });
+    },
+    [debouncedSave]
+  );
 
   /**
    * Forces an immediate save without debouncing
@@ -251,7 +261,8 @@ export const useLocalStoragePersistence = <T>(
       setLastError(null);
       console.debug(`Cleared localStorage key: ${key}`);
     } catch (error) {
-      const errorMsg = error instanceof Error ? error : new Error('Failed to clear storage');
+      const errorMsg =
+        error instanceof Error ? error : new Error("Failed to clear storage");
       setLastError(errorMsg);
       console.warn(`Failed to clear localStorage key "${key}":`, errorMsg);
     }
@@ -271,6 +282,6 @@ export const useLocalStoragePersistence = <T>(
     isSaving,
     lastError,
     forceSave,
-    clearValue
+    clearValue,
   };
-}; 
+};

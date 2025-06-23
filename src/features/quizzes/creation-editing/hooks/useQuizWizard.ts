@@ -49,10 +49,8 @@ export const useQuizWizard = (
   initialQuiz?: Partial<Quiz>
 ): UseQuizWizardReturn => {
   // Initialize persistence hook (manages draft data and localStorage)
-  const {
-    persistence: { draftQuiz, isInitialized },
-    actions: persistenceActions,
-  } = useWizardPersistence(initialQuiz);
+  const { persistDraft, loadDraft, clearDraft, resetDraft } =
+    useWizardPersistence();
 
   // Initialize validation hook (handles step-specific validation)
   const validationHook = useWizardValidation({
@@ -76,8 +74,8 @@ export const useQuizWizard = (
   const completionHook = useWizardCompletion({
     draftQuiz,
     validateAllSteps: updatedValidation.validateAllSteps,
-    clearDraft: persistenceActions.clearDraft,
-    resetDraft: persistenceActions.resetDraft,
+    clearDraft: clearDraft,
+    resetDraft: resetDraft,
   });
 
   /**
@@ -86,7 +84,7 @@ export const useQuizWizard = (
    */
   const resetWizard = (): void => {
     navigationActions.resetNavigation();
-    persistenceActions.resetDraft();
+    clearDraft();
   };
 
   // Return complete wizard interface maintaining backward compatibility
@@ -101,8 +99,8 @@ export const useQuizWizard = (
 
     // Draft data management
     draftQuiz,
-    updateDraft: persistenceActions.updateDraft,
-    saveDraft: persistenceActions.saveDraft,
+    updateDraft: persistDraft,
+    saveDraft: persistDraft,
 
     // Validation
     validateStep: updatedValidation.validateStep,

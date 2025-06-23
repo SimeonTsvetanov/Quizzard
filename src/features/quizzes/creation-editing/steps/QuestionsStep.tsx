@@ -29,58 +29,40 @@ import {
   Typography,
   Button,
   TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   IconButton,
-  Grid,
-  Alert,
-  CircularProgress,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Alert,
+  CircularProgress,
   Stack,
-  Slider,
   DialogContentText,
 } from "@mui/material";
 import {
-  Psychology as AIIcon,
-  TextFields as TextIcon,
-  ShortText as TextAnswerIcon,
-  Image as ImageIcon,
-  VideoFile as VideoIcon,
-  AudioFile as AudioIcon,
-  Close as CloseIcon,
   Delete as DeleteIcon,
+  Close as CloseIcon,
+  Psychology as BrainIcon,
+  ShortText as ShortTextIcon,
+  FormatListBulleted as FormatListBulletedIcon,
 } from "@mui/icons-material";
-import type {
-  Quiz,
-  Round,
-  QuizQuestion,
-  QuestionType,
-  QuizDifficulty,
-  QuizCategory,
-  RoundType,
-  AnswerRevealMode,
-  MediaType,
-} from "../../types";
-import { ROUND_TYPE_CONFIG } from "../../types";
-import {
-  generateAIQuizQuestion,
-  isAIQuestionGenerationAvailable,
-  getAIQuestionRateLimit,
-} from "../../services/aiQuestionService";
-
-// Import refactored components and hooks
+import { useQuestionsStepState } from "./hooks/useQuestionsStepState";
 import {
   RoundNavigation,
-  QuestionsList,
   QuestionActionsBar,
+  QuestionsList,
   QuestionEditor,
 } from "./components";
-import { useQuestionsStepState } from "./hooks";
+import {
+  isAIQuestionGenerationAvailable,
+  getAIQuestionRateLimit,
+  generateAIQuizQuestion,
+} from "../../services/aiQuestionService";
+import { ROUND_TYPE_CONFIG } from "../../types";
 
 interface RoundsQuestionsStepProps {
   draftQuiz: Partial<Quiz>;
@@ -93,21 +75,6 @@ export const RoundsQuestionsStep: React.FC<RoundsQuestionsStepProps> = ({
   updateDraft,
   showValidation,
 }) => {
-  // Helper function to generate dialog titles without duplicating "Question"
-  const getDialogTitle = (
-    action: "Add" | "Edit",
-    roundType?: RoundType
-  ): string => {
-    if (!roundType) return `${action} Question`;
-
-    const label = ROUND_TYPE_CONFIG[roundType].label;
-    // If label already contains "Question", use it as is, otherwise append "Question"
-    const questionText = label.includes("Question")
-      ? label
-      : `${label} Question`;
-    return `${action} ${questionText}`;
-  };
-
   // Use refactored state management hook
   const { state, actions, derived } = useQuestionsStepState(draftQuiz);
   const { rounds, currentRound, isRoundFormValid } = derived;
@@ -125,13 +92,6 @@ export const RoundsQuestionsStep: React.FC<RoundsQuestionsStepProps> = ({
   const REVEAL_MODES: { value: AnswerRevealMode; label: string }[] = [
     { value: "after-each", label: "After Each Question" },
     { value: "after-all", label: "After All Questions" },
-  ];
-
-  // Constants for round form options
-  const DIFFICULTY_LEVELS = [
-    { value: "easy", label: "Easy" },
-    { value: "medium", label: "Medium" },
-    { value: "hard", label: "Hard" },
   ];
 
   const handleRoundSave = () => {
@@ -195,7 +155,7 @@ export const RoundsQuestionsStep: React.FC<RoundsQuestionsStepProps> = ({
       >
         <DialogTitle>
           <Box display="flex" alignItems="center" gap={1}>
-            <AIIcon color="primary" />
+            <BrainIcon color="primary" />
             Generate AI Question
           </Box>
         </DialogTitle>
@@ -249,13 +209,13 @@ export const RoundsQuestionsStep: React.FC<RoundsQuestionsStepProps> = ({
                 >
                   <MenuItem value="text-answer">
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <TextAnswerIcon fontSize="small" />
+                      <ShortTextIcon fontSize="small" />
                       Single Answer
                     </Box>
                   </MenuItem>
                   <MenuItem value="text">
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <TextIcon fontSize="small" />
+                      <FormatListBulletedIcon fontSize="small" />
                       Multiple Choice
                     </Box>
                   </MenuItem>

@@ -4,16 +4,19 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Quizzard - Redirecting...</title>
-    <script>      // GitHub Pages SPA redirect script for project pages
+    <script>
+      // GitHub Pages SPA redirect script for project pages
       // Redirects 404s to index.html with the original path preserved
       (function () {
-        var baseUrl = "/Quizzard/";
+        var baseUrl = "/quizzard/";
         var redirectTo = baseUrl + "index.html";
         var location = window.location;
 
+        var pathSegmentsToKeep = 1; // For /quizzard/ base path on GitHub Pages; change to 0 for custom domains
+
         // Extract the path after the base URL
         var path = "";
-        var pathname = location.pathname;        // Handle different path formats
+        var pathname = location.pathname; // Handle different path formats
         if (
           pathname === baseUrl ||
           pathname === baseUrl.slice(0, -1) ||

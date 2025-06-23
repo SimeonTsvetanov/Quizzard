@@ -73,7 +73,7 @@ export interface UseWizardCompletionReturn extends CompletionActions {
 export const useWizardCompletion = (
   context: CompletionContext
 ): UseWizardCompletionReturn => {
-  const { draftQuiz, validateAllSteps, clearDraft, resetDraft } = context;
+  const { draftQuiz, clearDraft } = context;
 
   /**
    * Calculates estimated quiz duration based on content

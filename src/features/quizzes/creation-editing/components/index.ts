@@ -11,11 +11,10 @@
  */
 
 // Main Wizard Modal
-export { QuizWizardModal } from "./QuizWizardModal";
-export { QuizWizardModalWithStorage } from "./QuizWizardModal/QuizWizardModalWithStorage";
+export { QuizWizardModal } from "./QuizWizardModal/QuizWizardModal";
 
 // Media Upload Component
-export { MediaUpload } from "./MediaUpload";
+export { MediaUpload } from "./MediaUpload/MediaUpload";
 
 // Wizard Sub-components
 export * from "./QuizWizardModal/components";

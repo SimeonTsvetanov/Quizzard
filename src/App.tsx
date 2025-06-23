@@ -60,6 +60,12 @@ const RouteLoadingFallback = () => (
 
 const PWA_INSTALL_DISMISSED_KEY = "user-settings-pwa-install-dismissed";
 
+// PWA Install Event Interface
+interface BeforeInstallPromptEvent extends Event {
+  prompt(): Promise<void>;
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+}
+
 function App() {
   // Use our custom theme hook
   const { mode, theme, handleThemeChange } = useTheme();
@@ -81,7 +87,7 @@ function App() {
 
   // PWA install prompt state
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
     message: string;
@@ -116,7 +122,7 @@ function App() {
   useEffect(() => {
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
-      setDeferredPrompt(e);
+      setDeferredPrompt(e as BeforeInstallPromptEvent);
 
       // Check if user has previously dismissed the install prompt
       const dismissed = localStorage.getItem(PWA_INSTALL_DISMISSED_KEY);

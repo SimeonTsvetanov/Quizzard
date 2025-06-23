@@ -1,17 +1,17 @@
 /**
  * Shared Type Definitions for Quizzard Application
- * 
+ *
  * This file contains global type definitions used across multiple features
  * and components in the Quizzard application. These types ensure consistency
  * and type safety throughout the application.
- * 
+ *
  * Organization:
  * - UI/Component types
  * - Theme and styling types
  * - Navigation and routing types
  * - Data persistence types
  * - Utility and helper types
- * 
+ *
  * @fileoverview Global type definitions for cross-feature consistency
  * @version 1.0.0
  * @since December 2025
@@ -21,19 +21,19 @@
  * Theme mode options available in the application
  * Supports light, dark, and system preference following
  */
-export type ThemeMode = 'light' | 'dark' | 'system';
+export type ThemeMode = "light" | "dark" | "system";
 
 /**
  * Theme selection type for user preference settings
  * Used in theme management and user settings persistence
  */
-export type ThemeSelection = 'light' | 'dark' | 'system';
+export type ThemeSelection = "light" | "dark" | "system";
 
 /**
  * Snackbar severity levels for user feedback messages
  * Follows Material-UI Alert severity conventions
  */
-export type SnackbarSeverity = 'success' | 'error' | 'warning' | 'info';
+export type SnackbarSeverity = "success" | "error" | "warning" | "info";
 
 /**
  * Snackbar state interface for consistent messaging across the app
@@ -101,7 +101,7 @@ export interface ModalState {
   /** Optional title for the modal */
   title?: string;
   /** Optional data associated with the modal */
-  data?: any;
+  data?: DataObject;
 }
 
 /**
@@ -149,27 +149,50 @@ export interface FeatureCard {
 }
 
 /**
- * API response interface for consistent API communication
- * Standardizes response format from any future API endpoints
+ * Generic Event Handler Type
+ *
+ * Provides proper typing for event handlers instead of using any
  */
-export interface ApiResponse<T = any> {
-  /** Whether the operation was successful */
+export type EventHandler<T = Event> = (event: T) => void;
+
+/**
+ * Generic Data Object Type
+ *
+ * For objects with unknown structure that need to be typed safely
+ */
+export type DataObject = Record<string, unknown>;
+
+/**
+ * Form Field Value Type
+ *
+ * For form inputs that can have various value types
+ */
+export type FormFieldValue = string | number | boolean | null | undefined;
+
+/**
+ * Component Props with Unknown Structure
+ */
+export interface ComponentProps {
+  [key: string]: FormFieldValue | EventHandler | DataObject;
+}
+
+/**
+ * API Response Structure
+ */
+export interface ApiResponse<T = DataObject> {
   success: boolean;
-  /** The response data */
   data?: T;
-  /** Error message if operation failed */
+  error?: string;
   message?: string;
-  /** Optional error code */
-  code?: string | number;
-  /** Additional metadata */
-  meta?: {
-    /** Total count for paginated responses */
-    total?: number;
-    /** Current page for paginated responses */
-    page?: number;
-    /** Items per page for paginated responses */
-    limit?: number;
-  };
+}
+
+/**
+ * Event Target Type
+ */
+export interface FormEventTarget extends EventTarget {
+  value: FormFieldValue;
+  name?: string;
+  checked?: boolean;
 }
 
 /**
@@ -197,7 +220,7 @@ export interface SortConfig {
   /** Field to sort by */
   field: string;
   /** Sort direction */
-  direction: 'asc' | 'desc';
+  direction: "asc" | "desc";
 }
 
 /**
@@ -208,16 +231,25 @@ export interface FilterConfig {
   /** Field to filter by */
   field: string;
   /** Filter operator (equals, contains, greater than, etc.) */
-  operator: 'eq' | 'ne' | 'contains' | 'startsWith' | 'endsWith' | 'gt' | 'lt' | 'gte' | 'lte';
+  operator:
+    | "eq"
+    | "ne"
+    | "contains"
+    | "startsWith"
+    | "endsWith"
+    | "gt"
+    | "lt"
+    | "gte"
+    | "lte";
   /** Value to filter by */
-  value: any;
+  value: FormFieldValue;
 }
 
 /**
  * Device breakpoint type for responsive design
  * Matches Material-UI breakpoint system
  */
-export type DeviceBreakpoint = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+export type DeviceBreakpoint = "xs" | "sm" | "md" | "lg" | "xl";
 
 /**
  * PWA installation state for Progressive Web App functionality
@@ -256,4 +288,4 @@ export type PickFields<T, K extends keyof T> = Pick<T, K>;
  * Utility type for creating a type without the specified properties
  * from the original type
  */
-export type OmitFields<T, K extends keyof T> = Omit<T, K>; 
+export type OmitFields<T, K extends keyof T> = Omit<T, K>;
