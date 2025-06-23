@@ -1,12 +1,12 @@
 // Service Worker for Quizzard PWA
-// VERSION: 2025-06-23T07:13:55Z
+// VERSION: 2025-06-23T10:21:50Z
 // Handles caching, updates, and offline functionality
 // Version updated: December 22, 2025 - Development and Production compatibility
 
 // Detect if we're in development or production
 const isDevelopment =
   location.hostname === "localhost" || location.hostname === "127.0.0.1";
-const basePath = isDevelopment ? "" : "/Quizzard";
+const basePath = isDevelopment ? "" : "/quizzard";
 
 const CACHE_NAME = "quizzard-complete-icons-2025";
 const urlsToCache = [
