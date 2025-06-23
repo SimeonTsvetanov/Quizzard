@@ -86,6 +86,61 @@ export const Quizzes: React.FC<QuizzesPageProps> = () => {
     forceRefresh();
   }, [quizzes.length, drafts.length, forceRefresh]);
 
+  const getFullQuizObject = React.useCallback(
+    (quizId: string) => {
+      const allOriginalQuizzes: (Quiz | Partial<Quiz>)[] = [
+        ...quizzes,
+        ...drafts,
+      ];
+      return allOriginalQuizzes.find(
+        (q) => q && String(q.id) === String(quizId)
+      );
+    },
+    [quizzes, drafts]
+  );
+
+  const handleExportWrapper = React.useCallback(
+    (quiz: Quiz) => {
+      const fullQuiz = getFullQuizObject(quiz.id);
+      if (fullQuiz) {
+        actions.handleExportQuiz(fullQuiz as Quiz);
+      } else {
+        console.error(
+          `Could not find full quiz object with id: ${quiz.id} for export.`
+        );
+      }
+    },
+    [actions, getFullQuizObject]
+  );
+
+  const handleEditWrapper = React.useCallback(
+    (quiz: Quiz) => {
+      const fullQuiz = getFullQuizObject(quiz.id);
+      if (fullQuiz) {
+        actions.handleEditQuiz(fullQuiz as Quiz);
+      } else {
+        console.error(
+          `Could not find full quiz object with id: ${quiz.id} for edit.`
+        );
+      }
+    },
+    [actions, getFullQuizObject]
+  );
+
+  const handleMenuOpenWrapper = React.useCallback(
+    (event: React.MouseEvent<HTMLElement>, quiz: Quiz) => {
+      const fullQuiz = getFullQuizObject(quiz.id);
+      if (fullQuiz) {
+        actions.handleMenuOpen(event, fullQuiz as Quiz);
+      } else {
+        console.error(
+          `Could not find full quiz object with id: ${quiz.id} for menu.`
+        );
+      }
+    },
+    [actions, getFullQuizObject]
+  );
+
   // Combine quizzes and drafts for display
   const allQuizzes = React.useMemo(() => {
     // Helper to validate category
@@ -368,13 +423,16 @@ export const Quizzes: React.FC<QuizzesPageProps> = () => {
         )}
 
         {/* Quizzes grid - now using extracted component */}
-        <QuizGrid
-          quizzes={allQuizzes}
-          isLoading={isLoading}
-          onCreateQuiz={actions.handleCreateQuiz}
-          onMenuOpen={actions.handleMenuOpen}
-          onExport={actions.handleExportQuiz}
-        />
+        <ErrorBoundary>
+          <QuizGrid
+            quizzes={allQuizzes}
+            isLoading={isLoading}
+            onCreateQuiz={actions.handleCreateQuiz}
+            onMenuOpen={handleMenuOpenWrapper}
+            onExport={handleExportWrapper}
+            onEdit={handleEditWrapper}
+          />
+        </ErrorBoundary>
 
         {/* Quiz actions - now using extracted component */}
         <QuizActions

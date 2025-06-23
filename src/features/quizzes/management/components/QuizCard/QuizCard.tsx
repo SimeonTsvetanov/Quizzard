@@ -25,11 +25,10 @@ import {
   CardActions,
   Typography,
   Button,
-  Chip,
-  Avatar,
   IconButton,
   Box,
   Zoom,
+  Stack,
 } from "@mui/material";
 import {
   Quiz as QuizIcon,
@@ -38,8 +37,9 @@ import {
   MoreVert as MoreVertIcon,
   Schedule as ScheduleIcon,
   Category as CategoryIcon,
-  TrendingUp as DifficultyIcon,
+  Edit as EditIcon,
 } from "@mui/icons-material";
+import { ExportFormatDialog } from "../../../exporting/components";
 import type { Quiz } from "../../types";
 
 /**
@@ -51,29 +51,12 @@ export interface QuizCardProps {
   /** Callback when quiz menu is opened */
   onMenuOpen: (event: React.MouseEvent<HTMLElement>, quiz: Quiz) => void;
   /** Callback when quiz export is requested */
-  onExport: (quiz: Quiz) => void;
+  onExport: (quiz: Quiz, format: "powerpoint" | "slides" | "json") => void;
   /** Callback when quiz preview is requested */
   onPreview?: (quiz: Quiz) => void;
+  /** Callback when quiz edit is requested */
+  onEdit: (quiz: Quiz) => void;
 }
-
-/**
- * Gets the appropriate color for difficulty chips
- *
- * @param difficulty - Quiz difficulty level
- * @returns Material-UI color string for the chip
- */
-const getDifficultyColor = (
-  difficulty: string
-): "success" | "warning" | "error" => {
-  switch (difficulty) {
-    case "easy":
-      return "success";
-    case "hard":
-      return "error";
-    default:
-      return "warning";
-  }
-};
 
 /**
  * QuizCard Component
@@ -89,7 +72,10 @@ export const QuizCard: React.FC<QuizCardProps> = ({
   onMenuOpen,
   onExport,
   onPreview,
+  onEdit,
 }) => {
+  const [exportDialogOpen, setExportDialogOpen] = React.useState(false);
+
   /**
    * Handles preview action with optional callback
    */
@@ -102,11 +88,28 @@ export const QuizCard: React.FC<QuizCardProps> = ({
   }, [quiz, onPreview]);
 
   /**
-   * Handles export action
+   * Handles export button click
    */
-  const handleExport = React.useCallback(() => {
-    onExport(quiz);
-  }, [quiz, onExport]);
+  const handleExportClick = React.useCallback(() => {
+    setExportDialogOpen(true);
+  }, []);
+
+  /**
+   * Handles export format selection
+   */
+  const handleExportFormat = React.useCallback(
+    (format: "powerpoint" | "slides" | "json") => {
+      onExport(quiz, format);
+    },
+    [quiz, onExport]
+  );
+
+  /**
+   * Handles edit action
+   */
+  const handleEdit = React.useCallback(() => {
+    onEdit(quiz);
+  }, [quiz, onEdit]);
 
   /**
    * Handles menu opening
@@ -118,6 +121,10 @@ export const QuizCard: React.FC<QuizCardProps> = ({
     [quiz, onMenuOpen]
   );
 
+  const totalQuestions = React.useMemo(() => {
+    return quiz.rounds?.flatMap((r) => r?.questions || []).length || 0;
+  }, [quiz.rounds]);
+
   return (
     <Grid size={{ xs: 12, sm: 6, md: 4 }} key={quiz.id}>
       <Zoom in timeout={300}>
@@ -127,6 +134,7 @@ export const QuizCard: React.FC<QuizCardProps> = ({
             height: "100%",
             display: "flex",
             flexDirection: "column",
+            justifyContent: "space-between",
             transition: "all 0.3s ease",
             "&:hover": {
               elevation: 4,
@@ -134,160 +142,116 @@ export const QuizCard: React.FC<QuizCardProps> = ({
             },
           }}
         >
-          <CardContent sx={{ flex: 1 }}>
-            {/* Quiz header */}
-            <Box
-              display="flex"
-              justifyContent="space-between"
-              alignItems="flex-start"
-              mb={2}
-            >
-              <Avatar sx={{ bgcolor: "primary.main", width: 48, height: 48 }}>
-                <QuizIcon />
-              </Avatar>
-              <IconButton
-                size="small"
-                onClick={handleMenuOpen}
-                aria-label="Quiz options"
+          <Box>
+            <CardContent sx={{ pb: 1 }}>
+              <Box
+                display="flex"
+                justifyContent="space-between"
+                alignItems="center"
+                mb={1}
               >
-                <MoreVertIcon />
-              </IconButton>
-            </Box>
-
-            {/* Quiz title and description */}
-            <Typography variant="h6" component="h3" gutterBottom noWrap>
-              {(() => {
-                const title = quiz.title;
-                if (typeof title === "string") {
-                  return title;
-                }
-                return "Untitled Quiz";
-              })()}
-            </Typography>
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{
-                mb: 2,
-                display: "-webkit-box",
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: "vertical",
-                overflow: "hidden",
-              }}
-            >
-              {(() => {
-                const desc = quiz.description;
-                if (typeof desc === "string") {
-                  return desc || "No description provided";
-                }
-                return "No description provided";
-              })()}
-            </Typography>
-
-            {/* Quiz metadata chips */}
-            <Box display="flex" flexWrap="wrap" gap={1} mb={2}>
-              <Chip
-                size="small"
-                label={(() => {
-                  const diff = quiz.difficulty;
-                  if (
-                    typeof diff === "string" &&
-                    ["easy", "medium", "hard"].includes(diff)
-                  ) {
-                    return diff;
-                  }
-                  return "medium";
-                })()}
-                color={getDifficultyColor(
-                  (() => {
-                    const diff = quiz.difficulty;
-                    if (
-                      typeof diff === "string" &&
-                      ["easy", "medium", "hard"].includes(diff)
-                    ) {
-                      return diff;
-                    }
-                    return "medium";
-                  })()
-                )}
-                variant="outlined"
-                icon={<DifficultyIcon fontSize="small" />}
-              />
-              <Chip
-                size="small"
-                label={(() => {
-                  const cat = quiz.category;
-                  if (typeof cat === "string") {
-                    return cat;
-                  }
-                  return "general";
-                })()}
-                variant="outlined"
-                icon={<CategoryIcon fontSize="small" />}
-              />
-              <Chip
-                size="small"
-                label={`${(() => {
-                  const rounds = quiz.rounds;
-                  if (Array.isArray(rounds)) {
-                    return (
-                      rounds.flatMap((r) => r?.questions || []).length || 0
-                    );
-                  }
-                  return 0;
-                })()} Q`}
-                variant="outlined"
-                icon={<QuizIcon fontSize="small" />}
-              />
-            </Box>
-
-            {/* Quiz stats */}
-            <Box
-              display="flex"
-              justifyContent="space-between"
-              alignItems="center"
-            >
-              <Box display="flex" alignItems="center" gap={1}>
-                <ScheduleIcon fontSize="small" color="action" />
-                <Typography variant="caption" color="text.secondary">
-                  ~
-                  {(() => {
-                    const duration = quiz.estimatedDuration;
-                    if (typeof duration === "number" && !isNaN(duration)) {
-                      return Math.max(1, Math.min(1000, duration));
-                    }
-                    if (duration && typeof duration.valueOf === "function") {
-                      const value = duration.valueOf();
-                      if (typeof value === "number" && !isNaN(value)) {
-                        return Math.max(1, Math.min(1000, value));
-                      }
-                    }
-                    return 10; // Default fallback
-                  })()}
-                  m
+                <Typography
+                  variant="h5"
+                  component="h3"
+                  fontWeight="bold"
+                  noWrap
+                >
+                  {quiz.title || "Untitled Quiz"}
                 </Typography>
+                <IconButton
+                  size="small"
+                  onClick={handleMenuOpen}
+                  aria-label="More options"
+                >
+                  <MoreVertIcon />
+                </IconButton>
               </Box>
-            </Box>
-          </CardContent>
 
-          <CardActions sx={{ justifyContent: "space-between", px: 2, pb: 2 }}>
-            <Button
-              size="small"
-              startIcon={<PlayIcon />}
-              onClick={handlePreview}
-            >
-              Preview
-            </Button>
-            <Button
-              size="small"
-              startIcon={<DownloadIcon />}
-              onClick={handleExport}
-            >
-              Export
-            </Button>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{
+                  mb: 2,
+                  height: "40px",
+                  display: "-webkit-box",
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: "vertical",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                }}
+              >
+                {quiz.description || "No description provided."}
+              </Typography>
+
+              <Box
+                display="flex"
+                alignItems="center"
+                gap={2}
+                color="text.secondary"
+              >
+                <Box display="flex" alignItems="center" gap={0.5}>
+                  <ScheduleIcon fontSize="small" />
+                  <Typography variant="caption">
+                    {quiz.estimatedDuration || "10"} min
+                  </Typography>
+                </Box>
+                <Box display="flex" alignItems="center" gap={0.5}>
+                  <CategoryIcon fontSize="small" />
+                  <Typography variant="caption">
+                    {quiz.rounds?.length || 0} Rounds
+                  </Typography>
+                </Box>
+                <Box display="flex" alignItems="center" gap={0.5}>
+                  <QuizIcon fontSize="small" />
+                  <Typography variant="caption">
+                    {totalQuestions} Questions
+                  </Typography>
+                </Box>
+              </Box>
+            </CardContent>
+          </Box>
+
+          <CardActions sx={{ p: 2, pt: 1 }}>
+            <Stack direction="row" spacing={1} width="100%">
+              <Button
+                variant="contained"
+                size="medium"
+                startIcon={<PlayIcon />}
+                onClick={handlePreview}
+                sx={{ flex: 1 }}
+              >
+                Play
+              </Button>
+              <Button
+                variant="outlined"
+                size="medium"
+                startIcon={<EditIcon />}
+                onClick={handleEdit}
+                sx={{ flex: 1 }}
+              >
+                Edit
+              </Button>
+              <Button
+                variant="outlined"
+                size="medium"
+                startIcon={<DownloadIcon />}
+                onClick={handleExportClick}
+                sx={{ flex: 1 }}
+              >
+                Export
+              </Button>
+            </Stack>
           </CardActions>
         </Card>
       </Zoom>
+
+      {/* Export Format Dialog */}
+      <ExportFormatDialog
+        open={exportDialogOpen}
+        quiz={quiz}
+        onClose={() => setExportDialogOpen(false)}
+        onExport={handleExportFormat}
+      />
     </Grid>
   );
 };

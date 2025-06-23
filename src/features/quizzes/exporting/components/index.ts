@@ -1,12 +1,17 @@
 /**
- * Exporting Components Index (PLACEHOLDER)
+ * Exporting Components Index
  *
- * Future exports for quiz exporting components. These will be implemented
- * in the next phase to provide quiz export functionality.
+ * Exports all quiz exporting-related components including:
+ * - ExportFormatDialog: Format selection dialog for quiz exports
+ * - QuizExporter: Main exporter component (placeholder)
  *
  * @fileoverview Central export point for exporting components
- * @version 0.1.0 (Placeholder)
+ * @version 1.0.0
+ * @since December 2025
  */
 
-// Quiz Exporter Component
+// Export Format Dialog Component
+export * from "./ExportFormatDialog";
+
+// Quiz Exporter Component (Placeholder)
 export { QuizExporter } from "./QuizExporter";

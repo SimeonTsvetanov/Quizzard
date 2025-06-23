@@ -3210,3 +3210,190 @@ const useQuizValidation = () => {
   return { validateBasicInfo, validateQuestions };
 };
 ```
+
+### **🔄 Export Functionality Standards**
+
+#### **1. Export Format Handlers**
+
+```typescript
+// ✅ REQUIRED: Export handler interface
+interface ExportHandler<T = unknown> {
+  /** Unique identifier for the export format */
+  readonly format: string;
+  /** Whether this format is currently available */
+  readonly isAvailable: boolean;
+  /** Export the quiz to the specified format */
+  export: (quiz: Quiz, settings?: T) => Promise<void>;
+}
+
+// ✅ REQUIRED: Export settings validation
+interface ExportSettings {
+  includePresenterNotes: boolean;
+  slideTemplate: string;
+  questionFontSize: number;
+  optionFontSize: number;
+  includeMetadata: boolean;
+  includeAnswerKey: boolean;
+  compressImages: boolean;
+  imageQuality: number;
+}
+
+// ❌ NEVER: Direct file system access
+// Do not use Node.js fs module or other direct file system access
+// Always use browser's native file system API
+```
+
+#### **2. Export UI Components**
+
+```typescript
+// ✅ REQUIRED: Export dialog structure
+<Dialog
+  open={open}
+  onClose={onClose}
+  maxWidth="sm"
+  fullWidth
+  aria-labelledby="export-format-dialog-title"
+>
+  <DialogTitle>
+    {/* Title must include quiz name */}
+    Export Quiz: {quiz.title}
+  </DialogTitle>
+  <DialogContent>
+    {/* Must show format options */}
+    <List>
+      {exportOptions.map((option) => (
+        <ListItemButton
+          key={option.id}
+          disabled={!option.isAvailable}
+          onClick={() => handleExport(option.id)}
+        >
+          <ListItemIcon>{option.icon}</ListItemIcon>
+          <ListItemText primary={option.label} secondary={option.description} />
+        </ListItemButton>
+      ))}
+    </List>
+  </DialogContent>
+  <DialogActions>
+    <Button onClick={onClose}>Cancel</Button>
+  </DialogActions>
+</Dialog>
+
+// ❌ NEVER: Inline export logic
+// Export logic must be in separate handlers
+// UI components should only handle user interaction
+```
+
+#### **3. Export Error Handling**
+
+```typescript
+// ✅ REQUIRED: Error boundaries for export operations
+try {
+  await exportHandler.export(quiz, settings);
+} catch (error) {
+  // Must handle specific error types
+  if (error instanceof ValidationError) {
+    showValidationError(error);
+  } else if (error instanceof ExportError) {
+    showExportError(error);
+  } else {
+    // Generic error handling
+    console.error("Export failed:", error);
+    showGenericError();
+  }
+}
+
+// ❌ NEVER: Silent failures
+// All export errors must be logged and displayed to user
+```
+
+#### **4. Export Format Dialog (REQUIRED)**
+
+```typescript
+// ✅ REQUIRED: Export format dialog with consistent styling
+<Dialog
+  open={open}
+  onClose={onClose}
+  aria-labelledby="export-format-dialog-title"
+  maxWidth="sm"
+  fullWidth
+>
+  <DialogTitle id="export-format-dialog-title">
+    Export Quiz: {quiz.title}
+  </DialogTitle>
+  <DialogContent>
+    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+      Choose an export format below. Currently, only PowerPoint export is
+      available.
+    </Typography>
+    <List>
+      {EXPORT_OPTIONS.map((option) => (
+        <ListItemButton
+          key={option.id}
+          onClick={() => handleExport(option.id)}
+          disabled={option.disabled}
+        >
+          <ListItemIcon>
+            <option.icon />
+          </ListItemIcon>
+          <ListItemText
+            primary={option.label}
+            secondary={option.disabled ? "(Coming Soon)" : option.description}
+          />
+        </ListItemButton>
+      ))}
+    </List>
+  </DialogContent>
+  <DialogActions>
+    <Button onClick={onClose}>Cancel</Button>
+  </DialogActions>
+</Dialog>
+```
+
+#### **5. Export Data Validation (REQUIRED)**
+
+```typescript
+// ✅ REQUIRED: Quiz data validation before export
+const validateQuizForExport = (quiz: Quiz | null): string | null => {
+  if (!quiz) {
+    return "Quiz data is missing";
+  }
+  if (!quiz.rounds || !Array.isArray(quiz.rounds)) {
+    return "Quiz rounds are missing or invalid";
+  }
+  if (quiz.rounds.length === 0) {
+    return "Quiz has no rounds";
+  }
+  if (!quiz.rounds.every((round) => round && Array.isArray(round.questions))) {
+    return "One or more quiz rounds have invalid questions";
+  }
+  return null;
+};
+
+// ❌ NEVER: Skip validation before export
+// Always validate quiz data structure before attempting export
+// Handle validation errors gracefully with user-friendly messages
+```
+
+#### **6. PowerPoint Export Standards**
+
+- **Slide Layout:**
+
+  - Title slide with quiz metadata
+  - Round title slides
+  - Question slides with proper formatting
+  - Answer slides with correct answer highlighting
+  - Presenter notes with explanations
+  - Answer key slide (optional)
+
+- **Formatting:**
+
+  - Consistent font sizes (title: 36px, questions: 24px, options: 18px)
+  - Professional color scheme matching quiz difficulty
+  - Proper slide dimensions (16:9 aspect ratio)
+  - Clean, readable layouts
+
+- **Error Handling:**
+  - Validate quiz data before export
+  - Show user-friendly error messages
+  - Provide recovery options
+  - Log errors for debugging

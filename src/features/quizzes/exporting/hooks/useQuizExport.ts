@@ -28,6 +28,28 @@ const DEFAULT_EXPORT_SETTINGS: ExportSettings = {
 };
 
 /**
+ * Validates quiz data before export
+ *
+ * @param quiz - Quiz to validate
+ * @returns Error message if invalid, null if valid
+ */
+const validateQuizForExport = (quiz: Quiz | null): string | null => {
+  if (!quiz) {
+    return "Quiz data is missing";
+  }
+  if (!quiz.rounds || !Array.isArray(quiz.rounds)) {
+    return "Quiz rounds are missing or invalid";
+  }
+  if (quiz.rounds.length === 0) {
+    return "Quiz has no rounds";
+  }
+  if (!quiz.rounds.every((round) => round && Array.isArray(round.questions))) {
+    return "One or more quiz rounds have invalid questions";
+  }
+  return null;
+};
+
+/**
  * Quiz Export Hook
  *
  * Provides PowerPoint export functionality including:
@@ -61,6 +83,12 @@ export const useQuizExport = () => {
       setExportError(null);
 
       try {
+        // Validate quiz data before proceeding
+        const validationError = validateQuizForExport(quiz);
+        if (validationError) {
+          throw new Error(validationError);
+        }
+
         // Dynamic import to avoid bundling PptxGenJS unless needed
         const PptxGenJS = (await import("pptxgenjs")).default;
         const pptx = new PptxGenJS();
@@ -119,14 +147,42 @@ export const useQuizExport = () => {
         }
 
         // Add question slides
-        quiz.rounds
-          .flatMap((r) => r.questions)
-          .forEach((question, index) => {
+        quiz.rounds.forEach((round, roundIndex) => {
+          // Add round title slide
+          const roundSlide = pptx.addSlide();
+          roundSlide.addText(
+            `Round ${roundIndex + 1}${round.name ? `: ${round.name}` : ""}`,
+            {
+              x: 1,
+              y: 2,
+              w: 8,
+              h: 1.5,
+              fontSize: 32,
+              bold: true,
+              align: "center",
+            }
+          );
+
+          if (round.description) {
+            roundSlide.addText(round.description, {
+              x: 1,
+              y: 4,
+              w: 8,
+              h: 2,
+              fontSize: 18,
+              align: "center",
+            });
+          }
+
+          // Add questions for this round
+          round.questions.forEach((question, questionIndex) => {
             const slide = pptx.addSlide();
-            const questionNumber = index + 1;
+            const questionNumber = `Round ${roundIndex + 1}, Question ${
+              questionIndex + 1
+            }`;
 
             // Question title
-            slide.addText(`Question ${questionNumber}`, {
+            slide.addText(questionNumber, {
               x: 0.5,
               y: 0.5,
               w: 9,
@@ -147,9 +203,8 @@ export const useQuizExport = () => {
             });
 
             // Handle different question types
-            if (question.type === "text-answer") {
-              // Text answer questions
-              slide.addText("Type your answer:", {
+            if (question.type === "single-answer") {
+              slide.addText("Answer:", {
                 x: 1,
                 y: 3.5,
                 w: 8,
@@ -159,10 +214,13 @@ export const useQuizExport = () => {
                 color: "666666",
               });
 
-              if (settings.includePresenterNotes && question.textAnswer) {
+              if (
+                settings.includePresenterNotes &&
+                question.correctAnswerText
+              ) {
                 slide.addNotes(
-                  `Question ${questionNumber}\nExpected Answer: ${
-                    question.textAnswer
+                  `${questionNumber}\nCorrect Answer: ${
+                    question.correctAnswerText
                   }${
                     question.explanation
                       ? `\nExplanation: ${question.explanation}`
@@ -170,15 +228,18 @@ export const useQuizExport = () => {
                   }`
                 );
               }
-            } else {
+            } else if (
+              question.type === "multiple-choice" &&
+              question.possibleAnswers
+            ) {
               // Multiple choice questions
-              question.options.forEach((option, optionIndex) => {
-                const optionLetter = String.fromCharCode(65 + optionIndex); // A, B, C, D...
-                const isCorrect = optionIndex === question.correctAnswer;
+              question.possibleAnswers.forEach((answer, answerIndex) => {
+                const optionLetter = String.fromCharCode(65 + answerIndex); // A, B, C, D...
+                const isCorrect = question.correctAnswers.includes(answerIndex);
 
-                slide.addText(`${optionLetter}. ${option}`, {
+                slide.addText(`${optionLetter}. ${answer}`, {
                   x: 1,
-                  y: 3.5 + optionIndex * 0.8,
+                  y: 3.5 + answerIndex * 0.8,
                   w: 8,
                   h: 0.7,
                   fontSize: settings.optionFontSize,
@@ -189,17 +250,19 @@ export const useQuizExport = () => {
 
               // Add presenter notes for multiple choice
               if (settings.includePresenterNotes) {
-                const correctAnswer = question.options[question.correctAnswer];
-                let notes = `Question ${questionNumber}\nCorrect Answer: ${correctAnswer}`;
+                const correctAnswers = question.correctAnswers
+                  .map(
+                    (index) =>
+                      `${String.fromCharCode(65 + index)}. ${
+                        question.possibleAnswers[index]
+                      }`
+                  )
+                  .join(", ");
 
+                let notes = `${questionNumber}\nCorrect Answer(s): ${correctAnswers}`;
                 if (question.explanation) {
                   notes += `\nExplanation: ${question.explanation}`;
                 }
-
-                if (question.points) {
-                  notes += `\nPoints: ${question.points}`;
-                }
-
                 slide.addNotes(notes);
               }
             }
@@ -207,7 +270,6 @@ export const useQuizExport = () => {
             // Add media if present
             if (question.mediaFile) {
               try {
-                // Add media based on type
                 if (question.mediaFile.type === "image") {
                   slide.addImage({
                     data: question.mediaFile.data,
@@ -221,51 +283,52 @@ export const useQuizExport = () => {
                 // Note: Audio/video handling would require additional PptxGenJS configuration
               } catch (mediaError) {
                 console.warn(
-                  `Failed to add media for question ${questionNumber}:`,
+                  `Failed to add media for ${questionNumber}:`,
                   mediaError
                 );
               }
             }
           });
+        });
 
-        // Add answer key slide if requested (only for multiple choice)
+        // Add answer key slide if requested
         if (settings.includeAnswerKey) {
-          const multipleChoiceQuestions = quiz.rounds
-            .flatMap((r) => r.questions)
-            .filter((q) => q.type !== "text-answer");
+          const answerSlide = pptx.addSlide();
+          answerSlide.addText("Answer Key", {
+            x: 1,
+            y: 1,
+            w: 8,
+            h: 1,
+            fontSize: 32,
+            bold: true,
+            align: "center",
+          });
 
-          if (multipleChoiceQuestions.length > 0) {
-            const answerSlide = pptx.addSlide();
-            answerSlide.addText("Answer Key", {
-              x: 1,
-              y: 1,
-              w: 8,
-              h: 1,
-              fontSize: 32,
-              bold: true,
-              align: "center",
+          let answerText = "";
+          quiz.rounds.forEach((round, roundIndex) => {
+            answerText += `Round ${roundIndex + 1}:\n`;
+            round.questions.forEach((question, questionIndex) => {
+              const questionNumber = `Q${questionIndex + 1}`;
+              if (question.type === "single-answer") {
+                answerText += `${questionNumber}: ${question.correctAnswerText}\n`;
+              } else if (question.type === "multiple-choice") {
+                const correctAnswers = question.correctAnswers
+                  .map((index) => String.fromCharCode(65 + index))
+                  .join(", ");
+                answerText += `${questionNumber}: ${correctAnswers}\n`;
+              }
             });
+            answerText += "\n";
+          });
 
-            const answerText = multipleChoiceQuestions
-              .map((question, index) => {
-                const questionNumber =
-                  quiz.rounds.flatMap((r) => r.questions).indexOf(question) + 1;
-                const correctOptionIndex = question.correctAnswer;
-                const correctLetter = String.fromCharCode(
-                  65 + correctOptionIndex
-                );
-                return `${questionNumber}. ${correctLetter}`;
-              })
-              .join("\n");
-
-            answerSlide.addText(answerText, {
-              x: 2,
-              y: 2.5,
-              w: 6,
-              h: 4,
-              fontSize: 18,
-            });
-          }
+          answerSlide.addText(answerText.trim(), {
+            x: 1,
+            y: 2,
+            w: 8,
+            h: 4,
+            fontSize: 16,
+            align: "left",
+          });
         }
 
         // Generate filename and save

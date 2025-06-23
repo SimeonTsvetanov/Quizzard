@@ -35,6 +35,9 @@ import {
   Delete as DeleteIcon,
   Download as DownloadIcon,
   Add as AddIcon,
+  PowerSettingsNew as PowerPointIcon,
+  Slideshow as GoogleSlidesIcon,
+  Code as JSONIcon,
 } from "@mui/icons-material";
 import { QuizWizardModal } from "../../../creation-editing/components";
 import type { Quiz } from "../../types";
@@ -60,7 +63,7 @@ export interface QuizActionsProps {
   /** Callback when quiz edit is requested */
   onEditQuiz: (quiz: Quiz) => void;
   /** Callback when quiz export is requested */
-  onExportQuiz: (quiz: Quiz) => void;
+  onExportQuiz: (quiz: Quiz, format: "powerpoint" | "slides" | "json") => void;
   /** Callback when quiz deletion is requested */
   onRequestDeleteQuiz: (quiz: Quiz) => void;
   /** Callback when quiz deletion is confirmed */
@@ -107,17 +110,39 @@ export const QuizActions: React.FC<QuizActionsProps> = ({
   const handleEditClick = React.useCallback(() => {
     if (selectedQuiz) {
       onEditQuiz(selectedQuiz);
+      onMenuClose();
     }
-  }, [selectedQuiz, onEditQuiz]);
+  }, [selectedQuiz, onEditQuiz, onMenuClose]);
 
   /**
-   * Handles export menu item click
+   * Handles PowerPoint export menu item click
    */
-  const handleExportClick = React.useCallback(() => {
+  const handlePowerPointExport = React.useCallback(() => {
     if (selectedQuiz) {
-      onExportQuiz(selectedQuiz);
+      onExportQuiz(selectedQuiz, "powerpoint");
+      onMenuClose();
     }
-  }, [selectedQuiz, onExportQuiz]);
+  }, [selectedQuiz, onExportQuiz, onMenuClose]);
+
+  /**
+   * Handles Google Slides export menu item click (disabled)
+   */
+  const handleSlidesExport = React.useCallback(() => {
+    if (selectedQuiz) {
+      onExportQuiz(selectedQuiz, "slides");
+      onMenuClose();
+    }
+  }, [selectedQuiz, onExportQuiz, onMenuClose]);
+
+  /**
+   * Handles JSON export menu item click (disabled)
+   */
+  const handleJSONExport = React.useCallback(() => {
+    if (selectedQuiz) {
+      onExportQuiz(selectedQuiz, "json");
+      onMenuClose();
+    }
+  }, [selectedQuiz, onExportQuiz, onMenuClose]);
 
   /**
    * Handles delete menu item click
@@ -125,8 +150,9 @@ export const QuizActions: React.FC<QuizActionsProps> = ({
   const handleDeleteClick = React.useCallback(() => {
     if (selectedQuiz) {
       onRequestDeleteQuiz(selectedQuiz);
+      onMenuClose();
     }
-  }, [selectedQuiz, onRequestDeleteQuiz]);
+  }, [selectedQuiz, onRequestDeleteQuiz, onMenuClose]);
 
   return (
     <>
@@ -144,11 +170,23 @@ export const QuizActions: React.FC<QuizActionsProps> = ({
           </ListItemIcon>
           <ListItemText>Edit Quiz</ListItemText>
         </MenuItem>
-        <MenuItem onClick={handleExportClick}>
+        <MenuItem onClick={handlePowerPointExport}>
           <ListItemIcon>
-            <DownloadIcon fontSize="small" />
+            <PowerPointIcon fontSize="small" />
           </ListItemIcon>
           <ListItemText>Export to PowerPoint</ListItemText>
+        </MenuItem>
+        <MenuItem onClick={handleSlidesExport} disabled>
+          <ListItemIcon>
+            <GoogleSlidesIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Export to Google Slides</ListItemText>
+        </MenuItem>
+        <MenuItem onClick={handleJSONExport} disabled>
+          <ListItemIcon>
+            <JSONIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Export as JSON</ListItemText>
         </MenuItem>
         <MenuItem onClick={handleDeleteClick} sx={{ color: "error.main" }}>
           <ListItemIcon>
@@ -165,7 +203,7 @@ export const QuizActions: React.FC<QuizActionsProps> = ({
         onClick={onCreateQuiz}
         sx={{
           position: "fixed",
-          bottom: 80, // Increased from 24 to 80 to avoid footer overlap
+          bottom: 80,
           right: 24,
           zIndex: 1000,
         }}
@@ -180,7 +218,6 @@ export const QuizActions: React.FC<QuizActionsProps> = ({
           onCancel={onWizardCancel}
           editQuiz={editingQuiz || undefined}
           onQuizDeleted={() => {
-            // Force refresh after deletion
             window.location.reload();
           }}
         />

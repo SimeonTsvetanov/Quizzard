@@ -47,6 +47,8 @@ export interface QuizGridProps {
   onExport: QuizCardProps["onExport"];
   /** Callback when quiz preview is requested */
   onPreview?: QuizCardProps["onPreview"];
+  /** Callback when quiz edit is requested */
+  onEdit: QuizCardProps["onEdit"];
 }
 
 /**
@@ -146,6 +148,7 @@ export const QuizGrid: React.FC<QuizGridProps> = ({
   onMenuOpen,
   onExport,
   onPreview,
+  onEdit,
 }) => {
   /**
    * Renders individual quiz cards
@@ -158,9 +161,10 @@ export const QuizGrid: React.FC<QuizGridProps> = ({
         onMenuOpen={onMenuOpen}
         onExport={onExport}
         onPreview={onPreview}
+        onEdit={onEdit}
       />
     ));
-  }, [quizzes, onMenuOpen, onExport, onPreview]);
+  }, [quizzes, onMenuOpen, onExport, onPreview, onEdit]);
 
   return (
     <Grid container spacing={3}>
