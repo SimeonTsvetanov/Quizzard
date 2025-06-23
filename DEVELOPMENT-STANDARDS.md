@@ -3397,3 +3397,167 @@ const validateQuizForExport = (quiz: Quiz | null): string | null => {
   - Show user-friendly error messages
   - Provide recovery options
   - Log errors for debugging
+
+### **🔄 Update Functionality Standards**
+
+#### **1. Update Dialog Implementation (REQUIRED)**
+
+```typescript
+// ✅ REQUIRED: Professional update dialog with smooth transitions
+interface UpdateDialogProps {
+  open: boolean;
+  onClose: () => void;
+  checking: boolean;
+  updateAvailable: boolean;
+  error: string | null;
+  onCheckUpdate: () => void;
+  onApplyUpdate: () => void;
+}
+
+// ✅ REQUIRED: Smooth state transitions
+<Box
+  sx={{
+    position: "absolute",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    opacity: checking ? 1 : 0,
+    transform: checking ? "translateY(0)" : "translateY(-20px)",
+    transition: "all 0.3s ease-in-out",
+    visibility: checking ? "visible" : "hidden",
+  }}
+>
+  <CircularProgress size={56} thickness={4} />
+  <Typography
+    variant="body1"
+    sx={{
+      mt: 3,
+      fontWeight: 500,
+      opacity: checking ? 1 : 0,
+      transform: checking ? "translateY(0)" : "translateY(10px)",
+      transition: "all 0.2s ease-in-out",
+      transitionDelay: "0.1s",
+    }}
+  >
+    Checking for updates...
+  </Typography>
+</Box>;
+```
+
+#### **2. Update Hook Standards (REQUIRED)**
+
+```typescript
+// ✅ REQUIRED: Comprehensive update hook implementation
+interface UpdateState {
+  checking: boolean;
+  updateAvailable: boolean;
+  error: string | null;
+}
+
+// ✅ REQUIRED: Service worker integration
+const checkForUpdate = useCallback(async () => {
+  if ("serviceWorker" in navigator) {
+    const registration = await navigator.serviceWorker.ready;
+    await registration.update();
+    return !!registration.waiting;
+  }
+  throw new Error("Service Worker not supported");
+}, []);
+
+// ✅ REQUIRED: Update application
+const applyUpdate = useCallback(async () => {
+  if ("serviceWorker" in navigator) {
+    const registration = await navigator.serviceWorker.ready;
+    if (registration.waiting) {
+      registration.waiting.postMessage({ type: "SKIP_WAITING" });
+      window.location.reload();
+    }
+  }
+}, []);
+```
+
+#### **3. Navigation Integration (REQUIRED)**
+
+```typescript
+// ✅ REQUIRED: Update option in navigation drawer
+<ListItem disablePadding>
+  <ListItemButton onClick={handleUpdateClick}>
+    <ListItemIcon>
+      <SystemUpdateIcon />
+    </ListItemIcon>
+    <ListItemText primary="Check for Updates" />
+  </ListItemButton>
+</ListItem>
+
+// ✅ REQUIRED: Position after divider, before theme selector
+<Divider />
+<List>
+  <ListItem disablePadding>
+    <ListItemButton onClick={handleUpdateClick}>
+      <ListItemIcon><SystemUpdateIcon /></ListItemIcon>
+      <ListItemText primary="Check for Updates" />
+    </ListItemButton>
+  </ListItem>
+  <ListItemButton onClick={onThemeDialogOpen}>
+    <ListItemIcon>{themeIcon}</ListItemIcon>
+    <ListItemText primary="Theme" />
+  </ListItemButton>
+</List>
+```
+
+#### **4. Error Handling Standards (REQUIRED)**
+
+```typescript
+// ✅ REQUIRED: Comprehensive error handling
+try {
+  if ("serviceWorker" in navigator) {
+    const registration = await navigator.serviceWorker.ready;
+    await registration.update();
+  } else {
+    throw new Error("Service Worker not supported");
+  }
+} catch (error) {
+  setState({
+    checking: false,
+    error: "Failed to check for updates",
+    updateAvailable: false,
+  });
+}
+
+// ✅ REQUIRED: User-friendly error messages
+<Typography
+  variant="body1"
+  color="error"
+  sx={{ mt: 3, fontWeight: 500, textAlign: "center" }}
+>
+  {error}
+</Typography>;
+```
+
+#### **5. Visual Feedback Standards (REQUIRED)**
+
+```typescript
+// ✅ REQUIRED: Status-based icons and colors
+{
+  error ? (
+    <ErrorIcon color="error" sx={{ fontSize: 56 }} />
+  ) : updateAvailable ? (
+    <SystemUpdateIcon color="primary" sx={{ fontSize: 56 }} />
+  ) : (
+    <CheckCircleIcon color="success" sx={{ fontSize: 56 }} />
+  );
+}
+
+// ✅ REQUIRED: Consistent button styling
+<Button
+  onClick={onApplyUpdate}
+  variant="contained"
+  color="primary"
+  size="large"
+  startIcon={<SystemUpdateIcon />}
+  sx={{ minWidth: 120 }}
+>
+  Update Now
+</Button>;
+```

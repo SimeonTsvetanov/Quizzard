@@ -21,7 +21,7 @@
  * @since December 2025
  */
 
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import {
   Drawer,
   List,
@@ -45,6 +45,9 @@ import PrivacyTipIcon from "@mui/icons-material/PrivacyTip";
 import GavelIcon from "@mui/icons-material/Gavel";
 import ContactMailIcon from "@mui/icons-material/ContactMail";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
+import SystemUpdateIcon from "@mui/icons-material/SystemUpdate";
+import { useAppUpdate } from "../hooks/useAppUpdate";
+import { UpdateDialog } from "./UpdateDialog";
 
 /**
  * Props for the NavigationDrawer component
@@ -74,6 +77,8 @@ const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
 }) => {
   const closeBtnRef = useRef<HTMLButtonElement>(null);
   const drawerRef = useRef<HTMLDivElement>(null);
+  const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
+  const updateState = useAppUpdate();
 
   // Focus management: focus close button when Drawer opens
   useEffect(() => {
@@ -120,166 +125,191 @@ const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
     return () => drawerNode.removeEventListener("keydown", handleKeyDown);
   }, [open]);
 
+  const handleUpdateClick = () => {
+    setUpdateDialogOpen(true);
+    onClose();
+  };
+
   return (
-    <Drawer
-      anchor="right"
-      open={open}
-      onClose={onClose}
-      ref={drawerRef}
-      sx={{
-        zIndex: 1500, // Ensure drawer appears above modal content
-        "& .MuiDrawer-paper": {
-          width: 280,
-          bgcolor: "background.paper",
-          borderLeft: "1px solid",
-          borderColor: "divider",
-          zIndex: 1500, // Ensure paper also has high z-index
-        },
-      }}
-    >
-      <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
-        {/* Close button - positioned to match hamburger menu button exactly */}
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "flex-end",
-            alignItems: "center",
-            minHeight: { xs: 40, sm: 48 }, // Match toolbar height from Header
-            px: { xs: 1, sm: 2 }, // Match toolbar padding from Header
-          }}
-        >
-          <IconButton
-            onClick={onClose}
-            ref={closeBtnRef}
-            aria-label="Close navigation menu"
-            color="inherit"
+    <>
+      <Drawer
+        anchor="right"
+        open={open}
+        onClose={onClose}
+        ref={drawerRef}
+        sx={{
+          zIndex: 1500, // Ensure drawer appears above modal content
+          "& .MuiDrawer-paper": {
+            width: 280,
+            bgcolor: "background.paper",
+            borderLeft: "1px solid",
+            borderColor: "divider",
+            zIndex: 1500, // Ensure paper also has high z-index
+          },
+        }}
+      >
+        <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
+          {/* Close button - positioned to match hamburger menu button exactly */}
+          <Box
             sx={{
-              padding: { xs: 0.25, sm: 0.5 }, // Match hamburger menu button padding
-              minWidth: { xs: 36, sm: 44 }, // Match hamburger menu button size
-              minHeight: { xs: 36, sm: 44 }, // Match hamburger menu button size
-              "&:focus": { outline: "none" },
-              "&:focus-visible": {
-                outline: "2px solid",
-                outlineColor: "primary.main",
-                outlineOffset: 2,
-              },
-              "& .MuiTouchRipple-root": {
-                display: "none",
-              },
-              "&::after": {
-                display: "none",
-              },
-              "&:hover": {
-                backgroundColor: "rgba(255, 255, 255, 0.08)",
-              },
+              display: "flex",
+              justifyContent: "flex-end",
+              alignItems: "center",
+              minHeight: { xs: 40, sm: 48 }, // Match toolbar height from Header
+              px: { xs: 1, sm: 2 }, // Match toolbar padding from Header
             }}
           >
-            <CloseRoundedIcon
-              sx={{ fontSize: { xs: "1.75rem", sm: "2.1rem" } }} // Match hamburger menu icon size
-            />
-          </IconButton>
-        </Box>
-
-        <Divider />
-
-        {/* Main Navigation */}
-        <List>
-          <ListItem disablePadding>
-            <ListItemButton component={Link} to="/" onClick={onClose}>
-              <ListItemIcon>
-                <HomeRoundedIcon />
-              </ListItemIcon>
-              <ListItemText primary="Home" />
-            </ListItemButton>
-          </ListItem>
-          <ListItem disablePadding>
-            <ListItemButton component={Link} to="/about" onClick={onClose}>
-              <ListItemIcon>
-                <InfoIcon />
-              </ListItemIcon>
-              <ListItemText primary="About" />
-            </ListItemButton>
-          </ListItem>
-          <ListItem disablePadding>
-            <ListItemButton component={Link} to="/privacy" onClick={onClose}>
-              <ListItemIcon>
-                <PrivacyTipIcon />
-              </ListItemIcon>
-              <ListItemText primary="Privacy Policy" />
-            </ListItemButton>
-          </ListItem>
-          <ListItem disablePadding>
-            <ListItemButton component={Link} to="/terms" onClick={onClose}>
-              <ListItemIcon>
-                <GavelIcon />
-              </ListItemIcon>
-              <ListItemText primary="Terms" />
-            </ListItemButton>
-          </ListItem>
-          <ListItem disablePadding>
-            <ListItemButton component={Link} to="/contact" onClick={onClose}>
-              <ListItemIcon>
-                <ContactMailIcon />
-              </ListItemIcon>
-              <ListItemText primary="Contact" />
-            </ListItemButton>
-          </ListItem>
-          <ListItem disablePadding>
-            <ListItemButton
-              component="a"
-              href="https://github.com/SimeonTsvetanov"
-              target="_blank"
-              rel="noopener"
-            >
-              <ListItemIcon>
-                <GitHubIcon />
-              </ListItemIcon>
-              <ListItemText primary="GitHub" />
-            </ListItemButton>
-          </ListItem>
-          <ListItem disablePadding>
-            <ListItemButton
-              component="a"
-              href="https://buymeacoffee.com/simeontsvetanov"
-              target="_blank"
-              rel="noopener"
-            >
-              <ListItemIcon>
-                <LocalCafeIcon />
-              </ListItemIcon>
-              <ListItemText primary="Support Me" />
-            </ListItemButton>
-          </ListItem>
-        </List>
-
-        <Divider />
-
-        {/* Theme Selection */}
-        <List>
-          <ListItem disablePadding>
-            <ListItemButton
-              onClick={onThemeDialogOpen}
-              component="button"
+            <IconButton
+              onClick={onClose}
+              ref={closeBtnRef}
+              aria-label="Close navigation menu"
+              color="inherit"
               sx={{
+                padding: { xs: 0.25, sm: 0.5 }, // Match hamburger menu button padding
+                minWidth: { xs: 36, sm: 44 }, // Match hamburger menu button size
+                minHeight: { xs: 36, sm: 44 }, // Match hamburger menu button size
                 "&:focus": { outline: "none" },
-                "&:focus-visible": { outline: "none" },
+                "&:focus-visible": {
+                  outline: "2px solid",
+                  outlineColor: "primary.main",
+                  outlineOffset: 2,
+                },
+                "& .MuiTouchRipple-root": {
+                  display: "none",
+                },
+                "&::after": {
+                  display: "none",
+                },
+                "&:hover": {
+                  backgroundColor: "rgba(255, 255, 255, 0.08)",
+                },
               }}
             >
-              <ListItemIcon>
-                {currentTheme === "light" ? (
-                  <LightModeIcon />
-                ) : currentTheme === "dark" ? (
-                  <DarkModeIcon />
-                ) : (
-                  <ComputerIcon />
-                )}
-              </ListItemIcon>
-              <ListItemText primary="Theme" />
-            </ListItemButton>
-          </ListItem>
-        </List>
-      </Box>
-    </Drawer>
+              <CloseRoundedIcon
+                sx={{ fontSize: { xs: "1.75rem", sm: "2.1rem" } }} // Match hamburger menu icon size
+              />
+            </IconButton>
+          </Box>
+
+          <Divider />
+
+          {/* Main Navigation */}
+          <List>
+            <ListItem disablePadding>
+              <ListItemButton component={Link} to="/" onClick={onClose}>
+                <ListItemIcon>
+                  <HomeRoundedIcon />
+                </ListItemIcon>
+                <ListItemText primary="Home" />
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton component={Link} to="/about" onClick={onClose}>
+                <ListItemIcon>
+                  <InfoIcon />
+                </ListItemIcon>
+                <ListItemText primary="About" />
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton component={Link} to="/privacy" onClick={onClose}>
+                <ListItemIcon>
+                  <PrivacyTipIcon />
+                </ListItemIcon>
+                <ListItemText primary="Privacy Policy" />
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton component={Link} to="/terms" onClick={onClose}>
+                <ListItemIcon>
+                  <GavelIcon />
+                </ListItemIcon>
+                <ListItemText primary="Terms" />
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton component={Link} to="/contact" onClick={onClose}>
+                <ListItemIcon>
+                  <ContactMailIcon />
+                </ListItemIcon>
+                <ListItemText primary="Contact" />
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton
+                component="a"
+                href="https://github.com/SimeonTsvetanov"
+                target="_blank"
+                rel="noopener"
+              >
+                <ListItemIcon>
+                  <GitHubIcon />
+                </ListItemIcon>
+                <ListItemText primary="GitHub" />
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton
+                component="a"
+                href="https://buymeacoffee.com/simeontsvetanov"
+                target="_blank"
+                rel="noopener"
+              >
+                <ListItemIcon>
+                  <LocalCafeIcon />
+                </ListItemIcon>
+                <ListItemText primary="Support Me" />
+              </ListItemButton>
+            </ListItem>
+          </List>
+
+          <Divider />
+
+          {/* Settings */}
+          <List>
+            <ListItem disablePadding>
+              <ListItemButton onClick={handleUpdateClick}>
+                <ListItemIcon>
+                  <SystemUpdateIcon />
+                </ListItemIcon>
+                <ListItemText primary="Check for Updates" />
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton
+                onClick={onThemeDialogOpen}
+                component="button"
+                sx={{
+                  "&:focus": { outline: "none" },
+                  "&:focus-visible": { outline: "none" },
+                }}
+              >
+                <ListItemIcon>
+                  {currentTheme === "light" ? (
+                    <LightModeIcon />
+                  ) : currentTheme === "dark" ? (
+                    <DarkModeIcon />
+                  ) : (
+                    <ComputerIcon />
+                  )}
+                </ListItemIcon>
+                <ListItemText primary="Theme" />
+              </ListItemButton>
+            </ListItem>
+          </List>
+        </Box>
+      </Drawer>
+
+      <UpdateDialog
+        open={updateDialogOpen}
+        onClose={() => setUpdateDialogOpen(false)}
+        checking={updateState.checking}
+        updateAvailable={updateState.updateAvailable}
+        error={updateState.error}
+        onCheckUpdate={updateState.checkForUpdate}
+        onApplyUpdate={updateState.applyUpdate}
+      />
+    </>
   );
 };
 
