@@ -1,2 +1,0 @@
-import{j as o,B as t,I as i,a1 as n,v as a}from"./mui-YUMVbANw.js";import{P as c}from"./PageLayout-0VcFOprd.js";import{u as s}from"./index-B26QbDBX.js";import"./vendor-Csw2ODfV.js";function u(){const r=s();return o.jsxs(c,{children:[o.jsx(t,{sx:{mb:2},children:o.jsx(i,{"aria-label":"back",onClick:()=>r(-1),children:o.jsx(n,{})})}),o.jsx(a,{variant:"h4",component:"h1",gutterBottom:!0,children:"Privacy Policy"}),o.jsx(a,{variant:"body1",children:"Privacy Policy content coming soon..."})]})}export{u as default};
-//# sourceMappingURL=PrivacyPolicy-B1bGjOiM.js.map
