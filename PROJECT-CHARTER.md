@@ -373,6 +373,7 @@ The project follows a feature-based architecture:
 
 ### 4. Change Log / Decisions
 
+- **2025-12-20:** **THEME DIALOG UX FIX** - Corrected a layering (z-index) and state management issue where the theme selection dialog would open underneath the navigation drawer. The fix ensures the drawer closes automatically when the dialog opens, and the dialog is guaranteed to appear on top of all other content, providing a seamless and intuitive user experience across all pages and devices.
 - **2025-06-08:** **FOLDER STRUCTURE REORGANIZATION** - Implemented feature-based architecture for better organization and scalability. Moved components to appropriate directories (src/features/\*, src/pages/, src/shared/components/). Extracted theme logic to a custom hook (useTheme.ts). Updated all import paths to reflect the new structure.
 - **2025-06-04:** Project charter created. Decided to focus on landing page and tool placeholders first. All styles/themes must be ready before feature work.
 - **2025-06-04:** Initialized git, created private GitHub repo, and pushed code. Local development and private remote workflow established. Will make public and enable GitHub Pages when ready.

@@ -84,6 +84,7 @@ export const ThemeSelectionDialog: React.FC<ThemeSelectionDialogProps> = ({
           borderRadius: 3,
           p: 2,
           bgcolor: theme.palette.background.paper,
+          zIndex: 1500,
         },
       }}
     >

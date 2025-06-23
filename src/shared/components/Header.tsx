@@ -56,13 +56,17 @@ const Header = ({ mode, onThemeChange }: HeaderProps) => {
 
   const handleDrawerToggle = () => setDrawerOpen(!drawerOpen);
   const handleDrawerClose = () => setDrawerOpen(false);
-  const handleThemeDialogOpen = () => setThemeDialogOpen(true);
+
+  const handleThemeDialogOpen = () => {
+    setThemeDialogOpen(true);
+    setDrawerOpen(false);
+  };
+
   const handleThemeDialogClose = () => setThemeDialogOpen(false);
 
   const handleThemeChange = (newTheme: "light" | "dark" | "system") => {
     onThemeChange(newTheme);
     setThemeDialogOpen(false);
-    setDrawerOpen(false);
   };
 
   return (
