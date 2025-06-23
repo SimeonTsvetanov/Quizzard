@@ -36,7 +36,7 @@
   - Uses build + deployment method (main branch → gh-pages branch)
   - Never upload built files to main branch (source code only)
   - Auto-update via GitHub Actions (to be set up)
-  - Configured for `/quizzard/` base path deployment
+  - Configured for `/Quizzard/` base path deployment
 - **Routing:**
   - React Router (BrowserRouter) for professional URL handling
   - GitHub Pages SPA configuration with redirect support

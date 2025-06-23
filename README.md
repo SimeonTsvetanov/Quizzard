@@ -48,6 +48,7 @@ The platform's core strength lies in its comprehensive **quiz creation system** 
 ## 🎯 Core Features
 
 ### 📚 **Advanced Quiz Creation System**
+
 - **🎨 Visual Quiz Wizard** - Intuitive 2-step creation process
 - **🤖 AI-Powered Questions** - Google Gemini AI integration for intelligent question generation
 - **📊 Round Management** - Organize questions into themed rounds with custom settings
@@ -56,6 +57,7 @@ The platform's core strength lies in its comprehensive **quiz creation system** 
 - **📱 Mobile-Optimized** - Touch-friendly interface for all devices
 
 ### 🎮 **Quiz Types & Formats**
+
 - **Mixed Questions** - Single answer and multiple choice in one round
 - **Picture Rounds** - Image-based questions (Phase 3 ready)
 - **Audio Rounds** - Sound-based questions (Phase 3 ready)
@@ -63,6 +65,7 @@ The platform's core strength lies in its comprehensive **quiz creation system** 
 - **Golden Pyramid** - Progressive answer structure (1→2→3→4 correct answers)
 
 ### 🏆 **Professional Features**
+
 - **📊 Export System** - PowerPoint export functionality (Phase 3)
 - **🎯 Difficulty Levels** - Easy, Medium, Hard, and Random settings
 - **🌍 Multilingual** - English and Bulgarian language support
@@ -73,24 +76,30 @@ The platform's core strength lies in its comprehensive **quiz creation system** 
 
 ## 🛠️ Tools Overview
 
-### 🧠 **Final Question Generator** *(Secondary Tool)*
+### 🧠 **Final Question Generator** _(Secondary Tool)_
+
 AI-powered question generation for quick quiz content:
+
 - **🤖 Google Gemini AI** - Intelligent question creation
 - **🎯 Category Selection** - Custom topics or random selection
 - **🌍 Multilingual** - English and Bulgarian support
 - **⏱️ Rate Limiting** - 15 requests/minute with smart queuing
 - **📱 Offline Detection** - Graceful degradation when offline
 
-### 👥 **Random Team Generator** *(Secondary Tool)*
+### 👥 **Random Team Generator** _(Secondary Tool)_
+
 Professional team building for events:
+
 - **👤 Participant Management** - Add, edit, and organize participants
 - **🎲 Smart Distribution** - Algorithm-based team balancing
 - **🎮 Cheat Codes** - Easter egg functionality ("the followers")
 - **📋 Clipboard Export** - One-click team copying
 - **💾 Persistent Storage** - Cross-session participant saving
 
-### 🏆 **Points Counter** *(Secondary Tool)*
+### 🏆 **Points Counter** _(Secondary Tool)_
+
 Real-time scoring system for quiz competitions:
+
 - **👥 Team Management** - Dynamic team creation and management
 - **📊 Live Scoring** - Real-time point tracking and updates
 - **🏅 Leaderboard** - Dynamic ranking with tie-breakers
@@ -102,6 +111,7 @@ Real-time scoring system for quiz competitions:
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - **Node.js** (v18 or higher)
 - **npm** or **yarn**
 - **Google Gemini API key** (for AI features)
@@ -133,6 +143,7 @@ VITE_GEMINI_API_KEY=your_gemini_api_key_here
 ```
 
 **Get your Gemini API key:**
+
 1. Visit [Google AI Studio](https://makersuite.google.com/app/apikey)
 2. Sign in with your Google account
 3. Create a new API key
@@ -143,35 +154,41 @@ VITE_GEMINI_API_KEY=your_gemini_api_key_here
 ## 💻 Tech Stack
 
 ### **Frontend Framework**
+
 - **React 18** - Modern component-based architecture
 - **TypeScript 5.0+** - Type-safe development
 - **Material-UI (MUI) 5.0+** - Professional design system
 - **React Router 6** - Client-side routing with BrowserRouter
 
 ### **Build & Development**
+
 - **Vite 5.0+** - Fast build tool and dev server
 - **ESLint** - Code quality and consistency
 - **Prettier** - Code formatting
 - **TypeScript** - Static type checking
 
 ### **Storage & State Management**
+
 - **IndexedDB** - Client-side database for quiz storage
 - **localStorage** - Cross-session persistence
 - **React Hooks** - Custom state management
 - **Context API** - Global state management
 
 ### **PWA & Performance**
+
 - **Service Worker** - Offline functionality and caching
 - **Web App Manifest** - PWA installation support
 - **Lazy Loading** - Route-based code splitting
 - **Bundle Optimization** - Tree shaking and minification
 
 ### **AI & External Services**
+
 - **Google Gemini API** - AI question generation
 - **Rate Limiting** - Client-side request management
 - **Error Handling** - Graceful degradation
 
 ### **Deployment & Hosting**
+
 - **GitHub Pages** - Static site hosting
 - **GitHub Actions** - Automated deployment workflow
 - **PWA Support** - Full progressive web app capabilities
@@ -181,12 +198,14 @@ VITE_GEMINI_API_KEY=your_gemini_api_key_here
 ## 📱 PWA Features
 
 ### **Installation & Offline**
+
 - **📱 Installable** - Add to home screen on all devices
 - **🔄 Offline Support** - Works without internet connection
 - **⚡ Fast Loading** - Service worker caching
 - **🔄 Auto-Updates** - Seamless version updates
 
 ### **Mobile Optimization**
+
 - **📱 Responsive Design** - Perfect on all screen sizes
 - **👆 Touch-Friendly** - Optimized for mobile interaction
 - **🎨 Native Feel** - App-like experience
@@ -197,12 +216,14 @@ VITE_GEMINI_API_KEY=your_gemini_api_key_here
 ## 🎨 UI/UX Features
 
 ### **Design System**
+
 - **🎨 Material Design 3** - Modern, accessible design
 - **🌙 Dark/Light Themes** - User preference support
 - **📱 Responsive Layout** - 320px to 7680px support
 - **♿ Accessibility** - WCAG AA compliance
 
 ### **User Experience**
+
 - **🚀 Fast Navigation** - Instant page transitions
 - **💾 Auto-Save** - Never lose work
 - **🎯 Intuitive Interface** - Self-explanatory design
@@ -213,6 +234,7 @@ VITE_GEMINI_API_KEY=your_gemini_api_key_here
 ## 🔧 Development
 
 ### **Project Structure**
+
 ```
 src/
 ├── features/           # Feature-based architecture
@@ -226,6 +248,7 @@ src/
 ```
 
 ### **Available Scripts**
+
 ```bash
 npm run dev          # Start development server
 npm run build        # Build for production
@@ -239,15 +262,18 @@ npm run type-check   # TypeScript type checking
 ## 📦 Deployment
 
 ### **Automatic Deployment**
+
 The app automatically deploys to GitHub Pages when changes are pushed to the main branch.
 
 ### **Manual Deployment**
+
 ```bash
 npm run build
 npm run deploy
 ```
 
 ### **Environment Variables**
+
 - **Development**: `http://localhost:5173`
 - **Production**: `https://simeontsvetanov.github.io/quizzard/`
 
@@ -264,6 +290,7 @@ We welcome contributions! Please follow these steps:
 5. **Open** a Pull Request
 
 ### **Development Standards**
+
 - Follow the established code style and architecture
 - Add comprehensive JSDoc documentation
 - Include TypeScript types for all new features
@@ -274,12 +301,14 @@ We welcome contributions! Please follow these steps:
 ## 📞 Support
 
 ### **Creator Information**
+
 - **👨‍💻 Creator**: Simeon Tsvetanov
 - **📧 Email**: [tsvetanov.simeon@gmail.com](mailto:tsvetanov.simeon@gmail.com)
 - **🐛 Issues**: [GitHub Issues](https://github.com/SimeonTsvetanov/Quizzard/issues)
 - **💬 Discussions**: [GitHub Discussions](https://github.com/SimeonTsvetanov/Quizzard/discussions)
 
 ### **Support the Project**
+
 This project is developed and maintained for free. If you find it useful, please consider supporting the development:
 
 [☕ **Buy Me a Coffee**](https://www.buymeacoffee.com/simeontsvetanov)
@@ -289,15 +318,18 @@ Your support helps maintain and improve Quizzard for everyone!
 ### **Common Issues**
 
 **API Rate Limits**
+
 - Free tier: 15 requests/minute
 - Wait between requests or upgrade to paid tier
 
 **PWA Installation Issues**
+
 - Ensure HTTPS is enabled
 - Clear browser cache and try again
 - Check browser PWA support
 
 **Build Errors**
+
 - Verify all environment variables are set
 - Run `npm install` to update dependencies
 - Check TypeScript errors with `npm run type-check`
@@ -316,4 +348,4 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 [🚀 **Try Quizzard Now**](https://simeontsvetanov.github.io/quizzard/) | [📧 **Contact Creator**](mailto:tsvetanov.simeon@gmail.com) | [🐛 **Report Issues**](https://github.com/SimeonTsvetanov/Quizzard/issues)
 
-</div> 
+</div>

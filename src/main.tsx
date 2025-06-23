@@ -25,10 +25,10 @@ if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     const isDevelopment =
       location.hostname === "localhost" || location.hostname === "127.0.0.1";
-    // Use '/quizzard/service-worker.js' for GitHub Pages; change to '/service-worker.js' for custom domains
+    // Use '/Quizzard/service-worker.js' for GitHub Pages; change to '/service-worker.js' for custom domains
     const swPath = isDevelopment
       ? "/service-worker.js"
-      : "/quizzard/service-worker.js";
+      : "/Quizzard/service-worker.js";
 
     navigator.serviceWorker
       .register(swPath)
@@ -48,8 +48,8 @@ if ("serviceWorker" in navigator) {
 const getBaseUrl = () => {
   const isDevelopment =
     location.hostname === "localhost" || location.hostname === "127.0.0.1";
-  // Use '/quizzard' for GitHub Pages; change to '/' for custom domains
-  return isDevelopment ? "" : "/quizzard";
+  // Use '/Quizzard' for GitHub Pages; change to '/' for custom domains
+  return isDevelopment ? "" : "/Quizzard";
 };
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
