@@ -155,7 +155,7 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
         <Typography variant="subtitle1" color="text.secondary">
           {currentRound.level ? `Level: ${currentRound.level}` : ""} | Reveal:{" "}
           {currentRound.answerRevealMode} | Default Time:{" "}
-          {currentRound.defaultTimePerQuestion}s
+          {currentRound.defaultTimePerQuestion}min
         </Typography>
       </Box>
 

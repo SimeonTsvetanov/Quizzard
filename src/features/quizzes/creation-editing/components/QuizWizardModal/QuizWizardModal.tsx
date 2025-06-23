@@ -186,7 +186,7 @@ export const QuizWizardModal: React.FC<QuizWizardProps> = ({
     try {
       // Import the delete functionality from the storage service
       const { indexedDBService } = await import(
-        "../../management/services/indexedDBService"
+        "../../../management/services/indexedDBService"
       );
       const result = await indexedDBService.deleteQuiz(editQuiz.id);
 
@@ -287,18 +287,16 @@ export const QuizWizardModal: React.FC<QuizWizardProps> = ({
                 <BasicInfoStep
                   draftQuiz={draftQuiz}
                   updateDraft={updateDraft}
-                  validation={{ isValid: true, errors: [], warnings: [] }}
+                  validation={{
+                    isValid: true,
+                    errors: [],
+                    warnings: [],
+                    validatedAt: new Date(),
+                  }}
+                  onDeleteQuiz={editQuiz ? handleDeleteQuiz : undefined}
+                  isEditMode={!!editQuiz}
+                  onContinue={() => setShowBasicInfo(false)}
                 />
-                <Box sx={{ mt: 3, textAlign: "center" }}>
-                  <Button
-                    variant="contained"
-                    onClick={() => setShowBasicInfo(false)}
-                    disabled={!draftQuiz.title?.trim()}
-                    size="large"
-                  >
-                    Continue to Questions
-                  </Button>
-                </Box>
               </Box>
             )}
 
@@ -318,61 +316,6 @@ export const QuizWizardModal: React.FC<QuizWizardProps> = ({
         {/* Floating Action Buttons - only show when not in basic info mode */}
         {!showBasicInfo && (
           <>
-            {/* Delete Quiz Button - only show when editing existing quiz */}
-            {editQuiz && (
-              <Box
-                sx={{
-                  position: "fixed",
-                  bottom: { xs: 16, sm: 24 },
-                  left: { xs: 16, sm: 24 },
-                  zIndex: 1300,
-                }}
-              >
-                {/* Mobile: FAB */}
-                <Box
-                  sx={{
-                    display: { xs: "block", sm: "none" },
-                  }}
-                >
-                  <Fab
-                    color="error"
-                    onClick={handleDeleteQuiz}
-                    sx={{
-                      boxShadow: 3,
-                      "&:hover": {
-                        boxShadow: 6,
-                      },
-                    }}
-                  >
-                    <DeleteIcon />
-                  </Fab>
-                </Box>
-                {/* Desktop: Button */}
-                <Box
-                  sx={{
-                    display: { xs: "none", sm: "block" },
-                  }}
-                >
-                  <Button
-                    variant="contained"
-                    color="error"
-                    onClick={handleDeleteQuiz}
-                    startIcon={<DeleteIcon />}
-                    sx={{
-                      boxShadow: 3,
-                      "&:hover": {
-                        boxShadow: 6,
-                      },
-                      minWidth: 120,
-                      height: 56,
-                    }}
-                  >
-                    Delete Quiz
-                  </Button>
-                </Box>
-              </Box>
-            )}
-
             {/* Right side buttons */}
             <Box
               sx={{

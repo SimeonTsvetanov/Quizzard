@@ -28,12 +28,13 @@ import {
   Grid,
   Chip,
   FormHelperText,
-  Slider,
   InputAdornment,
+  Button,
 } from "@mui/material";
 import {
   Category as CategoryIcon,
   TrendingUp as DifficultyIcon,
+  Delete as DeleteIcon,
 } from "@mui/icons-material";
 import type {
   Quiz,
@@ -53,6 +54,12 @@ interface BasicInfoStepProps {
   updateDraft: (updates: Partial<Quiz>) => void;
   /** Current validation state */
   validation: QuizValidation;
+  /** Function to handle quiz deletion (only shown when editing) */
+  onDeleteQuiz?: () => void;
+  /** Whether this is edit mode (to show delete button) */
+  isEditMode?: boolean;
+  /** Function to handle continuing to questions section */
+  onContinue?: () => void;
 }
 
 /**
@@ -158,6 +165,9 @@ export const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
   draftQuiz,
   updateDraft,
   validation,
+  onDeleteQuiz,
+  isEditMode,
+  onContinue,
 }) => {
   /**
    * Gets error message for a specific field
@@ -170,6 +180,21 @@ export const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
     },
     [validation.errors]
   );
+
+  const timeValue = draftQuiz.defaultTimeLimit;
+  const displayTime = timeValue === undefined ? "" : Math.round(timeValue / 60);
+  const timeForValidation = timeValue ?? 60; // 60 seconds = 1 minute
+  const isTimeValid = timeForValidation > 0 && timeForValidation <= 3600; // 1 second to 60 minutes
+
+  const getTimeError = () => {
+    if (timeValue !== undefined && !isTimeValid) {
+      if (timeValue <= 0) return "Time must be > 0 minutes.";
+      if (timeValue > 3600) return "Time must be <= 60 minutes.";
+    }
+    return undefined;
+  };
+
+  const timeError = getTimeError();
 
   return (
     <Box sx={{ maxWidth: 1000, mx: "auto" }}>
@@ -308,56 +333,98 @@ export const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
 
         <Box sx={{ mt: 3, width: "100%" }}>
           <Typography gutterBottom>Default Time Per Question</Typography>
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: 2,
-              width: "100%",
+          <TextField
+            fullWidth
+            type="number"
+            label="1 Minute by Default"
+            placeholder="1 Minute by Default"
+            value={displayTime}
+            onChange={(e) => {
+              const val = e.target.value;
+              updateDraft({
+                defaultTimeLimit: val === "" ? undefined : Number(val) * 60,
+              });
             }}
-          >
-            <Slider
-              min={10}
-              max={300}
-              step={10}
-              value={draftQuiz.defaultTimeLimit ?? 60}
-              onChange={(_, value) =>
-                updateDraft({ defaultTimeLimit: value as number })
-              }
-              valueLabelDisplay="auto"
-              valueLabelFormat={(v) =>
-                `${Math.floor(v / 60)} min ${v % 60 ? (v % 60) + " sec" : ""}`
-              }
-              sx={{ flex: 1 }}
-              aria-label="Default time per question slider"
-            />
-            <TextField
-              type="number"
-              size="small"
-              label="Seconds"
-              inputProps={{ min: 10, max: 300, step: 10 }}
-              value={draftQuiz.defaultTimeLimit ?? 60}
-              onChange={(e) => {
-                let val = Number(e.target.value);
-                if (val < 10) val = 10;
-                if (val > 300) val = 300;
-                updateDraft({ defaultTimeLimit: val });
-              }}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">sec</InputAdornment>
-                ),
-              }}
-              sx={{ width: 120 }}
-              aria-label="Default time per question input"
-            />
-          </Box>
-          <FormHelperText>
-            This will be the default time limit for each new question. You can
-            override it per question.
-          </FormHelperText>
+            error={!!timeError}
+            helperText={
+              timeError ||
+              "This will be the default time limit for each new question. You can override it per question."
+            }
+            inputProps={{
+              step: 0.5,
+              min: 0.1,
+              "aria-label": "Default time per question in minutes",
+            }}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">minutes</InputAdornment>
+              ),
+            }}
+            size="medium"
+            sx={{
+              mb: 1,
+              "& .MuiOutlinedInput-root": {
+                "&.Mui-error fieldset": {
+                  borderColor: "error.main",
+                },
+              },
+            }}
+          />
         </Box>
       </Grid>
+
+      {/* Delete and Continue Buttons Row */}
+      <Box
+        sx={{
+          mt: 4,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        {/* Delete Button - only show when editing */}
+        {isEditMode && onDeleteQuiz && (
+          <Button
+            variant="outlined"
+            color="error"
+            onClick={onDeleteQuiz}
+            startIcon={<DeleteIcon />}
+            size="large"
+            sx={{
+              borderColor: "error.main",
+              color: "error.main",
+              "&:hover": {
+                borderColor: "error.dark",
+                backgroundColor: "error.light",
+                color: "error.dark",
+              },
+            }}
+          >
+            Delete Quiz
+          </Button>
+        )}
+
+        {/* Spacer to center the Continue button when no delete button */}
+        {!isEditMode && <Box />}
+
+        {/* Continue to Questions Button - always centered */}
+        <Button
+          variant="contained"
+          onClick={onContinue}
+          disabled={!draftQuiz.title?.trim() || !isTimeValid}
+          size="large"
+          sx={{
+            minWidth: 200,
+            height: 48,
+            boxShadow: 2,
+            "&:hover": {
+              boxShadow: 4,
+            },
+          }}
+        >
+          Continue to Questions
+        </Button>
+      </Box>
     </Box>
   );
 };

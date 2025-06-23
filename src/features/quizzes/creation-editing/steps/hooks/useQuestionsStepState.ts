@@ -128,7 +128,7 @@ export const useQuestionsStepState = (
     description: "",
     type: "mixed",
     answerRevealMode: "after-all",
-    defaultTimePerQuestion: draftQuiz.defaultTimeLimit || 1, // Changed to minutes
+    defaultTimePerQuestion: (draftQuiz.defaultTimeLimit || 60) / 60, // Convert seconds to minutes
     breakingTime: 5, // Changed default to 5 minutes breaking time
   });
 
@@ -191,7 +191,7 @@ export const useQuestionsStepState = (
         description: "",
         type: "mixed",
         answerRevealMode: "after-all", // Changed default to "after-all"
-        defaultTimePerQuestion: draftQuiz.defaultTimeLimit || 1, // Changed to minutes
+        defaultTimePerQuestion: (draftQuiz.defaultTimeLimit || 60) / 60, // Convert seconds to minutes
         breakingTime: 5, // Changed default to 5 minutes breaking time
       });
     }
