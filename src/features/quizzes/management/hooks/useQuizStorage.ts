@@ -9,9 +9,10 @@
  * - Storage usage monitoring
  * - Error handling with user feedback
  * - Seamless fallback to localStorage
+ * - Enhanced state synchronization debugging
  *
  * @fileoverview React hook for quiz data storage
- * @version 1.0.0
+ * @version 1.1.0 (Enhanced Synchronization)
  * @since December 2025
  */
 
@@ -23,6 +24,18 @@ import {
 } from "../services/indexedDBService";
 import type { Quiz } from "../types";
 import { useSnackbar } from "../../../../shared/hooks/useSnackbar";
+
+// Debug mode for development
+const DEBUG_SYNC = process.env.NODE_ENV === "development";
+
+/**
+ * Enhanced debug logging for state synchronization
+ */
+const debugLog = (operation: string, data: any) => {
+  if (DEBUG_SYNC) {
+    console.log(`🔄 [QuizStorage] ${operation}:`, data);
+  }
+};
 
 /**
  * Auto-save status
@@ -138,6 +151,7 @@ export const useQuizStorage = (): UseQuizStorageReturn => {
         const result = await indexedDBService.saveQuiz(quiz);
 
         if (result.success) {
+          // Immediately update state
           setState((prev) => ({
             ...prev,
             quizzes: prev.quizzes.some((q) => q.id === quiz.id)
@@ -153,8 +167,12 @@ export const useQuizStorage = (): UseQuizStorageReturn => {
             "success"
           );
 
-          // Refresh storage usage
-          await refreshStorageUsage();
+          // Force reload data to ensure synchronization
+          await Promise.all([
+            loadQuizzes(),
+            loadDrafts(),
+            refreshStorageUsage(),
+          ]);
 
           return true;
         } else {
@@ -214,16 +232,40 @@ export const useQuizStorage = (): UseQuizStorageReturn => {
         const result = await indexedDBService.deleteQuiz(id);
 
         if (result.success) {
+          // Immediately update state
           setState((prev) => ({
             ...prev,
             quizzes: prev.quizzes.filter((q) => q.id !== id),
             isLoading: false,
           }));
 
-          showSnackbar("Quiz deleted successfully", "success");
+          // Force reload data to ensure synchronization
+          await Promise.all([
+            loadQuizzes(),
+            (async () => {
+              try {
+                const draftsResult = await indexedDBService.loadDrafts();
+                if (draftsResult.success) {
+                  setState((prev) => ({
+                    ...prev,
+                    drafts: draftsResult.data || [],
+                  }));
+                }
+              } catch (error) {
+                console.error("Error reloading drafts:", error);
+              }
+            })(),
+            (async () => {
+              try {
+                const usage = await indexedDBService.getStorageUsage();
+                setState((prev) => ({ ...prev, storageUsage: usage }));
+              } catch (error) {
+                console.error("Error refreshing storage usage:", error);
+              }
+            })(),
+          ]);
 
-          // Refresh storage usage
-          await refreshStorageUsage();
+          showSnackbar("Quiz deleted successfully", "success");
 
           return true;
         } else {
@@ -238,7 +280,7 @@ export const useQuizStorage = (): UseQuizStorageReturn => {
         return false;
       }
     },
-    [showSnackbar]
+    [showSnackbar, loadQuizzes]
   );
 
   /**

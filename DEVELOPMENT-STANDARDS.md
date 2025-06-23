@@ -160,6 +160,133 @@ export const Button: React.FC<ButtonProps> = ({
 };
 ```
 
+### **🎨 UI COMPONENT STANDARDS**
+
+#### **1. Button Consistency & Responsive Design (REQUIRED)**
+
+```typescript
+// ✅ REQUIRED: Consistent button sizing with responsive behavior
+<Button
+  variant="outlined"
+  color="error"
+  onClick={onDeleteQuiz}
+  startIcon={<DeleteIcon />}
+  size="large"
+  sx={{
+    minWidth: { xs: "auto", sm: 150 }, // Mobile: auto-width, Desktop: fixed
+    height: 48, // Consistent height across all devices
+    borderColor: "error.main",
+    color: "error.main",
+    "&:hover": {
+      borderColor: "error.dark",
+      backgroundColor: "error.light",
+      color: "error.dark",
+    },
+  }}
+  aria-label="Delete quiz" // Accessibility compliance
+>
+  {/* Mobile: Icon only, Desktop: Icon + Text */}
+  <Box sx={{ display: { xs: "none", sm: "inline" } }}>Delete Quiz</Box>
+</Button>
+
+<Button
+  variant="contained"
+  color="primary"
+  onClick={onContinue}
+  endIcon={<ArrowForwardIcon />}
+  size="large"
+  sx={{
+    minWidth: { xs: "auto", sm: 150 }, // Consistent with other buttons
+    height: 48, // Same height for visual consistency
+    backgroundColor: "primary.main",
+    "&:hover": {
+      backgroundColor: "primary.dark",
+    },
+  }}
+  aria-label="Continue to questions"
+>
+  {/* Mobile: Shortened text, Desktop: Full text */}
+  <Box sx={{ display: { xs: "inline", sm: "none" } }}>Continue</Box>
+  <Box sx={{ display: { xs: "none", sm: "inline" } }}>Continue to Questions</Box>
+</Button>
+```
+
+#### **2. Mobile-First Button Text Strategy (REQUIRED)**
+
+- **Desktop (sm+)**: Full descriptive text with icons
+- **Mobile (xs)**: Shortened text or icon-only with proper ARIA labels
+- **Consistent heights**: All buttons in the same row must use identical `height` values
+- **Responsive minWidth**: Use `{ xs: "auto", sm: 150 }` pattern for flexible mobile sizing
+
+#### **3. Professional Visual Hierarchy (REQUIRED)**
+
+```typescript
+// ✅ REQUIRED: Button groups with consistent spacing and alignment
+<Box
+  sx={{
+    mt: 4,
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 2, // Consistent spacing between buttons
+  }}
+>
+  {/* Primary Action Button */}
+  <Button
+    variant="contained"
+    color="primary"
+    sx={{
+      minWidth: { xs: "auto", sm: 150 },
+      height: 48,
+    }}
+  >
+    Primary Action
+  </Button>
+
+  {/* Secondary Action Button */}
+  <Button
+    variant="outlined"
+    color="secondary"
+    sx={{
+      minWidth: { xs: "auto", sm: 150 },
+      height: 48, // Same height as primary
+    }}
+  >
+    Secondary Action
+  </Button>
+</Box>
+```
+
+#### **4. Accessibility Requirements (REQUIRED)**
+
+- **ARIA Labels**: All icon-only buttons must have `aria-label` attributes
+- **Keyboard Navigation**: Ensure proper tab order and focus management
+- **Screen Reader Compatibility**: Use semantic button elements, not divs
+- **Color Contrast**: Follow WCAG AA standards for text/background contrast
+- **Touch Targets**: Minimum 44px height for mobile accessibility
+
+#### **5. Button State Management (REQUIRED)**
+
+```typescript
+// ✅ REQUIRED: Proper disabled and loading states
+<Button
+  variant="contained"
+  disabled={isLoading || !isValid}
+  startIcon={isLoading ? <CircularProgress size={20} /> : <SaveIcon />}
+  sx={{
+    minWidth: { xs: "auto", sm: 150 },
+    height: 48,
+    opacity: isLoading || !isValid ? 0.6 : 1,
+    "&.Mui-disabled": {
+      backgroundColor: "action.disabledBackground",
+      color: "action.disabled",
+    },
+  }}
+>
+  {isLoading ? "Saving..." : "Save Quiz"}
+</Button>
+```
+
 ### **Typography & Font Standards**
 
 #### **1. Google Fonts Integration (REQUIRED)**
@@ -2397,3 +2524,689 @@ Features:
 - Professional Material-UI interface with accessibility compliance
 - Comprehensive error handling and user feedback systems
 - Foundation ready for Phase 2 (Playing) and Phase 3 (Media/Export) implementation
+
+## **🗄️ INDEXEDDB INTEGRATION STANDARDS**
+
+### **IndexedDB Service Architecture (REQUIRED)**
+
+#### **1. Database Service Layer**
+
+```typescript
+// ✅ REQUIRED: Centralized IndexedDB service following singleton pattern
+interface IndexedDBService {
+  // Database lifecycle
+  initializeDB(): Promise<void>;
+  closeDB(): void;
+
+  // Quiz operations
+  saveQuiz(quiz: Quiz): Promise<string>;
+  getQuiz(id: string): Promise<Quiz | null>;
+  getAllQuizzes(): Promise<Quiz[]>;
+  deleteQuiz(id: string): Promise<void>;
+
+  // Draft operations
+  saveDraft(draft: QuizDraft): Promise<string>;
+  getDraft(id: string): Promise<QuizDraft | null>;
+  getAllDrafts(): Promise<QuizDraft[]>;
+  deleteDraft(id: string): Promise<void>;
+
+  // Storage monitoring
+  getStorageUsage(): Promise<StorageUsage>;
+  cleanupOldDrafts(olderThanDays: number): Promise<number>;
+}
+
+// ✅ REQUIRED: Database schema versioning
+const DB_NAME = "QuizzardDB";
+const DB_VERSION = 2; // Increment for schema changes
+const STORES = {
+  QUIZZES: "quizzes",
+  DRAFTS: "drafts",
+  TEMPLATES: "templates",
+} as const;
+```
+
+#### **2. Auto-Save Implementation (REQUIRED)**
+
+```typescript
+// ✅ REQUIRED: Auto-save with debouncing for performance
+const useAutoSave = (data: QuizDraft, interval: number = 30000) => {
+  const debouncedSave = useMemo(
+    () =>
+      debounce(async (draft: QuizDraft) => {
+        try {
+          await indexedDBService.saveDraft(draft);
+          setLastSaved(new Date());
+        } catch (error) {
+          console.error("Auto-save failed:", error);
+          // Fallback to localStorage if IndexedDB fails
+          localStorage.setItem(`draft_${draft.id}`, JSON.stringify(draft));
+        }
+      }, 3000), // 3 second debounce
+    []
+  );
+
+  useEffect(() => {
+    if (data) {
+      debouncedSave(data);
+    }
+  }, [data, debouncedSave]);
+};
+```
+
+#### **3. Error Handling & Fallbacks (REQUIRED)**
+
+```typescript
+// ✅ REQUIRED: Graceful degradation when IndexedDB unavailable
+const useStorageWithFallback = () => {
+  const [isIndexedDBAvailable, setIsIndexedDBAvailable] = useState(true);
+
+  const saveData = async (key: string, data: any): Promise<void> => {
+    try {
+      if (isIndexedDBAvailable) {
+        await indexedDBService.saveQuiz(data);
+      } else {
+        // Fallback to localStorage
+        localStorage.setItem(key, JSON.stringify(data));
+      }
+    } catch (error) {
+      console.warn("IndexedDB failed, falling back to localStorage:", error);
+      setIsIndexedDBAvailable(false);
+      localStorage.setItem(key, JSON.stringify(data));
+    }
+  };
+
+  return { saveData, isIndexedDBAvailable };
+};
+```
+
+### **Storage Performance Standards (REQUIRED)**
+
+#### **1. Data Compression**
+
+```typescript
+// ✅ REQUIRED: Compress large quiz data before storage
+const compressQuizData = (quiz: Quiz): CompressedQuiz => {
+  return {
+    ...quiz,
+    rounds: quiz.rounds.map((round) => ({
+      ...round,
+      questions: round.questions.map((q) => ({
+        id: q.id,
+        text: q.text,
+        answers: q.answers,
+        // Remove unnecessary whitespace and format
+        text: q.text.trim().replace(/\s+/g, " "),
+      })),
+    })),
+  };
+};
+```
+
+#### **2. Storage Monitoring**
+
+```typescript
+// ✅ REQUIRED: Monitor storage usage and cleanup
+interface StorageMetrics {
+  totalQuizzes: number;
+  totalDrafts: number;
+  estimatedSize: number; // bytes
+  oldestDraft: Date | null;
+  quota: number; // Available storage quota
+  usage: number; // Current usage
+}
+
+const useStorageMonitoring = (): StorageMetrics => {
+  const [metrics, setMetrics] = useState<StorageMetrics>({
+    totalQuizzes: 0,
+    totalDrafts: 0,
+    estimatedSize: 0,
+    oldestDraft: null,
+    quota: 0,
+    usage: 0,
+  });
+
+  useEffect(() => {
+    const updateMetrics = async () => {
+      try {
+        const usage = await indexedDBService.getStorageUsage();
+        setMetrics(usage);
+      } catch (error) {
+        console.error("Failed to get storage metrics:", error);
+      }
+    };
+
+    updateMetrics();
+    const interval = setInterval(updateMetrics, 60000); // Update every minute
+    return () => clearInterval(interval);
+  }, []);
+
+  return metrics;
+};
+```
+
+## **🌐 SPA ARCHITECTURE STANDARDS**
+
+### **React Router Integration (REQUIRED)**
+
+#### **1. Router Configuration**
+
+```typescript
+// ✅ REQUIRED: BrowserRouter with proper base path for GitHub Pages
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+
+const App: React.FC = () => {
+  return (
+    <Router basename="/Quizzard">
+      <ErrorBoundary>
+        <ThemeProvider theme={theme}>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/quizzes" element={<Quizzes />} />
+            <Route path="/quizzes/create" element={<QuizCreator />} />
+            <Route path="/quizzes/edit/:id" element={<QuizEditor />} />
+            <Route
+              path="/random-team-generator"
+              element={<RandomTeamGenerator />}
+            />
+            <Route path="/points-counter" element={<PointsCounter />} />
+            <Route path="/final-question" element={<FinalQuestion />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </ThemeProvider>
+      </ErrorBoundary>
+    </Router>
+  );
+};
+```
+
+#### **2. GitHub Pages SPA Configuration (REQUIRED)**
+
+```html
+<!-- ✅ REQUIRED: public/404.html for SPA redirect support -->
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Quizzard</title>
+    <script type="text/javascript">
+      // GitHub Pages SPA redirect
+      var pathSegmentsToKeep = 1; // For /Quizzard/ base path
+      var l = window.location;
+      l.replace(
+        l.protocol +
+          "//" +
+          l.hostname +
+          (l.port ? ":" + l.port : "") +
+          l.pathname
+            .split("/")
+            .slice(0, 1 + pathSegmentsToKeep)
+            .join("/") +
+          "/?/" +
+          l.pathname
+            .slice(1)
+            .split("/")
+            .slice(pathSegmentsToKeep)
+            .join("/")
+            .replace(/&/g, "~and~") +
+          (l.search ? "&" + l.search.slice(1).replace(/&/g, "~and~") : "") +
+          l.hash
+      );
+    </script>
+  </head>
+  <body></body>
+</html>
+```
+
+#### **3. URL State Management (REQUIRED)**
+
+```typescript
+// ✅ REQUIRED: Quiz editor with URL state preservation
+const useQuizEditorWithURL = (quizId?: string) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Preserve editing state in URL parameters
+  const updateURLState = (state: Partial<QuizEditState>) => {
+    const searchParams = new URLSearchParams(location.search);
+
+    if (state.currentStep) {
+      searchParams.set("step", state.currentStep.toString());
+    }
+    if (state.currentRound) {
+      searchParams.set("round", state.currentRound.toString());
+    }
+
+    navigate(
+      {
+        pathname: location.pathname,
+        search: searchParams.toString(),
+      },
+      { replace: true }
+    );
+  };
+
+  return { updateURLState };
+};
+```
+
+### **Navigation Standards (REQUIRED)**
+
+#### **1. Breadcrumb Navigation**
+
+```typescript
+// ✅ REQUIRED: Breadcrumb support for deep navigation
+interface BreadcrumbItem {
+  label: string;
+  path: string;
+  icon?: React.ComponentType;
+}
+
+const useBreadcrumbs = (): BreadcrumbItem[] => {
+  const location = useLocation();
+
+  const generateBreadcrumbs = (pathname: string): BreadcrumbItem[] => {
+    const pathSegments = pathname.split("/").filter(Boolean);
+    const breadcrumbs: BreadcrumbItem[] = [
+      { label: "Home", path: "/", icon: HomeIcon },
+    ];
+
+    if (pathSegments.includes("quizzes")) {
+      breadcrumbs.push({ label: "Quizzes", path: "/quizzes", icon: QuizIcon });
+
+      if (pathSegments.includes("create")) {
+        breadcrumbs.push({ label: "Create Quiz", path: "/quizzes/create" });
+      } else if (pathSegments.includes("edit")) {
+        breadcrumbs.push({
+          label: "Edit Quiz",
+          path: `/quizzes/edit/${pathSegments[2]}`,
+        });
+      }
+    }
+
+    return breadcrumbs;
+  };
+
+  return generateBreadcrumbs(location.pathname);
+};
+```
+
+## **⚠️ ERROR BOUNDARY INTEGRATION**
+
+### **Global Error Handling (REQUIRED)**
+
+#### **1. Error Boundary Component**
+
+```typescript
+// ✅ REQUIRED: Comprehensive error boundary with user feedback
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error: Error | null;
+  errorInfo: ErrorInfo | null;
+}
+
+class ErrorBoundary extends Component<
+  PropsWithChildren<{}>,
+  ErrorBoundaryState
+> {
+  constructor(props: PropsWithChildren<{}>) {
+    super(props);
+    this.state = { hasError: false, error: null, errorInfo: null };
+  }
+
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    return { hasError: true, error, errorInfo: null };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error("Error Boundary caught an error:", error, errorInfo);
+
+    // Log to external service in production
+    if (import.meta.env.PROD) {
+      this.logErrorToService(error, errorInfo);
+    }
+
+    this.setState({ errorInfo });
+  }
+
+  private logErrorToService(error: Error, errorInfo: ErrorInfo) {
+    // Implementation for error logging service
+    console.error("Logging error to service:", { error, errorInfo });
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <ErrorFallback
+          error={this.state.error}
+          errorInfo={this.state.errorInfo}
+          onReset={() =>
+            this.setState({ hasError: false, error: null, errorInfo: null })
+          }
+        />
+      );
+    }
+
+    return this.props.children;
+  }
+}
+```
+
+#### **2. Error Fallback UI (REQUIRED)**
+
+```typescript
+// ✅ REQUIRED: User-friendly error fallback with recovery options
+interface ErrorFallbackProps {
+  error: Error | null;
+  errorInfo: ErrorInfo | null;
+  onReset: () => void;
+}
+
+const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, onReset }) => {
+  const navigate = useNavigate();
+
+  const handleGoHome = () => {
+    onReset();
+    navigate("/");
+  };
+
+  const handleRefresh = () => {
+    window.location.reload();
+  };
+
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        minHeight: "50vh",
+        textAlign: "center",
+        p: 3,
+      }}
+    >
+      <ErrorOutlineIcon sx={{ fontSize: 64, color: "error.main", mb: 2 }} />
+
+      <Typography variant="h4" gutterBottom>
+        Oops! Something went wrong
+      </Typography>
+
+      <Typography
+        variant="body1"
+        color="text.secondary"
+        sx={{ mb: 3, maxWidth: 600 }}
+      >
+        We're sorry for the inconvenience. The application encountered an
+        unexpected error. Your data has been preserved, and you can try the
+        following options:
+      </Typography>
+
+      <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+        <Button
+          variant="contained"
+          startIcon={<RefreshIcon />}
+          onClick={handleRefresh}
+        >
+          Refresh Page
+        </Button>
+
+        <Button
+          variant="outlined"
+          startIcon={<HomeIcon />}
+          onClick={handleGoHome}
+        >
+          Go to Home
+        </Button>
+      </Stack>
+
+      {import.meta.env.DEV && error && (
+        <Accordion sx={{ mt: 3, maxWidth: "100%" }}>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="subtitle2">
+              Error Details (Development)
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Typography
+              component="pre"
+              variant="caption"
+              sx={{
+                whiteSpace: "pre-wrap",
+                fontSize: "0.75rem",
+                backgroundColor: "grey.100",
+                p: 2,
+                borderRadius: 1,
+              }}
+            >
+              {error.message}
+              {"\n\n"}
+              {error.stack}
+            </Typography>
+          </AccordionDetails>
+        </Accordion>
+      )}
+    </Box>
+  );
+};
+```
+
+### **Feature-Level Error Handling (REQUIRED)**
+
+#### **1. Quiz Feature Error Boundaries**
+
+```typescript
+// ✅ REQUIRED: Feature-specific error boundaries for isolated failures
+const QuizFeatureErrorBoundary: React.FC<PropsWithChildren<{}>> = ({
+  children,
+}) => {
+  return (
+    <ErrorBoundary
+      fallback={(error, reset) => (
+        <QuizErrorFallback
+          error={error}
+          onReset={reset}
+          feature="Quiz Creation System"
+        />
+      )}
+    >
+      {children}
+    </ErrorBoundary>
+  );
+};
+
+// ✅ REQUIRED: Feature-specific error recovery
+const QuizErrorFallback: React.FC<{
+  error: Error;
+  onReset: () => void;
+  feature: string;
+}> = ({ error, onReset, feature }) => {
+  const [hasRecovered, setHasRecovered] = useState(false);
+
+  const handleRecovery = async () => {
+    try {
+      // Attempt to recover quiz data from IndexedDB
+      const drafts = await indexedDBService.getAllDrafts();
+      if (drafts.length > 0) {
+        setHasRecovered(true);
+        // Show recovery UI
+      }
+    } catch (recoveryError) {
+      console.error("Failed to recover data:", recoveryError);
+    }
+
+    onReset();
+  };
+
+  return (
+    <Alert
+      severity="error"
+      action={
+        <Button color="inherit" size="small" onClick={handleRecovery}>
+          Try Recovery
+        </Button>
+      }
+      sx={{ m: 2 }}
+    >
+      <AlertTitle>{feature} Error</AlertTitle>
+      An error occurred in the {feature.toLowerCase()}. Your draft data may be recoverable.
+    </Alert>
+  );
+};
+```
+
+## **🎨 COMPONENT ARCHITECTURE STANDARDS**
+
+### **Quiz Component Structure (REQUIRED)**
+
+#### **1. Wizard Component Pattern**
+
+```typescript
+// ✅ REQUIRED: Multi-step wizard with proper state management
+interface WizardStep {
+  id: string;
+  title: string;
+  component: React.ComponentType<any>;
+  validation?: (data: any) => ValidationResult;
+  canProceed?: (data: any) => boolean;
+}
+
+const useWizardNavigation = (steps: WizardStep[], initialData: any) => {
+  const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  const [wizardData, setWizardData] = useState(initialData);
+  const [stepValidation, setStepValidation] = useState<
+    Record<string, ValidationResult>
+  >({});
+
+  const currentStep = steps[currentStepIndex];
+  const isFirstStep = currentStepIndex === 0;
+  const isLastStep = currentStepIndex === steps.length - 1;
+
+  const validateCurrentStep = useCallback(() => {
+    if (currentStep.validation) {
+      const result = currentStep.validation(wizardData);
+      setStepValidation((prev) => ({
+        ...prev,
+        [currentStep.id]: result,
+      }));
+      return result.isValid;
+    }
+    return true;
+  }, [currentStep, wizardData]);
+
+  const goToNext = useCallback(() => {
+    if (validateCurrentStep() && !isLastStep) {
+      setCurrentStepIndex((prev) => prev + 1);
+    }
+  }, [validateCurrentStep, isLastStep]);
+
+  const goToPrevious = useCallback(() => {
+    if (!isFirstStep) {
+      setCurrentStepIndex((prev) => prev - 1);
+    }
+  }, [isFirstStep]);
+
+  return {
+    currentStep,
+    currentStepIndex,
+    wizardData,
+    setWizardData,
+    stepValidation,
+    isFirstStep,
+    isLastStep,
+    goToNext,
+    goToPrevious,
+    validateCurrentStep,
+  };
+};
+```
+
+#### **2. Validation System (REQUIRED)**
+
+```typescript
+// ✅ REQUIRED: Comprehensive validation with user feedback
+interface ValidationResult {
+  isValid: boolean;
+  errors: ValidationError[];
+  warnings: ValidationWarning[];
+}
+
+interface ValidationError {
+  field: string;
+  message: string;
+  severity: "error" | "warning";
+}
+
+const useQuizValidation = () => {
+  const validateBasicInfo = (quiz: Partial<Quiz>): ValidationResult => {
+    const errors: ValidationError[] = [];
+
+    if (!quiz.title?.trim()) {
+      errors.push({
+        field: "title",
+        message: "Quiz title is required",
+        severity: "error",
+      });
+    }
+
+    if (quiz.timeLimit && (quiz.timeLimit < 0.5 || quiz.timeLimit > 60)) {
+      errors.push({
+        field: "timeLimit",
+        message: "Time limit must be between 0.5 and 60 minutes",
+        severity: "error",
+      });
+    }
+
+    return {
+      isValid: errors.filter((e) => e.severity === "error").length === 0,
+      errors,
+      warnings: [],
+    };
+  };
+
+  const validateQuestions = (rounds: Round[]): ValidationResult => {
+    const errors: ValidationError[] = [];
+
+    rounds.forEach((round, roundIndex) => {
+      if (round.questions.length === 0) {
+        errors.push({
+          field: `round_${roundIndex}`,
+          message: `Round ${roundIndex + 1} must have at least one question`,
+          severity: "warning",
+        });
+      }
+
+      round.questions.forEach((question, questionIndex) => {
+        if (!question.text.trim()) {
+          errors.push({
+            field: `question_${roundIndex}_${questionIndex}`,
+            message: `Question ${questionIndex + 1} in Round ${
+              roundIndex + 1
+            } is empty`,
+            severity: "error",
+          });
+        }
+
+        if (question.answers.length < 2) {
+          errors.push({
+            field: `answers_${roundIndex}_${questionIndex}`,
+            message: `Question ${questionIndex + 1} needs at least 2 answers`,
+            severity: "error",
+          });
+        }
+      });
+    });
+
+    return {
+      isValid: errors.filter((e) => e.severity === "error").length === 0,
+      errors,
+      warnings: errors.filter((e) => e.severity === "warning"),
+    };
+  };
+
+  return { validateBasicInfo, validateQuestions };
+};
+```

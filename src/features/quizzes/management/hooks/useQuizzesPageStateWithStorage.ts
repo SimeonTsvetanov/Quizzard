@@ -311,7 +311,7 @@ export const useQuizzesPageStateWithStorage =
     }, []);
 
     /**
-     * Handles confirming quiz deletion with IndexedDB
+     * Handles confirming quiz deletion with enhanced sync
      */
     const handleConfirmDeleteQuiz = React.useCallback(async () => {
       if (!pendingDeleteQuiz) return;
@@ -320,20 +320,18 @@ export const useQuizzesPageStateWithStorage =
         const success = await deleteQuiz(pendingDeleteQuiz.id);
 
         if (success) {
-          showSnackbar("Quiz deleted successfully!", "success");
+          // Force reload all data to ensure synchronization
+          await Promise.all([
+            loadQuizzes(),
+            loadDrafts(),
+            refreshStorageUsage(),
+          ]);
 
-          // Refresh storage usage and reload quiz list to ensure UI updates
-          await refreshStorageUsage();
-          await loadQuizzes(); // Force reload of quiz list
-          await loadDrafts(); // Force reload of drafts list
-        } else {
-          throw new Error("Failed to delete quiz from storage");
+          showSnackbar("Quiz deleted successfully!", "success");
         }
       } catch (error) {
-        const message =
-          error instanceof Error ? error.message : "Failed to delete quiz";
-        setLocalError(message);
-        showSnackbar(message, "error");
+        console.error("Error deleting quiz:", error);
+        setLocalError("Failed to delete quiz");
       } finally {
         setDeleteConfirmOpen(false);
         setPendingDeleteQuiz(null);
@@ -341,10 +339,10 @@ export const useQuizzesPageStateWithStorage =
     }, [
       pendingDeleteQuiz,
       deleteQuiz,
-      showSnackbar,
-      refreshStorageUsage,
       loadQuizzes,
       loadDrafts,
+      refreshStorageUsage,
+      showSnackbar,
     ]);
 
     /**

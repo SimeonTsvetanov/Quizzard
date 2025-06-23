@@ -380,6 +380,7 @@ export const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
+          gap: 2,
         }}
       >
         {/* Delete Button - only show when editing */}
@@ -391,6 +392,8 @@ export const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
             startIcon={<DeleteIcon />}
             size="large"
             sx={{
+              minWidth: { xs: "auto", sm: 150 },
+              height: 48,
               borderColor: "error.main",
               color: "error.main",
               "&:hover": {
@@ -398,9 +401,23 @@ export const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
                 backgroundColor: "error.light",
                 color: "error.dark",
               },
+              // Mobile: Show only icon
+              "& .MuiButton-startIcon": {
+                margin: { xs: 0, sm: "0 8px 0 -4px" },
+              },
+              "& .MuiButton-startIcon + *": {
+                display: { xs: "none", sm: "inline" },
+              },
             }}
           >
-            Delete Quiz
+            <Box
+              component="span"
+              sx={{
+                display: { xs: "none", sm: "inline" },
+              }}
+            >
+              Delete Quiz
+            </Box>
           </Button>
         )}
 
@@ -414,7 +431,7 @@ export const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
           disabled={!draftQuiz.title?.trim() || !isTimeValid}
           size="large"
           sx={{
-            minWidth: 200,
+            minWidth: { xs: 120, sm: 200 },
             height: 48,
             boxShadow: 2,
             "&:hover": {
@@ -422,7 +439,22 @@ export const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
             },
           }}
         >
-          Continue to Questions
+          <Box
+            component="span"
+            sx={{
+              display: { xs: "none", sm: "inline" },
+            }}
+          >
+            Continue to Questions
+          </Box>
+          <Box
+            component="span"
+            sx={{
+              display: { xs: "inline", sm: "none" },
+            }}
+          >
+            Continue
+          </Box>
         </Button>
       </Box>
     </Box>

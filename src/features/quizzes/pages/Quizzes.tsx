@@ -83,6 +83,19 @@ export const Quizzes: React.FC<QuizzesPageProps> = ({
   // Storage modal state
   const [storageModalOpen, setStorageModalOpen] = React.useState(false);
 
+  // Force refresh mechanism to handle stale state
+  const [refreshKey, setRefreshKey] = React.useState(0);
+
+  // Force refresh function that can be called when data changes
+  const forceRefresh = React.useCallback(() => {
+    setRefreshKey((prev) => prev + 1);
+  }, []);
+
+  // Trigger refresh when critical operations complete
+  React.useEffect(() => {
+    forceRefresh();
+  }, [quizzes.length, drafts.length, forceRefresh]);
+
   // Combine quizzes and drafts for display
   const allQuizzes = React.useMemo(() => {
     // Helper to validate category
@@ -237,7 +250,7 @@ export const Quizzes: React.FC<QuizzesPageProps> = ({
         (a, b) =>
           new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
       );
-  }, [quizzes, drafts]);
+  }, [quizzes, drafts, refreshKey]);
 
   const totalQuizCount = allQuizzes.length;
 
