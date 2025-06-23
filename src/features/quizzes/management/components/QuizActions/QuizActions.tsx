@@ -35,7 +35,6 @@ import {
   Delete as DeleteIcon,
   Download as DownloadIcon,
   Add as AddIcon,
-  PowerSettingsNew as PowerPointIcon,
   Slideshow as GoogleSlidesIcon,
   Code as JSONIcon,
 } from "@mui/icons-material";
@@ -63,7 +62,7 @@ export interface QuizActionsProps {
   /** Callback when quiz edit is requested */
   onEditQuiz: (quiz: Quiz) => void;
   /** Callback when quiz export is requested */
-  onExportQuiz: (quiz: Quiz, format: "powerpoint" | "slides" | "json") => void;
+  onExportQuiz: (quiz: Quiz, format: "slides" | "json") => void;
   /** Callback when quiz deletion is requested */
   onRequestDeleteQuiz: (quiz: Quiz) => void;
   /** Callback when quiz deletion is confirmed */
@@ -114,15 +113,7 @@ export const QuizActions: React.FC<QuizActionsProps> = ({
     }
   }, [selectedQuiz, onEditQuiz, onMenuClose]);
 
-  /**
-   * Handles PowerPoint export menu item click
-   */
-  const handlePowerPointExport = React.useCallback(() => {
-    if (selectedQuiz) {
-      onExportQuiz(selectedQuiz, "powerpoint");
-      onMenuClose();
-    }
-  }, [selectedQuiz, onExportQuiz, onMenuClose]);
+  // PowerPoint export removed - function removed for clean slate
 
   /**
    * Handles Google Slides export menu item click (disabled)
@@ -169,12 +160,6 @@ export const QuizActions: React.FC<QuizActionsProps> = ({
             <EditIcon fontSize="small" />
           </ListItemIcon>
           <ListItemText>Edit Quiz</ListItemText>
-        </MenuItem>
-        <MenuItem onClick={handlePowerPointExport}>
-          <ListItemIcon>
-            <PowerPointIcon fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>Export to PowerPoint</ListItemText>
         </MenuItem>
         <MenuItem onClick={handleSlidesExport} disabled>
           <ListItemIcon>

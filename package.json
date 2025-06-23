@@ -22,11 +22,12 @@
     "@emotion/styled": "^11.14.0",
     "@mui/icons-material": "^7.1.1",
     "@mui/material": "^7.1.1",
-    "pptxgenjs": "^4.0.0",
+    "@types/reveal.js": "^5.2.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-error-boundary": "^6.0.0",
-    "react-router-dom": "^7.6.2"
+    "react-router-dom": "^7.6.2",
+    "reveal.js": "^5.2.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.0",

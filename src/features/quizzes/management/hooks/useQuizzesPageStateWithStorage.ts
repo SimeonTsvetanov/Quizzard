@@ -18,7 +18,6 @@
 
 import React from "react";
 import { useQuizStorage } from "./useQuizStorage";
-import { useQuizExport } from "../../exporting/hooks/useQuizExport";
 import { useSnackbar } from "../../../../shared/hooks/useSnackbar";
 import { indexedDBService } from "../services/indexedDBService";
 import type { Quiz } from "../types";
@@ -63,7 +62,7 @@ export interface QuizzesPageActionsWithStorage {
   handleWizardCancel: () => void;
 
   // Quiz actions
-  handleExportQuiz: (quiz: Quiz) => void;
+  handleExportQuiz: (quiz: Quiz, format: "slides" | "json") => void;
 
   // Menu actions
   handleMenuOpen: (event: React.MouseEvent<HTMLElement>, quiz: Quiz) => void;
@@ -126,8 +125,7 @@ export const useQuizzesPageStateWithStorage =
       loadDrafts,
     } = useQuizStorage();
 
-    // Export functionality
-    const { exportToPowerPoint } = useQuizExport();
+    // Export functionality removed - all exports coming soon
 
     const { showSnackbar } = useSnackbar();
 
@@ -148,14 +146,13 @@ export const useQuizzesPageStateWithStorage =
 
     // Error state (can come from storage operations)
     const [localError, setLocalError] = React.useState<string | null>(null);
-    const error = localError;
 
     // Reset dismissed state when error changes
     React.useEffect(() => {
-      if (error) {
+      if (localError) {
         setErrorDismissed(false);
       }
-    }, [error]);
+    }, [localError]);
 
     // Reset storage warning when storage usage changes
     React.useEffect(() => {
@@ -255,22 +252,18 @@ export const useQuizzesPageStateWithStorage =
     }, [disableAutoSave]);
 
     /**
-     * Handles PowerPoint export with enhanced error handling
+     * Handles export requests (coming soon)
      */
     const handleExportQuiz = React.useCallback(
-      async (quiz: Quiz) => {
+      async (quiz: Quiz, format: "slides" | "json") => {
         try {
-          const defaultExportSettings = {
-            includePresenterNotes: true,
-            slideTemplate: "standard" as const,
-            questionFontSize: 20,
-            answerFontSize: 16,
-            includeAnswerSlides: true,
-            includeQuizSummary: true,
+          // All export formats are currently disabled - coming soon
+          const formatNames = {
+            slides: "Google Slides",
+            json: "JSON",
           };
 
-          await exportToPowerPoint(quiz, defaultExportSettings);
-          showSnackbar("PowerPoint exported successfully!", "success");
+          showSnackbar(`${formatNames[format]} export coming soon!`, "info");
           setMenuAnchorEl(null);
         } catch (error) {
           const message =
@@ -279,7 +272,7 @@ export const useQuizzesPageStateWithStorage =
           showSnackbar(message, "error");
         }
       },
-      [exportToPowerPoint, showSnackbar]
+      [showSnackbar]
     );
 
     /**
@@ -417,7 +410,7 @@ export const useQuizzesPageStateWithStorage =
       quizzes,
       drafts,
       isLoading,
-      error,
+      error: localError,
       storageUsage,
       isInitialized,
 
