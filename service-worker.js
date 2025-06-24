@@ -1,5 +1,5 @@
 // Service Worker for Quizzard PWA
-// VERSION: 2025-06-24T13:25:01Z
+// VERSION: 2025-06-24T17:33:24Z
 // Handles caching, updates, and offline functionality
 // Version updated: December 22, 2025 - Development and Production compatibility
 
