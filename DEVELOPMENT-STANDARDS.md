@@ -3606,3 +3606,179 @@ try {
 - **Code Quality:**
   - No code duplication or dead code. All logic must be modular and follow feature-based architecture.
   - All changes must be incremental, testable, and follow the project's review process.
+
+### **🔐 Authentication Standards (REQUIRED)**
+
+#### **1. Storage Implementation (REQUIRED)**
+
+```typescript
+// ✅ REQUIRED: Storage Keys and Types
+const LOCAL_STORAGE_KEYS = {
+  PROFILE_MODE: "quizzard-profile-mode",
+  AUTH_TOKEN: "quizzard-google-auth-token",
+} as const;
+
+type ProfileMode = "local" | "google";
+type StoredAuthData = {
+  token: TokenResponse;
+  user: GoogleUserProfile;
+  timestamp: number;
+};
+
+// ✅ REQUIRED: Token Storage Pattern
+const storeAuthData = (token: TokenResponse, user: GoogleUserProfile) => {
+  localStorage.setItem(
+    LOCAL_STORAGE_KEYS.AUTH_TOKEN,
+    JSON.stringify({
+      token,
+      user,
+      timestamp: Date.now(),
+    })
+  );
+};
+
+// ✅ REQUIRED: Profile Mode Storage
+const storeProfileMode = (mode: ProfileMode) => {
+  localStorage.setItem(LOCAL_STORAGE_KEYS.PROFILE_MODE, mode);
+};
+
+// ✅ REQUIRED: Clean Logout
+const handleLogout = () => {
+  // Only remove auth data, preserve quiz data
+  localStorage.removeItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN);
+  // Keep profile mode unless explicitly changing modes
+  // localStorage.removeItem(LOCAL_STORAGE_KEYS.PROFILE_MODE);
+};
+```
+
+#### **2. Login Flow Implementation (REQUIRED)**
+
+```typescript
+// ✅ REQUIRED: Initial Profile Check
+const App = () => {
+  useEffect(() => {
+    const mode = localStorage.getItem(LOCAL_STORAGE_KEYS.PROFILE_MODE);
+    const authData = localStorage.getItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN);
+
+    if (!mode) {
+      // First visit - show profile selection
+      setProfileModalOpen(true);
+    } else if (mode === "google" && !authData) {
+      // Google mode but not logged in - show login button
+      setShowLoginPrompt(true);
+    }
+  }, []);
+};
+
+// ✅ REQUIRED: Token Restoration
+const useGoogleAuth = () => {
+  useEffect(() => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN);
+    if (stored) {
+      try {
+        const data: StoredAuthData = JSON.parse(stored);
+        if (!isTokenExpired(data.token)) {
+          setToken(data.token);
+          setUser(data.user);
+        } else {
+          // Clean up expired token
+          localStorage.removeItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN);
+        }
+      } catch (e) {
+        console.warn("Failed to restore auth:", e);
+        localStorage.removeItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN);
+      }
+    }
+  }, []);
+};
+```
+
+#### **3. UI State Management (REQUIRED)**
+
+```typescript
+// ✅ REQUIRED: Login Status Check
+const isAuthenticated = !!token && !isTokenExpired(token);
+
+// ✅ REQUIRED: Profile Selection Modal
+const ProfileSelectionModal = () => {
+  const handleLocal = () => {
+    storeProfileMode("local");
+    setModalOpen(false);
+  };
+
+  const handleGoogle = async () => {
+    storeProfileMode("google");
+    setModalOpen(false);
+    await login(); // Launch Google OAuth
+  };
+};
+
+// ✅ REQUIRED: Logout Confirmation
+const LogoutConfirmDialog = () => {
+  const handleConfirm = () => {
+    handleLogout(); // Clean storage
+    closeDrawer(); // Close navigation drawer
+    setDialogOpen(false);
+  };
+};
+
+// ✅ REQUIRED: Login Warning
+const Quizzes = () => {
+  return (
+    !isAuthenticated && (
+      <Alert severity="info" sx={{ mt: 2 }}>
+        Sign in to save your quizzes and access them across devices.
+      </Alert>
+    )
+  );
+};
+```
+
+#### **4. Error Handling Requirements**
+
+- **Token Expiration:**
+
+  ```typescript
+  const isTokenExpired = (token: TokenResponse): boolean => {
+    if (!token.expires_in) return true;
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN);
+    const timestamp = stored ? JSON.parse(stored).timestamp : Date.now();
+    return Date.now() >= timestamp + token.expires_in * 1000;
+  };
+  ```
+
+- **OAuth Failures:**
+
+  ```typescript
+  const handleOAuthError = (error: unknown) => {
+    console.error("Google OAuth failed:", error);
+    showSnackbar("Login failed. Using local mode.", "warning");
+    storeProfileMode("local"); // Fallback to local mode
+  };
+  ```
+
+- **Storage Errors:**
+  ```typescript
+  const safeStorageOp = (operation: () => void) => {
+    try {
+      operation();
+    } catch (e) {
+      console.warn("Storage operation failed:", e);
+      showSnackbar("Failed to save settings. Please try again.", "error");
+    }
+  };
+  ```
+
+#### **5. Security Requirements**
+
+- Never store raw tokens without expiration timestamps
+- Clear all auth data on logout (except profile mode)
+- Handle token refresh before expiration
+- Validate all stored data before use
+- Use secure storage patterns
+- Implement proper error boundaries
+- Follow OAuth best practices
+
+### **React Patterns**
+
+// ... rest of existing code ...

@@ -25,6 +25,8 @@ import Footer from "./shared/components/Footer";
 import { LoadingScreen } from "./shared/components/LoadingScreen";
 import { ErrorBoundary } from "./shared/components";
 import { performLegacyStorageMigration } from "./shared/utils/storageKeys";
+import ProfileSelectionModal from "./shared/components/ProfileSelectionModal";
+import { useGoogleAuth } from "./shared/hooks/useGoogleAuth";
 
 // Lazy load all route components for better performance
 const Home = lazy(() => import("./pages/Home"));
@@ -63,7 +65,7 @@ const PWA_INSTALL_DISMISSED_KEY = "user-settings-pwa-install-dismissed";
 // PWA Install Event Interface
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
-  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 }
 
 function App() {
@@ -87,7 +89,8 @@ function App() {
 
   // PWA install prompt state
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [deferredPrompt, setDeferredPrompt] =
+    useState<BeforeInstallPromptEvent | null>(null);
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
     message: string;
@@ -195,6 +198,44 @@ function App() {
   const handleLoadingComplete = () => {
     setShowLoadingScreen(false);
     sessionStorage.setItem("app-loaded", "true");
+  };
+
+  // Profile selection modal state
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
+  const {
+    login,
+    isAuthenticated,
+    isAvailable: isGoogleAvailable,
+  } = useGoogleAuth();
+
+  // Check profile mode on mount
+  useEffect(() => {
+    const mode = localStorage.getItem("quizzard-profile-mode");
+    if (!mode && !isAuthenticated) {
+      setProfileModalOpen(true);
+    }
+  }, [isAuthenticated]);
+
+  // Handler for local-only mode
+  const handleLocal = () => {
+    localStorage.setItem("quizzard-profile-mode", "local");
+    setProfileModalOpen(false);
+  };
+
+  // Handler for Google login
+  const handleGoogle = () => {
+    if (!isGoogleAvailable) {
+      showSnackbarMessage(
+        "Google OAuth is not configured. Using local mode instead.",
+        "warning"
+      );
+      handleLocal();
+      return;
+    }
+
+    localStorage.setItem("quizzard-profile-mode", "google");
+    setProfileModalOpen(false);
+    login();
   };
 
   return (
@@ -376,6 +417,12 @@ function App() {
           {snackbar.message}
         </Alert>
       </Snackbar>
+
+      <ProfileSelectionModal
+        open={profileModalOpen}
+        onLocal={handleLocal}
+        onGoogle={handleGoogle}
+      />
     </ThemeProvider>
   );
 }

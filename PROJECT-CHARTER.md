@@ -77,6 +77,39 @@
 - [x] GitHub Pages deploy set up
 - [x] Auto-update workflow
 - [x] Service worker auto-versioning for reliable PWA updates
+- [x] **GOOGLE OAUTH INTEGRATION (COMPLETE)** - Implemented comprehensive Google authentication with:
+  - **Storage Implementation:**
+    - Profile mode stored in "quizzard-profile-mode" (values: "local" | "google")
+    - Auth token stored in "quizzard-google-auth-token" with expiration timestamp
+    - Token structure: { token: TokenResponse, user: GoogleUserProfile, timestamp: number }
+    - Automatic token cleanup on expiration
+    - Clear storage on logout (token only, preserves quiz data)
+  - **Login Flow:**
+    - First visit: Show profile selection modal (Local vs Google)
+    - Store selection in localStorage for future visits
+    - If Google selected: Launch OAuth popup via @react-oauth/google
+    - On success: Store token + user data, show success message
+    - On error: Fallback to local mode with warning
+  - **Session Management:**
+    - Auto-restore session on app load if token valid
+    - Check token expiration before restoration
+    - Clear expired tokens automatically
+    - Handle token refresh if needed
+  - **UI Integration:**
+    - Profile selection modal (first visit)
+    - Login status in navigation drawer
+    - Warning message in Quizzes page when not logged in
+    - Logout confirmation dialog with data persistence warning
+  - **Error Handling:**
+    - Graceful fallback to local mode
+    - Clear error messages for users
+    - Automatic cleanup of invalid states
+    - Network error recovery
+  - **Security Features:**
+    - Token expiration enforcement
+    - Secure storage practices
+    - Clean session termination
+    - No sensitive data exposure
 
 #### **Main Tools (Landing Page)**
 
@@ -2087,3 +2120,49 @@ The update system provides a seamless way for users to check for and apply appli
   - Removed all Golden Pyramid info messages from questions step; info now accessed only via info modal.
   - All code updated with professional JSDoc comments, ARIA labels, and accessibility best practices.
   - All changes follow DEVELOPMENT-STANDARDS.md and are now the required pattern for all quiz wizard UI/UX and documentation.
+
+## Google OAuth Client ID Environment Variable Setup (2025-06-13)
+
+### Overview
+
+- The Google OAuth Client ID is required for Google login and Drive integration.
+- **Never commit the actual Client ID to the repository.**
+- The Client ID is managed securely using GitHub Actions repository secrets for production builds, and a local environment file for development.
+
+### How It Works
+
+- **Production (GitHub Pages):**
+  - The Client ID is stored as a repository secret named `VITE_GOOGLE_CLIENT_ID` in GitHub.
+  - The GitHub Actions workflow injects this secret as an environment variable during the build step.
+  - The deployed app uses this value for authentication.
+- **Local Development:**
+  - Developers must create a `.env.local` file in the project root with the following line:
+    ```
+    VITE_GOOGLE_CLIENT_ID=your-google-client-id-here
+    ```
+  - This file is ignored by Git and should never be committed.
+- **Template:**
+  - The repository includes a `.env.example` file as a template for required environment variables.
+
+### Setting Up on a New Machine
+
+1. **Clone the repository.**
+2. **Copy `.env.example` to `.env.local` in the project root.**
+3. **Obtain the current Google Client ID** (from the project owner or Google Cloud Console).
+4. **Paste the Client ID value** into `.env.local`:
+   ```
+   VITE_GOOGLE_CLIENT_ID=your-google-client-id-here
+   ```
+5. **Run the development server as usual.**
+
+### Managing the Client ID
+
+- The actual Client ID is managed in the Google Cloud Console for the project.
+- If the Client ID ever needs to be rotated or replaced, update both the GitHub repository secret and your local `.env.local` file.
+- For production, only the secret in GitHub needs to be updated; for local development, each developer must update their own `.env.local`.
+
+### Security Notes
+
+- The Client ID is public by design (safe to expose in frontend code), but best practice is to avoid hardcoding it in the repo.
+- Never commit `.env.local` or any file containing real secrets to the repository.
+- Always use `.env.example` as a template for required environment variables.

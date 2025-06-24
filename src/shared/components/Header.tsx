@@ -14,6 +14,7 @@ import { useState } from "react";
 import NavigationDrawer from "./NavigationDrawer";
 import { ThemeSelectionDialog } from "./ThemeSelectionDialog";
 import { getDynamicHeaderText } from "../utils/headerUtils";
+import { useGoogleAuth } from "../hooks/useGoogleAuth";
 
 interface HeaderProps {
   mode: "light" | "dark" | "system";
@@ -54,6 +55,9 @@ const Header = ({ mode, onThemeChange }: HeaderProps) => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [themeDialogOpen, setThemeDialogOpen] = useState(false);
 
+  // Google OAuth integration
+  const { login, logout, user, isAuthenticated, isAvailable } = useGoogleAuth();
+
   const handleDrawerToggle = () => setDrawerOpen(!drawerOpen);
   const handleDrawerClose = () => setDrawerOpen(false);
 
@@ -67,6 +71,17 @@ const Header = ({ mode, onThemeChange }: HeaderProps) => {
   const handleThemeChange = (newTheme: "light" | "dark" | "system") => {
     onThemeChange(newTheme);
     setThemeDialogOpen(false);
+  };
+
+  // Google Auth handlers that close drawer
+  const handleGoogleLogin = () => {
+    setDrawerOpen(false);
+    login();
+  };
+
+  const handleGoogleLogout = () => {
+    setDrawerOpen(false);
+    logout();
   };
 
   return (
@@ -224,6 +239,11 @@ const Header = ({ mode, onThemeChange }: HeaderProps) => {
         onClose={handleDrawerClose}
         onThemeDialogOpen={handleThemeDialogOpen}
         currentTheme={mode}
+        onGoogleLogin={handleGoogleLogin}
+        onGoogleLogout={handleGoogleLogout}
+        isAuthenticated={isAuthenticated}
+        user={user}
+        isGoogleAvailable={isAvailable}
       />
 
       {/* Theme Selection Dialog */}

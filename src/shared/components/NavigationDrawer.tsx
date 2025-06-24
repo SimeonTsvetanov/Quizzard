@@ -2,7 +2,7 @@
  * Navigation Drawer Component
  *
  * Comprehensive navigation drawer with app navigation links, external links,
- * and theme selection. Supports focus management and keyboard navigation.
+ * theme selection, and Google OAuth login/logout functionality.
  *
  * Extracted from Header.tsx to improve maintainability and follow
  * the Single Responsibility Principle from development standards.
@@ -11,13 +11,14 @@
  * - Complete app navigation (Home, About, Privacy, Terms, Contact)
  * - External links (GitHub, Support)
  * - Theme selection integration
+ * - Google OAuth login/logout with user profile display
  * - Accessibility compliance with focus management
  * - Keyboard navigation support
  * - Proper ARIA labeling
  * - Close button positioned to match hamburger menu exactly
  *
- * @fileoverview Navigation drawer component
- * @version 1.1.0
+ * @fileoverview Navigation drawer component with Google OAuth integration
+ * @version 1.2.0
  * @since December 2025
  */
 
@@ -32,6 +33,8 @@ import {
   Divider,
   Box,
   IconButton,
+  Avatar,
+  Typography,
 } from "@mui/material";
 import { Link } from "react-router-dom";
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
@@ -46,8 +49,12 @@ import GavelIcon from "@mui/icons-material/Gavel";
 import ContactMailIcon from "@mui/icons-material/ContactMail";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import SystemUpdateIcon from "@mui/icons-material/SystemUpdate";
+import LoginIcon from "@mui/icons-material/Login";
+import LogoutIcon from "@mui/icons-material/Logout";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import { useAppUpdate } from "../hooks/useAppUpdate";
 import { UpdateDialog } from "./UpdateDialog";
+import { LogoutConfirmDialog } from "./LogoutConfirmDialog";
 
 /**
  * Props for the NavigationDrawer component
@@ -61,6 +68,16 @@ interface NavigationDrawerProps {
   currentTheme: "light" | "dark" | "system";
   /** Callback when theme button is clicked */
   onThemeDialogOpen: () => void;
+  /** Google OAuth login function */
+  onGoogleLogin: () => void;
+  /** Google OAuth logout function */
+  onGoogleLogout: () => void;
+  /** Whether user is authenticated with Google */
+  isAuthenticated: boolean;
+  /** User profile information (if authenticated) */
+  user: any;
+  /** Whether Google OAuth is available/configured */
+  isGoogleAvailable: boolean;
 }
 
 /**
@@ -74,10 +91,16 @@ const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
   onClose,
   currentTheme,
   onThemeDialogOpen,
+  onGoogleLogin,
+  onGoogleLogout,
+  isAuthenticated,
+  user,
+  isGoogleAvailable,
 }) => {
   const closeBtnRef = useRef<HTMLButtonElement>(null);
   const drawerRef = useRef<HTMLDivElement>(null);
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
+  const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
   const updateState = useAppUpdate();
 
   // Focus management: focus close button when Drawer opens
@@ -128,6 +151,20 @@ const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
   const handleUpdateClick = () => {
     setUpdateDialogOpen(true);
     onClose();
+  };
+
+  const handleLogoutClick = () => {
+    onClose();
+    setLogoutDialogOpen(true);
+  };
+
+  const handleLogoutConfirm = () => {
+    setLogoutDialogOpen(false);
+    onGoogleLogout();
+  };
+
+  const handleLogoutCancel = () => {
+    setLogoutDialogOpen(false);
   };
 
   return (
@@ -297,8 +334,85 @@ const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
               </ListItemButton>
             </ListItem>
           </List>
+
+          <Divider />
+
+          {/* Google Authentication Section */}
+          <List>
+            {isAuthenticated ? (
+              <>
+                {/* User Profile Display */}
+                <ListItem disablePadding>
+                  <ListItemButton
+                    sx={{
+                      "&:focus": { outline: "none" },
+                      "&:focus-visible": { outline: "none" },
+                      cursor: "default", // Not clickable, just display
+                      "&:hover": { backgroundColor: "transparent" },
+                    }}
+                  >
+                    <ListItemIcon>
+                      <Avatar
+                        alt={user?.name || "User"}
+                        src={user?.picture}
+                        sx={{ width: 24, height: 24 }}
+                      >
+                        {!user?.picture && <AccountCircleIcon />}
+                      </Avatar>
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={user?.name || user?.email || "Google User"}
+                      primaryTypographyProps={{
+                        variant: "body2",
+                        sx: { fontWeight: 500 },
+                      }}
+                    />
+                  </ListItemButton>
+                </ListItem>
+                {/* Logout Button */}
+                <ListItem disablePadding>
+                  <ListItemButton
+                    onClick={handleLogoutClick}
+                    component="button"
+                    sx={{
+                      "&:focus": { outline: "none" },
+                      "&:focus-visible": { outline: "none" },
+                    }}
+                  >
+                    <ListItemIcon>
+                      <LogoutIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="Logout" />
+                  </ListItemButton>
+                </ListItem>
+              </>
+            ) : (
+              /* Login Button - only shown when not authenticated */
+              <ListItem disablePadding>
+                <ListItemButton
+                  onClick={onGoogleLogin}
+                  component="button"
+                  sx={{
+                    "&:focus": { outline: "none" },
+                    "&:focus-visible": { outline: "none" },
+                  }}
+                >
+                  <ListItemIcon>
+                    <LoginIcon />
+                  </ListItemIcon>
+                  <ListItemText primary="Sign in with Google" />
+                </ListItemButton>
+              </ListItem>
+            )}
+          </List>
         </Box>
       </Drawer>
+
+      <LogoutConfirmDialog
+        open={logoutDialogOpen}
+        onClose={handleLogoutCancel}
+        onConfirm={handleLogoutConfirm}
+      />
 
       <UpdateDialog
         open={updateDialogOpen}

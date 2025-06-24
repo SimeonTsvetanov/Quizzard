@@ -54,6 +54,7 @@ import { useQuizzesPageStateWithStorage } from "../management/hooks";
 import type { QuizzesPageProps } from "../types";
 import type { Quiz, QuizCategory, QuizDifficulty, Round } from "../types";
 import { ErrorBoundary } from "../../../shared/components";
+import { useGoogleAuth } from "../../../shared/hooks/useGoogleAuth";
 
 /**
  * Main Quizzes Page Component (ENHANCED WITH STORAGE)
@@ -65,6 +66,8 @@ import { ErrorBoundary } from "../../../shared/components";
  * @returns JSX element representing the quizzes page
  */
 export const Quizzes: React.FC<QuizzesPageProps> = () => {
+  const { isAuthenticated } = useGoogleAuth();
+
   /**
    * Robust reload mechanism for quiz deletion
    *
@@ -331,6 +334,26 @@ export const Quizzes: React.FC<QuizzesPageProps> = () => {
           <Typography variant="h4" component="h1" gutterBottom>
             My Quizzes ({totalQuizCount})
           </Typography>
+
+          {/* Login warning message */}
+          {!isAuthenticated && (
+            <Alert
+              severity="info"
+              sx={{
+                mt: 2,
+                backgroundColor: (theme) =>
+                  theme.palette.mode === "dark"
+                    ? "rgba(2, 136, 209, 0.1)"
+                    : "rgba(2, 136, 209, 0.05)",
+                "& .MuiAlert-icon": {
+                  color: (theme) => theme.palette.info.main,
+                },
+              }}
+            >
+              Sign in to save your quizzes and access them across devices. Open
+              the menu to log in.
+            </Alert>
+          )}
         </Box>
 
         {/* Error display */}
