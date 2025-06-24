@@ -20,7 +20,6 @@ import { useCallback } from "react";
 import type { UseQuizManagementReturn, ExportSettings } from "../types";
 import { useQuizCRUD } from "./useQuizCRUD";
 import { useQuizValidation } from "./useQuizValidation";
-import { useQuizExport } from "../../exporting/hooks/useQuizExport";
 
 /**
  * Quiz Management Hook (Refactored)
@@ -35,7 +34,6 @@ export const useQuizManagement = (): UseQuizManagementReturn => {
   // Compose focused hooks following Single Responsibility Principle
   const quizCRUD = useQuizCRUD();
   const { validateQuiz } = useQuizValidation();
-  const quizExport = useQuizExport();
 
   /**
    * Enhanced quiz export with better error handling
@@ -50,7 +48,7 @@ export const useQuizManagement = (): UseQuizManagementReturn => {
     async (
       quizId: string,
       format: "google-slides" | "json",
-      settings: ExportSettings = quizExport.getDefaultSettings()
+      settings: ExportSettings = quizCRUD.getDefaultSettings()
     ): Promise<void> => {
       const quiz = quizCRUD.getQuizById(quizId);
       if (!quiz) {
@@ -66,7 +64,7 @@ export const useQuizManagement = (): UseQuizManagementReturn => {
       }
 
       // Use dedicated export hook
-      await quizExport.exportQuiz(quiz, format, settings);
+      await quizCRUD.exportQuiz(quiz, format, settings);
 
       // Update quiz with export metadata
       await quizCRUD.updateQuiz(quiz.id, {
@@ -79,7 +77,7 @@ export const useQuizManagement = (): UseQuizManagementReturn => {
         },
       });
     },
-    [quizCRUD, validateQuiz, quizExport]
+    [quizCRUD, validateQuiz]
   );
 
   // Return interface maintaining backward compatibility
@@ -87,8 +85,8 @@ export const useQuizManagement = (): UseQuizManagementReturn => {
     // State from CRUD hook
     quizzes: quizCRUD.quizzes,
     currentQuiz: quizCRUD.currentQuiz,
-    isLoading: quizCRUD.isLoading || quizExport.isExporting,
-    error: quizCRUD.error || quizExport.exportError,
+    isLoading: quizCRUD.isLoading,
+    error: quizCRUD.error,
 
     // CRUD operations
     createQuiz: quizCRUD.createQuiz,

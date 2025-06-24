@@ -3567,3 +3567,25 @@ try {
     - If `possibleAnswers.length > 0`, require at least 2 non-empty options and at least one correct answer selected.
     - If `possibleAnswers.length === 0`, require `correctAnswerText` to be filled.
   - This rule must be applied consistently in both the question modal and the questions list to ensure correct Save button and completion status behavior.
+
+## QUIZZES FEATURE: GOLDEN PYRAMID ROUND & ROBUST STATE MANAGEMENT (2025-06-12)
+
+### Golden Pyramid Round Standard
+
+- Golden Pyramid rounds use a single text answer field per question (not an array).
+- Validation: Only a single string answer is required; no multiple correct answers or array parsing.
+- Info message for Golden Pyramid rounds is shown only in the quiz wizard, above the questions list.
+- UI and validation logic are unified for all question types, ensuring consistent completion status and save button behavior.
+
+### State Synchronization & Deletion (ReloadKey Pattern)
+
+- All quiz/draft state is managed via a single source of truth (IndexedDB + React state).
+- After any quiz is deleted (from any UI location), a reloadKey is incremented, forcing the state management hook to re-fetch quizzes and drafts from storage.
+- This pattern ensures the UI always reflects the latest state, with no ghost quizzes or stale data.
+- All quiz deletion flows (main page, wizard, storage modal) use this mechanism for reliable, immediate UI updates.
+- Expected behavior: Deleting a quiz immediately removes it from all UI lists, disables editing, and prevents ghost drafts from reappearing.
+
+### Troubleshooting: Ghost Quizzes
+
+- If a deleted quiz remains visible after deletion, ensure the reloadKey pattern is implemented and the state management hook is re-fetching data on reloadKey change.
+- This pattern is now mandatory for all CRUD operations in the Quizzes feature.

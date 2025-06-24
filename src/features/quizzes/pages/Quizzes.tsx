@@ -62,30 +62,29 @@ import { ErrorBoundary } from "../../../shared/components";
  * and hooks with IndexedDB storage capabilities. Now includes storage monitoring
  * and auto-save functionality.
  *
- * @param props - Component props
  * @returns JSX element representing the quizzes page
  */
 export const Quizzes: React.FC<QuizzesPageProps> = () => {
-  // Use storage-enhanced state management hook
+  /**
+   * Robust reload mechanism for quiz deletion
+   *
+   * When a quiz is deleted (from any source), increment reloadKey to force the
+   * useQuizzesPageStateWithStorage hook to re-fetch quizzes and drafts from storage.
+   * This ensures the UI always reflects the latest state and prevents ghost quizzes.
+   */
+  const [reloadKey, setReloadKey] = React.useState(0);
+  const reloadQuizzes = React.useCallback(() => {
+    setReloadKey((prev) => prev + 1);
+  }, []);
+
+  // Use storage-enhanced state management hook, pass reloadQuizzes as onQuizDeleted
   const { quizzes, drafts, isLoading, error, state, actions, storageUsage } =
-    useQuizzesPageStateWithStorage();
+    useQuizzesPageStateWithStorage(reloadQuizzes, reloadKey);
 
   // Storage modal state
   const [storageModalOpen, setStorageModalOpen] = React.useState(false);
 
-  // Force refresh mechanism to handle stale state
-  const [refreshKey, setRefreshKey] = React.useState(0);
-
-  // Force refresh function that can be called when data changes
-  const forceRefresh = React.useCallback(() => {
-    setRefreshKey((prev) => prev + 1);
-  }, []);
-
-  // Trigger refresh when critical operations complete
-  React.useEffect(() => {
-    forceRefresh();
-  }, [quizzes.length, drafts.length, forceRefresh]);
-
+  // Helper to get the full quiz object by ID (from quizzes or drafts)
   const getFullQuizObject = React.useCallback(
     (quizId: string) => {
       const allOriginalQuizzes: (Quiz | Partial<Quiz>)[] = [
@@ -283,8 +282,14 @@ export const Quizzes: React.FC<QuizzesPageProps> = () => {
         settings: sanitizeSettings(draft.settings),
       }));
 
+    // Filter out any draft whose ID matches a quiz (prevents ghost/duplicate quizzes)
+    const quizIds = new Set(quizzes.map((q) => String(q.id)));
+    const filteredDraftQuizzes = draftQuizzes.filter(
+      (draft) => !quizIds.has(draft.id)
+    );
+
     // Combine and sort by most recently updated
-    return [...quizzes, ...draftQuizzes]
+    return [...quizzes, ...filteredDraftQuizzes]
       .map((q) => ({
         ...q,
         id: String(q.id || ""),
@@ -303,9 +308,14 @@ export const Quizzes: React.FC<QuizzesPageProps> = () => {
         (a, b) =>
           new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
       );
-  }, [quizzes, drafts, refreshKey]);
+  }, [quizzes, drafts]);
 
   const totalQuizCount = allQuizzes.length;
+
+  // Only show info if currentRound is defined and type is golden-pyramid
+  const currentRound = state.selectedQuiz?.rounds.find(
+    (round) => round.type === "golden-pyramid"
+  );
 
   return (
     <ErrorBoundary

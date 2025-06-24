@@ -62,6 +62,7 @@ export const useQuizStateManager = (): UseQuizStateManagerReturn => {
     loadQuizzes,
     loadDrafts,
     refreshStorageUsage,
+    deleteDraft,
   } = useQuizStorage();
 
   const [syncStatus, setSyncStatus] = useState<SyncStatus>("idle");
@@ -106,6 +107,9 @@ export const useQuizStateManager = (): UseQuizStateManagerReturn => {
 
   /**
    * Enhanced delete with comprehensive synchronization
+   * Now also deletes any draft with the same ID as the quiz being deleted.
+   * Ensures no ghost quizzes/drafts remain after deletion.
+   * Broadcasts a 'QUIZ_DELETED' event for cross-tab/modal cleanup.
    */
   const deleteQuizWithSync = useCallback(
     async (id: string): Promise<boolean> => {
@@ -113,27 +117,41 @@ export const useQuizStateManager = (): UseQuizStateManagerReturn => {
         setSyncStatus("syncing");
         debugLog("Delete quiz with sync", { id, quizCount: quizzes.length });
 
+        // Delete the quiz from storage
         const success = await deleteQuiz(id);
 
-        if (success) {
-          // Force complete data refresh
-          await forceRefreshAll();
-          debugLog("Delete and refresh completed", {
-            id,
-            newQuizCount: quizzes.length,
-          });
-          return true;
+        // Also delete any draft with the same ID
+        await deleteDraft(id);
+
+        // Broadcast deletion event for wizard cleanup (cross-tab)
+        try {
+          const bc = new window.BroadcastChannel("quizzard-quiz-events");
+          bc.postMessage({ type: "QUIZ_DELETED", id });
+          bc.close();
+        } catch (e) {
+          // Fallback: no-op if BroadcastChannel not supported
         }
 
-        setSyncStatus("error");
-        return false;
+        // Reload quizzes and drafts
+        await loadQuizzes();
+        await loadDrafts();
+        await refreshStorageUsage();
+        setSyncStatus("idle");
+        return success;
       } catch (error) {
-        debugLog("Delete with sync failed", { id, error });
         setSyncStatus("error");
+        debugLog("Delete quiz with sync error", error);
         return false;
       }
     },
-    [deleteQuiz, forceRefreshAll, quizzes.length]
+    [
+      deleteQuiz,
+      deleteDraft,
+      loadQuizzes,
+      loadDrafts,
+      refreshStorageUsage,
+      quizzes.length,
+    ]
   );
 
   /**

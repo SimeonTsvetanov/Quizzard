@@ -93,12 +93,7 @@ const isQuestionComplete = (
 
   // Golden Pyramid
   if (roundType === "golden-pyramid") {
-    return (
-      question.possibleAnswers.length > 0 &&
-      question.possibleAnswers.every(
-        (answer: string) => answer && answer.trim()
-      )
-    );
+    return !!(question.correctAnswerText && question.correctAnswerText.trim());
   }
 
   // Regular multiple choice

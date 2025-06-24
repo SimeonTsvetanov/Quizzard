@@ -428,12 +428,9 @@ export const QuestionEditor: React.FC<QuestionEditorProps> = ({
       <TextField
         fullWidth
         label="Question"
-        multiline
-        minRows={2}
-        maxRows={4}
-        value={question.question}
+        value={question.question || ""}
         onChange={(e) => onUpdate({ question: e.target.value })}
-        placeholder="Enter your question here..."
+        placeholder="Type your question here..."
       />
 
       {/* Media Upload */}
@@ -442,7 +439,8 @@ export const QuestionEditor: React.FC<QuestionEditorProps> = ({
       {/* Answer Configuration */}
       {question.type === "single-answer" ||
       (["picture", "audio", "video"].includes(question.type) &&
-        question.possibleAnswers.length === 0) ? (
+        question.possibleAnswers.length === 0) ||
+      roundType === "golden-pyramid" ? (
         <Box>
           <Box
             sx={{
@@ -452,31 +450,48 @@ export const QuestionEditor: React.FC<QuestionEditorProps> = ({
               mb: 2,
             }}
           >
-            <Typography variant="subtitle2">Correct Answer</Typography>
+            <Typography variant="subtitle2">
+              {roundType === "golden-pyramid"
+                ? "Possible Answers"
+                : "Correct Answer"}
+            </Typography>
             {/* For media questions, show option to switch to multiple choice */}
-            {["picture", "audio", "video"].includes(question.type) && (
-              <Button
-                size="small"
-                variant="outlined"
-                onClick={() => {
-                  onUpdate({
-                    possibleAnswers: ["", "", "", ""],
-                    correctAnswers: [0],
-                    correctAnswerText: undefined,
-                  });
-                }}
-              >
-                Switch to Multiple Choice
-              </Button>
-            )}
+            {["picture", "audio", "video"].includes(question.type) &&
+              roundType !== "golden-pyramid" && (
+                <Button
+                  size="small"
+                  variant="outlined"
+                  onClick={() => {
+                    onUpdate({
+                      possibleAnswers: ["", "", "", ""],
+                      correctAnswers: [0],
+                      correctAnswerText: undefined,
+                    });
+                  }}
+                >
+                  Switch to Multiple Choice
+                </Button>
+              )}
           </Box>
           <TextField
             fullWidth
-            label="Type the correct answer"
+            label={
+              roundType === "golden-pyramid"
+                ? "Type all possible answers (separated by commas, dots, etc.)"
+                : "Type the correct answer"
+            }
             value={question.correctAnswerText || ""}
             onChange={(e) => onUpdate({ correctAnswerText: e.target.value })}
-            placeholder="e.g., Sofia, Paris, 1969..."
-            helperText="This is the exact answer participants need to type"
+            placeholder={
+              roundType === "golden-pyramid"
+                ? "e.g., Answer 1, Answer 2, Answer 3, Answer 4"
+                : "e.g., Sofia, Paris, 1969..."
+            }
+            helperText={
+              roundType === "golden-pyramid"
+                ? "Enter all possible answers as a single text string. Users can separate with commas, dots, or any format they prefer."
+                : "This is the exact answer participants need to type"
+            }
           />
         </Box>
       ) : (
@@ -490,27 +505,24 @@ export const QuestionEditor: React.FC<QuestionEditorProps> = ({
             }}
           >
             <Typography variant="subtitle2">
-              {roundType === "golden-pyramid"
-                ? "Correct Answers"
-                : "Answer Options (1-20 options)"}
+              Answer Options (1-20 options)
             </Typography>
             {/* For media questions, show option to switch to single answer */}
-            {["picture", "audio", "video"].includes(question.type) &&
-              roundType !== "golden-pyramid" && (
-                <Button
-                  size="small"
-                  variant="outlined"
-                  onClick={() => {
-                    onUpdate({
-                      possibleAnswers: [],
-                      correctAnswers: [],
-                      correctAnswerText: "",
-                    });
-                  }}
-                >
-                  Switch to Single Answer
-                </Button>
-              )}
+            {["picture", "audio", "video"].includes(question.type) && (
+              <Button
+                size="small"
+                variant="outlined"
+                onClick={() => {
+                  onUpdate({
+                    possibleAnswers: [],
+                    correctAnswers: [],
+                    correctAnswerText: "",
+                  });
+                }}
+              >
+                Switch to Single Answer
+              </Button>
+            )}
           </Box>
           <Stack spacing={2}>
             {question.possibleAnswers.map((option, index) => (
@@ -518,63 +530,50 @@ export const QuestionEditor: React.FC<QuestionEditorProps> = ({
                 key={index}
                 sx={{ display: "flex", alignItems: "center", gap: 1 }}
               >
-                {/* Hide checkbox for Golden Pyramid since all answers are correct */}
-                {roundType !== "golden-pyramid" && (
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={question.correctAnswers.includes(index)}
-                        onChange={() => toggleCorrectAnswer(index)}
-                      />
-                    }
-                    label=""
-                  />
-                )}
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={question.correctAnswers.includes(index)}
+                      onChange={() => toggleCorrectAnswer(index)}
+                    />
+                  }
+                  label=""
+                />
                 <TextField
                   fullWidth
                   value={option}
                   onChange={(e) => updateOption(index, e.target.value)}
-                  placeholder={
-                    roundType === "golden-pyramid"
-                      ? `Correct Answer (${index + 1})`
-                      : `Enter option ${index + 1}...`
-                  }
+                  placeholder={`Enter option ${index + 1}...`}
                 />
-                {/* Hide remove button for Golden Pyramid */}
-                {roundType !== "golden-pyramid" &&
-                  question.possibleAnswers.length > 1 && (
-                    <IconButton
-                      onClick={() => removeOption(index)}
-                      color="error"
-                      size="small"
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  )}
+                {question.possibleAnswers.length > 1 && (
+                  <IconButton
+                    onClick={() => removeOption(index)}
+                    color="error"
+                    size="small"
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                )}
               </Box>
             ))}
 
-            {/* Hide add option button for Golden Pyramid */}
-            {roundType !== "golden-pyramid" &&
-              question.possibleAnswers.length < 20 && (
-                <Button
-                  startIcon={<AddIcon />}
-                  onClick={addOption}
-                  variant="outlined"
-                  size="small"
-                >
-                  Add Option
-                </Button>
-              )}
+            {question.possibleAnswers.length < 20 && (
+              <Button
+                startIcon={<AddIcon />}
+                onClick={addOption}
+                variant="outlined"
+                size="small"
+              >
+                Add Option
+              </Button>
+            )}
           </Stack>
 
-          {/* Only show validation error for non-Golden Pyramid questions */}
-          {roundType !== "golden-pyramid" &&
-            question.correctAnswers.length === 0 && (
-              <Typography variant="caption" color="error">
-                Please select at least one correct answer
-              </Typography>
-            )}
+          {question.correctAnswers.length === 0 && (
+            <Typography variant="caption" color="error">
+              Please select at least one correct answer
+            </Typography>
+          )}
         </Box>
       )}
 

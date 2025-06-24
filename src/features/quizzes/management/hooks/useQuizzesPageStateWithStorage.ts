@@ -77,6 +77,9 @@ export interface QuizzesPageActionsWithStorage {
   // Storage actions
   handleCleanupDrafts: () => void;
   handleRefreshStorage: () => void;
+
+  // New action for quiz deletion
+  handleQuizDeleted: () => void;
 }
 
 /**
@@ -106,340 +109,338 @@ export interface UseQuizzesPageStateWithStorageReturn {
  *
  * @returns Object containing enhanced state, actions, and storage functionality
  */
-export const useQuizzesPageStateWithStorage =
-  (): UseQuizzesPageStateWithStorageReturn => {
-    // Storage hook for IndexedDB operations
-    const {
-      quizzes,
-      drafts,
-      isLoading,
-      storageUsage,
-      autoSaveStatus,
-      isInitialized,
-      saveQuiz,
-      deleteQuiz,
-      enableAutoSave,
-      disableAutoSave,
-      cleanupOldDrafts,
-      refreshStorageUsage,
-      loadQuizzes,
-      loadDrafts,
-    } = useQuizStorage();
+export const useQuizzesPageStateWithStorage = (
+  onQuizDeleted?: () => void,
+  reloadKey?: number
+): UseQuizzesPageStateWithStorageReturn => {
+  // Storage hook for IndexedDB operations
+  const {
+    quizzes,
+    drafts,
+    isLoading,
+    storageUsage,
+    autoSaveStatus,
+    isInitialized,
+    saveQuiz,
+    deleteQuiz,
+    enableAutoSave,
+    disableAutoSave,
+    cleanupOldDrafts,
+    refreshStorageUsage,
+    loadQuizzes,
+    loadDrafts,
+  } = useQuizStorage();
 
-    // Export functionality removed - all exports coming soon
+  // Export functionality removed - all exports coming soon
 
-    const { showSnackbar } = useSnackbar();
+  const { showSnackbar } = useSnackbar();
 
-    // Enhanced state manager for better synchronization
-    const { deleteQuizWithSync } = useQuizStateManager();
+  // Enhanced state manager for better synchronization
+  const { deleteQuizWithSync } = useQuizStateManager();
 
-    // UI state management
-    const [errorDismissed, setErrorDismissed] = React.useState<boolean>(false);
-    const [isWizardOpen, setIsWizardOpen] = React.useState<boolean>(false);
-    const [editingQuiz, setEditingQuiz] = React.useState<Quiz | null>(null);
-    const [menuAnchorEl, setMenuAnchorEl] = React.useState<HTMLElement | null>(
-      null
-    );
-    const [selectedQuiz, setSelectedQuiz] = React.useState<Quiz | null>(null);
-    const [deleteConfirmOpen, setDeleteConfirmOpen] = React.useState(false);
-    const [pendingDeleteQuiz, setPendingDeleteQuiz] =
-      React.useState<Quiz | null>(null);
+  // UI state management
+  const [errorDismissed, setErrorDismissed] = React.useState<boolean>(false);
+  const [isWizardOpen, setIsWizardOpen] = React.useState<boolean>(false);
+  const [editingQuiz, setEditingQuiz] = React.useState<Quiz | null>(null);
+  const [menuAnchorEl, setMenuAnchorEl] = React.useState<HTMLElement | null>(
+    null
+  );
+  const [selectedQuiz, setSelectedQuiz] = React.useState<Quiz | null>(null);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = React.useState(false);
+  const [pendingDeleteQuiz, setPendingDeleteQuiz] = React.useState<Quiz | null>(
+    null
+  );
 
-    const [storageWarningDismissed, setStorageWarningDismissed] =
-      React.useState(false);
+  const [storageWarningDismissed, setStorageWarningDismissed] =
+    React.useState(false);
 
-    // Error state (can come from storage operations)
-    const [localError, setLocalError] = React.useState<string | null>(null);
+  // Error state (can come from storage operations)
+  const [localError, setLocalError] = React.useState<string | null>(null);
 
-    // Reset dismissed state when error changes
-    React.useEffect(() => {
-      if (localError) {
-        setErrorDismissed(false);
-      }
-    }, [localError]);
+  // Reset dismissed state when error changes
+  React.useEffect(() => {
+    if (localError) {
+      setErrorDismissed(false);
+    }
+  }, [localError]);
 
-    // Reset storage warning when storage usage changes
-    React.useEffect(() => {
-      if (storageUsage?.isNearLimit) {
-        setStorageWarningDismissed(false);
-      }
-    }, [storageUsage?.isNearLimit]);
+  // Reset storage warning when storage usage changes
+  React.useEffect(() => {
+    if (storageUsage?.isNearLimit) {
+      setStorageWarningDismissed(false);
+    }
+  }, [storageUsage?.isNearLimit]);
 
-    /**
-     * Handles dismissing error messages
-     */
-    const dismissError = React.useCallback(() => {
-      setErrorDismissed(true);
-      setLocalError(null);
-    }, []);
+  /**
+   * Handles dismissing error messages
+   */
+  const dismissError = React.useCallback(() => {
+    setErrorDismissed(true);
+    setLocalError(null);
+  }, []);
 
-    /**
-     * Handles dismissing storage warning
-     */
-    const dismissStorageWarning = React.useCallback(() => {
-      setStorageWarningDismissed(true);
-    }, []);
+  /**
+   * Handles dismissing storage warning
+   */
+  const dismissStorageWarning = React.useCallback(() => {
+    setStorageWarningDismissed(true);
+  }, []);
 
-    /**
-     * Handles opening the quiz creation wizard
-     */
-    const handleCreateQuiz = React.useCallback(() => {
-      setEditingQuiz(null);
-      setIsWizardOpen(true);
-    }, []);
+  /**
+   * Handles opening the quiz creation wizard
+   */
+  const handleCreateQuiz = React.useCallback(() => {
+    setEditingQuiz(null);
+    setIsWizardOpen(true);
+  }, []);
 
-    /**
-     * Handles editing an existing quiz
-     */
-    const handleEditQuiz = React.useCallback((quiz: Quiz) => {
-      setEditingQuiz(quiz);
-      setIsWizardOpen(true);
-      setMenuAnchorEl(null);
-    }, []);
+  /**
+   * Handles editing an existing quiz
+   */
+  const handleEditQuiz = React.useCallback((quiz: Quiz) => {
+    setEditingQuiz(quiz);
+    setIsWizardOpen(true);
+    setMenuAnchorEl(null);
+  }, []);
 
-    /**
-     * Handles quiz creation completion with IndexedDB storage
-     */
-    const handleQuizCreated = React.useCallback(
-      async (quiz: Quiz) => {
-        try {
-          // Set status to completed before saving
-          const completedQuiz: Quiz = {
-            ...quiz,
-            status: "completed",
-            updatedAt: new Date(),
-          };
-
-          const success = await saveQuiz(completedQuiz);
-
-          if (success) {
-            if (editingQuiz) {
-              showSnackbar("Quiz updated successfully!", "success");
-            } else {
-              showSnackbar("Quiz created successfully!", "success");
-            }
-
-            setIsWizardOpen(false);
-            setEditingQuiz(null);
-
-            // Disable auto-save since quiz is now completed
-            disableAutoSave();
-
-            // Refresh storage usage
-            await refreshStorageUsage();
-          } else {
-            throw new Error("Failed to save quiz to storage");
-          }
-        } catch (error) {
-          const message =
-            error instanceof Error ? error.message : "Failed to save quiz";
-          setLocalError(message);
-          showSnackbar(message, "error");
-        }
-      },
-      [
-        editingQuiz,
-        saveQuiz,
-        showSnackbar,
-        disableAutoSave,
-        refreshStorageUsage,
-      ]
-    );
-
-    /**
-     * Handles wizard cancellation
-     */
-    const handleWizardCancel = React.useCallback(() => {
-      setIsWizardOpen(false);
-      setEditingQuiz(null);
-      disableAutoSave();
-    }, [disableAutoSave]);
-
-    /**
-     * Handles export requests (coming soon)
-     */
-    const handleExportQuiz = React.useCallback(
-      async (quiz: Quiz, format: "slides" | "json") => {
-        try {
-          // All export formats are currently disabled - coming soon
-          const formatNames = {
-            slides: "Google Slides",
-            json: "JSON",
-          };
-
-          showSnackbar(`${formatNames[format]} export coming soon!`, "info");
-          setMenuAnchorEl(null);
-        } catch (error) {
-          const message =
-            error instanceof Error ? error.message : "Export failed";
-          setLocalError(message);
-          showSnackbar(message, "error");
-        }
-      },
-      [showSnackbar]
-    );
-
-    /**
-     * Handles opening context menu for quiz actions
-     */
-    const handleMenuOpen = React.useCallback(
-      (event: React.MouseEvent<HTMLElement>, quiz: Quiz) => {
-        setMenuAnchorEl(event.currentTarget);
-        setSelectedQuiz(quiz);
-      },
-      []
-    );
-
-    /**
-     * Handles closing context menu
-     */
-    const handleMenuClose = React.useCallback(() => {
-      setMenuAnchorEl(null);
-      setSelectedQuiz(null);
-    }, []);
-
-    /**
-     * Handles requesting quiz deletion
-     */
-    const handleRequestDeleteQuiz = React.useCallback((quiz: Quiz) => {
-      setPendingDeleteQuiz(quiz);
-      setDeleteConfirmOpen(true);
-      setMenuAnchorEl(null);
-    }, []);
-
-    /**
-     * Handles confirming quiz deletion with enhanced sync and UI refresh
-     */
-    const handleConfirmDeleteQuiz = React.useCallback(async () => {
-      if (!pendingDeleteQuiz) return;
-
+  /**
+   * Handles quiz creation completion with IndexedDB storage
+   */
+  const handleQuizCreated = React.useCallback(
+    async (quiz: Quiz) => {
       try {
-        const success = await deleteQuizWithSync(pendingDeleteQuiz.id);
+        // Set status to completed before saving
+        const completedQuiz: Quiz = {
+          ...quiz,
+          status: "completed",
+          updatedAt: new Date(),
+        };
+
+        const success = await saveQuiz(completedQuiz);
 
         if (success) {
-          showSnackbar("Quiz deleted successfully!", "success");
+          if (editingQuiz) {
+            showSnackbar("Quiz updated successfully!", "success");
+          } else {
+            showSnackbar("Quiz created successfully!", "success");
+          }
+
+          setIsWizardOpen(false);
+          setEditingQuiz(null);
+
+          // Disable auto-save since quiz is now completed
+          disableAutoSave();
+
+          // Refresh storage usage
+          await refreshStorageUsage();
+        } else {
+          throw new Error("Failed to save quiz to storage");
         }
       } catch (error) {
-        console.error("Error deleting quiz:", error);
-        setLocalError("Failed to delete quiz");
-      } finally {
-        setDeleteConfirmOpen(false);
-        setPendingDeleteQuiz(null);
+        const message =
+          error instanceof Error ? error.message : "Failed to save quiz";
+        setLocalError(message);
+        showSnackbar(message, "error");
       }
-    }, [
-      pendingDeleteQuiz,
-      deleteQuiz,
-      loadQuizzes,
-      loadDrafts,
-      refreshStorageUsage,
-      showSnackbar,
-    ]);
+    },
+    [editingQuiz, saveQuiz, showSnackbar, disableAutoSave, refreshStorageUsage]
+  );
 
-    /**
-     * Handles cancelling quiz deletion
-     */
-    const handleCancelDeleteQuiz = React.useCallback(() => {
+  /**
+   * Handles wizard cancellation
+   */
+  const handleWizardCancel = React.useCallback(() => {
+    setIsWizardOpen(false);
+    setEditingQuiz(null);
+    disableAutoSave();
+  }, [disableAutoSave]);
+
+  /**
+   * Handles export requests (coming soon)
+   */
+  const handleExportQuiz = React.useCallback(
+    async (quiz: Quiz, format: "slides" | "json") => {
+      try {
+        // All export formats are currently disabled - coming soon
+        const formatNames = {
+          slides: "Google Slides",
+          json: "JSON",
+        };
+
+        showSnackbar(`${formatNames[format]} export coming soon!`, "info");
+        setMenuAnchorEl(null);
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : "Export failed";
+        setLocalError(message);
+        showSnackbar(message, "error");
+      }
+    },
+    [showSnackbar]
+  );
+
+  /**
+   * Handles opening context menu for quiz actions
+   */
+  const handleMenuOpen = React.useCallback(
+    (event: React.MouseEvent<HTMLElement>, quiz: Quiz) => {
+      setMenuAnchorEl(event.currentTarget);
+      setSelectedQuiz(quiz);
+    },
+    []
+  );
+
+  /**
+   * Handles closing context menu
+   */
+  const handleMenuClose = React.useCallback(() => {
+    setMenuAnchorEl(null);
+    setSelectedQuiz(null);
+  }, []);
+
+  /**
+   * Handles requesting quiz deletion
+   */
+  const handleRequestDeleteQuiz = React.useCallback((quiz: Quiz) => {
+    setPendingDeleteQuiz(quiz);
+    setDeleteConfirmOpen(true);
+    setMenuAnchorEl(null);
+  }, []);
+
+  /**
+   * Handles confirming quiz deletion with enhanced sync and UI refresh
+   */
+  const handleConfirmDeleteQuiz = React.useCallback(async () => {
+    if (!pendingDeleteQuiz) return;
+
+    try {
+      const success = await deleteQuizWithSync(pendingDeleteQuiz.id);
+
+      if (success) {
+        showSnackbar("Quiz deleted successfully!", "success");
+        if (onQuizDeleted) onQuizDeleted();
+      }
+    } catch (error) {
+      console.error("Error deleting quiz:", error);
+      setLocalError("Failed to delete quiz");
+    } finally {
       setDeleteConfirmOpen(false);
       setPendingDeleteQuiz(null);
-    }, []);
+    }
+  }, [pendingDeleteQuiz, deleteQuizWithSync, showSnackbar, onQuizDeleted]);
 
-    /**
-     * Handles cleanup of all storage (now directly executes - confirmation handled by StorageModal)
-     */
-    const handleCleanupDrafts = React.useCallback(async () => {
-      try {
-        // Use clearAllStorage to remove everything instead of just old drafts
-        const result = await indexedDBService.clearAllStorage();
+  /**
+   * Handles cancelling quiz deletion
+   */
+  const handleCancelDeleteQuiz = React.useCallback(() => {
+    setDeleteConfirmOpen(false);
+    setPendingDeleteQuiz(null);
+  }, []);
 
-        if (result.success) {
-          showSnackbar("All storage cleared successfully!", "success");
+  /**
+   * Handles cleanup of all storage (now directly executes - confirmation handled by StorageModal)
+   */
+  const handleCleanupDrafts = React.useCallback(async () => {
+    try {
+      // Use clearAllStorage to remove everything instead of just old drafts
+      const result = await indexedDBService.clearAllStorage();
 
-          // Refresh storage usage and reload quizzes
-          await refreshStorageUsage();
-          await loadQuizzes(); // This will reload the quiz list
-          await loadDrafts(); // This will reload the drafts list
-        } else {
-          throw new Error(result.error || "Failed to clear storage");
-        }
-      } catch (error) {
-        const message =
-          error instanceof Error ? error.message : "Failed to clear storage";
-        setLocalError(message);
-        showSnackbar(message, "error");
-      }
-    }, [showSnackbar, refreshStorageUsage, loadQuizzes, loadDrafts]);
+      if (result.success) {
+        showSnackbar("All storage cleared successfully!", "success");
 
-    /**
-     * Handles refreshing storage usage
-     */
-    const handleRefreshStorage = React.useCallback(async () => {
-      try {
+        // Refresh storage usage and reload quizzes
         await refreshStorageUsage();
-        showSnackbar("Storage information refreshed", "info");
-      } catch (error) {
-        const message =
-          error instanceof Error ? error.message : "Failed to refresh storage";
-        setLocalError(message);
-        showSnackbar(message, "error");
+        await loadQuizzes(); // This will reload the quiz list
+        await loadDrafts(); // This will reload the drafts list
+      } else {
+        throw new Error(result.error || "Failed to clear storage");
       }
-    }, [refreshStorageUsage, showSnackbar]);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Failed to clear storage";
+      setLocalError(message);
+      showSnackbar(message, "error");
+    }
+  }, [showSnackbar, refreshStorageUsage, loadQuizzes, loadDrafts]);
 
-    // Auto-save draft when editing
-    React.useEffect(() => {
-      if (isWizardOpen && editingQuiz) {
-        const draftQuiz = {
-          ...editingQuiz,
-          status: "draft" as const,
-          lastSaved: new Date(),
-        };
-        enableAutoSave(draftQuiz);
-      }
+  /**
+   * Handles refreshing storage usage
+   */
+  const handleRefreshStorage = React.useCallback(async () => {
+    try {
+      await refreshStorageUsage();
+      showSnackbar("Storage information refreshed", "info");
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Failed to refresh storage";
+      setLocalError(message);
+      showSnackbar(message, "error");
+    }
+  }, [refreshStorageUsage, showSnackbar]);
 
-      return () => {
-        if (!isWizardOpen) {
-          disableAutoSave();
-        }
+  // Auto-save draft when editing
+  React.useEffect(() => {
+    if (isWizardOpen && editingQuiz) {
+      const draftQuiz = {
+        ...editingQuiz,
+        status: "draft" as const,
+        lastSaved: new Date(),
       };
-    }, [isWizardOpen, editingQuiz, enableAutoSave, disableAutoSave]);
+      enableAutoSave(draftQuiz);
+    }
 
-    return {
-      // Storage state
-      quizzes,
-      drafts,
-      isLoading,
-      error: localError,
-      storageUsage,
-      isInitialized,
-
-      // UI state
-      state: {
-        errorDismissed,
-        isWizardOpen,
-        editingQuiz,
-        menuAnchorEl,
-        selectedQuiz,
-        deleteConfirmOpen,
-        pendingDeleteQuiz,
-        autoSaveStatus,
-        storageWarningDismissed,
-      },
-
-      // Action handlers
-      actions: {
-        dismissError,
-        dismissStorageWarning,
-        handleCreateQuiz,
-        handleEditQuiz,
-        handleQuizCreated,
-        handleWizardCancel,
-        handleExportQuiz,
-        handleMenuOpen,
-        handleMenuClose,
-        handleRequestDeleteQuiz,
-        handleConfirmDeleteQuiz,
-        handleCancelDeleteQuiz,
-        handleCleanupDrafts,
-        handleRefreshStorage,
-      },
+    return () => {
+      if (!isWizardOpen) {
+        disableAutoSave();
+      }
     };
+  }, [isWizardOpen, editingQuiz, enableAutoSave, disableAutoSave]);
+
+  // Effect: Reload quizzes and drafts from storage when reloadKey changes
+  React.useEffect(() => {
+    loadQuizzes();
+    loadDrafts();
+  }, [reloadKey]);
+
+  return {
+    // Storage state
+    quizzes,
+    drafts,
+    isLoading,
+    error: localError,
+    storageUsage,
+    isInitialized,
+
+    // UI state
+    state: {
+      errorDismissed,
+      isWizardOpen,
+      editingQuiz,
+      menuAnchorEl,
+      selectedQuiz,
+      deleteConfirmOpen,
+      pendingDeleteQuiz,
+      autoSaveStatus,
+      storageWarningDismissed,
+    },
+
+    // Action handlers
+    actions: {
+      dismissError,
+      dismissStorageWarning,
+      handleCreateQuiz,
+      handleEditQuiz,
+      handleQuizCreated,
+      handleWizardCancel,
+      handleExportQuiz,
+      handleMenuOpen,
+      handleMenuClose,
+      handleRequestDeleteQuiz,
+      handleConfirmDeleteQuiz,
+      handleCancelDeleteQuiz,
+      handleCleanupDrafts,
+      handleRefreshStorage,
+      handleQuizDeleted: () => {}, // Placeholder for handleQuizDeleted
+    },
   };
+};

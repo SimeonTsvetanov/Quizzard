@@ -15,7 +15,7 @@
  * @since December 2025
  */
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -72,6 +72,7 @@ export const QuizWizardModal: React.FC<
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isOpen, setIsOpen] = useState(true); // Local state to control modal open/close
+  const [deleted, setDeleted] = useState(false);
 
   // === ENHANCED WIZARD STATE WITH INDEXEDDB ===
   const {
@@ -221,6 +222,34 @@ export const QuizWizardModal: React.FC<
   const handleCancelDelete = useCallback(() => {
     setShowDeleteDialog(false);
   }, []);
+
+  useEffect(() => {
+    // Listen for 'QUIZ_DELETED' events (cross-tab)
+    const bc = new window.BroadcastChannel("quizzard-quiz-events");
+    const handler = (event: MessageEvent) => {
+      if (
+        event.data?.type === "QUIZ_DELETED" &&
+        event.data.id === draftQuiz?.id
+      ) {
+        setDeleted(true);
+      }
+    };
+    bc.addEventListener("message", handler);
+    return () => {
+      bc.removeEventListener("message", handler);
+      bc.close();
+    };
+  }, [draftQuiz?.id]);
+
+  // If deleted, close the modal or show a message
+  useEffect(() => {
+    if (deleted) {
+      // Option 1: Close the modal immediately
+      if (typeof onCancel === "function") onCancel();
+      // Option 2: Show a deleted message (uncomment if preferred)
+      // setShowDeletedMessage(true);
+    }
+  }, [deleted, onCancel]);
 
   // === RENDER ===
 

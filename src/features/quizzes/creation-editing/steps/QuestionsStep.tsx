@@ -126,7 +126,7 @@ export const RoundsQuestionsStep: React.FC<RoundsQuestionsStepProps> = ({
           .toString(36)
           .substr(2, 9)}`,
         type: "multiple-choice" as QuestionType,
-        question: `Golden Pyramid Question ${index + 1}`,
+        question: "",
         possibleAnswers: Array.from({ length: index + 1 }, () => ""), // 1,2,3,4 answer fields (empty)
         correctAnswers: Array.from({ length: index + 1 }, (_, i) => i), // All answers are correct for Golden Pyramid
         correctAnswerText: "",
@@ -452,6 +452,8 @@ export const RoundsQuestionsStep: React.FC<RoundsQuestionsStepProps> = ({
       defaultQuestionType = "audio"; // Audio rounds use audio question type
     } else if (currentRound.type === "video") {
       defaultQuestionType = "video"; // Video rounds use video question type
+    } else if (currentRound.type === "golden-pyramid") {
+      defaultQuestionType = "single-answer"; // Golden Pyramid uses single-answer with comma-separated text
     } else if (roundConfig.canSelectQuestionType) {
       defaultQuestionType = "single-answer"; // Mixed rounds default to single-answer
     } else {
@@ -460,11 +462,15 @@ export const RoundsQuestionsStep: React.FC<RoundsQuestionsStepProps> = ({
 
     // Create question with appropriate defaults based on question type
     let questionDefaults;
-    if (defaultQuestionType === "single-answer") {
+    if (
+      defaultQuestionType === "single-answer" ||
+      currentRound.type === "golden-pyramid"
+    ) {
       questionDefaults = {
         possibleAnswers: [],
         correctAnswers: [],
         correctAnswerText: "",
+        question: "", // Ensure question is empty
       };
     } else if (defaultQuestionType === "multiple-choice") {
       // Multiple Choice round: default 4 answers
@@ -515,7 +521,8 @@ export const RoundsQuestionsStep: React.FC<RoundsQuestionsStepProps> = ({
       if (
         q.type === "single-answer" ||
         (["picture", "audio", "video"].includes(q.type) &&
-          q.possibleAnswers.length === 0)
+          q.possibleAnswers.length === 0) ||
+        currentRound?.type === "golden-pyramid"
       ) {
         return q.correctAnswerText && q.correctAnswerText.trim();
       }
@@ -530,13 +537,6 @@ export const RoundsQuestionsStep: React.FC<RoundsQuestionsStepProps> = ({
           q.possibleAnswers.length >= 2 &&
           q.possibleAnswers.every((opt) => opt.trim()) &&
           q.correctAnswers.length > 0
-        );
-      }
-      // Golden Pyramid special case
-      if (currentRound?.type === "golden-pyramid") {
-        return (
-          q.possibleAnswers.length > 0 &&
-          q.possibleAnswers.some((answer) => answer.trim())
         );
       }
       return false;
@@ -674,6 +674,16 @@ export const RoundsQuestionsStep: React.FC<RoundsQuestionsStepProps> = ({
             </Typography>
           </Alert>
         )}
+
+      {/* Golden Pyramid Info Message (only for Golden Pyramid rounds) */}
+      {currentRound && currentRound.type === "golden-pyramid" && (
+        <Alert severity="info" sx={{ mb: 2 }}>
+          <strong>Golden Pyramid:</strong> This round auto-generates 4
+          pre-configured questions, each requiring a single text answer. Enter
+          all possible answers for each step as a single string, separated by
+          commas, dots, or any format you prefer.
+        </Alert>
+      )}
 
       {/* Refactored Question Actions Bar */}
       <QuestionActionsBar

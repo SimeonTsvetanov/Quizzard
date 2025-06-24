@@ -210,8 +210,6 @@ export interface Quiz {
   updatedAt: Date;
   /** Quiz settings */
   settings: QuizSettings;
-  /** Export metadata */
-  exportData?: QuizExportData;
 }
 
 /**
@@ -224,44 +222,6 @@ export interface QuizSettings {
   defaultPoints: number;
   /** Default breaking time between rounds in minutes */
   defaultBreakingTime: number;
-}
-
-/**
- * Quiz export metadata
- */
-export interface QuizExportData {
-  /** Last export timestamp */
-  lastExported: Date;
-  /** Export format used */
-  format: "powerpoint";
-  /** Export settings used */
-  settings: ExportSettings;
-  /** File size of last export in bytes */
-  fileSize: number;
-  /** Whether presenter notes were included */
-  includePresenterNotes: boolean;
-}
-
-/**
- * Export settings for PowerPoint generation
- */
-export interface ExportSettings {
-  /** Include presenter notes with questions/answers */
-  includePresenterNotes: boolean;
-  /** Slide layout template to use */
-  slideTemplate: "standard" | "modern" | "minimal";
-  /** Font size for questions */
-  questionFontSize: number;
-  /** Font size for options */
-  optionFontSize: number;
-  /** Include quiz metadata slide */
-  includeMetadata: boolean;
-  /** Include answer key at the end */
-  includeAnswerKey: boolean;
-  /** Compress images for smaller file size */
-  compressImages: boolean;
-  /** Image quality (1-100) when compressing */
-  imageQuality: number;
 }
 
 /**
