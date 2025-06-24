@@ -17,13 +17,8 @@
 ---
 
 </div>
-<div align="center">
 
-**Made with ❤️ by [Simeon Tsvetanov](mailto:tsvetanov.simeon@gmail.com)**
-
-[🚀 **Try Quizzard Now**](https://simeontsvetanov.github.io/quizzard/) | [📧 **Contact Creator**](mailto:tsvetanov.simeon@gmail.com) | [🐛 **Report Issues**](https://github.com/SimeonTsvetanov/Quizzard/issues)
-
-</div>
+[☕ **Buy Me a Coffee**](https://www.buymeacoffee.com/simeontsvetanov)
 
 ## 📋 Table of Contents
 

@@ -122,6 +122,7 @@ export interface MediaFile {
 
 /**
  * Quiz question interface (updated for new system)
+ * Supports both manual creation and AI-generated questions in standard format
  */
 export interface QuizQuestion {
   /** Unique identifier for the question */
@@ -233,7 +234,7 @@ export interface QuizExportData {
   /** Last export timestamp */
   lastExported: Date;
   /** Export format used */
-  format: "powerpoint";
+  format: "google-slides" | "json";
   /** Export settings used */
   settings: ExportSettings;
   /** File size of last export in bytes */
@@ -243,25 +244,19 @@ export interface QuizExportData {
 }
 
 /**
- * Export settings for PowerPoint generation
+ * Export settings for quiz export (Google Slides and JSON)
  */
 export interface ExportSettings {
-  /** Include presenter notes with questions/answers */
-  includePresenterNotes: boolean;
-  /** Slide layout template to use */
-  slideTemplate: "standard" | "modern" | "minimal";
-  /** Font size for questions */
-  questionFontSize: number;
-  /** Font size for options */
-  optionFontSize: number;
-  /** Include quiz metadata slide */
+  /** Include quiz metadata (title, description, etc.) */
   includeMetadata: boolean;
-  /** Include answer key at the end */
+  /** Include presenter notes and explanations */
+  includePresenterNotes: boolean;
+  /** Include answer key in export */
   includeAnswerKey: boolean;
-  /** Compress images for smaller file size */
-  compressImages: boolean;
-  /** Image quality (1-100) when compressing */
-  imageQuality: number;
+  /** Font size for questions (Google Slides only) */
+  questionFontSize: number;
+  /** Font size for answer options (Google Slides only) */
+  optionFontSize: number;
 }
 
 /**
@@ -392,9 +387,10 @@ export interface UseQuizManagementReturn {
   loadQuiz: (id: string) => Promise<Quiz | null>;
   /** Clear current quiz */
   clearCurrentQuiz: () => void;
-  /** Export quiz to PowerPoint */
-  exportToPowerPoint: (
+  /** Export quiz in supported formats */
+  exportQuiz: (
     quizId: string,
+    format: "google-slides" | "json",
     settings?: ExportSettings
   ) => Promise<void>;
   /** Set quizzes */

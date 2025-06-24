@@ -1,398 +1,281 @@
 /**
- * Quiz Export Hook
- *
- * Extracted from useQuizManagement for better separation of concerns.
- * Handles PowerPoint export functionality using PptxGenJS with comprehensive
- * slide generation, media support, and presenter notes.
- *
- * @fileoverview Quiz PowerPoint export hook following Single Responsibility Principle
+ * @fileoverview Quiz Export Hook - Google Slides and JSON Export Only
  * @version 1.0.0
- * @since December 2025
+ * @description Provides quiz export functionality for Google Slides and JSON formats.
+ * PowerPoint export has been removed as per project charter requirements.
+ *
+ * Supported Export Formats:
+ * - Google Slides (planned)
+ * - JSON (native browser APIs)
+ *
+ * @integration Part of Quizzard quiz management system
+ * @dependencies React hooks, Quiz types, browser APIs
  */
 
 import { useState, useCallback } from "react";
-import type { Quiz, ExportSettings } from "../types";
+import type { Quiz } from "../../types";
 
 /**
- * Default export settings for PowerPoint generation
+ * Export format options for quiz export
+ */
+export type ExportFormat = "google-slides" | "json";
+
+/**
+ * Export settings configuration for different formats
+ */
+export interface ExportSettings {
+  /** Include quiz metadata (title, description, etc.) */
+  includeMetadata: boolean;
+  /** Include presenter notes and explanations */
+  includePresenterNotes: boolean;
+  /** Include answer key in export */
+  includeAnswerKey: boolean;
+  /** Font size for questions (Google Slides only) */
+  questionFontSize: number;
+  /** Font size for answer options (Google Slides only) */
+  optionFontSize: number;
+}
+
+/**
+ * Default export settings
  */
 const DEFAULT_EXPORT_SETTINGS: ExportSettings = {
+  includeMetadata: true,
   includePresenterNotes: true,
-  slideTemplate: "standard",
+  includeAnswerKey: true,
   questionFontSize: 24,
   optionFontSize: 18,
-  includeMetadata: true,
-  includeAnswerKey: true,
-  compressImages: true,
-  imageQuality: 85,
 };
 
 /**
- * Validates quiz data before export
+ * Validates quiz data before export to ensure all required fields are present
  *
- * @param quiz - Quiz to validate
- * @returns Error message if invalid, null if valid
+ * @param quiz - Quiz object to validate
+ * @returns Error message if validation fails, null if valid
  */
 const validateQuizForExport = (quiz: Quiz | null): string | null => {
   if (!quiz) {
-    return "Quiz data is missing";
+    return "No quiz selected for export";
   }
-  if (!quiz.rounds || !Array.isArray(quiz.rounds)) {
-    return "Quiz rounds are missing or invalid";
+
+  if (!quiz.title || quiz.title.trim() === "") {
+    return "Quiz must have a title before export";
   }
-  if (quiz.rounds.length === 0) {
-    return "Quiz has no rounds";
+
+  if (!quiz.rounds || quiz.rounds.length === 0) {
+    return "Quiz must have at least one round before export";
   }
-  if (!quiz.rounds.every((round) => round && Array.isArray(round.questions))) {
-    return "One or more quiz rounds have invalid questions";
+
+  const hasQuestions = quiz.rounds.some(
+    (round) => round.questions && round.questions.length > 0
+  );
+  if (!hasQuestions) {
+    return "Quiz must have at least one question before export";
   }
+
   return null;
 };
 
 /**
- * Quiz Export Hook
+ * Custom hook for quiz export functionality
  *
- * Provides PowerPoint export functionality including:
- * - PPTX generation with PptxGenJS
- * - Title slide with quiz metadata
- * - Individual question slides with answers
- * - Media file embedding for images
- * - Presenter notes with explanations
- * - Answer key slide generation
+ * Provides methods to export quizzes in supported formats:
+ * - JSON format (immediate download)
+ * - Google Slides (planned - OAuth integration required)
  *
- * @returns Object containing export functions and state
+ * @returns Object containing export methods and state
  */
 export const useQuizExport = () => {
   const [isExporting, setIsExporting] = useState(false);
+  const [exportProgress, setExportProgress] = useState(0);
   const [exportError, setExportError] = useState<string | null>(null);
 
   /**
-   * Exports a quiz to PowerPoint format using PptxGenJS
-   * Creates a downloadable PPTX file with all quiz content
+   * Exports quiz as JSON format
    *
    * @param quiz - Quiz to export
-   * @param settings - Export settings and preferences
-   * @returns Promise that resolves when export is complete
+   * @param settings - Export settings configuration
    */
-  const exportToPowerPoint = useCallback(
+  const exportAsJSON = useCallback(
     async (
       quiz: Quiz,
       settings: ExportSettings = DEFAULT_EXPORT_SETTINGS
     ): Promise<void> => {
-      setIsExporting(true);
-      setExportError(null);
-
       try {
+        setIsExporting(true);
+        setExportProgress(0);
+        setExportError(null);
+
         // Validate quiz data before proceeding
         const validationError = validateQuizForExport(quiz);
         if (validationError) {
           throw new Error(validationError);
         }
 
-        // Dynamic import to avoid bundling PptxGenJS unless needed
-        const PptxGenJS = (await import("pptxgenjs")).default;
-        const pptx = new PptxGenJS();
+        setExportProgress(25);
 
-        // Configure presentation settings
-        pptx.defineLayout({ name: "QUIZZARD", width: 10, height: 7.5 });
-        pptx.layout = "QUIZZARD";
+        // Prepare export data based on settings
+        const exportData = {
+          format: "json",
+          version: "1.0",
+          exportedAt: new Date().toISOString(),
+          quiz: {
+            id: quiz.id,
+            title: quiz.title,
+            description: settings.includeMetadata
+              ? quiz.description
+              : undefined,
+            category: settings.includeMetadata ? quiz.category : undefined,
+            difficulty: settings.includeMetadata ? quiz.difficulty : undefined,
+            estimatedDuration: settings.includeMetadata
+              ? quiz.estimatedDuration
+              : undefined,
+            rounds: quiz.rounds.map((round) => ({
+              name: round.name,
+              description: round.description,
+              questions: round.questions.map((question) => ({
+                question: question.question,
+                type: question.type,
+                possibleAnswers: question.possibleAnswers,
+                correctAnswers: question.correctAnswers,
+                correctAnswerText: question.correctAnswerText,
+                points: question.points,
+                timeLimit: question.timeLimit,
+                explanation: settings.includePresenterNotes
+                  ? question.explanation
+                  : undefined,
+                mediaFile: question.mediaFile,
+              })),
+            })),
+          },
+          settings: settings.includeMetadata ? settings : undefined,
+        };
 
-        // Add title slide if metadata is included
-        if (settings.includeMetadata) {
-          const titleSlide = pptx.addSlide();
-          titleSlide.addText(quiz.title, {
-            x: 1,
-            y: 2,
-            w: 8,
-            h: 1.5,
-            fontSize: 36,
-            bold: true,
-            align: "center",
-          });
+        setExportProgress(75);
 
-          titleSlide.addText(
-            [
-              {
-                text: `Category: ${quiz.category}`,
-                options: { breakLine: true },
-              },
-              {
-                text: `Difficulty: ${quiz.difficulty}`,
-                options: { breakLine: true },
-              },
-              {
-                text: `Questions: ${
-                  quiz.rounds.flatMap((r) => r.questions).length
-                }`,
-                options: { breakLine: true },
-              },
-            ],
-            {
-              x: 1,
-              y: 4,
-              w: 8,
-              h: 2,
-              fontSize: 18,
-              align: "center",
-            }
-          );
+        // Create and download JSON file
+        const jsonString = JSON.stringify(exportData, null, 2);
+        const blob = new Blob([jsonString], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
 
-          if (settings.includePresenterNotes) {
-            titleSlide.addNotes(
-              `Quiz: ${quiz.title}\nTotal Questions: ${
-                quiz.rounds.flatMap((r) => r.questions).length
-              }\nEstimated Duration: ${quiz.estimatedDuration} minutes`
-            );
-          }
-        }
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `${quiz.title
+          .replace(/[^a-z0-9]/gi, "_")
+          .toLowerCase()}_quiz_export.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
 
-        // Add question slides
-        quiz.rounds.forEach((round, roundIndex) => {
-          // Add round title slide
-          const roundSlide = pptx.addSlide();
-          roundSlide.addText(
-            `Round ${roundIndex + 1}${round.name ? `: ${round.name}` : ""}`,
-            {
-              x: 1,
-              y: 2,
-              w: 8,
-              h: 1.5,
-              fontSize: 32,
-              bold: true,
-              align: "center",
-            }
-          );
+        URL.revokeObjectURL(url);
 
-          if (round.description) {
-            roundSlide.addText(round.description, {
-              x: 1,
-              y: 4,
-              w: 8,
-              h: 2,
-              fontSize: 18,
-              align: "center",
-            });
-          }
-
-          // Add questions for this round
-          round.questions.forEach((question, questionIndex) => {
-            const slide = pptx.addSlide();
-            const questionNumber = `Round ${roundIndex + 1}, Question ${
-              questionIndex + 1
-            }`;
-
-            // Question title
-            slide.addText(questionNumber, {
-              x: 0.5,
-              y: 0.5,
-              w: 9,
-              h: 0.8,
-              fontSize: 28,
-              bold: true,
-              color: "1976D2",
-            });
-
-            // Question text
-            slide.addText(question.question, {
-              x: 0.5,
-              y: 1.5,
-              w: 9,
-              h: 1.5,
-              fontSize: settings.questionFontSize,
-              bold: true,
-            });
-
-            // Handle different question types
-            if (question.type === "single-answer") {
-              slide.addText("Answer:", {
-                x: 1,
-                y: 3.5,
-                w: 8,
-                h: 0.7,
-                fontSize: settings.optionFontSize,
-                italic: true,
-                color: "666666",
-              });
-
-              if (
-                settings.includePresenterNotes &&
-                question.correctAnswerText
-              ) {
-                slide.addNotes(
-                  `${questionNumber}\nCorrect Answer: ${
-                    question.correctAnswerText
-                  }${
-                    question.explanation
-                      ? `\nExplanation: ${question.explanation}`
-                      : ""
-                  }`
-                );
-              }
-            } else if (
-              question.type === "multiple-choice" &&
-              question.possibleAnswers
-            ) {
-              // Multiple choice questions
-              question.possibleAnswers.forEach((answer, answerIndex) => {
-                const optionLetter = String.fromCharCode(65 + answerIndex); // A, B, C, D...
-                const isCorrect = question.correctAnswers.includes(answerIndex);
-
-                slide.addText(`${optionLetter}. ${answer}`, {
-                  x: 1,
-                  y: 3.5 + answerIndex * 0.8,
-                  w: 8,
-                  h: 0.7,
-                  fontSize: settings.optionFontSize,
-                  bold: isCorrect,
-                  color: isCorrect ? "4CAF50" : "000000",
-                });
-              });
-
-              // Add presenter notes for multiple choice
-              if (settings.includePresenterNotes) {
-                const correctAnswers = question.correctAnswers
-                  .map(
-                    (index) =>
-                      `${String.fromCharCode(65 + index)}. ${
-                        question.possibleAnswers[index]
-                      }`
-                  )
-                  .join(", ");
-
-                let notes = `${questionNumber}\nCorrect Answer(s): ${correctAnswers}`;
-                if (question.explanation) {
-                  notes += `\nExplanation: ${question.explanation}`;
-                }
-                slide.addNotes(notes);
-              }
-            }
-
-            // Add media if present
-            if (question.mediaFile) {
-              try {
-                if (question.mediaFile.type === "image") {
-                  slide.addImage({
-                    data: question.mediaFile.data,
-                    x: 6,
-                    y: 3,
-                    w: 3,
-                    h: 2.5,
-                    sizing: { type: "contain", w: 3, h: 2.5 },
-                  });
-                }
-                // Note: Audio/video handling would require additional PptxGenJS configuration
-              } catch (mediaError) {
-                console.warn(
-                  `Failed to add media for ${questionNumber}:`,
-                  mediaError
-                );
-              }
-            }
-          });
-        });
-
-        // Add answer key slide if requested
-        if (settings.includeAnswerKey) {
-          const answerSlide = pptx.addSlide();
-          answerSlide.addText("Answer Key", {
-            x: 1,
-            y: 1,
-            w: 8,
-            h: 1,
-            fontSize: 32,
-            bold: true,
-            align: "center",
-          });
-
-          let answerText = "";
-          quiz.rounds.forEach((round, roundIndex) => {
-            answerText += `Round ${roundIndex + 1}:\n`;
-            round.questions.forEach((question, questionIndex) => {
-              const questionNumber = `Q${questionIndex + 1}`;
-              if (question.type === "single-answer") {
-                answerText += `${questionNumber}: ${question.correctAnswerText}\n`;
-              } else if (question.type === "multiple-choice") {
-                const correctAnswers = question.correctAnswers
-                  .map((index) => String.fromCharCode(65 + index))
-                  .join(", ");
-                answerText += `${questionNumber}: ${correctAnswers}\n`;
-              }
-            });
-            answerText += "\n";
-          });
-
-          answerSlide.addText(answerText.trim(), {
-            x: 1,
-            y: 2,
-            w: 8,
-            h: 4,
-            fontSize: 16,
-            align: "left",
-          });
-        }
-
-        // Generate filename and save
-        const filename = `${quiz.title.replace(/[^a-z0-9]/gi, "_")}_Quiz.pptx`;
-        await pptx.writeFile({ fileName: filename });
-      } catch (err) {
-        const errorMessage =
-          err instanceof Error
-            ? err.message
-            : "Failed to export quiz to PowerPoint";
-        setExportError(errorMessage);
-        throw new Error(errorMessage);
+        setExportProgress(100);
+      } catch (error) {
+        console.error("JSON export failed:", error);
+        setExportError(
+          error instanceof Error ? error.message : "JSON export failed"
+        );
       } finally {
         setIsExporting(false);
+        // Reset progress after a short delay
+        setTimeout(() => setExportProgress(0), 1000);
       }
     },
     []
   );
 
   /**
-   * Exports quiz data to JSON format for backup/sharing
+   * Exports quiz to Google Slides (planned functionality)
    *
    * @param quiz - Quiz to export
-   * @returns Promise resolving to downloaded JSON file
+   * @param settings - Export settings configuration
    */
-  const exportToJSON = useCallback(async (quiz: Quiz): Promise<void> => {
-    setIsExporting(true);
-    setExportError(null);
+  const exportToGoogleSlides = useCallback(
+    async (
+      quiz: Quiz,
+      settings: ExportSettings = DEFAULT_EXPORT_SETTINGS
+    ): Promise<void> => {
+      try {
+        setIsExporting(true);
+        setExportProgress(0);
+        setExportError(null);
 
-    try {
-      const jsonData = JSON.stringify(quiz, null, 2);
-      const blob = new Blob([jsonData], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
+        // Validate quiz data before proceeding
+        const validationError = validateQuizForExport(quiz);
+        if (validationError) {
+          throw new Error(validationError);
+        }
 
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `${quiz.title.replace(/[^a-z0-9]/gi, "_")}_Quiz.json`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Failed to export quiz to JSON";
-      setExportError(errorMessage);
-      throw new Error(errorMessage);
-    } finally {
-      setIsExporting(false);
-    }
-  }, []);
+        // Google Slides export is not yet implemented
+        throw new Error(
+          "Google Slides export is currently under development. Please use JSON export for now."
+        );
+      } catch (error) {
+        console.error("Google Slides export failed:", error);
+        setExportError(
+          error instanceof Error ? error.message : "Google Slides export failed"
+        );
+      } finally {
+        setIsExporting(false);
+        setTimeout(() => setExportProgress(0), 1000);
+      }
+    },
+    []
+  );
 
   /**
-   * Clears any export errors
+   * Main export function that routes to appropriate export method based on format
+   *
+   * @param quiz - Quiz to export
+   * @param format - Export format to use
+   * @param settings - Export settings configuration
+   */
+  const exportQuiz = useCallback(
+    async (
+      quiz: Quiz,
+      format: ExportFormat,
+      settings: ExportSettings = DEFAULT_EXPORT_SETTINGS
+    ): Promise<void> => {
+      switch (format) {
+        case "json":
+          return exportAsJSON(quiz, settings);
+        case "google-slides":
+          return exportToGoogleSlides(quiz, settings);
+        default:
+          throw new Error(`Unsupported export format: ${format}`);
+      }
+    },
+    [exportAsJSON, exportToGoogleSlides]
+  );
+
+  /**
+   * Clears any existing export error
    */
   const clearExportError = useCallback(() => {
     setExportError(null);
   }, []);
 
+  /**
+   * Gets default export settings
+   */
+  const getDefaultSettings = useCallback((): ExportSettings => {
+    return { ...DEFAULT_EXPORT_SETTINGS };
+  }, []);
+
   return {
+    // Export methods
+    exportQuiz,
+    exportAsJSON,
+    exportToGoogleSlides,
+
+    // State
     isExporting,
+    exportProgress,
     exportError,
-    exportToPowerPoint,
-    exportToJSON,
+
+    // Utilities
     clearExportError,
-    DEFAULT_EXPORT_SETTINGS,
+    getDefaultSettings,
+    validateQuizForExport,
   };
 };

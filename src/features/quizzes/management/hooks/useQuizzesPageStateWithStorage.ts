@@ -18,6 +18,7 @@
 
 import React from "react";
 import { useQuizStorage } from "./useQuizStorage";
+import { useQuizStateManager } from "./useQuizStateManager";
 import { useSnackbar } from "../../../../shared/hooks/useSnackbar";
 import { indexedDBService } from "../services/indexedDBService";
 import type { Quiz } from "../types";
@@ -128,6 +129,9 @@ export const useQuizzesPageStateWithStorage =
     // Export functionality removed - all exports coming soon
 
     const { showSnackbar } = useSnackbar();
+
+    // Enhanced state manager for better synchronization
+    const { deleteQuizWithSync } = useQuizStateManager();
 
     // UI state management
     const [errorDismissed, setErrorDismissed] = React.useState<boolean>(false);
@@ -304,22 +308,15 @@ export const useQuizzesPageStateWithStorage =
     }, []);
 
     /**
-     * Handles confirming quiz deletion with enhanced sync
+     * Handles confirming quiz deletion with enhanced sync and UI refresh
      */
     const handleConfirmDeleteQuiz = React.useCallback(async () => {
       if (!pendingDeleteQuiz) return;
 
       try {
-        const success = await deleteQuiz(pendingDeleteQuiz.id);
+        const success = await deleteQuizWithSync(pendingDeleteQuiz.id);
 
         if (success) {
-          // Force reload all data to ensure synchronization
-          await Promise.all([
-            loadQuizzes(),
-            loadDrafts(),
-            refreshStorageUsage(),
-          ]);
-
           showSnackbar("Quiz deleted successfully!", "success");
         }
       } catch (error) {

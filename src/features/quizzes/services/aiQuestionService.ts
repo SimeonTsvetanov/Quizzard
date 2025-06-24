@@ -142,8 +142,9 @@ export const generateAIQuizQuestion = async (
 /**
  * Convert Final Question to Quiz Question format
  *
- * Takes a generated final question and creates either a text-answer question
+ * Takes a generated final question and creates either a single-answer question
  * or a multiple-choice question with distractor options, based on the specified type.
+ * Now generates questions in the correct standard format used by the quiz system.
  *
  * @param finalQuestion - The generated final question
  * @param questionType - Type of question to create ("text-answer" or "text")
@@ -169,17 +170,17 @@ async function convertToQuizQuestion(
   };
 
   if (questionType === "text-answer") {
-    // Create text-answer question
+    // Create single-answer question using standard format
     return {
       ...baseQuestion,
-      type: "text-answer",
-      options: [],
-      correctAnswer: -1,
-      textAnswer: finalQuestion.answer,
-      explanation: `The correct answer is: ${finalQuestion.answer}`,
+      type: "single-answer",           // Use correct type name
+      possibleAnswers: [],             // Empty for single-answer questions
+      correctAnswers: [],              // Empty for single-answer questions
+      correctAnswerText: finalQuestion.answer,  // Use correct field name
+      explanation: finalQuestion.answer,        // Simple explanation
     };
   } else {
-    // Create multiple-choice question
+    // Create multiple-choice question using standard format
     // Generate distractor options using AI
     const distractors = await generateDistractorOptions(
       finalQuestion.question,
@@ -195,14 +196,14 @@ async function convertToQuizQuestion(
     const shuffledOptions = shuffleArray([...allOptions]);
     const correctAnswerIndex = shuffledOptions.indexOf(finalQuestion.answer);
 
-    // Create multiple-choice quiz question object
+    // Create multiple-choice quiz question object using standard format
     return {
       ...baseQuestion,
-      type: "text",
-      options: shuffledOptions,
-      correctAnswer: correctAnswerIndex,
-      textAnswer: "",
-      explanation: `The correct answer is: ${finalQuestion.answer}`,
+      type: "multiple-choice",         // Use correct type name
+      possibleAnswers: shuffledOptions,       // Use correct field name
+      correctAnswers: [correctAnswerIndex],   // Use correct field name (array format)
+      correctAnswerText: "",          // Empty for multiple-choice questions
+      explanation: finalQuestion.answer,     // Simple explanation
     };
   }
 }

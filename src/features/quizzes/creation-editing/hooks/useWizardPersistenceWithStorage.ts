@@ -108,6 +108,7 @@ export const useWizardPersistenceWithStorage = (
     autoSaveStatus,
     storageError,
     clearError,
+    drafts,
   } = useQuizStorage();
 
   // Local state
@@ -138,7 +139,8 @@ export const useWizardPersistenceWithStorage = (
             draftIdRef.current = editDraft.id;
           } else {
             // Creating new quiz - try to recover existing draft
-            const drafts = await loadDrafts();
+            await loadDrafts();
+
             const existingDraft = drafts.find(
               (d) => d.title === "" || !d.title
             ); // Find empty/new draft
@@ -181,7 +183,7 @@ export const useWizardPersistenceWithStorage = (
 
       initializeDraft();
     }
-  }, [isInitialized, initialQuiz, loadDrafts]);
+  }, [isInitialized, initialQuiz, loadDrafts, drafts]);
 
   /**
    * Auto-save functionality - saves draft every 30 seconds after changes
@@ -316,7 +318,10 @@ export const useWizardPersistenceWithStorage = (
    */
   const recoverDraft = useCallback(async (): Promise<boolean> => {
     try {
-      const drafts = await loadDrafts();
+      // ✅ TRIGGER DRAFTS LOADING (state will be updated internally)
+      await loadDrafts();
+
+      // ✅ ACCESS DRAFTS FROM STATE, NOT FROM loadDrafts() RETURN VALUE
       const latestDraft = drafts
         .filter((d) => d.status === "draft")
         .sort(
@@ -338,7 +343,7 @@ export const useWizardPersistenceWithStorage = (
       console.error("[WizardPersistence] Draft recovery failed:", error);
       return false;
     }
-  }, [loadDrafts]);
+  }, [loadDrafts, drafts]);
 
   // Cleanup auto-save timer on unmount
   useEffect(() => {

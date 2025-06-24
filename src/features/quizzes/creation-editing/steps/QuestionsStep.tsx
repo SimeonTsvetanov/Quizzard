@@ -1,25 +1,18 @@
 /**
- * Questions Step Component (REFACTORED)
+ * Questions Step Component (ENHANCED)
  *
- * Second step of the quiz creation wizard for adding and managing quiz questions.
- * Refactored from 1,612-line monolithic component into smaller, maintainable pieces.
- *
- * REFACTORING CHANGES:
- * - Extracted state management to useQuestionsStepState hook
- * - Split UI into smaller, focused components (RoundNavigation, QuestionsList, etc.)
- * - Maintained 100% functionality and styling compatibility
- * - Improved maintainability and follows Single Responsibility Principle
+ * Manages rounds and questions within the quiz creation workflow.
+ * Updated to support round-based question organization with AI generation.
  *
  * Features:
- * - Manual question creation and editing
- * - AI-powered question generation with category/difficulty selection
- * - Multiple choice options (2-6 answers)
- * - Question reordering and deletion
- * - Real-time validation
- * - Responsive design
+ * - Round management with different types (mixed, single-answer-only, multiple-choice, etc.)
+ * - Question creation, editing, and deletion
+ * - AI question generation with category and difficulty selection
+ * - Round navigation and question organization
+ * - Mobile-responsive design with proper spacing
  *
- * @fileoverview Refactored questions step for quiz creation wizard
- * @version 2.0.0 (Refactored)
+ * @fileoverview Quiz rounds and questions management step
+ * @version 2.2.0 (AI Generation Enhanced)
  * @since December 2025
  */
 
@@ -63,6 +56,15 @@ import {
   generateAIQuizQuestion,
 } from "../../services/aiQuestionService";
 import { ROUND_TYPE_CONFIG } from "../../types";
+import type {
+  Quiz,
+  Round,
+  QuizQuestion,
+  RoundType,
+  AnswerRevealMode,
+  QuizDifficulty,
+  QuestionType,
+} from "../../types";
 
 interface RoundsQuestionsStepProps {
   draftQuiz: Partial<Quiz>;
@@ -508,30 +510,36 @@ export const RoundsQuestionsStep: React.FC<RoundsQuestionsStepProps> = ({
     state.manualQuestion &&
     state.manualQuestion.question.trim() &&
     (() => {
+      const q = state.manualQuestion;
+      // For single-answer mode (no options), require correctAnswerText
       if (
-        state.manualQuestion.type === "single-answer" ||
-        ["picture", "audio", "video"].includes(state.manualQuestion.type)
+        q.type === "single-answer" ||
+        (["picture", "audio", "video"].includes(q.type) &&
+          q.possibleAnswers.length === 0)
       ) {
-        // Single answer and media types use correctAnswerText
+        return q.correctAnswerText && q.correctAnswerText.trim();
+      }
+      // For multiple choice mode (options present), require at least 2 non-empty options and a correct answer
+      if (
+        (["picture", "audio", "video"].includes(q.type) &&
+          q.possibleAnswers.length > 0) ||
+        (!["picture", "audio", "video"].includes(q.type) &&
+          q.type !== "single-answer")
+      ) {
         return (
-          state.manualQuestion.correctAnswerText &&
-          state.manualQuestion.correctAnswerText.trim()
-        );
-      } else if (currentRound?.type === "golden-pyramid") {
-        // For Golden Pyramid, allow saving incomplete questions
-        // Users can work on questions gradually and complete them over time
-        return (
-          state.manualQuestion.possibleAnswers.length > 0 &&
-          state.manualQuestion.possibleAnswers.some((answer) => answer.trim())
-        );
-      } else {
-        // Regular multiple choice validation
-        return (
-          state.manualQuestion.possibleAnswers.length >= 2 &&
-          state.manualQuestion.possibleAnswers.every((opt) => opt.trim()) &&
-          state.manualQuestion.correctAnswers.length > 0
+          q.possibleAnswers.length >= 2 &&
+          q.possibleAnswers.every((opt) => opt.trim()) &&
+          q.correctAnswers.length > 0
         );
       }
+      // Golden Pyramid special case
+      if (currentRound?.type === "golden-pyramid") {
+        return (
+          q.possibleAnswers.length > 0 &&
+          q.possibleAnswers.some((answer) => answer.trim())
+        );
+      }
+      return false;
     })();
 
   // Handler: Add new round

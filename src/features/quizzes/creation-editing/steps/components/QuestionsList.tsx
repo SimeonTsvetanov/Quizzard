@@ -68,27 +68,46 @@ const isQuestionComplete = (
     return false;
   }
 
-  // Check answers based on question type
-  if (
-    question.type === "single-answer" ||
-    ["picture", "audio", "video"].includes(question.type)
-  ) {
-    // Single answer questions need correctAnswerText
+  // For media types, distinguish between single-answer and multiple-choice modes
+  if (["picture", "audio", "video"].includes(question.type)) {
+    if (question.possibleAnswers.length > 0) {
+      // Multiple choice mode for media: at least 2 non-empty options and a correct answer
+      return (
+        question.possibleAnswers.length >= 2 &&
+        question.possibleAnswers.every((opt) => opt && opt.trim()) &&
+        question.correctAnswers &&
+        question.correctAnswers.length > 0
+      );
+    } else {
+      // Single-answer mode for media: require correctAnswerText
+      return !!(
+        question.correctAnswerText && question.correctAnswerText.trim()
+      );
+    }
+  }
+
+  // Single-answer (non-media)
+  if (question.type === "single-answer") {
     return !!(question.correctAnswerText && question.correctAnswerText.trim());
-  } else if (roundType === "golden-pyramid") {
-    // Golden Pyramid questions need all possibleAnswers filled
+  }
+
+  // Golden Pyramid
+  if (roundType === "golden-pyramid") {
     return (
       question.possibleAnswers.length > 0 &&
-      question.possibleAnswers.every((answer) => answer.trim())
-    );
-  } else {
-    // Multiple choice questions need at least 2 options and correct answers selected
-    return (
-      question.possibleAnswers.length >= 2 &&
-      question.possibleAnswers.every((opt) => opt.trim()) &&
-      question.correctAnswers.length > 0
+      question.possibleAnswers.every(
+        (answer: string) => answer && answer.trim()
+      )
     );
   }
+
+  // Regular multiple choice
+  const hasValidAnswers =
+    question.possibleAnswers.length >= 2 &&
+    question.possibleAnswers.every((opt: string) => opt && opt.trim());
+  const hasCorrectAnswer =
+    question.correctAnswers && question.correctAnswers.length > 0;
+  return hasValidAnswers && hasCorrectAnswer;
 };
 
 /**

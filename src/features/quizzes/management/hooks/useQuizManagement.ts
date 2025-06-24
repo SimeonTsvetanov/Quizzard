@@ -6,7 +6,7 @@
  * hook has been split into:
  * - useQuizCRUD: CRUD operations and state management
  * - useQuizValidation: Quiz validation logic
- * - useQuizExport: PowerPoint and JSON export functionality
+ * - useQuizExport: Google Slides and JSON export functionality
  *
  * This hook maintains backward compatibility while providing a cleaner,
  * more maintainable architecture.
@@ -38,17 +38,19 @@ export const useQuizManagement = (): UseQuizManagementReturn => {
   const quizExport = useQuizExport();
 
   /**
-   * Enhanced PowerPoint export with better error handling
+   * Enhanced quiz export with better error handling
    * Validates quiz before export and uses dedicated export hook
    *
    * @param quizId - Quiz ID to export
+   * @param format - Export format ("google-slides" | "json")
    * @param settings - Export settings and preferences
    * @returns Promise that resolves when export is complete
    */
-  const exportToPowerPoint = useCallback(
+  const exportQuiz = useCallback(
     async (
       quizId: string,
-      settings: ExportSettings = quizExport.DEFAULT_EXPORT_SETTINGS
+      format: "google-slides" | "json",
+      settings: ExportSettings = quizExport.getDefaultSettings()
     ): Promise<void> => {
       const quiz = quizCRUD.getQuizById(quizId);
       if (!quiz) {
@@ -64,15 +66,15 @@ export const useQuizManagement = (): UseQuizManagementReturn => {
       }
 
       // Use dedicated export hook
-      await quizExport.exportToPowerPoint(quiz, settings);
+      await quizExport.exportQuiz(quiz, format, settings);
 
       // Update quiz with export metadata
       await quizCRUD.updateQuiz(quiz.id, {
         exportData: {
           lastExported: new Date(),
-          format: "powerpoint" as const,
+          format: format,
           settings,
-          fileSize: 0, // PptxGenJS doesn't provide file size
+          fileSize: 0, // File size not available for client-side exports
           includePresenterNotes: settings.includePresenterNotes,
         },
       });
@@ -96,7 +98,7 @@ export const useQuizManagement = (): UseQuizManagementReturn => {
     clearCurrentQuiz: quizCRUD.clearCurrentQuiz,
 
     // Export functionality
-    exportToPowerPoint,
+    exportQuiz,
 
     // Legacy setters for backward compatibility
     setQuizzes: quizCRUD.setQuizzes,

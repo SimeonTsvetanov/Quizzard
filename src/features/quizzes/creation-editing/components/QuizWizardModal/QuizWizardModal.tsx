@@ -90,8 +90,16 @@ export const QuizWizardModal: React.FC<
     draftQuiz.rounds?.flatMap((r) => r.questions).length || 0;
   const totalRounds = draftQuiz.rounds?.length || 0;
 
-  // Basic validation - very lenient to allow saving at any time
-  const canSave = !!draftQuiz.title?.trim();
+  // Enhanced validation - allow saving with minimal content to support iterative quiz building
+  const canSave = !!(
+    (
+      draftQuiz.title?.trim() || // Has title, OR
+      totalQuestions > 0 || // Has at least one question, OR
+      draftQuiz.description?.trim() || // Has description, OR
+      draftQuiz.category || // Has category selected, OR
+      draftQuiz.difficulty
+    ) // Has difficulty selected
+  );
 
   // === EVENT HANDLERS ===
   /**

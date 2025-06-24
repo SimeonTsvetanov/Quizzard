@@ -3561,3 +3561,9 @@ try {
   Update Now
 </Button>;
 ```
+
+- **Quiz Question Validation Standard (2025-06-11):**
+  - For media/AI questions (picture, audio, video), validation must distinguish between single-answer and multiple-choice modes:
+    - If `possibleAnswers.length > 0`, require at least 2 non-empty options and at least one correct answer selected.
+    - If `possibleAnswers.length === 0`, require `correctAnswerText` to be filled.
+  - This rule must be applied consistently in both the question modal and the questions list to ensure correct Save button and completion status behavior.
