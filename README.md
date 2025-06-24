@@ -12,9 +12,16 @@
 
 **A comprehensive quiz creation and management platform with AI-powered question generation, team building tools, and scoring systems.**
 
-[🚀 **Try Quizzard Now**](https://simeontsvetanov.github.io/quizzard/) | [📧 **Contact Creator**](mailto:tsvetanov.simeon@gmail.com) | [🐛 **Report Issues**](https://github.com/SimeonTsvetanov/Quizzard/issues)
+[🚀 **Try Quizzard Now**](https://simeontsvetanov.github.io/Quizzard/) | [📧 **Contact Creator**](mailto:tsvetanov.simeon@gmail.com) | [🐛 **Report Issues**](https://github.com/SimeonTsvetanov/Quizzard/issues)
 
 ---
+
+</div>
+<div align="center">
+
+**Made with ❤️ by [Simeon Tsvetanov](mailto:tsvetanov.simeon@gmail.com)**
+
+[🚀 **Try Quizzard Now**](https://simeontsvetanov.github.io/quizzard/) | [📧 **Contact Creator**](mailto:tsvetanov.simeon@gmail.com) | [🐛 **Report Issues**](https://github.com/SimeonTsvetanov/Quizzard/issues)
 
 </div>
 
