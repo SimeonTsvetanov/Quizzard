@@ -42,6 +42,7 @@ import {
   Psychology as BrainIcon,
   ShortText as ShortTextIcon,
   FormatListBulleted as FormatListBulletedIcon,
+  InfoOutlined as InfoOutlinedIcon,
 } from "@mui/icons-material";
 import { useQuestionsStepState } from "./hooks/useQuestionsStepState";
 import {
@@ -65,6 +66,8 @@ import type {
   QuizDifficulty,
   QuestionType,
 } from "../../types";
+import { RoundInfoModal } from "../components/RoundInfo/RoundInfoModal";
+import { roundInfoContent } from "../components/RoundInfo/roundInfoContent";
 
 interface RoundsQuestionsStepProps {
   draftQuiz: Partial<Quiz>;
@@ -84,7 +87,7 @@ export const RoundsQuestionsStep: React.FC<RoundsQuestionsStepProps> = ({
   // Updated round types for new system
   const ROUND_TYPES: { value: RoundType; label: string }[] = [
     { value: "mixed", label: "Mixed Types" },
-    { value: "single-answer-only", label: "Single Answer Only" },
+    { value: "single-answer", label: "Single Answer Only" },
     { value: "multiple-choice", label: "Multiple Choice" },
     { value: "picture", label: "Picture Round" },
     { value: "audio", label: "Audio Round" },
@@ -95,6 +98,12 @@ export const RoundsQuestionsStep: React.FC<RoundsQuestionsStepProps> = ({
     { value: "after-each", label: "After Each Question" },
     { value: "after-all", label: "After All Questions" },
   ];
+
+  // Add state for info modal
+  const [infoModalOpen, setInfoModalOpen] = React.useState(false);
+  const [infoModalRoundType, setInfoModalRoundType] = React.useState<
+    keyof typeof roundInfoContent | null
+  >(null);
 
   const handleRoundSave = () => {
     if (!isRoundFormValid) return;
@@ -350,7 +359,7 @@ export const RoundsQuestionsStep: React.FC<RoundsQuestionsStepProps> = ({
               try {
                 // Determine question type based on round type
                 let questionType = state.aiSettings.questionType;
-                if (currentRound?.type === "single-answer-only") {
+                if (currentRound?.type === "single-answer") {
                   questionType = "text-answer";
                 } else if (currentRound?.type === "multiple-choice") {
                   questionType = "text";
@@ -657,34 +666,6 @@ export const RoundsQuestionsStep: React.FC<RoundsQuestionsStepProps> = ({
         onDeleteRound={requestDeleteRound}
       />
 
-      {/* Round Type Information */}
-      {currentRound &&
-        !ROUND_TYPE_CONFIG[currentRound.type].canSelectQuestionType && (
-          <Alert severity="info" sx={{ mb: 2 }}>
-            <Typography variant="body2">
-              <strong>{ROUND_TYPE_CONFIG[currentRound.type].label}:</strong>{" "}
-              {ROUND_TYPE_CONFIG[currentRound.type].description}
-              {currentRound.type === "golden-pyramid" && (
-                <span>
-                  {" "}
-                  - This round auto-generates 4 pre-configured questions with 1,
-                  2, 3, and 4 correct answers respectively.
-                </span>
-              )}
-            </Typography>
-          </Alert>
-        )}
-
-      {/* Golden Pyramid Info Message (only for Golden Pyramid rounds) */}
-      {currentRound && currentRound.type === "golden-pyramid" && (
-        <Alert severity="info" sx={{ mb: 2 }}>
-          <strong>Golden Pyramid:</strong> This round auto-generates 4
-          pre-configured questions, each requiring a single text answer. Enter
-          all possible answers for each step as a single string, separated by
-          commas, dots, or any format you prefer.
-        </Alert>
-      )}
-
       {/* Refactored Question Actions Bar */}
       <QuestionActionsBar
         showActions={!!currentRound}
@@ -875,10 +856,39 @@ export const RoundsQuestionsStep: React.FC<RoundsQuestionsStepProps> = ({
                   actions.updateRoundForm("type", e.target.value)
                 }
                 aria-label="Round type"
+                renderValue={(selected) => {
+                  // Find the label for the selected value
+                  const found = getAvailableRoundTypes().find(
+                    (rt) => rt.value === selected
+                  );
+                  return found ? found.label : selected;
+                }}
               >
                 {getAvailableRoundTypes().map((rt) => (
-                  <MenuItem key={rt.value} value={rt.value}>
-                    {rt.label}
+                  <MenuItem
+                    key={rt.value}
+                    value={rt.value}
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <span>{rt.label}</span>
+                    <IconButton
+                      aria-label={`Info about ${rt.label}`}
+                      size="small"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setInfoModalRoundType(
+                          rt.value as keyof typeof roundInfoContent
+                        );
+                        setInfoModalOpen(true);
+                      }}
+                      sx={{ ml: 2 }}
+                    >
+                      <InfoOutlinedIcon fontSize="small" />
+                    </IconButton>
                   </MenuItem>
                 ))}
               </Select>
@@ -1074,6 +1084,13 @@ export const RoundsQuestionsStep: React.FC<RoundsQuestionsStepProps> = ({
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Info Modal for round type */}
+      <RoundInfoModal
+        open={infoModalOpen && !!infoModalRoundType}
+        onClose={() => setInfoModalOpen(false)}
+        roundType={infoModalRoundType || "mixed"}
+      />
     </Box>
   );
 };

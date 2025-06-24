@@ -3589,3 +3589,20 @@ try {
 
 - If a deleted quiz remains visible after deletion, ensure the reloadKey pattern is implemented and the state management hook is re-fetching data on reloadKey change.
 - This pattern is now mandatory for all CRUD operations in the Quizzes feature.
+
+## Quiz Wizard Info Icon & Documentation Standards (2025-06-13)
+
+- **Info Icon Placement:**
+  - The info ("i") icon for round types must only appear in the open dropdown list (MenuItem) for round type selection, never in the closed dropdown or as an adornment.
+  - The info icon must also appear at the end of the round details row (Level | Reveal | Default Time) below the navigation bar, never in the navigation bar itself.
+  - Clicking the info icon must open a modal with user-friendly information for the selected round type. The click must not select the dropdown item.
+  - Use the `renderValue` prop on MUI `<Select>` to ensure only the label is shown in the closed state.
+- **Golden Pyramid Info:**
+  - All Golden Pyramid informational messages must be removed from the top of the questions step. Info is now accessed only via the info icon/modal.
+- **JSDoc & Accessibility:**
+  - All new components, helpers, and hooks must include professional JSDoc file headers, prop documentation, and function comments.
+  - All interactive elements (info icons, buttons) must have ARIA labels and support keyboard navigation.
+  - All modals/dialogs must be accessible and screen reader compatible.
+- **Code Quality:**
+  - No code duplication or dead code. All logic must be modular and follow feature-based architecture.
+  - All changes must be incremental, testable, and follow the project's review process.

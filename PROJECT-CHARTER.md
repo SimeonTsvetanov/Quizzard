@@ -2080,3 +2080,10 @@ The update system provides a seamless way for users to check for and apply appli
 - Only Google Slides and JSON export are allowed for presentation export.
 
 // ... existing code ...
+
+- **2025-06-13:** **QUIZ WIZARD INFO ICON & DOCUMENTATION STANDARDIZATION**
+  - Standardized info ("i") icon placement: only in open round type dropdown (MenuItem) and round details row below navigation bar. Never in closed dropdown or navigation bar.
+  - Clicking info icon opens modal with round type information; click does not select dropdown item.
+  - Removed all Golden Pyramid info messages from questions step; info now accessed only via info modal.
+  - All code updated with professional JSDoc comments, ARIA labels, and accessibility best practices.
+  - All changes follow DEVELOPMENT-STANDARDS.md and are now the required pattern for all quiz wizard UI/UX and documentation.

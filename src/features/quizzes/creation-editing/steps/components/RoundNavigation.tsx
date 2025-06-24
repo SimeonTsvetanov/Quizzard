@@ -24,8 +24,11 @@ import {
   ChevronRight as ChevronRightIcon,
   Add as AddIcon,
   Edit as EditIcon,
+  InfoOutlined as InfoOutlinedIcon,
 } from "@mui/icons-material";
 import type { Round } from "../../../types";
+import { RoundInfoModal } from "../../components/RoundInfo/RoundInfoModal";
+import { roundInfoContent } from "../../components/RoundInfo/roundInfoContent";
 
 interface RoundNavigationProps {
   /** Array of all rounds */
@@ -68,6 +71,9 @@ export const RoundNavigation: React.FC<RoundNavigationProps> = ({
   const hasRounds = rounds.length > 0;
   const canGoBack = hasRounds && currentRoundIdx > 0;
   const canGoForward = hasRounds && currentRoundIdx < rounds.length - 1;
+
+  // Add state for info modal
+  const [infoModalOpen, setInfoModalOpen] = React.useState(false);
 
   return (
     <Box sx={{ mb: 3 }}>
@@ -128,44 +134,46 @@ export const RoundNavigation: React.FC<RoundNavigationProps> = ({
 
         {/* Center Round Button (Only show if rounds exist) */}
         {hasRounds ? (
-          <Button
-            onClick={onEditRound}
-            endIcon={
-              <EditIcon sx={{ fontSize: { xs: "0.9rem", sm: "1rem" } }} />
-            }
-            sx={{
-              borderRadius: 3,
-              textTransform: "none",
-              fontWeight: 600,
-              fontSize: { xs: "0.8rem", sm: "0.9rem" },
-              px: { xs: 2, sm: 3 },
-              py: { xs: 1, sm: 1.2 },
-              background: "linear-gradient(45deg, #1976d2, #42a5f5)",
-              color: "white",
-              boxShadow: "0 2px 8px rgba(25, 118, 210, 0.3)",
-              transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-              minWidth: { xs: 90, sm: 120 },
-              "&:hover": {
-                background: "linear-gradient(45deg, #1565c0, #1976d2)",
-                boxShadow: "0 4px 12px rgba(25, 118, 210, 0.4)",
-                transform: "translateY(-1px)",
-              },
-              "&:active": {
-                transform: "translateY(0px)",
-              },
-            }}
-          >
-            <Typography
-              variant="inherit"
+          <>
+            <Button
+              onClick={onEditRound}
+              endIcon={
+                <EditIcon sx={{ fontSize: { xs: "0.9rem", sm: "1rem" } }} />
+              }
               sx={{
+                borderRadius: 3,
+                textTransform: "none",
                 fontWeight: 600,
-                fontSize: "inherit",
-                whiteSpace: "nowrap",
+                fontSize: { xs: "0.8rem", sm: "0.9rem" },
+                px: { xs: 2, sm: 3 },
+                py: { xs: 1, sm: 1.2 },
+                background: "linear-gradient(45deg, #1976d2, #42a5f5)",
+                color: "white",
+                boxShadow: "0 2px 8px rgba(25, 118, 210, 0.3)",
+                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                minWidth: { xs: 90, sm: 120 },
+                "&:hover": {
+                  background: "linear-gradient(45deg, #1565c0, #1976d2)",
+                  boxShadow: "0 4px 12px rgba(25, 118, 210, 0.4)",
+                  transform: "translateY(-1px)",
+                },
+                "&:active": {
+                  transform: "translateY(0px)",
+                },
               }}
             >
-              Round {currentRoundIdx + 1}/{rounds.length}
-            </Typography>
-          </Button>
+              <Typography
+                variant="inherit"
+                sx={{
+                  fontWeight: 600,
+                  fontSize: "inherit",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                Round {currentRoundIdx + 1}/{rounds.length}
+              </Typography>
+            </Button>
+          </>
         ) : (
           <Typography
             variant="body2"

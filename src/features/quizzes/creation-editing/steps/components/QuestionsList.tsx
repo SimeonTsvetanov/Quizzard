@@ -33,8 +33,10 @@ import {
   CheckCircle as CheckCircleIcon,
   Warning as WarningIcon,
   Add as AddIcon,
+  InfoOutlined as InfoOutlinedIcon,
 } from "@mui/icons-material";
 import type { Round, QuizQuestion } from "../../../types";
+import { RoundInfoModal } from "../../components/RoundInfo/RoundInfoModal";
 
 /**
  * Props for the QuestionsList component
@@ -123,6 +125,8 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
   onAddRound,
   onAddQuestion,
 }) => {
+  const [infoModalOpen, setInfoModalOpen] = React.useState(false);
+
   // Show empty state if no round is selected
   if (!currentRound) {
     return (
@@ -165,12 +169,19 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
   return (
     <>
       {/* Round Info */}
-      <Box sx={{ mb: 2 }}>
+      <Box sx={{ mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
         <Typography variant="subtitle1" color="text.secondary">
           {currentRound.level ? `Level: ${currentRound.level}` : ""} | Reveal:{" "}
           {currentRound.answerRevealMode} | Default Time:{" "}
           {currentRound.defaultTimePerQuestion}min
         </Typography>
+        <IconButton
+          aria-label="Round info"
+          size="small"
+          onClick={() => setInfoModalOpen(true)}
+        >
+          <InfoOutlinedIcon fontSize="small" />
+        </IconButton>
       </Box>
 
       {/* Questions List */}
@@ -281,6 +292,12 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
           })
         )}
       </Box>
+
+      <RoundInfoModal
+        open={infoModalOpen}
+        onClose={() => setInfoModalOpen(false)}
+        roundType={currentRound.type}
+      />
     </>
   );
 };
