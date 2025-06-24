@@ -1,0 +1,2 @@
+import{j as o,B as t,I as r,a3 as s,T as a}from"./mui-DWYlQjZ1.js";import{P as i}from"./PageLayout-BRPjINSU.js";import{u as c}from"./index-CzoomNZ5.js";import"./vendor-DJG_os-6.js";function u(){const n=c();return o.jsxs(i,{children:[o.jsx(t,{sx:{mb:2},children:o.jsx(r,{"aria-label":"back",onClick:()=>n(-1),children:o.jsx(s,{})})}),o.jsx(a,{variant:"h4",component:"h1",gutterBottom:!0,children:"Contact Us"}),o.jsx(t,{children:o.jsx(a,{variant:"body1",children:"Contact information coming soon..."})})]})}export{u as default};
+//# sourceMappingURL=Contact-D4zzY79n.js.map

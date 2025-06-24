@@ -1,0 +1,2 @@
+import{j as s,a4 as a,N as e}from"./mui-DWYlQjZ1.js";function i({children:t,maxWidth:o="xs",textAlign:r="left"}){return s.jsx(a,{maxWidth:o,disableGutters:!0,sx:{mt:6,px:{xs:1,sm:2},width:"100%",bgcolor:"background.default"},children:s.jsx(e,{elevation:3,sx:{p:{xs:2,sm:4},textAlign:r,width:"100%",maxWidth:{xs:"100%",sm:420},mx:"auto",boxSizing:"border-box",bgcolor:"background.paper"},children:t})})}export{i as P};
+//# sourceMappingURL=PageLayout-BRPjINSU.js.map
