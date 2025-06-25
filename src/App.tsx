@@ -15,6 +15,13 @@ import {
   Button,
   IconButton,
   CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Checkbox,
+  FormControlLabel,
+  Avatar,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import InstallMobileIcon from "@mui/icons-material/InstallMobile";
@@ -202,10 +209,12 @@ function App() {
 
   // Profile selection modal state
   const [profileModalOpen, setProfileModalOpen] = useState(false);
+  const [logoutConfirmChecked, setLogoutConfirmChecked] = useState(false);
   const {
     login,
     isAuthenticated,
     isAvailable: isGoogleAvailable,
+    user,
   } = useGoogleAuth();
 
   // Check profile mode on mount
@@ -238,6 +247,27 @@ function App() {
     login();
   };
 
+  // Handler for closing profile modal
+  const handleProfileModalClose = () => {
+    setProfileModalOpen(false);
+    setLogoutConfirmChecked(false);
+  };
+
+  // Handler for logout from profile modal
+  const handleProfileLogout = () => {
+    setProfileModalOpen(false);
+    setLogoutConfirmChecked(false);
+    // All profile-related localStorage keys are cleared in useGoogleAuth.logout
+    if (typeof window !== "undefined" && window.location) {
+      // Force a reload to clear all state and IndexedDB if needed
+      window.location.reload();
+    }
+  };
+
+  // State for profile selection modal (for sign in)
+  const [profileSelectionModalOpen, setProfileSelectionModalOpen] =
+    useState(false);
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -263,7 +293,99 @@ function App() {
         }}
       >
         {/* Header stays at the top */}
-        <Header mode={mode} onThemeChange={handleThemeChange} />
+        <Header
+          mode={mode}
+          onThemeChange={handleThemeChange}
+          onProfileModal={() => setProfileModalOpen(true)}
+          onProfileSelection={() => setProfileSelectionModalOpen(true)}
+        />
+
+        {/* Profile Modal for signed-in users */}
+        {profileModalOpen && isAuthenticated && (
+          <Dialog
+            open={profileModalOpen}
+            onClose={handleProfileModalClose}
+            maxWidth="xs"
+            fullWidth
+            aria-labelledby="profile-modal-title"
+            PaperProps={{ sx: { borderRadius: 3, p: 2, zIndex: 2000 } }}
+          >
+            <DialogTitle
+              id="profile-modal-title"
+              sx={{ textAlign: "center", fontWeight: 700 }}
+            >
+              <Avatar
+                alt={user?.name || "User"}
+                src={user?.picture}
+                sx={{ width: 48, height: 48, mx: "auto", mb: 1 }}
+              />
+              Hi{user?.name ? `, ${user.name}` : ""}!
+            </DialogTitle>
+            <DialogContent>
+              <Box sx={{ mb: 2 }}>
+                <strong>Thank you for using Quizzard.</strong>
+              </Box>
+              <Box sx={{ mb: 2 }}>
+                If you leave your profile, we won't be able to save your quizzes
+                to your own Drive for you to access later.
+              </Box>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={logoutConfirmChecked}
+                    onChange={(e) => setLogoutConfirmChecked(e.target.checked)}
+                    color="primary"
+                  />
+                }
+                label={
+                  <span>
+                    I understand that logging out will remove my cloud access.
+                  </span>
+                }
+                sx={{ alignItems: "flex-start" }}
+              />
+            </DialogContent>
+            <DialogActions
+              sx={{ flexDirection: "column", gap: 1, px: 3, pb: 3 }}
+            >
+              <Button
+                variant="contained"
+                color="error"
+                fullWidth
+                onClick={handleProfileLogout}
+                disabled={!logoutConfirmChecked}
+                aria-label="Log out"
+              >
+                Log out
+              </Button>
+              <Button
+                variant="outlined"
+                color="primary"
+                fullWidth
+                onClick={handleProfileModalClose}
+                aria-label="Close"
+              >
+                Close
+              </Button>
+            </DialogActions>
+          </Dialog>
+        )}
+
+        {/* Profile Selection Modal for sign in (always full flow) */}
+        {profileSelectionModalOpen && (
+          <ProfileSelectionModal
+            open={profileSelectionModalOpen}
+            onLocal={() => {
+              setProfileSelectionModalOpen(false);
+              localStorage.setItem("quizzard-profile-mode", "local");
+            }}
+            onGoogle={() => {
+              setProfileSelectionModalOpen(false);
+              localStorage.setItem("quizzard-profile-mode", "google");
+              login();
+            }}
+          />
+        )}
 
         {/* Content area that grows to fill available space */}
         <Box
@@ -417,12 +539,6 @@ function App() {
           {snackbar.message}
         </Alert>
       </Snackbar>
-
-      <ProfileSelectionModal
-        open={profileModalOpen}
-        onLocal={handleLocal}
-        onGoogle={handleGoogle}
-      />
     </ThemeProvider>
   );
 }

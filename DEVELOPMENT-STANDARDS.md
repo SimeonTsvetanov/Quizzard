@@ -8,6 +8,160 @@
 
 This document establishes comprehensive development standards for the Quizzard platform to ensure code quality, maintainability, and team collaboration effectiveness.
 
+## **🚨 CRITICAL LESSONS LEARNED - CATASTROPHIC MISTAKES TO NEVER REPEAT**
+
+### **AI Assistant Critical Error Documentation**
+
+**These are REAL mistakes made during Google OAuth integration that broke the entire application. These patterns must NEVER be repeated:**
+
+#### **1. BASE PATH CONFIGURATION DESTRUCTION**
+
+```typescript
+// ❌ CATASTROPHIC ERROR - What I did wrong:
+// Changed vite.config.ts from working conditional logic to hardcoded path
+base: "/Quizzard/"; // WRONG - broke development environment
+
+// ✅ CORRECT - The working pattern that must be preserved:
+base: process.env.NODE_ENV === "production" ? "/Quizzard/" : "/";
+// This is CRITICAL for GitHub Pages deployment - NEVER change this logic
+```
+
+#### **2. CIRCULAR DEPENDENCY CREATION**
+
+```typescript
+// ❌ CATASTROPHIC ERROR - Created circular imports:
+// SnackbarProvider.tsx imports useSnackbar.ts
+// useSnackbar.ts tries to use React context from SnackbarProvider.tsx
+// Result: Build failures and import resolution errors
+
+// ✅ NEVER CREATE: Provider components that import their own hooks
+// ✅ ALWAYS VERIFY: Import chains don't create circles before implementing
+```
+
+#### **3. BREAKING WORKING SHARED UTILITIES**
+
+```typescript
+// ❌ CATASTROPHIC ERROR - Modified working useSnackbar.ts
+// The snackbar system was working perfectly across the entire app
+// "Improving" it broke notifications everywhere
+
+// ✅ RULE: Never modify working shared utilities without understanding ALL dependencies
+// ✅ RULE: If it works, don't "improve" it unless explicitly requested
+```
+
+#### **4. INCORRECT FILE EXTENSIONS WITH JSX**
+
+```typescript
+// ❌ CATASTROPHIC ERROR - Created useAuth.ts with JSX content
+// TypeScript compilation failed because JSX was in .ts file
+
+// ✅ RULE: Any file with JSX/React components MUST use .tsx extension
+// ✅ RULE: Only pure TypeScript (no JSX) should use .ts extension
+```
+
+#### **5. IGNORING REVERT INSTRUCTIONS**
+
+```bash
+# ❌ CATASTROPHIC ERROR - User said "revert to commit 45ba21d"
+# Instead of reverting, I kept trying to "fix" things forward
+# Each fix created more problems in a cascading failure
+
+# ✅ RULE: When user says REVERT, immediately stop and revert
+# ✅ RULE: Don't try to fix forward when revert is requested
+# ✅ RULE: git reset --hard commit_hash OR manual file restoration
+```
+
+#### **6. BREAKING WORKING UI COMPONENTS**
+
+```typescript
+// ❌ CATASTROPHIC ERROR - Modified header that was working perfectly
+// Lost the logo image that should be on the left side
+// Broke the layout that was functioning correctly
+
+// ✅ RULE: Never modify UI components that are working unless explicitly requested
+// ✅ RULE: Always verify what's working before making changes
+```
+
+#### **7. AUTHENTICATION COMPLEXITY WITHOUT UNDERSTANDING**
+
+```typescript
+// ❌ CATASTROPHIC ERROR - Added Google authentication without understanding existing architecture
+// Created unnecessary complexity that broke existing systems
+// Didn't understand the current codebase structure first
+
+// ✅ RULE: Understand current architecture completely before adding major features
+// ✅ RULE: Start with minimal implementation and build incrementally
+```
+
+#### **8. IMPROPER GIT USAGE**
+
+```bash
+# ❌ CATASTROPHIC ERROR - Failed to use git commands properly for revert
+# Should have used git reset --hard or manual file restoration
+
+# ✅ RULE: Learn git revert patterns before making major changes
+# ✅ RULE: Always have clean working state before starting modifications
+```
+
+#### **9. CASCADING FIXES SPIRAL**
+
+```text
+❌ CATASTROPHIC PATTERN:
+Fix 1 → Creates Problem A
+Fix 2 → Creates Problem B
+Fix 3 → Creates Problem C
+Result: Total system breakdown
+
+✅ CORRECT PATTERN:
+Problem → Analyze → Understand → Single targeted fix
+If fix fails → STOP and revert immediately
+```
+
+#### **10. NOT PRESERVING WORKING BASELINE**
+
+```typescript
+// ❌ CATASTROPHIC ERROR - Didn't ensure complete understanding of working commit 45ba21d
+// Unable to properly restore the exact working state
+
+// ✅ RULE: Never start modifications without complete working baseline
+// ✅ RULE: Document exactly what works before making ANY changes
+```
+
+### **🔧 PREVENTION PROTOCOLS**
+
+#### **Before Making ANY Changes:**
+
+1. **✅ VERIFY**: Development server runs on localhost:5173
+2. **✅ VERIFY**: All features work exactly as expected
+3. **✅ VERIFY**: No console errors or warnings
+4. **✅ DOCUMENT**: Exact working state before modifications
+5. **✅ COMMIT**: Clean working state to git
+
+#### **During Implementation:**
+
+1. **✅ ONE CHANGE**: Make one small change at a time
+2. **✅ TEST IMMEDIATELY**: Verify it works before proceeding
+3. **✅ NO "IMPROVEMENTS"**: Only modify what's explicitly requested
+4. **✅ ASK CLARIFICATION**: If anything is unclear, ask instead of assume
+
+#### **If Problems Arise:**
+
+1. **✅ STOP IMMEDIATELY**: Don't try multiple fixes
+2. **✅ REVERT FAST**: Go back to working state immediately
+3. **✅ UNDERSTAND ROOT CAUSE**: Analyze what went wrong before trying again
+4. **✅ ASK FOR HELP**: Better to ask than break more things
+
+### **🚨 ABSOLUTE NEVER DO LIST**
+
+- ❌ Never change base path configuration in vite.config.ts
+- ❌ Never modify working shared utilities like useSnackbar
+- ❌ Never create circular dependencies
+- ❌ Never put JSX in .ts files
+- ❌ Never ignore user revert instructions
+- ❌ Never break working UI components
+- ❌ Never try to fix forward when revert is requested
+- ❌ Never make cascading fixes - stop and revert instead
+
 ## **🎯 CORE PRINCIPLES**
 
 ### **Code Quality First**
@@ -3782,3 +3936,22 @@ const Quizzes = () => {
 ### **React Patterns**
 
 // ... rest of existing code ...
+
+## Google OAuth Logout & Test User Workflow (2025-06-13)
+
+- **Logout/Profile Switch Logic:**
+  - On logout, all profile-related localStorage keys must be fully cleared:
+    - `quizzard-google-auth-token`
+    - `quizzard-profile-mode`
+    - `quizzard-terms-accepted`
+  - This is enforced in `useGoogleAuth.ts` and applies to all logout flows.
+  - Never set `quizzard-profile-mode` to `local` on logout; always remove it.
+- **Test User Setup for Google OAuth:**
+  - All Google OAuth testing (local and production) uses the Google Cloud Console's OAuth consent screen "Test users" list.
+  - Only emails in this list can log in while the app is unverified.
+  - Test users must be added in the Cloud Console and verified in the UI before testing.
+  - Both localhost and GitHub Pages origins/redirects must be present in the OAuth client config.
+- **Testing Workflow:**
+  - After adding test users, verify login/logout in both local and production environments.
+  - Confirm that all profile-related keys are set on login and fully cleared on logout.
+  - Friends/collaborators can be added as test users for collaborative testing.

@@ -78,6 +78,17 @@
 - [x] Auto-update workflow
 - [x] Service worker auto-versioning for reliable PWA updates
 - [x] **GOOGLE OAUTH INTEGRATION (COMPLETE)** - Implemented comprehensive Google authentication with:
+  - **Google Cloud Console Setup:**
+    - Google Drive API enabled and configured
+    - Google Slides API enabled and configured
+    - OAuth 2.0 Client ID created: `887002522615-20t33tse3df843f6fj2fi63229pc5d45.apps.googleusercontent.com`
+    - JavaScript Origins configured: `http://localhost:5173` (dev), `https://simeontsvetanov.github.io` (prod)
+    - Redirect URIs configured: development and production paths with proper `/Quizzard/` base
+  - **Environment Variable Setup:**
+    - Client ID stored in `.env.local` for development (gitignored)
+    - Client ID added as `VITE_GOOGLE_CLIENT_ID` repository secret in GitHub
+    - GitHub Actions workflow configured to inject secret during build
+    - `.env.example` template file created for developer reference
   - **Storage Implementation:**
     - Profile mode stored in "quizzard-profile-mode" (values: "local" | "google")
     - Auth token stored in "quizzard-google-auth-token" with expiration timestamp
@@ -319,7 +330,26 @@ src/features/quizzes/
 - **Complete accessibility** with ARIA labels and keyboard navigation
 - **Mobile-first responsive design** supporting 320px to 7680px screen sizes
 
-**🔄 PHASE 2 TO DO - QUIZ PLAYING & PRESENTATION MODE**
+**🔄 PHASE 2 TO DO - GOOGLE DRIVE INTEGRATION & CLOUD STORAGE**
+
+**Google Drive Storage Implementation:**
+
+- [ ] **Google Drive Service** - Create service layer for Drive API operations (upload, download, list, delete)
+- [ ] **Quiz Data Synchronization** - Implement dual sync between IndexedDB and Google Drive
+- [ ] **Conflict Resolution** - Handle merge conflicts when same quiz modified on multiple devices
+- [ ] **File Organization** - Create structured folder system in Google Drive for quiz data
+- [ ] **Progress Tracking** - Upload/download progress indicators with user feedback
+- [ ] **Error Handling** - Robust error handling for network failures and API limits
+
+**Cloud-First Quiz Management:**
+
+- [ ] **Cloud Status Indicators** - Visual indicators showing sync status for each quiz
+- [ ] **Manual Sync Options** - User-initiated sync controls for immediate backup/restore
+- [ ] **Offline Detection** - Smart detection of online/offline state with appropriate UI
+- [ ] **Storage Quotas** - Monitor Google Drive storage usage and provide warnings
+- [ ] **Cross-Device Experience** - Seamless quiz access across all user devices
+
+**🔄 PHASE 3 TO DO - QUIZ PLAYING & PRESENTATION MODE**
 
 **Quiz Playing Interface:**
 
@@ -337,13 +367,14 @@ src/features/quizzes/
 - [ ] **Score Display** - Real-time team scoring with leaderboard integration
 - [ ] **Timer Integration** - Visual countdown timers for questions and breaks
 
-**🔄 PHASE 3 TO DO - MEDIA INTEGRATION & EXPORT**
+**🔄 PHASE 4 TO DO - MEDIA INTEGRATION & GOOGLE SLIDES EXPORT**
 
 **Media File Support:**
 
 - [ ] **File Upload System** - Drag-and-drop interface for pictures, audio, video
-- [ ] **Format Validation** - PowerPoint-compatible formats with size restrictions (10MB pictures, 20MB audio, 100MB video)
-- [ ] **IndexedDB File Storage** - Binary file storage and retrieval system
+- [ ] **Google Drive Media Storage** - Store media files in Google Drive with quiz data
+- [ ] **Format Validation** - Google Slides-compatible formats with size restrictions (10MB pictures, 20MB audio, 100MB video)
+- [ ] **Cloud Media Storage** - Binary file storage in Google Drive with proper organization
 - [ ] **Media Preview** - In-app preview system for uploaded media files
 
 **Advanced Question Types:**
@@ -353,22 +384,25 @@ src/features/quizzes/
 - [ ] **Video Round** - Video-based questions with interactive elements
 - [ ] **Golden Pyramid Round** - Special format with progressive answer structure (1→2→3→4 correct answers)
 
-**Export Functionality:**
+**Google Slides Export Functionality:**
 
-- [ ] **PowerPoint Export** - Convert quizzes to presentations with embedded media
+- [ ] **Google Slides Integration** - Convert quizzes to Google Slides presentations with embedded media
 - [ ] **Template System** - Custom design templates for different quiz styles
-- [ ] **Media Integration** - Proper media embedding in exported presentations
+- [ ] **Media Integration** - Proper media embedding in exported Google Slides
+- [ ] **Collaborative Features** - Share presentations directly with quiz participants
 
 **Current Development Status:**
 
 - ✅ **Phase 1 Complete**: Full quiz creation, editing, management, and storage system
-- 🔄 **Phase 2 Next**: Quiz playing interface and presentation mode
-- 🔄 **Phase 3 Future**: Media integration and PowerPoint export
+- ✅ **Google OAuth Integration Complete**: Authentication, environment setup, and API access configured
+- 🔄 **Phase 2 Next**: Google Drive integration for quiz storage and synchronization
+- 🔄 **Phase 3 Future**: Media integration and Google Slides export
 
 **Ready for Production:**
 
 - Quiz creation wizard with comprehensive question management
 - IndexedDB storage with auto-save and draft recovery
+- Google OAuth authentication with profile selection and token management
 - Mobile-responsive design supporting all device sizes
 - Professional Material-UI interface with accessibility compliance
 - Comprehensive error handling and user feedback systems
@@ -2166,3 +2200,24 @@ The update system provides a seamless way for users to check for and apply appli
 - The Client ID is public by design (safe to expose in frontend code), but best practice is to avoid hardcoding it in the repo.
 - Never commit `.env.local` or any file containing real secrets to the repository.
 - Always use `.env.example` as a template for required environment variables.
+
+### 2025-06-13: GOOGLE OAUTH LOGOUT & TEST USER WORKFLOW FINALIZED
+
+- **Logout/Profile Switch Logic:**
+  - On logout, all profile-related localStorage keys are now fully cleared:
+    - `quizzard-google-auth-token`
+    - `quizzard-profile-mode`
+    - `quizzard-terms-accepted`
+  - This is enforced in the `useGoogleAuth` hook and applies to all logout flows (profile modal, navigation drawer, etc.).
+  - No more setting `quizzard-profile-mode` to `local` on logout; it is removed entirely.
+- **Test User Setup for Google OAuth:**
+  - All Google OAuth testing (local and production) now uses the Google Cloud Console's OAuth consent screen "Test users" list.
+  - Only emails in this list can log in while the app is unverified.
+  - Test users must be added in the Cloud Console and verified in the UI before testing.
+  - Both localhost and GitHub Pages origins/redirects must be present in the OAuth client config.
+- **Testing Workflow:**
+  - After adding test users, verify login/logout in both local and production environments.
+  - Confirm that all profile-related keys are set on login and fully cleared on logout.
+  - Friends/collaborators can be added as test users for collaborative testing.
+- **Documentation and Standards:**
+  - All changes are now reflected in the codebase and documentation. See DEVELOPMENT-STANDARDS.md for technical details.

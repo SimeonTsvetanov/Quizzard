@@ -179,7 +179,8 @@ export function useGoogleAuth() {
       setToken(null);
     },
     flow: "implicit", // Use implicit flow for frontend-only apps
-    scope: "email profile", // Request email and profile info access
+    scope:
+      "email profile https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/presentations", // Request email, profile, Google Drive file access, and Google Slides access
   });
 
   // Safe login wrapper that checks availability
@@ -209,8 +210,12 @@ export function useGoogleAuth() {
     setUser(null);
     setToken(null);
     setError(null);
-    localStorage.removeItem(LOCAL_STORAGE_KEY);
-    console.log("User logged out");
+    localStorage.removeItem(LOCAL_STORAGE_KEY); // quizzard-google-auth-token
+    localStorage.removeItem("quizzard-profile-mode");
+    localStorage.removeItem("quizzard-terms-accepted");
+    console.log(
+      "User logged out and all profile-related localStorage keys cleared"
+    );
   }, [isAvailable]);
 
   return {
