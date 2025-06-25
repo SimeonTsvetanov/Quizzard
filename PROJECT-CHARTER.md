@@ -2221,3 +2221,47 @@ The update system provides a seamless way for users to check for and apply appli
   - Friends/collaborators can be added as test users for collaborative testing.
 - **Documentation and Standards:**
   - All changes are now reflected in the codebase and documentation. See DEVELOPMENT-STANDARDS.md for technical details.
+
+## Profile, Authentication, and Local Storage Keys (2025-06-XX)
+
+### Profile & Auth Local Storage Keys
+
+- `quizzard-google-auth-token`: `{ token, user, timestamp }` (Google OAuth token, user profile including `picture`, and timestamp for expiration)
+- `quizzard-profile-mode`: `"local"` or `"google"` (user's chosen mode)
+- `quizzard-terms-accepted`: `"true"` if user accepted terms
+
+**When are these set?**
+
+- On successful Google login: `quizzard-google-auth-token` and `quizzard-profile-mode` are set
+- On local mode selection: `quizzard-profile-mode` is set to `local`
+- On terms acceptance: `quizzard-terms-accepted` is set
+
+**When are these cleared?**
+
+- On logout (from any UI): all three keys are removed (enforced in `useGoogleAuth.ts`)
+- On token expiration: all three keys are removed
+
+### Google Profile Picture Logic
+
+- On Google login, the user profile (including `picture` URL) is fetched from Google's `/userinfo` endpoint
+- The `user.picture` is stored in localStorage and used for the Avatar in the UI
+- If `user.picture` is missing, the Avatar falls back to user initials
+- This logic is centralized in `useGoogleAuth.ts` and used in all profile UIs
+
+### .env.local for Local Google OAuth
+
+- Local development requires a `.env.local` file with `VITE_GOOGLE_CLIENT_ID` set
+- This file is gitignored and must be set up manually (see `.env.example`)
+
+### Logout Flow
+
+- On logout, all profile-related keys are cleared from localStorage
+- This is enforced in the `logout` function in `useGoogleAuth.ts`
+- No sensitive data is left behind after logout
+
+## Profile Picture & User Data Handling (2025-06-XX)
+
+- The user profile (including `picture`, `name`, `email`) is fetched and stored on login
+- The Avatar in the UI always uses `user.picture` if available, otherwise falls back to initials
+- All profile data is cleared on logout or token expiration
+- No code duplication or orphaned logic for profile state

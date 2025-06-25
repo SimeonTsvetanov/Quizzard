@@ -3955,3 +3955,35 @@ const Quizzes = () => {
   - After adding test users, verify login/logout in both local and production environments.
   - Confirm that all profile-related keys are set on login and fully cleared on logout.
   - Friends/collaborators can be added as test users for collaborative testing.
+
+## Profile & Auth Standards (2025-06-XX)
+
+### Documentation & Comments
+
+- All profile/auth/localStorage logic must have comprehensive JSDoc and inline comments
+- Document all localStorage keys used, their values, and when they are set/cleared
+
+### Local Storage Key Management
+
+- Use clear, descriptive key names (e.g., `quizzard-google-auth-token`, `quizzard-profile-mode`)
+- All profile-related keys must be cleared on logout (enforced in `useGoogleAuth.ts`)
+- No sensitive data should remain in localStorage after logout
+
+### Avatar Fallback Pattern
+
+- Always use `user.picture` for Avatar if available
+- If `user.picture` is missing, fall back to user initials
+- This pattern must be followed in all profile UIs
+
+### .env.local for Google OAuth
+
+- Local development must use a `.env.local` file with `VITE_GOOGLE_CLIENT_ID`
+- This file is gitignored and must be set up per developer (see `.env.example`)
+
+### Profile/Logout Logic Checklist
+
+- [ ] All profile/auth keys documented
+- [ ] All keys cleared on logout
+- [ ] Avatar fallback logic implemented
+- [ ] .env.local pattern followed for local OAuth
+- [ ] No code duplication for profile state
