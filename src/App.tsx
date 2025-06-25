@@ -207,7 +207,9 @@ function App() {
     sessionStorage.setItem("app-loaded", "true");
   };
 
-  // Profile selection modal state
+  // Separate modal state for selection and profile/logout
+  const [profileSelectionModalOpen, setProfileSelectionModalOpen] =
+    useState(false);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [logoutConfirmChecked, setLogoutConfirmChecked] = useState(false);
   const {
@@ -215,24 +217,29 @@ function App() {
     isAuthenticated,
     isAvailable: isGoogleAvailable,
     user,
+    logout,
   } = useGoogleAuth();
 
-  // Check profile mode on mount
+  // Effect: Open profile selection modal if not authenticated and no profile mode
   useEffect(() => {
     const mode = localStorage.getItem("quizzard-profile-mode");
     if (!mode && !isAuthenticated) {
-      setProfileModalOpen(true);
+      setProfileSelectionModalOpen(true);
+      setProfileModalOpen(false);
+      console.log(
+        "[ProfileSelectionModal Effect] Opening selection modal: not authenticated and no profile mode"
+      );
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, location]);
 
   // Handler for local-only mode
   const handleLocal = () => {
     localStorage.setItem("quizzard-profile-mode", "local");
-    setProfileModalOpen(false);
+    setProfileSelectionModalOpen(false);
   };
 
   // Handler for Google login
-  const handleGoogle = () => {
+  const handleGoogle = async () => {
     if (!isGoogleAvailable) {
       showSnackbarMessage(
         "Google OAuth is not configured. Using local mode instead.",
@@ -241,10 +248,8 @@ function App() {
       handleLocal();
       return;
     }
-
-    localStorage.setItem("quizzard-profile-mode", "google");
-    setProfileModalOpen(false);
     login();
+    setProfileSelectionModalOpen(false);
   };
 
   // Handler for closing profile modal
@@ -253,20 +258,31 @@ function App() {
     setLogoutConfirmChecked(false);
   };
 
-  // Handler for logout from profile modal
-  const handleProfileLogout = () => {
-    setProfileModalOpen(false);
-    setLogoutConfirmChecked(false);
-    // All profile-related localStorage keys are cleared in useGoogleAuth.logout
-    if (typeof window !== "undefined" && window.location) {
-      // Force a reload to clear all state and IndexedDB if needed
-      window.location.reload();
+  // Handler for profile/logout modal (from drawer)
+  const handleProfileModalOpen = () => {
+    if (isAuthenticated) {
+      setProfileModalOpen(true);
+      setProfileSelectionModalOpen(false);
+    } else {
+      setProfileSelectionModalOpen(true);
+      setProfileModalOpen(false);
     }
   };
 
-  // State for profile selection modal (for sign in)
-  const [profileSelectionModalOpen, setProfileSelectionModalOpen] =
-    useState(false);
+  // Debug log for user restoration
+  useEffect(() => {
+    console.log("[App] useGoogleAuth user:", user);
+  }, [user]);
+
+  // Handler for logout: call logout() to clear all profile keys, then reload
+  const handleProfileLogout = () => {
+    setProfileModalOpen(false);
+    setLogoutConfirmChecked(false);
+    logout(); // Clear all profile-related localStorage keys
+    if (typeof window !== "undefined" && window.location) {
+      window.location.reload();
+    }
+  };
 
   return (
     <ThemeProvider theme={theme}>
@@ -296,8 +312,11 @@ function App() {
         <Header
           mode={mode}
           onThemeChange={handleThemeChange}
-          onProfileModal={() => setProfileModalOpen(true)}
+          onProfileModal={handleProfileModalOpen}
           onProfileSelection={() => setProfileSelectionModalOpen(true)}
+          isAuthenticated={isAuthenticated}
+          user={user}
+          isGoogleAvailable={isGoogleAvailable}
         />
 
         {/* Profile Modal for signed-in users */}
@@ -372,18 +391,15 @@ function App() {
         )}
 
         {/* Profile Selection Modal for sign in (always full flow) */}
-        {profileSelectionModalOpen && (
+        {console.log(
+          "[JSX] Rendering ProfileSelectionModal, open=",
+          profileSelectionModalOpen
+        )}
+        {profileSelectionModalOpen && !isAuthenticated && (
           <ProfileSelectionModal
             open={profileSelectionModalOpen}
-            onLocal={() => {
-              setProfileSelectionModalOpen(false);
-              localStorage.setItem("quizzard-profile-mode", "local");
-            }}
-            onGoogle={() => {
-              setProfileSelectionModalOpen(false);
-              localStorage.setItem("quizzard-profile-mode", "google");
-              login();
-            }}
+            onLocal={handleLocal}
+            onGoogle={handleGoogle}
           />
         )}
 

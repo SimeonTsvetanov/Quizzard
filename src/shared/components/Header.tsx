@@ -14,11 +14,15 @@ import { useState } from "react";
 import NavigationDrawer from "./NavigationDrawer";
 import { ThemeSelectionDialog } from "./ThemeSelectionDialog";
 import { getDynamicHeaderText } from "../utils/headerUtils";
-import { useGoogleAuth } from "../hooks/useGoogleAuth";
 
 interface HeaderProps {
   mode: "light" | "dark" | "system";
   onThemeChange: (theme: "light" | "dark" | "system") => void;
+  onProfileModal: () => void;
+  onProfileSelection: () => void;
+  isAuthenticated: boolean;
+  user: any;
+  isGoogleAvailable: boolean;
 }
 
 /**
@@ -48,15 +52,20 @@ interface HeaderProps {
  * @param mode - Current theme mode (light/dark/system)
  * @param onThemeChange - Callback for theme changes
  */
-const Header = ({ mode, onThemeChange }: HeaderProps) => {
+const Header = ({
+  mode,
+  onThemeChange,
+  onProfileModal,
+  onProfileSelection,
+  isAuthenticated,
+  user,
+  isGoogleAvailable,
+}: HeaderProps) => {
   const location = useLocation();
   const theme = useTheme();
   const dynamicHeader = getDynamicHeaderText(location.pathname);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [themeDialogOpen, setThemeDialogOpen] = useState(false);
-
-  // Google OAuth integration
-  const { login, logout, user, isAuthenticated, isAvailable } = useGoogleAuth();
 
   const handleDrawerToggle = () => setDrawerOpen(!drawerOpen);
   const handleDrawerClose = () => setDrawerOpen(false);
@@ -73,15 +82,16 @@ const Header = ({ mode, onThemeChange }: HeaderProps) => {
     setThemeDialogOpen(false);
   };
 
-  // Google Auth handlers that close drawer
-  const handleGoogleLogin = () => {
+  // Handler to open profile modal (logout/profile) and close drawer first
+  const handleProfileModalOpen = () => {
     setDrawerOpen(false);
-    login();
+    setTimeout(() => onProfileModal(), 200); // Delay to allow drawer to close
   };
 
-  const handleGoogleLogout = () => {
+  // Handler to open profile selection modal and close drawer first
+  const handleProfileSelectionOpen = () => {
     setDrawerOpen(false);
-    logout();
+    setTimeout(() => onProfileSelection(), 200); // Delay to allow drawer to close
   };
 
   return (
@@ -237,13 +247,14 @@ const Header = ({ mode, onThemeChange }: HeaderProps) => {
       <NavigationDrawer
         open={drawerOpen}
         onClose={handleDrawerClose}
-        onThemeDialogOpen={handleThemeDialogOpen}
         currentTheme={mode}
-        onGoogleLogin={handleGoogleLogin}
-        onGoogleLogout={handleGoogleLogout}
+        onThemeDialogOpen={handleThemeDialogOpen}
+        onProfileModal={handleProfileModalOpen}
+        onProfileSelection={handleProfileSelectionOpen}
+        onGoogleLogout={() => {}}
         isAuthenticated={isAuthenticated}
         user={user}
-        isGoogleAvailable={isAvailable}
+        isGoogleAvailable={isGoogleAvailable}
       />
 
       {/* Theme Selection Dialog */}

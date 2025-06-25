@@ -68,8 +68,10 @@ interface NavigationDrawerProps {
   currentTheme: "light" | "dark" | "system";
   /** Callback when theme button is clicked */
   onThemeDialogOpen: () => void;
-  /** Google OAuth login function */
-  onGoogleLogin: () => void;
+  /** Callback when profile modal is requested */
+  onProfileModal: () => void;
+  /** Callback when profile selection is requested */
+  onProfileSelection: () => void;
   /** Google OAuth logout function */
   onGoogleLogout: () => void;
   /** Whether user is authenticated with Google */
@@ -91,7 +93,8 @@ const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
   onClose,
   currentTheme,
   onThemeDialogOpen,
-  onGoogleLogin,
+  onProfileModal,
+  onProfileSelection,
   onGoogleLogout,
   isAuthenticated,
   user,
@@ -337,72 +340,87 @@ const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
 
           <Divider />
 
-          {/* Google Authentication Section */}
+          {/* Profile Section - only one menu item shown */}
           <List>
-            {isAuthenticated ? (
-              <>
-                {/* User Profile Display */}
-                <ListItem disablePadding>
-                  <ListItemButton
-                    sx={{
-                      "&:focus": { outline: "none" },
-                      "&:focus-visible": { outline: "none" },
-                      cursor: "default", // Not clickable, just display
-                      "&:hover": { backgroundColor: "transparent" },
-                    }}
-                  >
-                    <ListItemIcon>
-                      <Avatar
-                        alt={user?.name || "User"}
-                        src={user?.picture}
-                        sx={{ width: 24, height: 24 }}
-                      >
-                        {!user?.picture && <AccountCircleIcon />}
-                      </Avatar>
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={user?.name || user?.email || "Google User"}
-                      primaryTypographyProps={{
-                        variant: "body2",
-                        sx: { fontWeight: 500 },
-                      }}
-                    />
-                  </ListItemButton>
-                </ListItem>
-                {/* Logout Button */}
-                <ListItem disablePadding>
-                  <ListItemButton
-                    onClick={handleLogoutClick}
-                    component="button"
-                    sx={{
-                      "&:focus": { outline: "none" },
-                      "&:focus-visible": { outline: "none" },
-                    }}
-                  >
-                    <ListItemIcon>
-                      <LogoutIcon />
-                    </ListItemIcon>
-                    <ListItemText primary="Logout" />
-                  </ListItemButton>
-                </ListItem>
-              </>
-            ) : (
-              /* Login Button - only shown when not authenticated */
-              <ListItem disablePadding>
-                <ListItemButton
-                  onClick={onGoogleLogin}
-                  component="button"
-                  sx={{
-                    "&:focus": { outline: "none" },
-                    "&:focus-visible": { outline: "none" },
-                  }}
+            {/* Show user avatar and name if authenticated, otherwise show sign in option */}
+            {isAuthenticated && user ? (
+              <ListItemButton
+                onClick={onProfileModal}
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1.5,
+                  py: 1.5,
+                  px: 2,
+                  cursor: "pointer",
+                  "&:focus": { outline: "none" },
+                  "&:focus-visible": { outline: "none" },
+                  "&:hover": { backgroundColor: "action.hover" },
+                }}
+                aria-label="Open profile modal"
+              >
+                {/* Debug log for user object */}
+                {console.log("[Drawer] user=", user)}
+                {/* Avatar with fallback: show initials if no picture */}
+                <Avatar
+                  src={user.picture || undefined}
+                  alt={user.name}
+                  sx={{ width: 36, height: 36, mr: 1 }}
                 >
-                  <ListItemIcon>
-                    <LoginIcon />
-                  </ListItemIcon>
-                  <ListItemText primary="Sign in with Google" />
-                </ListItemButton>
-              </ListItem>
+                  {!user.picture && user.name
+                    ? user.name
+                        .split(" ")
+                        .map((n: string) => n[0])
+                        .join("")
+                    : null}
+                </Avatar>
+                <Box sx={{ minWidth: 0, flex: 1 }}>
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      fontWeight: 600,
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}
+                  >
+                    {user.name}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      fontSize: 13,
+                    }}
+                  >
+                    {user.email}
+                  </Typography>
+                </Box>
+              </ListItemButton>
+            ) : (
+              <ListItemButton
+                onClick={onProfileSelection}
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1.5,
+                  py: 1.5,
+                  px: 2,
+                  cursor: "pointer",
+                  "&:focus": { outline: "none" },
+                  "&:focus-visible": { outline: "none" },
+                  "&:hover": { backgroundColor: "action.hover" },
+                }}
+                aria-label="Sign in with Google"
+              >
+                <Avatar sx={{ width: 36, height: 36, mr: 1 }} />
+                <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                  Sign in with Google
+                </Typography>
+              </ListItemButton>
             )}
           </List>
         </Box>
