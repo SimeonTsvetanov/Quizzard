@@ -3987,3 +3987,39 @@ const Quizzes = () => {
 - [ ] Avatar fallback logic implemented
 - [ ] .env.local pattern followed for local OAuth
 - [ ] No code duplication for profile state
+
+## Component State & Variable Reference (2025-06-XX)
+
+### Purpose
+
+- Prevent ReferenceError bugs and ensure robust, production-ready UI code.
+- All shared components must have their state variables and props documented here.
+- All UI/visual changes must reference only variables listed here.
+- If a new variable is needed, it must be added/documented here before use.
+
+### Documentation Template
+
+#### Example: ProfileSelectionModal
+
+| Name              | Type     | Description                             | Required |
+| ----------------- | -------- | --------------------------------------- | -------- |
+| termsAccepted     | boolean  | Whether the user has accepted the terms | Yes      |
+| isGoogleAvailable | boolean  | Whether Google login is available       | Yes      |
+| handleLocalMode   | function | Handler for local mode button           | Yes      |
+| handleGoogleLogin | function | Handler for Google login button         | Yes      |
+| ...               | ...      | ...                                     | ...      |
+
+(Add a table for each shared component as above)
+
+### Visual-Only Change Checklist
+
+- [ ] Check for existence of all variables before referencing in JSX/props
+- [ ] Reference only variables documented in this section
+- [ ] If a new variable is needed, add it to this section before use
+- [ ] Test incrementally after every change
+- [ ] Ask for clarification if unsure about variable usage
+
+### Enforcement
+
+- All contributors (including AI assistants) must follow this process for every UI/visual change.
+- This ensures consistency, prevents runtime errors, and maintains production quality.

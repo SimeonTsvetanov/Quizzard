@@ -47,6 +47,16 @@
 - **Terminal/Automation:**
   - Do not use `&&` to chain commands in terminal scripts or documentation. PowerShell does not support `&&` for command chaining (unlike Bash/CMD). Use separate lines, semicolons (`;`), or PowerShell-specific operators (`-and`) for cross-platform compatibility.
 
+### 2025-06-XX: UI Variable Reference & Visual-Only Change Process
+
+- All visual/UI changes must reference only variables that are present and documented in the component.
+- If a new variable is needed for a UI change, it must be defined and documented before use.
+- All shared components must have their state variables and props documented in DEVELOPMENT-STANDARDS.md under the new 'Component State & Variable Reference' section.
+- Before making any UI change, developers (and AI assistants) must check this section and only use variables that are present and documented.
+- This process is designed to prevent ReferenceError bugs (e.g., undefined variables in JSX) and ensure robust, production-ready code.
+- Incremental testing after every change remains mandatory.
+- See DEVELOPMENT-STANDARDS.md for the full template and documentation requirements.
+
 ### 2. Progress Tracker
 
 - [x] Project initialized (React + TypeScript + MUI)
