@@ -11,6 +11,7 @@ import FormControlLabel from "@mui/material/FormControlLabel";
 import Link from "@mui/material/Link";
 import { TermsContent } from "../../pages/Terms";
 import { PrivacyPolicyContent } from "../../pages/PrivacyPolicy";
+import Stack from "@mui/material/Stack";
 
 /**
  * ProfileSelectionModal
@@ -87,7 +88,17 @@ const ProfileSelectionModal: React.FC<ProfileSelectionModalProps> = ({
         fullWidth
       >
         <DialogTitle id="profile-selection-title">
-          Choose Profile Mode
+          <Typography
+            variant="h1"
+            align="center"
+            sx={{
+              fontSize: { xs: "2rem", sm: "2.5rem" },
+              fontWeight: 700,
+              mb: 2,
+            }}
+          >
+            Log In
+          </Typography>
         </DialogTitle>
         <DialogContent>
           <Typography variant="body1" sx={{ mb: 2 }}>
@@ -153,29 +164,32 @@ const ProfileSelectionModal: React.FC<ProfileSelectionModalProps> = ({
           />
         </DialogContent>
         <DialogActions sx={{ flexDirection: "column", gap: 1, px: 3, pb: 3 }}>
-          <Button
-            variant="outlined"
-            color="secondary"
-            fullWidth
-            onClick={onLocal}
-            aria-label="Use local storage only"
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            spacing={2}
+            sx={{ mt: 2, justifyContent: "center" }}
           >
-            Local Only
-          </Button>
-          <Button
-            variant="contained"
-            color="primary"
-            fullWidth
-            onClick={handleGoogle}
-            disabled={!isGoogleAvailable || !termsAccepted}
-            aria-label={
-              isGoogleAvailable
-                ? "Sign in with Google"
-                : "Google OAuth not available"
-            }
-          >
-            {isGoogleAvailable ? "Google Login" : "Google Mode (Unavailable)"}
-          </Button>
+            <Button
+              variant="outlined"
+              color="secondary"
+              fullWidth={false}
+              onClick={onLocal}
+              disabled={false}
+              sx={{ minWidth: 120 }}
+            >
+              Local Only
+            </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              fullWidth={false}
+              onClick={handleGoogle}
+              disabled={!termsAccepted || !isGoogleAvailable}
+              sx={{ minWidth: 120 }}
+            >
+              Google Login
+            </Button>
+          </Stack>
         </DialogActions>
       </Dialog>
 
