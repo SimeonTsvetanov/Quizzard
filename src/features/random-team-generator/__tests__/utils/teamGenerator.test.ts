@@ -1,5 +1,5 @@
-import { TeamGenerator } from "./teamGenerator";
-import type { Participant, Team } from "../types";
+import { TeamGenerator } from "../../utils/teamGenerator";
+import type { Participant, Team } from "../../types";
 
 /**
  * Unit tests for TeamGenerator.generateTeams
