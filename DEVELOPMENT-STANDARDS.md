@@ -4023,3 +4023,197 @@ const Quizzes = () => {
 
 - All contributors (including AI assistants) must follow this process for every UI/visual change.
 - This ensures consistency, prevents runtime errors, and maintains production quality.
+
+---
+
+## Google Drive Sync: Extremely Robust Standards (2025-06-26)
+
+### 1. Reference & Scope
+
+- **This section is mandatory for all development related to Google Drive sync, conflict resolution, state management, and cloud backup.**
+- **The authoritative plan and rationale are in PROJECT-CHARTER.md under 'GOOGLE DRIVE SYNC: EXTREMELY ROBUST FINAL BLUEPRINT (2025-06-26)'.**
+- All developers and AI assistants must read and follow both this section and the charter before making any changes.
+
+---
+
+### 2. Architecture & Data Model
+
+- **Local-First Principle:**
+  - All UI and React hooks/components interact ONLY with `IndexedDBService.ts`.
+  - Google Drive is used as a background sync/backup; never as the UI's source of truth.
+- **Quiz Data Model:**
+  - All entities (Quiz, Round, Question) must include:
+    - `lastModified: number` (ms since epoch, set on every change)
+    - `syncStatus: "local" | "syncing" | "synced" | "conflict" | "deleted"`
+    - `driveFileId: string | null` (for Quiz)
+    - `deleted?: boolean` (for soft delete)
+  - All CRUD operations must update `lastModified` and set `syncStatus` appropriately.
+- **Initial Sync Logic:**
+  - On first Google login, detect if this is the user's first sync and prompt for backup/restore as needed.
+
+---
+
+### 3. Core Services & Integration Points
+
+- **Auth Integration:**
+  - `useGoogleAuth.ts` must expose `getValidAccessToken(): Promise<string | null>` for use by all sync/cloud services.
+- **IndexedDBService.ts:**
+  - `saveQuiz` must always set `lastModified` and `syncStatus: "local"`.
+  - `deleteQuiz` must set `syncStatus: "deleted"` (soft delete, not purged).
+  - Add `permanentlyPurgeQuiz(quizId)` for full removal (called by SyncEngine after cloud deletion).
+- **GoogleDriveService.ts:**
+  - Pure API layer, no business logic. All API calls must use `getValidAccessToken()`.
+  - Methods: `listQuizzes`, `uploadQuiz`, `downloadQuiz`, `deleteQuizFile`.
+  - Use the most restrictive scope: `https://www.googleapis.com/auth/drive.file`.
+- **SyncEngine.ts:**
+  - Implement as a class, not a hook. Instantiate once in `App.tsx`.
+  - Main method: `reconcile()` (see charter for full logic).
+  - Triggers: app startup, periodic, online event, explicit action.
+  - Error Handling: handle 401/403, 404, 429, 5xx as specified in the charter.
+  - Use BroadcastChannel API for multi-tab sync.
+  - On network failure, leave quizzes in 'syncing' state; retry when online.
+- **SyncProvider/Context:**
+  - Implement a global sync state context (`syncState: 'idle' | 'syncing' | 'error' | 'offline'`).
+  - Wrap `App.tsx` in this provider. SyncEngine updates this context; UI components (Header, Footer, etc.) must use it for status icons.
+
+---
+
+### 4. UI & User Experience Standards
+
+- **Global Sync State UI:**
+  - Use `useSyncStatus` in Header/Footer to display a global status icon (idle, syncing, error, offline).
+  - In `QuizCard`, read each quiz's `syncStatus` to show per-quiz status icons.
+- **Conflict Resolution Modal:**
+  - When a quiz has `syncStatus: 'conflict'`, show a modal dialog with both versions and timestamps.
+  - User must choose which version to keep; update both IndexedDB and Drive accordingly.
+- **Auth State Flows:**
+  - On first Google login with local quizzes: prompt to back up.
+  - On logout/account switch: prompt, then purge all quizzes with `driveFileId` not null from IndexedDB.
+  - On token expiration: set global sync state to 'error', prompt user to re-authenticate.
+- **UI Feedback:**
+  - Use `useSnackbar` for all key events (sync complete, sync failed, etc.).
+  - Show progress indicators for long syncs.
+
+---
+
+### 5. Error Handling & Risk Mitigation
+
+- **API Error Handling:**
+  - 401/403: Stop sync, set sync state to 'error', prompt re-authentication.
+  - 429: Pause queue, retry with exponential backoff.
+  - 404: If file missing on Drive, delete local copy (after timestamp check).
+  - 5xx: Retry a few times, then set sync state to 'error'.
+- **Race Conditions:**
+  - Use BroadcastChannel API to notify all tabs to refresh from IndexedDB on save.
+- **Network Unreliability:**
+  - Leave quizzes in 'syncing' state, retry when online.
+- **Security:**
+  - Accept API key/token exposure risk; set strict quotas and sanitize user content.
+- **No Trash/Undo UI:**
+  - All deletions are soft until all devices have synced; no user-facing trash.
+
+---
+
+### 6. Developer Workflow & Checklist
+
+- [ ] Read and understand the 'Extremely Robust Final Blueprint' in PROJECT-CHARTER.md before starting.
+- [ ] Update all relevant types/interfaces (Quiz, Round, Question) with sync fields.
+- [ ] Refactor all CRUD logic to set `lastModified` and `syncStatus` on every change.
+- [ ] Implement soft delete logic (set `deleted: true`, do not purge immediately).
+- [ ] Implement reloadKey-based state synchronization after all CRUD operations.
+- [ ] Implement recursive sync logic for all entity levels (quiz, round, question).
+- [ ] Enforce 500MB Google Drive storage quota per user in all upload logic, with UI feedback.
+- [ ] Implement most recent wins conflict resolution at all levels.
+- [ ] Purge deleted entities only after all devices have synced and acknowledged deletion.
+- [ ] Implement SyncProvider/context for global sync state.
+- [ ] Refactor useGoogleAuth.ts to expose getValidAccessToken().
+- [ ] Test all risk scenarios and edge cases (multi-device, offline/online, nested deletes, quota limits).
+- [ ] Document all logic and flows in this file and in PROJECT-CHARTER.md.
+
+---
+
+### 7. Best Practices & Rationale
+
+- Local-First architecture is the industry standard for offline-capable, cloud-synced PWAs.
+- Timestamp-based "last write wins" is the most practical conflict resolution for this use case.
+- Background SyncEngine (manual polling) is the most compatible and robust solution for cross-browser support.
+- All strategies align with Google and web community best practices for client-side sync.
+- This blueprint is designed to be extremely robust, future-proof, and maintainable.
+
+---
+
+### 8. Placement & Integration Notes
+
+- This section and the corresponding PROJECT-CHARTER.md section are the single source of truth for all sync, conflict, and state management logic.
+- All new sync, conflict, and state management logic must be implemented according to this plan.
+- Any future changes to sync logic must update both this section and the charter.
+
+---
+
+### 9. Final Pre-Implementation Audit: Edge Cases & Day 2 Resilience (2025-06-26)
+
+- **Reference:** See PROJECT-CHARTER.md, section 'Final Pre-Implementation Audit: Edge Cases & Day 2 Resilience (2025-06-26)'.
+- **All developers and AI assistants must follow these requirements for all sync/cloud work.**
+- **Summary of mandatory requirements:**
+
+  1. **Data Schema Versioning & Migration:**
+     - All major entities (e.g., Quiz) must include a `version` field.
+     - All loads (from IndexedDB or Drive) must pass through a migration service to ensure forward compatibility.
+  2. **Storage Quota Management:**
+     - All write/upload operations must handle quota errors (QuotaExceededError, Drive 403) and provide user-friendly feedback.
+     - On quota error, stop sync, set sync state to 'error', and show a clear message.
+  3. **Sync Queue Concurrency:**
+     - The SyncEngine must process sync tasks in small batches (3–5 at a time), never all in parallel.
+  4. **Offline-Only User Experience:**
+     - Hide all sync-related UI for logged-out users.
+     - Provide a single, non-intrusive "Backup & Sync" entry point for Google login.
+  5. **Google Drive Scope Limitation:**
+     - Document the drive.file limitation in README/help.
+     - Plan for future local import; prioritize Drive sync for now.
+
+- **Checklist addition:**
+  - [ ] Review and comply with all five edge case requirements in PROJECT-CHARTER.md 'Final Pre-Implementation Audit' section for every sync/cloud feature or change.
+
+---
+
+### 10. Definitive Pre-Implementation Audit & Final Hardening (2025-06-26)
+
+- **Reference:** See PROJECT-CHARTER.md, section 'Definitive Pre-Implementation Audit & Final Hardening (2025-06-26)'.
+- **All developers and AI assistants must follow these requirements for all sync/cloud work.**
+- **Summary of mandatory requirements:**
+
+  1. **Silent Token Refresh & Hard-Stop:**
+     - `getValidAccessToken()` in useGoogleAuth.ts must perform silent refresh; return null on unrecoverable error.
+     - SyncEngine must immediately hard-stop and set sync state to 'error' if token is null.
+  2. **IndexedDB Open Failure Handling:**
+     - IndexedDBService.ts must handle database open failures and enter a 'failed' state.
+     - The app must gracefully degrade, disabling storage-dependent features and showing a clear message if local storage is unavailable.
+  3. **Suspense Error Boundaries:**
+     - All Suspense fallbacks for lazy-loaded features/routes must be wrapped in Error Boundaries that catch chunk/network errors and show a user-friendly message.
+  4. **Safari ITP Prompt:**
+     - Detect Safari/iOS users; show a one-time backup prompt if not logged in, and prioritize sync for logged-in Safari users.
+  5. **Runtime API Validation:**
+     - All GoogleDriveService.ts responses must be runtime validated (e.g., with zod) before use. Do not proceed with invalid/corrupted data.
+  6. **Circuit Breaker for 404s:**
+     - SyncEngine must implement a circuit breaker for cascading 404 errors (e.g., app folder deleted), stop, and prompt user for recovery.
+
+- **Checklist addition:**
+  - [ ] Review and comply with all six anti-fragile and unknown-unknown requirements in PROJECT-CHARTER.md 'Definitive Pre-Implementation Audit & Final Hardening' section for every sync/cloud feature or change.
+
+---
+
+### 11. Final Audit and Implementation Approval: Google Drive Sync Feature (2025-06-26)
+
+- **Reference:** See PROJECT-CHARTER.md, section 'Final Audit and Implementation Approval: Google Drive Sync Feature (2025-06-26)'.
+- **All developers and AI assistants must follow these implementation-phase requirements for this and all similar future features.**
+- **Summary of mandatory implementation-phase requirements:**
+  1. **Implement Incrementally. Test Incrementally.**
+     - Build and verify one small piece at a time, following the phased plan. Test after each step and commit only when stable.
+  2. **Use a Feature Flag.**
+     - Wrap all new sync/cloud code and UI in a hardcoded feature flag (e.g., `const isSyncFeatureEnabled = true;`). This allows safe merging and instant disabling if needed.
+  3. **Trust the Plan.**
+     - Do not take shortcuts or deviate from the plan during implementation. The plan is designed to prevent subtle, cascading failures. Follow it exactly.
+- **Checklist:**
+  - [ ] All sync/cloud features must be implemented and tested incrementally.
+  - [ ] All new code must be wrapped in a feature flag until fully tested and approved.
+  - [ ] No shortcuts or deviations from the approved plan are allowed during implementation.

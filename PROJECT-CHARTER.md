@@ -2275,3 +2275,1017 @@ The update system provides a seamless way for users to check for and apply appli
 - The Avatar in the UI always uses `user.picture` if available, otherwise falls back to initials
 - All profile data is cleared on logout or token expiration
 - No code duplication or orphaned logic for profile state
+
+## PHASE 2: GOOGLE DRIVE INTEGRATION & CLOUD STORAGE — SYNC, CONFLICT RESOLUTION, AND SOFT DELETE PLAN (2024-06-13)
+
+### Robust Timestamp-Based Sync & Soft Delete Implementation Plan
+
+#### **Overview**
+
+To ensure seamless, reliable, and user-friendly cross-device quiz management, Quizzard will implement a timestamp-based conflict resolution system with soft delete logic for all quiz entities (quizzes, rounds, questions). This system guarantees that the most recent change (edit or delete) always wins, prevents accidental data loss, and requires no Trash/Undo UI. This plan is designed for production use and follows all project standards.
+
+---
+
+### **1. Data Model Changes**
+
+- **Add a `lastModified` field** (Unix timestamp, ms) to every entity:
+  - `Quiz`, `Round`, and `Question` interfaces/types
+  - Example:
+    ```typescript
+    interface Quiz {
+      id: string;
+      title: string;
+      // ...other fields...
+      lastModified: number; // ms since epoch
+      deleted?: boolean; // true if soft-deleted
+      rounds: Round[];
+    }
+    ```
+- **Add an optional `deleted: boolean` field** to each entity:
+  - `deleted: true` means the entity is soft-deleted and hidden from UI, but not yet purged.
+
+---
+
+### **2. CRUD Logic Updates**
+
+- **On every create, edit, or delete operation:**
+  - Set `lastModified = Date.now()` on the affected entity.
+- **On delete:**
+  - Set `deleted = true` and update `lastModified`.
+  - Do NOT immediately remove the entity from storage; keep it until next sync.
+- **On edit:**
+  - If editing a deleted entity, treat as a new change ("resurrects" the entity if edit is newer than delete).
+- **On create:**
+  - Always set `lastModified` to creation time.
+
+---
+
+### **3. Sync Logic (IndexedDB ↔ Google Drive)**
+
+- **On sync (manual or automatic):**
+  - For each entity (quiz, round, question) with the same ID in both local and cloud:
+    - Compare `lastModified` timestamps.
+    - **If local is newer:**
+      - Push local version (edit or delete) to cloud.
+    - **If cloud is newer:**
+      - Overwrite local version with cloud version.
+    - **If one is deleted and the other is edited:**
+      - The version with the newer `lastModified` wins (edit resurrects if newer, delete wins if newer).
+  - **Entities marked `deleted: true` are hidden from UI** but kept in storage until all devices have synced.
+- **After all devices have synced and acknowledged the deletion:**
+  - Purge (permanently remove) the entity from both local and cloud storage to save space.
+
+---
+
+### **4. Deletion Handling**
+
+- **Soft delete only:**
+  - No Trash/Undo UI is shown to users.
+  - Deleted entities are only kept for sync conflict resolution.
+  - If a user edits a deleted entity on another device after deletion, and the edit is newer, the entity is restored everywhere.
+  - If the delete is newer, the entity is removed everywhere (edits are lost).
+- **No accidental resurrection:**
+  - Only a real, newer edit can bring back a deleted item.
+- **No data loss:**
+  - If a user edits after a delete, their changes are preserved (unless the delete is newer).
+
+---
+
+### **5. Nested Entity Handling**
+
+- **Each entity (quiz, round, question) tracks its own `lastModified`.**
+- **Editing a child entity (e.g., question) updates its own `lastModified` only.**
+- **If a parent entity (e.g., round or quiz) is deleted, all children are considered deleted as well.**
+- **Sync logic applies recursively at all levels.**
+
+---
+
+### **6. Technical Implementation Details**
+
+- **Use `Date.now()`** for all timestamps (ms since epoch, easy to compare).
+- **Update all CRUD and sync hooks/services** (`useQuizCRUD`, `useQuizWizardWithStorage`, `indexedDBService.ts`, future `googleDriveService.ts`) to handle `lastModified` and `deleted` fields.
+- **All sync/merge operations must be non-destructive and additive.**
+- **User always has control and visibility over sync status (status indicators, notifications, etc.).**
+- **No Trash/Undo UI is required.**
+
+---
+
+### **7. Rationale & Best Practices**
+
+- **Industry standard:** This approach matches Google Keep, Apple Notes, and other modern sync systems.
+- **Simple, predictable, and robust:** Prevents accidental data loss and "zombie" data.
+- **No user confusion:** No Trash/Undo UI means users never see deleted items unless they are truly restored by a newer edit.
+- **Performance:** Entities are purged after all devices have synced, minimizing storage use.
+
+---
+
+### **8. Example Workflow**
+
+- User creates a quiz on Phone (online) → quiz is synced to Drive.
+- User deletes the quiz on Laptop (online) → deletion is synced to Drive (soft delete, hidden from UI).
+- User edits the quiz on Phone (offline, after deletion on Laptop):
+  - If edit is newer than delete, quiz is restored everywhere on next sync.
+  - If delete is newer, quiz is deleted everywhere on next sync.
+
+---
+
+### **9. Developer Checklist**
+
+- [ ] Add `lastModified` and `deleted` fields to all relevant types/interfaces.
+- [ ] Update all CRUD logic to set `lastModified` on every change.
+- [ ] Implement soft delete logic (set `deleted: true`, do not purge immediately).
+- [ ] Update sync logic to use `lastModified` for conflict resolution.
+- [ ] Purge deleted entities only after all devices have synced.
+- [ ] Document all changes in DEVELOPMENT-STANDARDS.md and update this section as implementation progresses.
+
+---
+
+**This plan is mandatory for all future sync, conflict resolution, and deletion logic in Quizzard.**
+
+### [2024-06-13] PHASE 2: GOOGLE DRIVE INTEGRATION & CLOUD STORAGE — SYNC, CONFLICT RESOLUTION, SOFT DELETE, STATE SYNC, AND STORAGE LIMITS
+
+#### Robust Timestamp-Based Sync, Soft Delete, State Synchronization, and Storage Quota Plan
+
+---
+
+#### **1. Data Model Changes**
+
+- Add `lastModified` (ms since epoch) and optional `deleted: boolean` to all entities (Quiz, Round, Question).
+- See previous section for example interfaces.
+
+---
+
+#### **2. CRUD Logic Updates**
+
+- On every create, edit, or delete: set `lastModified = Date.now()`.
+- On delete: set `deleted = true` and update `lastModified` (soft delete, not purged until all devices sync).
+- On edit: if editing a deleted entity, treat as a new change (resurrect if newer than delete).
+- On create: always set `lastModified` to creation time.
+
+---
+
+#### **3. State Synchronization: reloadKey Pattern**
+
+- After any CRUD operation (create, update, delete), increment a `reloadKey` state in the main page/component.
+- Pass a `reloadQuizzes` callback to all relevant hooks/services.
+- After any change, call `reloadQuizzes()` to force a re-fetch from storage (IndexedDB and, in future, Google Drive).
+- This ensures the UI always reflects the latest state, preventing ghost quizzes, stale data, or UI artifacts after deletion or edits.
+- This pattern is now mandatory for all quiz/round/question state management.
+
+---
+
+#### **4. Sync Logic (IndexedDB ↔ Google Drive)**
+
+- On sync (manual or automatic):
+  - For each entity with the same ID in both local and cloud:
+    - Compare `lastModified` timestamps.
+    - If local is newer: push local version (edit or delete) to cloud.
+    - If cloud is newer: overwrite local version with cloud version.
+    - If one is deleted and the other is edited: the newer `lastModified` wins (edit resurrects if newer, delete wins if newer).
+  - Entities marked `deleted: true` are hidden from UI but kept in storage until all devices have synced.
+  - After all devices have synced and acknowledged the deletion, purge the entity from both local and cloud storage.
+
+---
+
+#### **5. Deletion Handling**
+
+- Soft delete only: no Trash/Undo UI, deleted entities are only kept for sync conflict resolution.
+- If a user edits a deleted entity on another device after deletion, and the edit is newer, the entity is restored everywhere on next sync.
+- If the delete is newer, the entity is removed everywhere on next sync.
+- No accidental resurrection: only a real, newer edit can bring back a deleted item.
+- No data loss: if a user edits after a delete, their changes are preserved (unless the delete is newer).
+
+---
+
+#### **6. Nested Entity Handling**
+
+- Each entity (quiz, round, question) tracks its own `lastModified`.
+- Editing a child entity (e.g., question) updates its own `lastModified` only.
+- If a parent entity is deleted, all children are considered deleted as well.
+- Sync logic applies recursively at all levels.
+
+---
+
+#### **7. Google Drive Storage Quota Limit (500MB per User)**
+
+- Before uploading any new quiz, round, question, or media file to Google Drive, check the user's current storage usage for the Quizzard app folder.
+- If the total usage is >= 500MB, block the upload and show a clear, user-friendly error message: "You have reached your 500MB Quizzard cloud storage limit. Please delete old quizzes or media to free up space."
+- Provide a UI indicator of current usage (e.g., "Cloud Storage: 420MB / 500MB used").
+- All upload logic (in the Google Drive service layer) must enforce this limit and prevent exceeding it.
+- Rationale: Prevents excessive storage use, keeps costs predictable, and matches current IndexedDB local quota.
+
+---
+
+#### **8. Technical Implementation Details**
+
+- Use `Date.now()` for all timestamps.
+- Update all CRUD and sync hooks/services (`useQuizCRUD`, `useQuizWizardWithStorage`, `indexedDBService.ts`, future `googleDriveService.ts`) to handle `lastModified`, `deleted`, and storage quota logic.
+- All sync/merge operations must be non-destructive and additive.
+- User always has control and visibility over sync status and storage usage.
+- No Trash/Undo UI is required.
+
+---
+
+#### **9. Rationale & Best Practices**
+
+- Industry standard: Matches Google Keep, Apple Notes, and other modern sync systems.
+- Simple, predictable, and robust: Prevents accidental data loss and "zombie" data.
+- No user confusion: No Trash/Undo UI means users never see deleted items unless truly restored by a newer edit.
+- Performance: Entities are purged after all devices have synced, minimizing storage use.
+- Storage quota: 500MB per user ensures fair use and prevents abuse.
+
+---
+
+#### **10. Example Workflow**
+
+- User creates a quiz on Phone (online) → quiz is synced to Drive.
+- User deletes the quiz on Laptop (online) → deletion is synced to Drive (soft delete, hidden from UI).
+- User edits the quiz on Phone (offline, after deletion on Laptop):
+  - If edit is newer than delete, quiz is restored everywhere on next sync.
+  - If delete is newer, quiz is deleted everywhere on next sync.
+- If user tries to upload a new quiz or media and is over 500MB, upload is blocked and user is notified.
+
+---
+
+#### **11. Developer Checklist**
+
+- [ ] Add `lastModified` and `deleted` fields to all relevant types/interfaces.
+- [ ] Update all CRUD logic to set `lastModified` on every change.
+- [ ] Implement soft delete logic (set `deleted: true`, do not purge immediately).
+- [ ] Update sync logic to use `lastModified` for conflict resolution.
+- [ ] Implement reloadKey-based state synchronization after all CRUD operations.
+- [ ] Enforce 500MB Google Drive storage quota per user in all upload logic.
+- [ ] Purge deleted entities only after all devices have synced.
+- [ ] Document all changes in DEVELOPMENT-STANDARDS.md and update this section as implementation progresses.
+
+---
+
+**This plan is mandatory for all future sync, conflict resolution, deletion, state synchronization, and storage quota logic in Quizzard.**
+
+### [2024-06-13] PHASE 2: GOOGLE DRIVE INTEGRATION & CLOUD STORAGE — FULLY DETAILED STEP-BY-STEP PLAN
+
+#### **A. Data Model Changes (Quiz, Round, Question)**
+
+- **Add `lastModified` (number, ms since epoch) to every entity.**
+  - Set to `Date.now()` on every create, edit, or delete.
+  - Used for conflict resolution (most recent wins).
+- **Add optional `deleted: boolean` to every entity.**
+  - `deleted: true` means the entity is soft-deleted (hidden from UI, not purged until all devices sync).
+- **Rationale:**
+  - Enables robust, timestamp-based sync and safe deletion across devices.
+
+---
+
+#### **B. CRUD Operations (Create, Edit, Delete)**
+
+- **On Create:**
+  - Set `lastModified = Date.now()`.
+  - Set `deleted = false` (or omit field).
+- **On Edit:**
+  - Update `lastModified = Date.now()`.
+  - If entity was previously deleted, editing it resurrects it (removes `deleted: true`).
+- **On Delete:**
+  - Set `deleted = true`.
+  - Update `lastModified = Date.now()`.
+  - Do NOT immediately remove from storage; keep for sync.
+- **Sub-steps:**
+  - Always update parent entity's `lastModified` if a child is added/edited/deleted.
+  - For nested deletes (e.g., deleting a round deletes all its questions), set `deleted: true` on all children.
+- **Rationale:**
+  - Ensures all changes are timestamped and deletions are safely propagated.
+
+---
+
+#### **C. State Synchronization: reloadKey Pattern**
+
+- **After any CRUD operation:**
+  - Increment a `reloadKey` state in the main page/component.
+  - Pass a `reloadQuizzes` callback to all relevant hooks/services.
+  - After any change, call `reloadQuizzes()` to force a re-fetch from storage (IndexedDB and, in future, Google Drive).
+- **Sub-steps:**
+  - All UI lists and editors must listen to `reloadKey` and reload data when it changes.
+  - This pattern must be used for all quiz/round/question state management.
+- **Rationale:**
+  - Prevents ghost/stale data, ensures UI always matches storage.
+
+---
+
+#### **D. Sync Logic (IndexedDB ↔ Google Drive)**
+
+- **On sync (manual or automatic):**
+  - For each entity (quiz, round, question) with the same ID in both local and cloud:
+    - Compare `lastModified` timestamps.
+    - If local is newer: push local version (edit or delete) to cloud.
+    - If cloud is newer: overwrite local version with cloud version.
+    - If one is deleted and the other is edited: the newer `lastModified` wins (edit resurrects if newer, delete wins if newer).
+  - Entities marked `deleted: true` are hidden from UI but kept in storage until all devices have synced.
+  - After all devices have synced and acknowledged the deletion, purge the entity from both local and cloud storage.
+- **Sub-steps:**
+  - Sync must be recursive for nested entities (quizzes, rounds, questions).
+  - Sync must handle offline/online transitions and queued changes.
+- **Rationale:**
+  - Ensures all devices converge to the same state, with no accidental data loss or resurrection.
+
+---
+
+#### **E. Deletion Handling (Soft Delete, No Trash/Undo UI)**
+
+- **Soft delete only:**
+  - No Trash/Undo UI is shown to users.
+  - Deleted entities are only kept for sync conflict resolution.
+- **If a user edits a deleted entity on another device after deletion, and the edit is newer:**
+  - The entity is restored everywhere on next sync.
+- **If the delete is newer:**
+  - The entity is removed everywhere on next sync.
+- **No accidental resurrection:**
+  - Only a real, newer edit can bring back a deleted item.
+- **No data loss:**
+  - If a user edits after a delete, their changes are preserved (unless the delete is newer).
+- **Sub-steps:**
+  - Purge deleted entities only after all devices have synced and acknowledged the deletion.
+- **Rationale:**
+  - Prevents ghost data, accidental loss, and user confusion.
+
+---
+
+#### **F. Nested Entity Handling (Rounds, Questions)**
+
+- **Each entity (quiz, round, question) tracks its own `lastModified`.**
+- **Editing a child entity (e.g., question) updates its own `lastModified` only.**
+- **If a parent entity (e.g., round or quiz) is deleted, all children are considered deleted as well.**
+- **Sync logic applies recursively at all levels.**
+- **Sub-steps:**
+  - When deleting a parent, cascade `deleted: true` and update `lastModified` on all children.
+  - When restoring a parent, restore all children unless a child was independently deleted later.
+- **Rationale:**
+  - Ensures consistent state and prevents orphaned or zombie data.
+
+---
+
+#### **G. Google Drive Storage Quota Limit (500MB per User)**
+
+- **Before uploading any new quiz, round, question, or media file to Google Drive:**
+  - Check the user's current storage usage for the Quizzard app folder.
+  - If the total usage is >= 500MB, block the upload and show a clear, user-friendly error message: "You have reached your 500MB Quizzard cloud storage limit. Please delete old quizzes or media to free up space."
+  - Provide a UI indicator of current usage (e.g., "Cloud Storage: 420MB / 500MB used").
+  - All upload logic (in the Google Drive service layer) must enforce this limit and prevent exceeding it.
+- **Sub-steps:**
+  - Check quota before every upload, not just on app start.
+  - Show warning if user is near the limit (e.g., > 450MB).
+  - Block uploads and provide clear instructions if over limit.
+- **Rationale:**
+  - Prevents excessive storage use, keeps costs predictable, and matches current IndexedDB local quota.
+
+---
+
+#### **H. Conflict Resolution: Most Recent Wins**
+
+- **Every change (create, edit, or delete) updates a `lastModified` timestamp.**
+- **On sync:**
+  - If there's a conflict (e.g., one device edited, another deleted), the version with the newer `lastModified` timestamp wins.
+  - Applies to all operations: create, edit, and delete.
+- **If content is identical, keep just one (no duplicate).**
+- **Sub-steps:**
+  - Always compare timestamps at the entity level (quiz, round, question).
+  - Never keep both versions; always resolve to the most recent.
+- **Rationale:**
+  - No duplicate/conflict clutter, storage is minimized, user always sees the latest version.
+
+---
+
+#### **I. Example Workflows & Edge Cases**
+
+- **Scenario 1: Quiz created on phone, deleted on laptop, then edited on phone (offline → online):**
+  - On sync, if phone's edit is newer, quiz is restored everywhere; if laptop's delete is newer, quiz is deleted everywhere.
+- **Scenario 2: Round added on one device, deleted on another:**
+  - Most recent `lastModified` wins; round is either present or deleted everywhere after sync.
+- **Scenario 3: Storage quota exceeded:**
+  - User is blocked from uploading new data, receives error and instructions to free up space.
+- **Scenario 4: Parent deleted, child edited on another device:**
+  - If child edit is newer, child is restored with parent; if parent delete is newer, both are deleted.
+- **Scenario 5: Multiple devices offline, then reconnect:**
+  - All changes are merged using `lastModified`; no data is lost, and most recent wins.
+
+---
+
+#### **J. Developer Checklist (Expanded)**
+
+- [ ] Add `lastModified` and `deleted` fields to all relevant types/interfaces (Quiz, Round, Question).
+- [ ] Update all CRUD logic to set `lastModified` on every change and handle soft delete.
+- [ ] Implement reloadKey-based state synchronization after all CRUD operations.
+- [ ] Implement recursive sync logic for all entity levels (quiz, round, question).
+- [ ] Enforce 500MB Google Drive storage quota per user in all upload logic, with UI feedback.
+- [ ] Implement most recent wins conflict resolution at all levels.
+- [ ] Purge deleted entities only after all devices have synced and acknowledged deletion.
+- [ ] Document all changes in DEVELOPMENT-STANDARDS.md and update this section as implementation progresses.
+- [ ] Test all edge cases (multi-device, offline/online, nested deletes, quota limits).
+
+---
+
+**This section is now a complete, step-by-step, future-proof reference for all sync, conflict resolution, deletion, state synchronization, and storage quota logic in Quizzard. All developers and AI assistants must read and follow this before making any changes.**
+
+## GOOGLE DRIVE SYNC: ARCHITECTURE, RISKS, AND MITIGATIONS (2025-06-26)
+
+### 1. Executive Summary
+
+- Integrate Google Drive as a cloud backup and sync mechanism for Quizzes, operating entirely client-side (no servers, zero-cost).
+- Use a "Local-First" architecture: IndexedDB is the single source of truth for the UI; Google Drive is a background sync/backup.
+- All logic, risks, and user experience flows are detailed below for robust, future-proof implementation.
+
+---
+
+### 2. Implementation Blueprint: Step-by-Step
+
+#### **Phase 2.1: Foundation & Data Model ("Rules of the Road")**
+
+**A. Local-First Architecture**
+
+- All React components and hooks interact ONLY with `IndexedDBService.ts`.
+  - UI never talks directly to Google Drive.
+  - Guarantees fast, offline-first UX and a single source of truth.
+- IndexedDBService is the only interface for CRUD operations in the app.
+
+**B. Enhanced Quiz Data Model**
+
+- Update the `Quiz` interface:
+  ```typescript
+  export interface Quiz {
+    id: string; // UUID, generated client-side
+    title: string;
+    // ... other quiz data ...
+    lastModified: number; // ms since epoch
+    syncStatus: "local" | "syncing" | "synced" | "conflict" | "deleted";
+    driveFileId: string | null; // Google Drive file ID, null if never synced
+  }
+  ```
+- **Field meanings:**
+  - `syncStatus`:
+    - 'local': Changed locally, not yet synced
+    - 'syncing': Currently being uploaded/downloaded
+    - 'synced': In sync with Drive
+    - 'conflict': Both local and remote changed; needs user resolution
+    - 'deleted': Marked for deletion (soft delete)
+  - `driveFileId`: Used to match local quizzes to Drive files
+
+**C. Data Model Sub-Steps**
+
+- All nested entities (rounds, questions) should also have `lastModified` and `deleted` fields for fine-grained sync.
+- All CRUD operations must update `lastModified` and set `syncStatus` appropriately.
+
+---
+
+#### **Phase 2.2: Core Services ("Engine Room")**
+
+**A. IndexedDBService.ts**
+
+- Provides all CRUD methods: `getQuiz()`, `getAllQuizzes()`, `saveQuiz()`, `deleteQuiz()`.
+- On `saveQuiz()`, always update `lastModified` and set `syncStatus` to 'local'.
+- On `deleteQuiz()`, perform a soft delete: set `syncStatus` to 'deleted', do not remove from DB.
+- All UI and hooks must use this service exclusively.
+
+**B. GoogleDriveService.ts**
+
+- Pure API layer, no business logic.
+- Required methods:
+  - `listQuizzes(pageToken?)`: List all .json files created by the app
+  - `uploadQuiz(quiz, fileId?)`: Create/update a file in Drive
+  - `downloadQuiz(fileId)`: Fetch quiz content
+  - `deleteQuizFile(fileId)`: Permanently delete a file from Drive
+- Use the most restrictive scope: `https://www.googleapis.com/auth/drive.file` (only files created by the app)
+
+**C. SyncEngine.ts**
+
+- Runs in the background, never called by UI directly.
+- Triggers:
+  - On app startup
+  - Periodically (e.g., every 5 minutes)
+  - On browser regaining online status
+  - On explicit "Sync Now" action (if provided)
+- Logic Flow:
+  1. Fetch all local quizzes from IndexedDBService
+  2. Fetch all remote quizzes from GoogleDriveService
+  3. Reconcile:
+     - For each quiz (local and remote):
+       - If `syncStatus: 'local'`, queue "upload"
+       - If `syncStatus: 'deleted'`, queue "delete from Drive"
+       - If `remote.lastModified > local.lastModified`, queue "download"
+       - If `local.lastModified > remote.lastModified && syncStatus === 'synced'`, queue "upload"
+       - If `local.lastModified > remote.lastModified && syncStatus === 'local'`, queue "mark as conflict"
+  4. Execute queue, updating `syncStatus` in IndexedDB on success/failure
+- Handles all error cases, retries, and updates status for UI feedback
+
+**D. Sub-Steps for SyncEngine**
+
+- Use exponential backoff for API rate limits (HTTP 429): wait 2s, 4s, 8s, etc.
+- Use BroadcastChannel API to notify all tabs of changes (prevents race conditions)
+- On network failure, leave quizzes in 'syncing' state; retry when online
+- On Google API changes, only update GoogleDriveService.ts
+
+---
+
+#### **Phase 2.3: User Experience & Edge Cases ("Dashboard")**
+
+**A. Conflict Resolution UI**
+
+- When a quiz has `syncStatus: 'conflict'`, show a modal dialog:
+  - Text: "This quiz was edited on another device. Which version would you like to keep?"
+  - Show summaries of both local and remote versions (with timestamps)
+  - Buttons: "Keep this device's version" and "Use the cloud version"
+  - On user choice, update IndexedDB and Drive accordingly, set `syncStatus` to 'synced'
+
+**B. Auth State Flows**
+
+- On first-time Google login with existing local quizzes:
+  - Prompt: "Back up your X local quizzes to your Google Drive?"
+- On logout:
+  - Prompt: "Your quizzes will no longer be backed up to the cloud. They will still be available on this device."
+  - On logout, iterate through IndexedDB and remove all quizzes with `driveFileId` not null (prevents cross-account sync)
+- On account switch:
+  - Same as logout, then re-initialize sync for new account
+
+**C. UI Feedback**
+
+- Add status icon next to each quiz:
+  - Cloud icon: 'synced'
+  - Spinning icon: 'syncing'
+  - Warning icon: 'conflict'
+  - Trash icon: 'deleted'
+- Use snackbars for key events:
+  - "Sync complete"
+  - "Quiz saved to Google Drive"
+  - "Connection lost, sync paused"
+- Show progress indicator for long syncs (e.g., "Syncing your quizzes... (10 of 500 complete)")
+
+---
+
+### 3. Comprehensive Risk Analysis & Mitigations
+
+**A. Data & Sync Logic**
+
+- **Race Conditions (Multiple Tabs):**
+  - Use BroadcastChannel API to notify all tabs to refresh from IndexedDB on save
+- **Incorrect Timestamps (Clock Skew):**
+  - Accept risk; manual conflict resolution UI is the safety net
+- **Split Brain on Account Switch:**
+  - On logout, purge all quizzes with `driveFileId` not null from IndexedDB
+
+**B. API & Network**
+
+- **API Rate Limiting:**
+  - On HTTP 429, stop queue, retry with exponential backoff
+- **Network Unreliability:**
+  - Leave quizzes in 'syncing' state, retry when online
+- **Google API Changes:**
+  - All API logic isolated in GoogleDriveService.ts for easy updates
+
+**C. Security & Zero-Cost Constraints**
+
+- **API Key Exposure:**
+  - Accept risk; set strict quotas in Google Cloud Console
+- **Auth Token Security:**
+  - Accept risk; sanitize all user-generated content to prevent XSS
+
+**D. User Experience**
+
+- **Slow Initial Sync:**
+  - Sync in background, UI always usable with local data, show progress indicator
+- **Confusing UI:**
+  - Use clear, human-readable language in all dialogs/tooltips (e.g., "Needs Attention" instead of "Conflict")
+
+---
+
+### 4. Research Validation & Rationale
+
+- Local-First architecture is the industry standard for offline-capable, cloud-synced PWAs
+- Timestamp-based "last write wins" is the most common and practical conflict resolution for this use case
+- Background SyncEngine (manual polling) is the most compatible and robust solution for cross-browser support
+- All strategies align with Google and web community best practices for client-side sync
+
+---
+
+### 5. Developer Checklist (Expanded)
+
+- [ ] Update Quiz and nested entity models with all sync fields (`lastModified`, `syncStatus`, `driveFileId`, `deleted`)
+- [ ] Implement IndexedDBService.ts as the only CRUD interface for UI/hooks
+- [ ] Implement GoogleDriveService.ts as a pure API layer
+- [ ] Build SyncEngine.ts for background, periodic, and event-driven sync
+- [ ] Implement BroadcastChannel for multi-tab sync
+- [ ] Implement exponential backoff for API rate limits
+- [ ] Build conflict resolution modal/dialog with user choice
+- [ ] Implement all auth state flows and data purging on logout/account switch
+- [ ] Add status icons, snackbars, and progress indicators to UI
+- [ ] Test all risk scenarios and edge cases
+- [ ] Document all logic and flows in DEVELOPMENT-STANDARDS.md
+
+---
+
+**This section, together with the previous step-by-step plan, is now a complete, detailed, and future-proof reference for all Google Drive sync, conflict resolution, risk mitigation, and user experience logic in Quizzard. All developers and AI assistants must read and follow this before making any changes.**
+
+## GOOGLE DRIVE SYNC: EXTREMELY ROBUST FINAL BLUEPRINT (2025-06-26)
+
+### 1. Executive Summary
+
+This section refines and finalizes the Google Drive sync plan for Quizzard, incorporating all lessons learned, codebase realities, and best practices. It is the single source of truth for all future sync, conflict, and state management logic. All developers and AI assistants must read and follow this before making any changes.
+
+---
+
+### 2. Foundation & Data Model (Phase 1)
+
+**A. Local-First Architecture**
+
+- The UI and all React hooks/components interact ONLY with `IndexedDBService.ts`.
+- Google Drive is used as a background sync/backup; never as the UI's source of truth.
+
+**B. Enhanced Quiz Data Model**
+
+- Update `src/features/quizzes/types/index.ts`:
+  ```typescript
+  export interface Quiz {
+    id: string; // Must be a client-generated UUID
+    // ... all existing fields ...
+    // --- SYNC FIELDS ---
+    lastModified: number; // ms since epoch
+    syncStatus: "local" | "syncing" | "synced" | "conflict" | "deleted";
+    driveFileId: string | null;
+  }
+  ```
+- All nested entities (rounds, questions) must also have `lastModified` and `deleted` fields.
+- All CRUD operations must update `lastModified` and set `syncStatus` appropriately.
+
+**C. Initial Sync Logic**
+
+- On first Google login, detect if this is the user's first sync (no Drive files for this app exist).
+- If local quizzes exist, prompt: "Back up your X local quizzes to your Google Drive?"
+- If Drive quizzes exist but local does not, prompt: "Restore your quizzes from Google Drive to this device?"
+- If both exist, run full reconciliation and present conflicts if needed.
+
+**D. Global Sync State Management**
+
+- Implement a `SyncProvider` using React Context (e.g., `src/shared/hooks/useSyncStatus.ts`).
+- Provides: `syncState: 'idle' | 'syncing' | 'error' | 'offline'` and a setter.
+- Wrap `App.tsx` in this provider. The SyncEngine updates this context; UI components (Header, Footer, etc.) can react to it.
+
+---
+
+### 3. Core Services (Phase 2)
+
+**A. Auth Integration**
+
+- Refactor `useGoogleAuth.ts` to expose a function: `getValidAccessToken(): Promise<string | null>`.
+  - Handles token expiration and refresh, returns a valid token for SyncEngine/GoogleDriveService.
+
+**B. IndexedDBService.ts**
+
+- `saveQuiz` always sets `lastModified: Date.now()` and `syncStatus: 'local'`.
+- `deleteQuiz` sets `syncStatus: 'deleted'` (soft delete, not purged).
+- Add `permanentlyPurgeQuiz(quizId)` to fully remove a record (called by SyncEngine after successful Drive deletion).
+
+**C. GoogleDriveService.ts**
+
+- Pure API layer, no business logic.
+- Methods:
+  - `listQuizzes(pageToken?)`: List all .json files created by the app
+  - `uploadQuiz(quiz, fileId?)`: Create/update a file in Drive
+  - `downloadQuiz(fileId)`: Fetch quiz content
+  - `deleteQuizFile(fileId)`: Permanently delete a file from Drive
+- Uses `getValidAccessToken()` before every API call. If token is null, does nothing.
+- Uses the most restrictive scope: `https://www.googleapis.com/auth/drive.file`.
+
+**D. SyncEngine.ts**
+
+- Implement as a class, not a hook. Instantiate once in `App.tsx`.
+- Dependencies: `IndexedDBService`, `GoogleDriveService`, and `setSyncState` from SyncProvider.
+- Main method: `reconcile()`
+  - Fetch all local quizzes from IndexedDBService
+  - Fetch all remote quizzes from GoogleDriveService
+  - For each quiz (local and remote):
+    - If `syncStatus: 'local'`, queue "upload"
+    - If `syncStatus: 'deleted'`, queue "delete from Drive"
+    - If `remote.lastModified > local.lastModified`, queue "download"
+    - If `local.lastModified > remote.lastModified && syncStatus === 'synced'`, queue "upload"
+    - If `local.lastModified > remote.lastModified && syncStatus === 'local'`, queue "mark as conflict"
+  - Execute queue, updating `syncStatus` in IndexedDB on success/failure
+- Triggers:
+  - On app startup
+  - Periodically (e.g., every 5-10 minutes)
+  - On browser regaining online status
+  - On explicit "Sync Now" action (if provided)
+- Error Handling:
+  - On 401/403 (Unauthorized/Forbidden): Stop sync, set global sync state to 'error', prompt user to re-authenticate.
+  - On 429 (Rate Limit): Pause queue, retry with exponential backoff (2s, 4s, 8s, etc.).
+  - On 404 (Not Found): If file missing on Drive, delete local copy (after timestamp check).
+  - On 5xx (Server Error): Retry a few times with delay, then set sync state to 'error'.
+- Use BroadcastChannel API to notify all tabs of changes (prevents race conditions).
+- On network failure, leave quizzes in 'syncing' state; retry when online.
+
+---
+
+### 4. User Experience & Edge Cases (Phase 3)
+
+**A. Global Sync State UI**
+
+- Use `useSyncStatus` in Header/Footer to display a global status icon (idle, syncing, error, offline).
+- In `QuizCard`, read each quiz's `syncStatus` to show per-quiz status icons.
+
+**B. Conflict Resolution Modal**
+
+- When a quiz has `syncStatus: 'conflict'`, show a modal dialog:
+  - Text: "This quiz was edited on another device. Which version would you like to keep?"
+  - Show summaries of both local and remote versions (with timestamps)
+  - Buttons: "Keep this device's version" and "Use the cloud version"
+  - On user choice, update IndexedDB and Drive accordingly, set `syncStatus` to 'synced'
+
+**C. Auth State User Flows**
+
+- On first Google login with existing local quizzes: prompt to back up local quizzes.
+- On logout/account switch: prompt, then purge all quizzes with `driveFileId` not null from IndexedDB.
+- On token expiration: set global sync state to 'error', prompt user to re-authenticate.
+
+**D. UI Feedback**
+
+- Use `useSnackbar` for key events ("Sync complete", "Sync failed", etc.).
+- Show progress indicator for long syncs (e.g., "Syncing your quizzes... (10 of 500 complete)").
+
+---
+
+### 5. Risk Analysis & Mitigations (Expanded)
+
+- **Race Conditions (Multiple Tabs):** Use BroadcastChannel API to notify all tabs to refresh from IndexedDB on save.
+- **Incorrect Timestamps (Clock Skew):** Accept risk; manual conflict resolution UI is the safety net.
+- **Split Brain on Account Switch:** On logout, purge all quizzes with `driveFileId` not null from IndexedDB.
+- **API Rate Limiting:** On HTTP 429, stop queue, retry with exponential backoff.
+- **Network Unreliability:** Leave quizzes in 'syncing' state, retry when online.
+- **Google API Changes:** All API logic isolated in GoogleDriveService.ts for easy updates.
+- **API Key Exposure:** Accept risk; set strict quotas in Google Cloud Console.
+- **Auth Token Security:** Accept risk; sanitize all user-generated content to prevent XSS.
+- **Slow Initial Sync:** Sync in background, UI always usable with local data, show progress indicator.
+- **Confusing UI:** Use clear, human-readable language in all dialogs/tooltips (e.g., "Needs Attention" instead of "Conflict").
+
+---
+
+### 6. Developer Checklist (Final)
+
+- [ ] Update Quiz and nested entity models with all sync fields (`lastModified`, `syncStatus`, `driveFileId`, `deleted`)
+- [ ] Implement IndexedDBService.ts as the only CRUD interface for UI/hooks
+- [ ] Implement GoogleDriveService.ts as a pure API layer
+- [ ] Build SyncEngine.ts for background, periodic, and event-driven sync
+- [ ] Implement BroadcastChannel for multi-tab sync
+- [ ] Implement exponential backoff for API rate limits
+- [ ] Build conflict resolution modal/dialog with user choice
+- [ ] Implement all auth state flows and data purging on logout/account switch
+- [ ] Add status icons, snackbars, and progress indicators to UI
+- [ ] Implement SyncProvider/context for global sync state
+- [ ] Refactor useGoogleAuth.ts to expose getValidAccessToken()
+- [ ] Test all risk scenarios and edge cases
+- [ ] Document all logic and flows in DEVELOPMENT-STANDARDS.md
+
+---
+
+### 7. Rationale & Best Practices
+
+- Local-First architecture is the industry standard for offline-capable, cloud-synced PWAs.
+- Timestamp-based "last write wins" is the most practical conflict resolution for this use case.
+- Background SyncEngine (manual polling) is the most compatible and robust solution for cross-browser support.
+- All strategies align with Google and web community best practices for client-side sync.
+- This blueprint is designed to be extremely robust, future-proof, and maintainable.
+
+---
+
+## Placement & Integration Notes
+
+- This section supersedes and refines all previous Google Drive sync plans in this document. All prior sections remain for historical context, but this is the definitive reference.
+- All developer checklists in previous sections should now reference this blueprint for implementation details.
+- All new sync, conflict, and state management logic must be implemented according to this plan.
+- Any future changes to sync logic must update this section and be reflected in DEVELOPMENT-STANDARDS.md.
+
+## Final Pre-Implementation Audit: Edge Cases & Day 2 Resilience (2025-06-26)
+
+This section documents the final, subtle but critical edge cases and "Day 2" problems identified in the pre-implementation audit. All developers and AI assistants must read and follow these requirements in addition to the main blueprint. These points are mandatory for long-term stability, maintainability, and user trust.
+
+---
+
+### 1. Data Schema Versioning & Migration ("Future-Proofing")
+
+**Problem:** Future changes to the Quiz data model (e.g., adding new fields) can break compatibility with quizzes stored in Google Drive or IndexedDB in the old format.
+
+**Solution:**
+
+- Add a `version: number` field to the Quiz interface (and other major entities as needed).
+  ```typescript
+  export interface Quiz {
+    id: string;
+    version: number; // e.g., starts at 1
+    // ... all other fields ...
+  }
+  ```
+- Implement a `migrationService.ts` that checks the version of loaded quizzes and applies migrations as needed:
+  ```typescript
+  function migrateQuiz(quizData: any): Quiz {
+    if (!quizData.version) {
+      // Version 1 quiz
+      quizData.version = 2;
+      quizData.newField = "defaultValue";
+    }
+    // Add more migrations as needed
+    return quizData as Quiz;
+  }
+  ```
+- All quiz loads (from IndexedDB or Drive) must pass through this migration function.
+
+**Rationale:** Ensures forward compatibility and prevents crashes or data loss after schema changes.
+
+---
+
+### 2. Storage Quota Management ("Full Disk" Problem)
+
+**Problem:** If a user's Google Drive or local device storage is full, save/sync operations will fail, potentially causing data loss or crashes.
+
+**Solution:**
+
+- All write/upload operations in SyncEngine and IndexedDBService must be wrapped in try...catch blocks for quota errors.
+  - Google Drive: Catch 403 errors with "Storage Quota Exceeded" reason.
+  - IndexedDB: Catch DOMException named "QuotaExceededError".
+- On quota error:
+  1. Stop all further sync/save operations.
+  2. Update global sync state to 'error'.
+  3. Use useSnackbar to show a clear, user-friendly message: "Storage is full. Please free up space in your Google Drive (or on this device) to continue saving quizzes."
+
+**Rationale:** Prevents silent data loss and provides clear user feedback.
+
+---
+
+### 3. Sync Queue Processing ("Thundering Herd" Problem)
+
+**Problem:** On first login or after a long offline period, a user may have hundreds of quizzes to sync. Running all sync tasks in parallel will overwhelm the browser and trigger rate limits.
+
+**Solution:**
+
+- The SyncEngine's task queue must be processed with low concurrency (e.g., 3-5 tasks at a time).
+- Use a concurrency limiter: process 3-5 tasks, wait for completion, then process the next batch.
+- Never run all sync tasks in parallel.
+
+**Rationale:** Prevents API rate limiting, keeps the app responsive, and ensures reliable sync.
+
+---
+
+### 4. Offline-Only User Experience ("Silent Majority" Problem)
+
+**Problem:** Many users may never log in to Google and use the app purely offline. The UI must not feel broken or nag them to sign in.
+
+**Solution:**
+
+- Sync status icons (per-quiz and global) should only be visible if the user is logged in.
+- Hide all sync-related UI for logged-out users.
+- Instead of persistent nags, provide a single, non-intrusive "Backup & Sync" button or menu item that explains the benefits of Google login when clicked.
+
+**Rationale:** Ensures a clean, non-intrusive UX for offline users and encourages, but does not pressure, cloud adoption.
+
+---
+
+### 5. Google Drive Scope Limitation ("Sharing" Problem)
+
+**Problem:** The app uses the drive.file scope, which means it can only see files it created. Users cannot import arbitrary Drive files shared by others.
+
+**Solution:**
+
+- Document this limitation in README.md and/or a help section.
+- For future versions, plan an "Import from file" feature using the browser file picker for local .json files.
+- Prioritize automatic Drive sync for now; manual import/export is a separate workflow.
+
+**Rationale:** Prevents user confusion and sets clear expectations for sharing/importing quizzes.
+
+---
+
+**Integration Notes:**
+
+- These requirements are now part of the official developer checklist and must be referenced in all future sync/cloud work.
+- All implementation, documentation, and UX must account for these edge cases.
+- Any future changes to sync logic or UX must update this section as well as the main blueprint.
+
+## Definitive Pre-Implementation Audit & Final Hardening (2025-06-26)
+
+This section documents the final anti-fragile requirements and "unknown unknowns" that must be addressed for a truly resilient, professional sync system. All developers and AI assistants must read and follow these requirements for all future sync/cloud work.
+
+---
+
+### 1. Deep Code & Architecture Integration Points
+
+**A. Token Lifecycle in useGoogleAuth.ts**
+
+- `getValidAccessToken()` must perform a silent refresh (never trigger a UI popup from background services).
+- If the refresh token is expired or revoked, return null.
+- The SyncEngine must treat a null token as a hard stop: immediately set sync state to 'error' and cease all operations until user intervention.
+
+**B. IndexedDBService.ts: Database Open Failure Handling**
+
+- The service must handle scenarios where IndexedDB cannot be opened (e.g., browser settings, private mode, corruption).
+- If initialization fails, the service must enter a 'failed' state.
+- The rest of the app must gracefully degrade, disabling all features that rely on local storage and showing a clear message: "Quizzard cannot save data in this browser. Please check your browser settings."
+
+**C. App.tsx & Lazy Loading: Error Boundaries**
+
+- All Suspense fallbacks (for lazy-loaded routes/features) must be wrapped in a React Error Boundary.
+- The Error Boundary must catch chunk load/network errors and display a user-friendly message: "Failed to load feature. Please check your connection and refresh the page."
+
+---
+
+### 2. The Final Frontier: Resilience Against the Unknown
+
+**A. Safari ITP (Intelligent Tracking Prevention) Handling**
+
+- Detect Safari/iOS users with a utility function.
+- If the user is on Safari and not logged into Google Drive, display a one-time, non-intrusive notification: "Welcome, Safari user! To prevent data loss due to Apple's storage policies, we strongly recommend backing up your quizzes to Google Drive."
+- If the user is logged in on Safari, the SyncEngine should sync more frequently to minimize data loss risk.
+
+**B. Defensive Coding Against API Drift**
+
+- All responses from GoogleDriveService.ts must be runtime validated (e.g., with zod) before being used by the SyncEngine or UI.
+- If validation fails, log the error, set sync state to 'error', and do not proceed with corrupted data.
+
+**C. Catastrophic State Reconciliation (App Folder Deleted)**
+
+- The SyncEngine must implement a "circuit breaker" for cascading 404 errors (e.g., if the Quizzard app folder is deleted from Drive).
+- If more than a threshold (e.g., 5) consecutive 404s occur during a reconcile, the engine must stop, set sync state to 'error', and prompt the user: "It seems the Quizzard folder in your Google Drive is missing or has been deleted. Would you like to re-create it and upload your local quizzes?"
+
+---
+
+### 3. Developer Checklist (Final Additions)
+
+- [ ] Implement silent token refresh in useGoogleAuth.ts; SyncEngine must hard-stop on null token.
+- [ ] Add robust IndexedDB open failure handling and graceful app degradation.
+- [ ] Wrap all Suspense fallbacks in Error Boundaries for chunk/network errors.
+- [ ] Detect Safari/iOS and show backup prompt; prioritize sync for Safari users.
+- [ ] Validate all Google Drive API responses at runtime before use.
+- [ ] Implement a circuit breaker for cascading 404s in SyncEngine and prompt user for recovery.
+
+---
+
+**Reference:** This section is mandatory for all future sync/cloud work and must be reviewed alongside the main blueprint and edge case sections.
+
+## Final Audit and Implementation Approval: Google Drive Sync Feature (2025-06-26)
+
+### Executive Summary
+
+After a final, exhaustive review of your updated PROJECT-CHARTER.md, DEVELOPMENT-STANDARDS.md, and the existing codebase, the implementation plan for the Google Drive Sync feature is complete, robust, and ready for execution. The planning process has been rigorous, integrating multiple layers of resilience and addressing all primary requirements, edge cases, API failures, and browser-specific quirks. The resulting blueprint is of a professional engineering standard.
+
+**Conclusion:** The plan is complete and exceptionally resilient. The only remaining risks are in the implementation process itself. The following guidance ensures the quality of the plan is perfectly translated into the quality of the code.
+
+---
+
+### 1. Final Compliance & Consistency Check
+
+- **Compliance with PROJECT-CHARTER.md:** PERFECT.
+  - The plan directly supports the project's primary focus on the "Quizzes" feature.
+  - Adheres to the zero-cost, client-side, PWA-first hosting model.
+  - The modular, service-based architecture fits the documented feature-based structure.
+- **Compliance with DEVELOPMENT-STANDARDS.md:** PERFECT.
+  - The use of a React Context for global state (SyncProvider) aligns with established state management patterns.
+  - UI modals and notifications will follow Material-UI standards, including blur effects and responsive design.
+  - Logic isolation into services (IndexedDBService, GoogleDriveService, SyncEngine) is a textbook execution of the Single Responsibility Principle.
+
+**Conclusion:** The plan is in full alignment with all established project rules and architectural principles. There are no contradictions.
+
+---
+
+### 2. Final Risk Mitigation Review
+
+The plan now contains robust and explicit mitigations for every reasonably foreseeable problem:
+
+- **Data Loss & Corruption:** Mitigated by Local-First architecture, lastModified timestamps, soft deletes, and a conflict resolution UI.
+- **API/Network Failure:** Mitigated by the SyncEngine's circuit breaker, exponential backoff, and specific error-code handling.
+- **Security & Privacy:** Mitigated by using the drive.file scope and accepting the documented risks of a client-side architecture.
+- **Future-Proofing:** Mitigated by the version field in the data model and a migrationService.
+- **Storage Limitations:** Mitigated by specific QuotaExceededError handling.
+- **Browser-Specific Quirks:** Mitigated by the Safari ITP user education plan.
+- **API Drift:** Mitigated by runtime validation (zod or similar) on all API responses.
+
+**Conclusion:** The plan is not just defensive; it is anti-fragile. It anticipates failure and provides clear paths to graceful degradation and user-led recovery.
+
+---
+
+### 3. The Final Sanity Check: From Planning to Execution
+
+The plan is perfect. The final variable is the implementation process itself. To ensure nothing is lost in translation from plan to code, follow these final recommendations:
+
+**1. Implement Incrementally. Test Incrementally.**
+
+- The plan is correctly phased. Do not build it all at once.
+- Step 1: Implement Phase 2.1 (Data Model changes). Update your app. Ensure nothing has broken. Commit your work.
+- Step 2: Build the "dumb" GoogleDriveService and the updated IndexedDBService. Write small, temporary tests to verify they work in isolation. Commit.
+- Step 3: Build the SyncEngine's logic. This is the most complex part. Consider writing your first automated unit tests. A test that feeds the engine a mock local state and a mock remote state and verifies that it generates the correct queue of tasks will be invaluable.
+- Continue this pattern, building and verifying one small piece at a time.
+
+**2. Use a Feature Flag.**
+
+- This is a professional technique that de-risks the entire process.
+- In your code, create a simple, hardcoded flag: `const isSyncFeatureEnabled = true;`
+- Wrap every new UI element and every call to the SyncEngine in a condition: `if (isSyncFeatureEnabled) { ... }`.
+- This allows you to merge your in-progress code to the main branch at any time without affecting users. When the entire feature is complete and tested, you can remove the flag. If a major problem is discovered after launch, you can instantly disable the feature by changing one line of code and redeploying.
+
+**3. Trust Your Plan.**
+
+- You have done the hard work. During implementation, when you encounter a difficult problem, resist the urge to take a shortcut that violates the plan. The plan was designed holistically to prevent subtle, cascading failures. Trust the process you've just completed.
+
+---
+
+**This section is the final go/no-go and implementation guidance for the Google Drive Sync feature. All developers must follow these recommendations to ensure the plan's quality is fully realized in the codebase.**
