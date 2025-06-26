@@ -3289,3 +3289,19 @@ The plan is perfect. The final variable is the implementation process itself. To
 ---
 
 **This section is the final go/no-go and implementation guidance for the Google Drive Sync feature. All developers must follow these recommendations to ensure the plan's quality is fully realized in the codebase.**
+
+🧪 **PHASE 1.5: AUTOMATED TESTING IMPLEMENTATION PLAN**
+
+✅ 1. Install Dependencies: Add the following development dependencies to package.json and run npm install: jest, @types/jest, @testing-library/react, @testing-library/jest-dom, jest-environment-jsdom, ts-jest, identity-obj-proxy.
+✅ 2. Create `jest.config.cjs`: Create this file in the project root with the following content:
+// ... existing code ...
+✅ 3. Create `jest.setup.js`: Create this file in the project root with the content: require('@testing-library/jest-dom');
+✅ 4. Create Mock Files: Create a **mocks** folder in the root and add fileMock.cjs with the content: module.exports = 'test-file-stub';
+✅ 5. Update `tsconfig.json`: Add "jest" to the compilerOptions.types array.
+✅ 6. Update `package.json`: Add the "test": "jest" and "test:watch": "jest --watch" scripts.
+// ... existing code ...
+
+**Module Compatibility Note:**
+
+- In projects with "type": "module" in package.json, all Jest config files (jest.config.cjs) and Jest mock files using CommonJS (module.exports) must use the .cjs extension. Do not use .js for CommonJS mocks or config in this context.
+- All test files (_.test.ts, _.test.tsx) remain unchanged.
