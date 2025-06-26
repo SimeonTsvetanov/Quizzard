@@ -1,0 +1,94 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+   1. Primary Reference for "How-To":
+       * ALWAYS consult docs/DEVELOPMENT-STANDARDS.md for all coding standards, architectural patterns, UI/UX guidelines, and technical
+         implementation rules. This is the definitive source for how to perform development tasks.
+
+
+   2. Primary Reference for "What-To-Do" & Progress:
+       * ALWAYS consult docs/PROJECT-CHARTER.md to understand the overall project vision, current phase, and high-level roadmap. This document
+         indicates what needs to be done and the project's current status.
+
+
+   3. Detailed Planning Location:
+       * For any task requiring detailed steps or a plan, ALWAYS look for or create a dedicated Markdown file within the docs/planning/
+         folder, following the established numerical and hierarchical structure (e.g.,
+         docs/planning/05-quizzes/05.02-drive-integration/05.02.00-drive-integration-master-plan.md).
+
+   4. No Modification Outside `docs` for Documentation:
+       * NEVER modify, delete, or cut content from any existing project files outside the docs/ folder for documentation purposes. All new
+         documentation content must reside within docs/.
+
+
+   5. Updating `docs/PROJECT-CHARTER.md`:
+       * After completing a major phase or sub-phase, ALWAYS update the corresponding status in docs/PROJECT-CHARTER.md (e.g., change [ ] to
+         [x]).
+       * If a new detailed planning file is created, ALWAYS add its link to the relevant section in docs/PROJECT-CHARTER.md.
+
+
+   6. Creating New Detailed Planning Files:
+       * When a new detailed plan is required for a task not yet covered in docs/planning/, ALWAYS create a new Markdown file within the
+         appropriate subfolder under docs/planning/.
+       * ALWAYS use the numerical naming convention (e.g., 05.03.01-quiz-playing-interface.md).
+       * Each new planning file should include sections for Objective, Detailed Steps, Expected Outcome, Relevant Files, Edge Cases, and
+         Rollback Plan, as demonstrated by existing planning files.
+
+
+   7. Commit Messages for Documentation:
+       * When committing changes related to documentation, ALWAYS use clear and concise commit messages that indicate the nature of the
+         documentation update (e.g., "docs: Update PROJECT-CHARTER with Phase 2 completion," "docs: Add detailed plan for Google Slides
+         Export").
+
+
+    
+
+IMPRTANT FLOW:
+
+
+Hello Cursor, please adhere strictly to the following operational guidelines for this project.
+
+Documentation Hierarchy & Reference
+For Project Overview & Roadmap: Always refer to docs/PROJECT-CHARTER.md. This is the high-level roadmap indicating what needs to be done and the project's current status.
+
+For Development Standards & Rules: Always refer to docs/DEVELOPMENT-STANDARDS.md. This is the definitive source for how to build, what technologies to use, and what core rules and lessons learned must be followed.
+
+For Detailed Task Plans: Always look for or create detailed Markdown plans within the docs/planning/ folder, following the established numerical and hierarchical structure.
+
+Verification Instructions
+After making any changes, you must provide clear, explicit instructions on how to verify your work.
+
+If the change has a visual impact (e.g., a UI component): Your instructions must be: "Run npm run dev and visually inspect [specific component or page] to confirm [expected outcome]."
+
+If the change is non-visual (e.g., a utility function, a service, a new feature):
+
+You must write new, comprehensive unit or integration tests for the changed or new functionality.
+
+Your instructions must be: "Run npm test and confirm that the new test(s) for [function or module name] pass successfully. Additionally, ensure [any other non-visual verification, e.g., check console logs, database entries]."
+
+Await Confirmation
+After providing the verification instructions, STOP. Do not proceed further. Await my explicit confirmation that the step was completed successfully and the app is working as expected.
+
+Mark as Complete
+Once, and only once, I have given you my confirmation (e.g., "Confirmed," "Looks good," "Proceed"), you must perform one final action:
+
+Open docs/PROJECT-CHARTER.md.
+
+Find the step you just completed.
+
+Place a ✅ emoji at the very beginning of that line to mark it as done.
+
+Save the file.
+
+Await Next Command
+After saving the document, STOP. Await my next command.
+
+Persistent Rules
+Memory of Past Errors: You are explicitly programmed to remember the "Critical Lessons Learned" and "Absolute Never Do List" sections in docs/DEVELOPMENT-STANDARDS.md. Do not repeat these mistakes. A violation of these rules constitutes a critical failure.
+
+Variable Safety: Before editing a React component (.tsx file), you must first list the variables and props available in its scope. You are only permitted to use variables that are present. If a variable is missing for the required logic, you must stop and ask for clarification.
+
+
+Documentation Integrity: You must not modify, delete, or cut content from any existing project files outside the docs/ folder for documentation purposes. All new documentation content must reside within docs/.
