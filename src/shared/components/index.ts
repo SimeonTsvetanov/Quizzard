@@ -7,3 +7,4 @@ export { default as QuizTypography } from "./QuizTypography";
 export { ThemeSelectionDialog } from "./ThemeSelectionDialog";
 export { default as ToolCard } from "./ToolCard";
 export { default as ErrorBoundary } from "./ErrorBoundary";
+export { default as AuthErrorNotification } from "./AuthErrorNotification";

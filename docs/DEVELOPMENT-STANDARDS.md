@@ -47,6 +47,7 @@ Quizzard is a Progressive Web App (PWA) built with React and TypeScript, utilizi
 
 ## 6.0 Testing Standards & Requirements
 
+- **Minimal Test Philosophy:** Only write a small number of tests for each feature (3–8 per file). Focus on core flows (login, logout, save, load, delete, refresh, error handling). Do NOT test every small feature, prop, or UI state. Remove or avoid overcomplicated, excessive, or redundant tests. Keep the suite lean, fast, and easy to maintain.
 - **Testing Framework:** Jest with ts-jest for TypeScript support.
 - **Test Structure:** Feature-based organization with `__tests__/` folders in each feature directory.
 - **Test Categories:** Unit tests (functions/services), Hook tests (React hooks), Component tests (UI), Integration tests (flows).
@@ -56,6 +57,7 @@ Quizzard is a Progressive Web App (PWA) built with React and TypeScript, utilizi
 - **Naming Conventions:** `{functionName}.test.ts` for unit tests, `{ComponentName}.test.tsx` for components.
 - **Mock Strategy:** Mock external dependencies (Google OAuth, IndexedDB, localStorage) for isolated testing.
 - **Test Maintenance:** Update tests when changing functionality, remove obsolete tests, refactor for clarity.
+- **Reference:** For the full minimal test strategy and structure, see `docs/planning/00-others/testing-plan.md`.
 
 ### 6.1 Testing Workflow for New Features
 
@@ -198,3 +200,12 @@ These are real mistakes made during development that broke the entire applicatio
 - **Building for Production:** Use `npm run build`.
 - **Deploying to GitHub Pages:** Push to `main` branch; GitHub Actions handles the rest.
 - **Writing Tests:** Follow `docs/planning/00-others/testing-plan.md` for structure and patterns.
+
+## 11.0 Environment Variables & Secrets Management
+
+- **Google OAuth Client ID**: The environment variable `VITE_GOOGLE_CLIENT_ID` is required for Google OAuth to function.
+  - The real value is stored in `.env.local` (not committed to the repo).
+  - A placeholder (e.g., `VITE_GOOGLE_CLIENT_ID=*********`) is provided in `.env.example` for reference and GitHub Actions.
+  - The actual value is kept secret in the GitHub repo and CI/CD.
+  - **Never commit the real client ID to the repository or documentation.**
+  - When referencing the client ID in code, docs, or examples, always use `*********` as the value.

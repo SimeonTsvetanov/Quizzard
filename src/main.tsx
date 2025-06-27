@@ -67,16 +67,28 @@ const getGoogleClientId = () => {
 
 const googleClientId = getGoogleClientId();
 
+// ReactDOM.createRoot(document.getElementById("root")!).render(
+//   <React.StrictMode>
+//     <BrowserRouter basename={getBaseUrl()}>
+//       {googleClientId ? (
+//         <GoogleOAuthProvider clientId={googleClientId}>
+//           <App />
+//         </GoogleOAuthProvider>
+//       ) : (
+//         <App />
+//       )}
+//     </BrowserRouter>
+//   </React.StrictMode>
+// );
+
 ReactDOM.createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
-    <BrowserRouter basename={getBaseUrl()}>
-      {googleClientId ? (
-        <GoogleOAuthProvider clientId={googleClientId}>
-          <App />
-        </GoogleOAuthProvider>
-      ) : (
+  <BrowserRouter basename={getBaseUrl()}>
+    {googleClientId ? (
+      <GoogleOAuthProvider clientId={googleClientId}>
         <App />
-      )}
-    </BrowserRouter>
-  </React.StrictMode>
+      </GoogleOAuthProvider>
+    ) : (
+      <App />
+    )}
+  </BrowserRouter>
 );

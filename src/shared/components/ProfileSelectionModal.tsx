@@ -89,12 +89,14 @@ const ProfileSelectionModal: React.FC<ProfileSelectionModalProps> = ({
       >
         <DialogTitle id="profile-selection-title">
           <Typography
-            variant="h1"
+            variant="h2"
+            component="span"
             align="center"
             sx={{
               fontSize: { xs: "2rem", sm: "2.5rem" },
               fontWeight: 700,
               mb: 2,
+              display: "block",
             }}
           >
             Log In

@@ -248,8 +248,13 @@ function App() {
       handleLocal();
       return;
     }
-    login();
-    setProfileSelectionModalOpen(false);
+    try {
+      login();
+      // Delay closing the modal to ensure popup is triggered
+      setTimeout(() => setProfileSelectionModalOpen(false), 500);
+    } catch (e) {
+      console.error("[DEBUG] login() threw an error", e);
+    }
   };
 
   // Handler for closing profile modal

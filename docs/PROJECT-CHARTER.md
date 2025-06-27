@@ -39,17 +39,26 @@ Quizzard aims to be the ultimate PWA for creating, managing, and playing interac
 - ✅ 05.03 - Development Standards Integration
 - ✅ 05.04 - Test Utilities & Mock Framework
 
-### 06 - Quizzes Feature [ ] Major Ongoing Feature
+### 06 - Google Login OAuth Enhancement [x] Completed
 
-- [x] 06.01 - Quiz Creation & Management (Phase 1)
-  - [x] 06.01.01 - Core Architecture & IndexedDB Storage
-  - [x] 06.01.02 - Quiz Creation Wizard
-  - [x] 06.01.03 - Question Management System
-  - [x] 06.01.04 - Error Handling & UX Enhancements
-- [ ] 06.02 - Google Drive Integration & Cloud Storage (Phase 2): [Link to planning/05-quizzes/05.02-drive-integration/05.02.00-drive-integration-master-plan.md](planning/05-quizzes/05.02-drive-integration/05.02.00-drive-integration-master-plan.md)
-- [ ] 06.03 - Quiz Playing & Presentation Mode (Phase 3)
-  - [ ] 06.03.01 - Quiz Playing Interface: [Link to planning/05-quizzes/05.03-playing-presentation/05.03.01-playing-interface.md](planning/05-quizzes/05.03-playing-presentation/05.03.02-presentation-features.md)
-  - [ ] 06.03.02 - Presentation Mode Features: [Link to planning/05-quizzes/05.03-playing-presentation/05.03.02-presentation-features.md](planning/05-quizzes/05.03-playing-presentation/05.03.02-presentation-features.md)
-- [ ] 06.04 - Export Functionality (Phase 4)
-  - [ ] 06.04.01 - Google Slides Export: [Link to planning/05-quizzes/05.04-export-functionality/05.04.01-google-slides-export.md](planning/05-quizzes/05.04-export-functionality/05.04.01-google-slides-export.md)
-  - [ ] 06.04.02 - JSON Export: [Link to planning/05-quizzes/05.04-export-functionality/05.04.02-json-export.md](planning/05-quizzes/05.04-export-functionality/05.04.02-json-export.md)
+- ✅ 06.01 - Storage Migration (Phase 1): [Link to planning/00-others/google-login-auth-plan.md](planning/00-others/google-login-auth-plan.md)
+- ✅ 06.02 - Token Refresh Implementation (Phase 2): [Link to planning/00-others/google-login-auth-plan.md](planning/00-others/google-login-auth-plan.md)
+- ✅ 06.03 - Offline Detection & Handling (Phase 3): [Link to planning/00-others/google-login-auth-plan.md](planning/00-others/google-login-auth-plan.md)
+- ✅ 06.04 - Background Sync & Session Management (Phase 4): [Link to planning/00-others/google-login-auth-plan.md](planning/00-others/google-login-auth-plan.md)
+- ✅ 06.05 - Enhanced Error Handling & UX (Phase 5): [Link to planning/00-others/google-login-auth-plan.md](planning/00-others/google-login-auth-plan.md)
+  - [Reference: Google Login Auth System Report](../../infos/google-login-auth-system.md)
+
+### 07 - Quizzes Feature [ ] Major Ongoing Feature
+
+- [x] 07.01 - Quiz Creation & Management (Phase 1)
+  - [x] 07.01.01 - Core Architecture & IndexedDB Storage
+  - [x] 07.01.02 - Quiz Creation Wizard
+  - [x] 07.01.03 - Question Management System
+  - [x] 07.01.04 - Error Handling & UX Enhancements
+- [ ] 07.02 - Google Drive Integration & Cloud Storage (Phase 2): [Link to planning/05-quizzes/05.02-drive-integration/05.02.00-drive-integration-master-plan.md](planning/05-quizzes/05.02-drive-integration/05.02.00-drive-integration-master-plan.md)
+- [ ] 07.03 - Quiz Playing & Presentation Mode (Phase 3)
+  - [ ] 07.03.01 - Quiz Playing Interface: [Link to planning/05-quizzes/05.03-playing-presentation/05.03.01-playing-interface.md](planning/05-quizzes/05.03-playing-presentation/05.03.02-presentation-features.md)
+  - [ ] 07.03.02 - Presentation Mode Features: [Link to planning/05-quizzes/05.03-playing-presentation/05.03.02-presentation-features.md](planning/05-quizzes/05.03-playing-presentation/05.03.02-presentation-features.md)
+- [ ] 07.04 - Export Functionality (Phase 4)
+  - [ ] 07.04.01 - Google Slides Export: [Link to planning/05-quizzes/05.04-export-functionality/05.04.01-google-slides-export.md](planning/05-quizzes/05.04-export-functionality/05.04.01-google-slides-export.md)
+  - [ ] 07.04.02 - JSON Export: [Link to planning/05-quizzes/05.04-export-functionality/05.04.02-json-export.md](planning/05-quizzes/05.04-export-functionality/05.04.02-json-export.md)

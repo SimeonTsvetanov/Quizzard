@@ -1,13 +1,35 @@
 /** @type {import('ts-jest').JestConfigWithTsJest} */
 module.exports = {
-  preset: "ts-jest",
   testEnvironment: "jsdom",
   setupFilesAfterEnv: ["<rootDir>/jest.setup.js"],
   moduleNameMapper: {
-    "\\.(css|less|scss|sass)$": "identity-obj-proxy",
-    "\\.(gif|ttf|eot|svg|png)$": "<rootDir>/mocks/fileMock.cjs",
-    "^@/(.*)$": "<rootDir>/src/$1",
+    "\\\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$":
+      "<rootDir>/mocks/fileMock.cjs",
+    "\\\\.(css|less)$": "identity-obj-proxy",
   },
-  transform: { "^.+\\.tsx?$": "ts-jest" },
-  transformIgnorePatterns: ["<rootDir>/node_modules/"],
+  testTimeout: 15000,
+  verbose: true,
+  collectCoverage: true,
+  coverageDirectory: "coverage",
+  coverageReporters: ["text", "lcov"],
+  coveragePathIgnorePatterns: [
+    "/node_modules/",
+    "/__tests__/",
+    "/mocks/",
+    "/dist/",
+  ],
+  testEnvironmentOptions: {
+    customExportConditions: ["node", "node-addons"],
+  },
+  transform: {
+    "^.+\\.(t|j)sx?$": ["@swc/jest"],
+  },
+  extensionsToTreatAsEsm: [".ts", ".tsx", ".jsx"],
+  globals: {
+    "import.meta": {
+      env: {
+        VITE_GOOGLE_CLIENT_ID: "test-client-id",
+      },
+    },
+  },
 };
