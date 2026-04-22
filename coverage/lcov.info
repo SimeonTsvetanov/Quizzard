@@ -1,5 +1,5 @@
 TN:
-SF:src\features\random-team-generator\utils\teamGenerator.ts
+SF:src/features/random-team-generator/utils/teamGenerator.ts
 FN:10,(anonymous_1)
 FN:12,(anonymous_2)
 FN:27,(anonymous_3)
@@ -48,7 +48,7 @@ BRF:2
 BRH:2
 end_of_record
 TN:
-SF:src\shared\components\AuthErrorNotification.tsx
+SF:src/shared/components/AuthErrorNotification.tsx
 FN:15,(anonymous_4)
 FNF:1
 FNH:1
@@ -64,7 +64,7 @@ BRF:0
 BRH:0
 end_of_record
 TN:
-SF:src\shared\hooks\useNetworkStatus.ts
+SF:src/shared/hooks/useNetworkStatus.ts
 FN:18,useNetworkStatus
 FN:23,(anonymous_2)
 FN:24,(anonymous_3)
@@ -100,7 +100,7 @@ BRF:0
 BRH:0
 end_of_record
 TN:
-SF:src\shared\services\authStorage.ts
+SF:src/shared/services/authStorage.ts
 FN:57,(anonymous_2)
 FN:62,(anonymous_3)
 FN:70,(anonymous_4)
@@ -386,7 +386,7 @@ BRF:52
 BRH:24
 end_of_record
 TN:
-SF:src\shared\services\backgroundSync.ts
+SF:src/shared/services/backgroundSync.ts
 FN:35,(anonymous_4)
 FN:42,(anonymous_5)
 FN:55,(anonymous_6)
@@ -500,7 +500,7 @@ BRF:17
 BRH:7
 end_of_record
 TN:
-SF:src\shared\services\tokenRefresh.ts
+SF:src/shared/services/tokenRefresh.ts
 FN:52,(anonymous_4)
 FN:74,(anonymous_5)
 FN:106,(anonymous_6)
@@ -654,7 +654,7 @@ BRF:53
 BRH:30
 end_of_record
 TN:
-SF:src\shared\utils\errorHandling.ts
+SF:src/shared/utils/errorHandling.ts
 FN:69,(anonymous_2)
 FN:130,(anonymous_3)
 FN:147,(anonymous_4)
