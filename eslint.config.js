@@ -11,7 +11,7 @@ const TEST_FILES = ["**/*.test.ts", "**/*.spec.ts", "tests/**"];
 
 export default tseslint.config(
   // vendor/: mini-apps vendored as git submodules — linted in their own repos (PLAN T-10).
-  { ignores: ["vendor/**", "**/*.d.ts", "**/dist/**", "**/.tsbuild/**", "app/public/**", "tests/e2e/fixtures/**", "coverage/**", "playwright-report/**", "test-results/**"] },
+  { ignores: ["miniapps/**", "**/*.d.ts", "**/dist/**", "**/.tsbuild/**", "app/public/**", "tests/e2e/fixtures/**", "coverage/**", "playwright-report/**", "test-results/**"] },
   js.configs.recommended,
   ...tseslint.configs.strictTypeChecked,
   ...tseslint.configs.stylisticTypeChecked,

@@ -36,11 +36,11 @@ describe("mini-app registry", () => {
     expect(help?.default.en.steps.length).toBeGreaterThan(0);
     expect(help?.default.bg?.steps).toHaveLength(help?.default.en.steps.length ?? -1);
   });
-  it("the shipped areas are the standalone apps' real keys (SPEC F7)", () => {
+  it("every tool has its own area, apart from the standalone sites' keys (DECISIONS 2026-11-23)", () => {
     const areas = Object.fromEntries(miniApps.map(({ meta }) => [meta.id, meta.storage]));
     expect(areas).toEqual({
-      teams: { prefix: "teamsync-random-team-generator:v1:" },
-      scores: { prefix: "gg-counter:v1:", extraKeys: ["gg-counter/state", "gg-counter-theme"] },
+      teams: { prefix: "quizzard-teams:v1:" },
+      scores: { prefix: "quizzard-scores:v1:" },
       quiz: { prefix: "quizzard-quiz:v1:" },
     });
   });

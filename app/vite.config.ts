@@ -22,8 +22,8 @@ const fromHere = (path: string): string => fileURLToPath(new URL(path, import.me
  * against the shell's tokens. Vendored packages live in git submodules under `vendor/` (PLAN T-10).
  */
 const MINIAPP_PACKAGES: readonly MiniAppPackage[] = [
-  { preset: teamsPreset, root: fromHere("../vendor/teamsync/packages/miniapp") },
-  { preset: scoresPreset, root: fromHere("../vendor/gg-counter/packages/miniapp") },
+  { preset: teamsPreset, root: fromHere("../miniapps/teams/packages/miniapp") },
+  { preset: scoresPreset, root: fromHere("../miniapps/scores/packages/miniapp") },
 ];
 
 /** The shell's stylesheets (global names) and token files (what mini-app CSS may use), for the mini-app CSS plugin. */

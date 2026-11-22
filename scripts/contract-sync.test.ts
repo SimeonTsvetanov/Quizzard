@@ -11,7 +11,7 @@ import { CONTRACT_VERSION } from "../packages/core/src/index.js";
 const ROOT = resolve(import.meta.dirname, "..");
 const CONTRACT = join(ROOT, "packages/core/src/contract.ts");
 
-/** `vendor/<name>/packages/miniapp` folders below `vendorDir` (the workspace glob's packages). */
+/** `miniapps/<name>/packages/miniapp` folders below `vendorDir` (the workspace glob's packages). */
 function vendoredMiniApps(vendorDir: string): string[] {
   if (!existsSync(vendorDir)) return [];
   return readdirSync(vendorDir, { withFileTypes: true })
@@ -36,13 +36,13 @@ async function metaContract(dir: string): Promise<unknown> {
   return typeof meta === "object" && meta !== null ? Reflect.get(meta, "contract") : undefined;
 }
 
-const PACKAGES = vendoredMiniApps(join(ROOT, "vendor"));
+const PACKAGES = vendoredMiniApps(join(ROOT, "miniapps"));
 
 describe("vendored mini-app contract", () => {
   it("the submodules are checked out (git submodule update --init)", () => {
     const folders = PACKAGES.map((dir) => dir.slice(ROOT.length + 1));
-    expect(folders).toContain("vendor/teamsync/packages/miniapp");
-    expect(folders).toContain("vendor/gg-counter/packages/miniapp");
+    expect(folders).toContain("miniapps/teams/packages/miniapp");
+    expect(folders).toContain("miniapps/scores/packages/miniapp");
   });
   it("every vendored src/contract.ts is byte-for-byte packages/core/src/contract.ts", () => {
     expect(contractDrift(PACKAGES, CONTRACT)).toEqual([]);

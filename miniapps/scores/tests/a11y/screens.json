@@ -1,0 +1,527 @@
+[
+  {
+    "name": "players",
+    "scope": "miniapp",
+    "actions": [
+      {
+        "fill": ".card-content input.field",
+        "text": "Ana"
+      },
+      {
+        "click": ".card-content .button--primary"
+      },
+      {
+        "fill": ".card-content input.field",
+        "text": "Boris"
+      },
+      {
+        "click": ".card-content .button--primary"
+      },
+      {
+        "fill": ".card-content input.field",
+        "text": "Maximilian Alexander-Konstantinov"
+      },
+      {
+        "click": ".card-content .button--primary"
+      },
+      {
+        "fill": ".card-content input.field",
+        "text": "Dana"
+      },
+      {
+        "click": ".card-content .button--primary"
+      }
+    ]
+  },
+  {
+    "name": "remove-alert",
+    "scope": "miniapp",
+    "actions": [
+      {
+        "fill": ".card-content input.field",
+        "text": "Ana"
+      },
+      {
+        "click": ".card-content .button--primary"
+      },
+      {
+        "click": ".player-card-head .button"
+      },
+      {
+        "wait": 400
+      }
+    ]
+  },
+  {
+    "name": "clear-session-alert",
+    "scope": "miniapp",
+    "actions": [
+      {
+        "fill": ".card-content input.field",
+        "text": "Ana"
+      },
+      {
+        "click": ".card-content .button--primary"
+      },
+      {
+        "click": "[data-action=\"clear-session\"]"
+      },
+      {
+        "wait": 400
+      }
+    ]
+  },
+  {
+    "name": "clear-session-scores-only",
+    "scope": "miniapp",
+    "actions": [
+      {
+        "fill": ".card-content input.field",
+        "text": "Ana"
+      },
+      {
+        "click": ".card-content .button--primary"
+      },
+      {
+        "click": "[data-action=\"clear-session\"]"
+      },
+      {
+        "wait": 400
+      },
+      {
+        "click": "[role=\"alertdialog\"] .choice:last-of-type"
+      },
+      {
+        "wait": 200
+      }
+    ]
+  },
+  {
+    "name": "remove-alert-score-only",
+    "scope": "miniapp",
+    "actions": [
+      {
+        "fill": ".card-content input.field",
+        "text": "Ana"
+      },
+      {
+        "click": ".card-content .button--primary"
+      },
+      {
+        "click": ".player-card-head .button"
+      },
+      {
+        "wait": 400
+      },
+      {
+        "click": "[role=\"alertdialog\"] .choice:last-of-type"
+      },
+      {
+        "wait": 200
+      }
+    ]
+  },
+  {
+    "name": "score-dialog",
+    "scope": "miniapp",
+    "actions": [
+      {
+        "fill": ".card-content input.field",
+        "text": "Ana"
+      },
+      {
+        "click": ".card-content .button--primary"
+      },
+      {
+        "click": ".player-card .score"
+      },
+      {
+        "wait": 400
+      }
+    ]
+  },
+  {
+    "name": "leaderboard-dialog",
+    "scope": "miniapp",
+    "actions": [
+      {
+        "fill": ".card-content input.field",
+        "text": "Ana"
+      },
+      {
+        "click": ".card-content .button--primary"
+      },
+      {
+        "fill": ".card-content input.field",
+        "text": "Boris"
+      },
+      {
+        "click": ".card-content .button--primary"
+      },
+      {
+        "fill": ".card-content input.field",
+        "text": "Maximilian Alexander-Konstantinov"
+      },
+      {
+        "click": ".card-content .button--primary"
+      },
+      {
+        "fill": ".card-content input.field",
+        "text": "Dana"
+      },
+      {
+        "click": ".card-content .button--primary"
+      },
+      {
+        "click": ".header-slot .button"
+      },
+      {
+        "wait": 400
+      }
+    ]
+  },
+  {
+    "name": "limit-message",
+    "scope": "miniapp",
+    "actions": [
+      {
+        "fill": ".card-content input.field",
+        "text": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      },
+      {
+        "click": ".card-content .button--primary"
+      }
+    ]
+  },
+  {
+    "name": "cards-marked",
+    "scope": "miniapp",
+    "actions": [
+      {
+        "fill": ".card-content input.field",
+        "text": "Ana"
+      },
+      {
+        "click": ".card-content .button--primary"
+      },
+      {
+        "fill": ".card-content input.field",
+        "text": "Boris"
+      },
+      {
+        "click": ".card-content .button--primary"
+      },
+      {
+        "click": ".player-card .score-step--plus"
+      },
+      {
+        "click": ".player-card .score-step--minus"
+      },
+      {
+        "click": ".player-card:nth-child(2) .score-step--plus"
+      },
+      {
+        "wait": 300
+      }
+    ]
+  },
+  {
+    "name": "history-sheet",
+    "scope": "miniapp",
+    "actions": [
+      {
+        "fill": ".card-content input.field",
+        "text": "Ana"
+      },
+      {
+        "click": ".card-content .button--primary"
+      },
+      {
+        "fill": ".card-content input.field",
+        "text": "Boris"
+      },
+      {
+        "click": ".card-content .button--primary"
+      },
+      {
+        "click": ".player-card .score-step--plus"
+      },
+      {
+        "click": ".player-card .score-step--minus"
+      },
+      {
+        "click": ".player-card:nth-child(2) .score-step--plus"
+      },
+      {
+        "click": ".player-card .history-strip"
+      },
+      {
+        "wait": 500
+      }
+    ]
+  },
+  {
+    "name": "history-sheet-removed",
+    "scope": "miniapp",
+    "actions": [
+      {
+        "fill": ".card-content input.field",
+        "text": "Ana"
+      },
+      {
+        "click": ".card-content .button--primary"
+      },
+      {
+        "fill": ".card-content input.field",
+        "text": "Boris"
+      },
+      {
+        "click": ".card-content .button--primary"
+      },
+      {
+        "click": ".player-card .score-step--plus"
+      },
+      {
+        "click": ".player-card .score-step--minus"
+      },
+      {
+        "click": ".player-card:nth-child(2) .score-step--plus"
+      },
+      {
+        "click": ".player-card .history-strip"
+      },
+      {
+        "wait": 500
+      },
+      {
+        "click": "[data-remove-entry]"
+      },
+      {
+        "wait": 300
+      }
+    ]
+  },
+  {
+    "name": "compact-cards",
+    "scope": "miniapp",
+    "actions": [
+      {
+        "fill": ".card-content input.field",
+        "text": "Ana"
+      },
+      {
+        "click": ".card-content .button--primary"
+      },
+      {
+        "fill": ".card-content input.field",
+        "text": "Boris"
+      },
+      {
+        "click": ".card-content .button--primary"
+      },
+      {
+        "fill": ".card-content input.field",
+        "text": "Chen"
+      },
+      {
+        "click": ".card-content .button--primary"
+      },
+      {
+        "fill": ".card-content input.field",
+        "text": "Dana"
+      },
+      {
+        "click": ".card-content .button--primary"
+      },
+      {
+        "fill": ".card-content input.field",
+        "text": "Emil"
+      },
+      {
+        "click": ".card-content .button--primary"
+      },
+      {
+        "fill": ".card-content input.field",
+        "text": "Maximilian Alexander-Konstantinov"
+      },
+      {
+        "click": ".card-content .button--primary"
+      },
+      {
+        "click": ".player-card .score-step--plus"
+      },
+      {
+        "wait": 300
+      }
+    ]
+  },
+  {
+    "name": "menu",
+    "scope": "shell",
+    "actions": [
+      {
+        "fill": ".card-content input.field",
+        "text": "Ana"
+      },
+      {
+        "click": ".card-content .button--primary"
+      },
+      {
+        "click": "[data-menu-open]"
+      },
+      {
+        "wait": 400
+      }
+    ]
+  },
+  {
+    "name": "settings",
+    "scope": "shell",
+    "actions": [
+      {
+        "click": "[data-menu-open]"
+      },
+      {
+        "wait": 300
+      },
+      {
+        "click": "[role=\"menu\"] [data-action=\"settings\"]"
+      },
+      {
+        "wait": 400
+      }
+    ]
+  },
+  {
+    "name": "help",
+    "scope": "shell",
+    "actions": [
+      {
+        "click": "[data-menu-open]"
+      },
+      {
+        "wait": 300
+      },
+      {
+        "click": "[role=\"menu\"] [data-action=\"help\"]"
+      },
+      {
+        "wait": 400
+      }
+    ]
+  },
+  {
+    "name": "whats-new",
+    "scope": "shell",
+    "actions": [
+      {
+        "click": "[data-menu-open]"
+      },
+      {
+        "wait": 300
+      },
+      {
+        "click": "[role=\"menu\"] [data-action=\"whats-new\"]"
+      },
+      {
+        "wait": 400
+      }
+    ]
+  },
+  {
+    "name": "about",
+    "scope": "shell",
+    "actions": [
+      {
+        "click": "[data-menu-open]"
+      },
+      {
+        "wait": 300
+      },
+      {
+        "click": "[role=\"menu\"] [data-action=\"about\"]"
+      },
+      {
+        "wait": 400
+      }
+    ]
+  },
+  {
+    "name": "report",
+    "scope": "shell",
+    "actions": [
+      {
+        "click": "[data-menu-open]"
+      },
+      {
+        "wait": 300
+      },
+      {
+        "click": "[role=\"menu\"] [data-action=\"report\"]"
+      },
+      {
+        "wait": 400
+      }
+    ]
+  },
+  {
+    "name": "privacy",
+    "scope": "shell",
+    "actions": [
+      {
+        "click": "[data-menu-open]"
+      },
+      {
+        "wait": 300
+      },
+      {
+        "click": "[role=\"menu\"] [data-action=\"privacy\"]"
+      },
+      {
+        "wait": 400
+      }
+    ]
+  },
+  {
+    "name": "terms",
+    "scope": "shell",
+    "actions": [
+      {
+        "click": "[data-menu-open]"
+      },
+      {
+        "wait": 300
+      },
+      {
+        "click": "[role=\"menu\"] [data-action=\"terms\"]"
+      },
+      {
+        "wait": 400
+      }
+    ]
+  },
+  {
+    "name": "clear-data-alert",
+    "scope": "shell",
+    "actions": [
+      {
+        "click": "[data-menu-open]"
+      },
+      {
+        "wait": 300
+      },
+      {
+        "click": "[role=\"menu\"] [data-action=\"settings\"]"
+      },
+      {
+        "wait": 400
+      },
+      {
+        "click": "[role=\"dialog\"] .button--danger"
+      },
+      {
+        "wait": 400
+      }
+    ]
+  }
+]

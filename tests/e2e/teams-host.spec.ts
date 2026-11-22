@@ -5,8 +5,8 @@ import { app } from "../../app.config.ts";
 // TeamSync inside Quizzard (PLAN T-11, SPEC F3, F5, F7, AC3, AC5): what only the host can test. The
 // screen's own flows are TeamSync's suite, run by the `teams*` projects (playwright.config.ts).
 
-/** TeamSync's storage area (its meta.storage): the standalone site's keys, written the same way. */
-const PREFIX = "teamsync-random-team-generator:v1:";
+/** Teams' own storage area (its meta.storage), separate from the TeamSync site's keys (DECISIONS 2026-11-23). */
+const PREFIX = "quizzard-teams:v1:";
 
 const teamsCard = (page: Page) => page.locator('[data-card="teams"]');
 const screenRoot = (page: Page) => page.locator('[data-miniapp="teams"] [data-workspace]');

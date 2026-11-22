@@ -40,13 +40,13 @@ const SCORES_PROJECT_NAMES: Readonly<Record<(typeof DEVICES)[number]["name"], st
  * screen through their support/entry.ts and find host UI through support/host.ts. Absolute, so a
  * config that imports this one resolves the same folder.
  */
-const TEAMS_SUITE = fileURLToPath(new URL("./vendor/teamsync/tests/e2e/miniapp", import.meta.url));
+const TEAMS_SUITE = fileURLToPath(new URL("./miniapps/teams/tests/e2e/miniapp", import.meta.url));
 
 /**
  * GG Counter's own screen flows (PLAN T-13, SPEC AC2, F14), unedited from the submodule; its helpers
  * (support/entry.ts, support/host.ts) take the host and the route from each project's `metadata`.
  */
-const SCORES_SUITE = fileURLToPath(new URL("./vendor/gg-counter/tests/e2e/miniapp", import.meta.url));
+const SCORES_SUITE = fileURLToPath(new URL("./miniapps/scores/tests/e2e/miniapp", import.meta.url));
 
 /** What GG Counter's helpers read per project (`metadata.host`, `metadata.miniappHash`). */
 const SCORES_METADATA = { host: "quizzard", miniappHash: "#/scores" } as const;

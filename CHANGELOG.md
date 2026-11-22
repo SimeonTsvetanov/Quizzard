@@ -4,6 +4,13 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-11-23
+### Changed
+- Teams and Scores now keep their data only inside Quizzard, separate from the TeamSync and GG Counter
+  sites: clearing or changing something here never touches those apps, and the other way round. A list
+  or game you saved before this version is still in TeamSync or GG Counter; in Quizzard, Teams and
+  Scores start empty.
+
 ## [0.4.0] - 2026-11-22
 ### Added
 - Help has a section for Teams and one for Scores — steps, features and questions; inside a tool its

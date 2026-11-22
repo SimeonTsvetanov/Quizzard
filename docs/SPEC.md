@@ -42,7 +42,7 @@
 
 ## 5. Data and storage
 - Shell: prefs only (`quizzard:v1:theme|lang|last-app|last-seen-version`).
-- Mini-apps: their existing keys (`gg-counter:v1:*`, TeamSync's keys) — unchanged, shared with the standalone sites.
+- Mini-apps: their own keys inside Quizzard (`quizzard-teams:v1:*`, `quizzard-scores:v1:*`), separate from the standalone sites (changed 2026-11-23, DECISIONS).
 - Data of the old Quizzard (its localStorage/IndexedDB): not read, not migrated, not deleted (DECISIONS).
 - Export/import: per mini-app, as each already has.
 - Space: the 5 MiB `localStorage` cap is shared by every app on the origin, so anything large (future quizzes, media) goes to IndexedDB/OPFS in the mini-app's own database; persistence requested (F15); Safari's 7-day eviction for non-installed sites is explained in Help.
@@ -68,8 +68,8 @@
 - AC2: the e2e suites of TeamSync and GG Counter (their user flows) pass against the mini-apps inside Quizzard.
 - AC3: `…/Quizzard/#/scores` opens GG Counter directly; Back goes to Home; the installed app's shortcut does the same.
 - AC4: menu, Settings, Help, legal pages exist once, in EN and BG; each mini-app's Help section appears there.
-- AC5: a game saved at `/GG-counter/` is visible in Quizzard → Scores in the same browser, and clearing TeamSync's data
-  in Quizzard leaves the GG Counter game intact.
+- AC5: a game saved at `/GG-counter/` is NOT shown in Quizzard → Scores and is never changed by it (separate data since
+  2026-11-23); clearing Teams in Quizzard leaves the Scores game intact.
 - AC6: `pnpm new:miniapp demo` + `pnpm verify` is green and "demo" is on Home, with no change to shell files besides the registry.
 - AC7: logo, tagline, palette and install icon match `brand/`; a11y-check 0 FAIL in both themes.
 - AC9: Settings → Data lists Teams, Scores and Quizzard with their sizes and the free space; after the first save `navigator.storage.persisted()` is requested (result shown); a mini-app's clear button changes only its own size.

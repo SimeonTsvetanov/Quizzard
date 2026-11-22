@@ -5,7 +5,7 @@ import { app } from "../../app.config.ts";
 // The shell's menus with the tools in them (PLAN T-15/T-16; Moni 2026-11-22: "all menus filled in"):
 // Help has a section per tool, Settings lists each tool's saved data with its own Clear, Export and
 // Import carry the tools' data, and Share app names Quizzard.
-const TEAMS_PREFIX = "teamsync-random-team-generator:v1:";
+const TEAMS_PREFIX = "quizzard-teams:v1:";
 const settings = (page: Page) => page.locator('dialog[data-dialog="settings"][open]');
 const namesBox = (page: Page) => page.locator('[data-miniapp="teams"] #names');
 const teamsKeys = (page: Page) => page.evaluate((prefix) => Object.keys(localStorage).filter((key) => key.startsWith(prefix)), TEAMS_PREFIX);
@@ -51,7 +51,8 @@ test("Help opened inside a tool starts with that tool's section, open", async ({
 test("Settings lists each tool's saved data; clearing Teams empties Teams only", async ({ page }) => {
   await saveTeamsList(page);
   await page.evaluate(() => {
-    localStorage.setItem("gg-counter:v1:lang", '"en"');
+    localStorage.setItem("quizzard-scores:v1:state", '{"players":[],"lastUpdated":"2026-11-23T10:00:00.000Z","version":2}');
+    localStorage.setItem("teamsync-random-team-generator:v1:names", '"TeamSync list"');
     localStorage.setItem("other-app:v1:note", "keep me");
   });
   await openSettingsFromMenu(page);
@@ -63,13 +64,13 @@ test("Settings lists each tool's saved data; clearing Teams empties Teams only",
 
   await teamsRow.getByRole("button", { name: "Clear Teams data" }).click();
   const alert = page.getByRole("alertdialog", { name: "Delete Teams data?" });
-  await expect(alert).toContainText("its own site");
   await alert.getByRole("button", { name: "Delete" }).click();
 
   await expect(settings(page).locator('[data-area="teams"] .row-value')).toHaveText("Nothing saved");
   await expect(settings(page).locator('[data-area="teams"] button')).toHaveCount(0);
   expect(await teamsKeys(page)).toEqual([]);
-  expect(await page.evaluate(() => [localStorage.getItem("gg-counter:v1:lang"), localStorage.getItem("other-app:v1:note")])).toEqual(['"en"', "keep me"]);
+  // Scores, the TeamSync site's own list and a foreign key stay.
+  expect(await page.evaluate(() => [localStorage.getItem("quizzard-scores:v1:state") !== null, localStorage.getItem("teamsync-random-team-generator:v1:names"), localStorage.getItem("other-app:v1:note")])).toEqual([true, '"TeamSync list"', "keep me"]);
   // The open screen came back empty and did not save its old list again.
   await settings(page).getByRole("button", { name: "Close" }).click();
   await expect(namesBox(page)).toHaveValue("");

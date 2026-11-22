@@ -7,8 +7,8 @@ import { app } from "../../app.config.ts";
 // shell toasts and sheets over its dialogs, CSP, axe, isolation and offline. The screen's own flows
 // (and SPEC F14) are GG Counter's suite, run unedited by the `scores*` projects (playwright.config.ts).
 
-/** GG Counter's storage area (its meta.storage): the standalone site's keys, written the same way. */
-const STATE_KEY = "gg-counter:v1:state";
+/** Scores' own storage area (its meta.storage), separate from the GG Counter site's keys (DECISIONS 2026-11-23). */
+const STATE_KEY = "quizzard-scores:v1:state";
 /** The standalone page's own prefs, inside the same area (its meta.ts): Quizzard never reads or writes them. */
 const STANDALONE_PREFS = ["gg-counter:v1:theme", "gg-counter:v1:lang", "gg-counter:v1:last-seen-version"] as const;
 

@@ -14,9 +14,9 @@ export const SHELL_STORAGE_AREA: StorageArea = { prefix: `${app.id}:v1:` };
 /**
  * Mini-apps shipped to users, in registry order. A vendored mini-app's line takes its package's own
  * `meta` (id, names, tagline, icon path, languages, storage area — one source, PLAN §1.1 item 2) and
- * loads its body and Help lazily; its storage area is the standalone site's real keys (F7) — for GG
- * Counter its prefix plus its two pre-forge keys. The "coming" card stays hand-written until its code
- * lands.
+ * loads its body and Help lazily; its storage area is its own (`quizzard-teams:v1:`,
+ * `quizzard-scores:v1:`), apart from the standalone sites' keys (DECISIONS 2026-11-23). The "coming" card
+ * stays hand-written until its code lands.
  */
 const SHIPPED: readonly MiniAppEntry[] = [
   {

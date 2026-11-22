@@ -19,7 +19,7 @@ export interface Screen {
 }
 
 /** Vendored repos with an a11y screens file, by the route id of their mini-app. */
-export const VENDORED_SCREENS: Readonly<Record<string, string>> = { scores: "vendor/gg-counter/tests/a11y/screens.json" };
+export const VENDORED_SCREENS: Readonly<Record<string, string>> = { scores: "miniapps/scores/tests/a11y/screens.json" };
 
 /** How long the scenario waits for the mini-app's chunk after the card is clicked (ms). */
 const OPEN_WAIT_MS = 600;

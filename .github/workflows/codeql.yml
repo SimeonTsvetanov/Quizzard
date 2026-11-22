@@ -27,7 +27,6 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          submodules: true # vendor/teamsync + vendor/gg-counter (PLAN T-10, T-12): the vendored mini-apps ship in this build, so they are analysed too
       - uses: github/codeql-action/init@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
         with:
           languages: ${{ matrix.language }}

@@ -7,24 +7,24 @@ import { build } from "vite";
 import { describe, expect, it } from "vitest";
 import { chunkOwner, miniAppChunksPlugin, packageMainModule, type ChunkOwner } from "./miniapp-chunks.ts";
 
-const OWNERS: readonly ChunkOwner[] = [{ id: "teams", root: "/repo/vendor/teamsync/packages/miniapp" }];
+const OWNERS: readonly ChunkOwner[] = [{ id: "teams", root: "/repo/miniapps/teams/packages/miniapp" }];
 
 describe("chunkOwner", () => {
   it("a chunk whose facade is inside a package belongs to that mini-app", () => {
-    expect(chunkOwner({ facadeModuleId: "/repo/vendor/teamsync/packages/miniapp/src/index.ts", moduleIds: [] }, OWNERS)).toBe("teams");
+    expect(chunkOwner({ facadeModuleId: "/repo/miniapps/teams/packages/miniapp/src/index.ts", moduleIds: [] }, OWNERS)).toBe("teams");
   });
   it("a shell chunk, or a folder that only starts like the package, belongs to nobody", () => {
     expect(chunkOwner({ facadeModuleId: "/repo/app/src/main.ts", moduleIds: [] }, OWNERS)).toBeNull();
-    expect(chunkOwner({ facadeModuleId: "/repo/vendor/teamsync/packages/miniapp-old/src/index.ts", moduleIds: [] }, OWNERS)).toBeNull();
+    expect(chunkOwner({ facadeModuleId: "/repo/miniapps/teams/packages/miniapp-old/src/index.ts", moduleIds: [] }, OWNERS)).toBeNull();
   });
   it("without a facade: one owner for every module, else nobody", () => {
-    const inside = "/repo/vendor/teamsync/packages/miniapp/src/a.ts";
+    const inside = "/repo/miniapps/teams/packages/miniapp/src/a.ts";
     expect(chunkOwner({ facadeModuleId: null, moduleIds: [inside, `${inside}?raw`] }, OWNERS)).toBe("teams");
     expect(chunkOwner({ facadeModuleId: null, moduleIds: [inside, "/repo/app/src/x.ts"] }, OWNERS)).toBeNull();
     expect(chunkOwner({ facadeModuleId: null, moduleIds: [] }, OWNERS)).toBeNull();
   });
   it("without a facade, installed dependencies count for nobody: a mini-app module + its libraries is the mini-app's", () => {
-    const inside = "/repo/vendor/teamsync/packages/miniapp/src/i18n.ts";
+    const inside = "/repo/miniapps/teams/packages/miniapp/src/i18n.ts";
     const react = "/repo/node_modules/.pnpm/react@19.2.0/node_modules/react/index.js";
     expect(chunkOwner({ facadeModuleId: null, moduleIds: [react, inside, "\0rolldown/runtime.js"] }, OWNERS)).toBe("teams");
     expect(chunkOwner({ facadeModuleId: null, moduleIds: [react] }, OWNERS)).toBeNull();

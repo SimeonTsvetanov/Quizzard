@@ -1,6 +1,6 @@
 <!-- From the forge template app-shell/templates/legal/privacy.md (legal-pages §2, 2026-11-07), filled for Quizzard on 2026-11-22 with the wording of GG Counter's and TeamSync's privacy texts where the facts are the same, and checked against the code the same day (where: docs/DECISIONS.md 2026-11-22 "Policy pages filled"). Not legal advice. One bullet per layer the app really has: no feedback webhook, no API, no AI features. {App} and {email} are filled by scripts/generate.ts from app.config.ts. -->
 
-**Privacy** — Last updated: 22 November 2026
+**Privacy** — Last updated: 23 November 2026
 
 - **Who is responsible:** {App} is made by Simeon Tsvetanov, Bulgaria (contact: {email}). The
   names, players and scores you enter stay on your device and under your control only; where data
@@ -19,12 +19,10 @@
     many times in a row teams were made from it.
   - **Scores:** your game — player names, scores and when they were last changed, and for each
     player a history of their most recent score changes (the points of each change and when it was
-    made, up to 50 per player) — and a note that the data of an older GG Counter in this browser,
-    if there was any, was copied over once (that older copy stays as it is).
-  - **Shared with the standalone sites:** Teams and Scores keep their data under the same names as
-    the TeamSync and GG Counter sites, and all of the author's apps are on one web address
-    (`simeontsvetanov.github.io`), so in the same browser Teams and TeamSync show the same names
-    list, and Scores and GG Counter the same game.
+    made, up to 50 per player).
+  - **Separate from the author's other apps:** {App} keeps its data under its own names. The
+    TeamSync and GG Counter sites are on the same web address (`simeontsvetanov.github.io`), but
+    {App} does not read, change or delete what they saved, and they do not see {App}'s data.
   - When part of a new version cannot load and the app reloads itself, this tab's session storage
     keeps the time of that reload until the tab is closed, so the app never reloads in a loop.
   - Data that the 2025 version of {App} saved in this browser is not read, changed or deleted.
@@ -32,8 +30,7 @@
   None of this leaves your device or is synced anywhere. **Settings → Your data** shows what
   each tool and {App} itself have saved, with a **Clear** for each tool; **Export my data** and
   **Import data** cover {App}'s settings and the tools' data in one file, and **Clear my data**
-  deletes all of it. Data cleared for Teams or Scores is also gone for TeamSync or GG Counter in
-  the same browser. Clearing this site's data in your browser removes everything, including the
+  deletes all of it. Clearing this site's data in your browser removes everything, including the
   data of the author's other apps on the same address.
 - **Offline copy:** so {App} works without internet, your browser keeps an offline copy of the
   app's own files (not your data) in its Cache Storage, managed by a service worker. If you tap
@@ -43,7 +40,7 @@
 - **Sharing and copying:** the text you share is made on your device and leaves it only when you
   share it. **Share** and **Copy** in Teams send the teams (the names in each team and a link to
   {App}); **Share** in Scores sends the leaderboard (player names, scores, the date and time, and
-  a link to GG Counter); **Share app** sends only the link to {App}. The text goes to the app you
+  a link to {App}); **Share app** sends the name and the link of {App}. The text goes to the app you
   choose in your device's share menu, to WhatsApp, or to the clipboard, and is then covered by that
   app's own privacy terms. Nothing is ever shared automatically.
 - **No accounts, no ads, no tracking, no cookies, no analytics.**
