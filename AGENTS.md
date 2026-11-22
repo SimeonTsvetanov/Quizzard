@@ -33,16 +33,19 @@ tests/e2e       Playwright (base URL from basePath)    docs/     SPEC, PLAN, DEC
 brand/          logo, icons, palette research (source for T-03/T-18)
 vendor/teamsync git submodule (TeamSync repo, pinned commit): its packages/core + packages/miniapp are workspace
                 packages; tests/e2e/miniapp runs as Playwright projects `teams*`. Never edit — change it upstream
+vendor/gg-counter  the same for GG Counter (Scores, React + Tailwind, isolated CSS): projects `scores*` (per-project metadata)
 ```
 
 ## Mini-apps from other repos (git submodules, PLAN §1.1 item 2)
 - Clone with `git clone --recurse-submodules`, or run `git submodule update --init` in an existing clone
   (without it `pnpm i` and the build fail: the workspace has no `vendor/*/packages`).
 - Bump a pin only to a released commit of that repo: `git -C vendor/teamsync fetch && git -C vendor/teamsync
-  checkout <commit>`, then `pnpm i`, `pnpm verify`, `pnpm e2e` (its suite runs in the `teams*` projects), and commit
+  checkout <commit>`, then `pnpm i`, `pnpm verify`, `pnpm e2e` (its suite runs in the `teams*` / `scores*` projects), and commit
   `vendor/teamsync` with `pnpm-lock.yaml`. Dependabot (`gitsubmodule`) opens a PR when its default branch moves.
 - lint, Prettier, Vitest and `tsc` skip `vendor/`; `tsc` reads only a package's `miniapp.d.ts` and its light modules
   (`meta`, `help`, `host-api`, `vite-preset`). A vendored `core` is built to `dist/` first (`pnpm dev` and `pnpm build` do it).
+- a11y: `node …/a11y-check.mjs http://localhost:4173/Quizzard/ --screens "$(node scripts/a11y-screens.ts)"` (vendored
+  `"scope": "miniapp"` scenarios, opened from Home — a hash URL would not reload between them).
 
 ## Commands
 `pnpm i` · `pnpm dev` · `pnpm generate` · `pnpm verify` (generate+lint+typecheck+test+docs:check+build) ·
