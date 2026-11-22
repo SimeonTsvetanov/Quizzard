@@ -3,6 +3,7 @@
 import { describe, expect, it } from "vitest";
 import { e2eEntries as e2eBuildEntries, probeEntry } from "../../test/fixtures/probe-entry.ts";
 import { meta as teamsMeta } from "@simeonts/teamsync-random-team-generator-miniapp/meta";
+import { meta as scoresMeta } from "gg-counter-miniapp/meta";
 import { e2eEntries } from "./e2e-entries.ts";
 import { SHELL_STORAGE_AREA, launchQuery, miniApps, openableIds, registryErrors } from "./registry.ts";
 
@@ -15,15 +16,23 @@ describe("mini-app registry", () => {
     expect(registryErrors(e2eRegistry)).toEqual([]);
     expect(e2eRegistry).toHaveLength(12);
   });
-  it("ships teams ready (PLAN T-10) and two coming cards: scores, quiz", () => {
-    expect(miniApps.map(({ meta }) => [meta.id, meta.status])).toEqual([["teams", "ready"], ["scores", "coming"], ["quiz", "coming"]]);
-    expect(openableIds()).toEqual(["teams"]);
+  it("ships teams (PLAN T-10) and scores (PLAN T-12) ready and one coming card: quiz", () => {
+    expect(miniApps.map(({ meta }) => [meta.id, meta.status])).toEqual([["teams", "ready"], ["scores", "ready"], ["quiz", "coming"]]);
+    expect(openableIds()).toEqual(["teams", "scores"]);
   });
   it("teams is the vendored package's own meta (one source) and loads its body and Help lazily", async () => {
     const teams = miniApps.find(({ meta }) => meta.id === "teams");
     expect(teams?.meta).toBe(teamsMeta);
     expect(teams?.meta).toMatchObject({ name: { en: "Teams", bg: "Отбори" }, icon: "miniapps/teams.svg", languages: ["en", "bg"] });
     const help = await teams?.help?.();
+    expect(help?.default.en.steps.length).toBeGreaterThan(0);
+    expect(help?.default.bg?.steps).toHaveLength(help?.default.en.steps.length ?? -1);
+  });
+  it("scores is the vendored package's own meta (one source) and loads its body and Help lazily", async () => {
+    const scores = miniApps.find(({ meta }) => meta.id === "scores");
+    expect(scores?.meta).toBe(scoresMeta);
+    expect(scores?.meta).toMatchObject({ name: { en: "Scores", bg: "Точки" }, icon: "miniapps/scores.svg", languages: ["en", "bg"] });
+    const help = await scores?.help?.();
     expect(help?.default.en.steps.length).toBeGreaterThan(0);
     expect(help?.default.bg?.steps).toHaveLength(help?.default.en.steps.length ?? -1);
   });
@@ -55,6 +64,11 @@ describe("mini-app registry", () => {
     const query = new URLSearchParams("teams=4&shared=Eve%0AFrank&embed=1&teams=5");
     expect([...launchQuery(teams, query)]).toEqual([["teams", "4"], ["teams", "5"]]);
     expect([...query]).toHaveLength(4); // the router's object is not changed
+  });
+  it("scores gets no launch parameter (its screen reads none)", () => {
+    const scores = miniApps.find(({ meta }) => meta.id === "scores");
+    if (scores === undefined) throw new Error("scores is not registered");
+    expect([...launchQuery(scores, new URLSearchParams("teams=4&embed=1"))]).toEqual([]);
   });
   it("a mini-app without a parameter list gets the whole query, as a copy", () => {
     const query = new URLSearchParams("step=2&x=y");

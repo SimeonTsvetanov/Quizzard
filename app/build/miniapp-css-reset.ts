@@ -25,6 +25,14 @@ const HINT_SAFE_PROPERTIES = [
   "animation", "transition",
 ];
 
+/**
+ * The shell's main column while an isolated mini-app is shown in the outlet (app/index.html: `<main>` >
+ * `[data-outlet]` > the mount element). An isolated mini-app brings its own page column — width,
+ * inline padding with the safe areas, top and bottom spacing — exactly as on its standalone site, so
+ * the shell's column steps aside instead of adding a second inset around it.
+ */
+const SHELL_MAIN = "main:has(> [data-outlet] > [data-miniapp=\"{id}\"])";
+
 /** Pseudo-elements the reset also reverts, one rule each: an engine that lacks one drops only that rule. */
 const PSEUDO_ELEMENTS = ["::backdrop", "::placeholder", "::marker", "::file-selector-button"];
 
@@ -36,7 +44,8 @@ const PSEUDO_ELEMENTS = ["::backdrop", "::placeholder", "::marker", "::file-sele
  * `unset` would also drop the browser defaults (focus rings, form controls, `dialog`). `all` leaves
  * custom properties alone, so the tokens still inherit. `hidden` is a presentational hint in Chromium,
  * so the layer hides `[hidden]` again the way the browser does. Every selector has specificity 0; the
- * re-hide rules win by coming later.
+ * re-hide rules win by coming later. Its last rule gives the mini-app the shell's whole main column
+ * ({@link SHELL_MAIN}) — the one rule outside the scope, active only while the mini-app is mounted.
  * @param id - the mini-app id (a route slug)
  */
 export function resetLayer(id: string): AtRule {
@@ -48,6 +57,7 @@ export function resetLayer(id: string): AtRule {
     postcss.rule({ selector: `${scope} :where(${ATTRIBUTE_STYLED})`, nodes: revert(HINT_SAFE_PROPERTIES) }),
     postcss.rule({ selector: `${scope} :where([hidden]:not([hidden="until-found" i]))`, nodes: [postcss.decl({ prop: "display", value: "none" })] }),
     postcss.rule({ selector: `${scope} :where([hidden="until-found" i])`, nodes: [postcss.decl({ prop: "content-visibility", value: "hidden" })] }),
+    postcss.rule({ selector: SHELL_MAIN.replace("{id}", id), nodes: [postcss.decl({ prop: "width", value: "100%" }), postcss.decl({ prop: "padding-block", value: "0" })] }),
   ];
   return postcss.atRule({ name: "layer", params: RESET_LAYER, nodes: rules });
 }

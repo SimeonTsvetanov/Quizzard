@@ -11,7 +11,10 @@ import { MiniAppCssError } from "./miniapp-css-errors.ts";
 import { collectGlobalNames, type GlobalNameOwner, type GlobalNames } from "./miniapp-css-names.ts";
 import { transformMiniAppCss, type MiniAppCssMode, type MiniAppCssResult } from "./miniapp-css.ts";
 
-const S = ':where([data-miniapp="x"])';
+/** Ancestor scope: the mount element and the header slot (miniapp-css-selectors.ts `scopeSelector`). */
+const S = ':where([data-miniapp="x"], [data-header-slot="x"])';
+/** What document roots become: the mount element only (`rootScopeSelector`). */
+const R = ':where([data-miniapp="x"])';
 const fixture = (name: string): string => readFileSync(new URL(`./__fixtures__/${name}`, import.meta.url), "utf8");
 
 function run(css: string, options: { mode?: MiniAppCssMode; reserved?: GlobalNames; id?: string } = {}): MiniAppCssResult {
@@ -88,13 +91,20 @@ describe("layer wrap", () => {
       [`${S} ::marker`, "all: revert"],
       [`${S} ::file-selector-button`, "all: revert"],
     ]);
-    const [hintSafe, hidden, untilFound] = rules.slice(5);
+    const [hintSafe, hidden, untilFound, shellMain] = rules.slice(5);
     expect(hintSafe?.[0]).toBe(`${S} :where(${attributeStyled})`);
     // Never a property an SVG presentation attribute or width/height sets.
     expect(hintSafe?.[1]).not.toMatch(/\b(?:all|fill|stroke|width|height|opacity|transform|display|filter): /);
     expect(hintSafe?.[1]).toContain("color: revert");
     expect(hidden).toEqual([`${S} :where([hidden]:not([hidden="until-found" i]))`, "display: none"]);
     expect(untilFound).toEqual([`${S} :where([hidden="until-found" i])`, "content-visibility: hidden"]);
+    // The isolated mini-app brings its own page column: the shell's main column steps aside while it is mounted.
+    expect(shellMain).toEqual(['main:has(> [data-outlet] > [data-miniapp="x"])', "width: 100%; padding-block: 0"]);
+    expect(rules).toHaveLength(9);
+  });
+
+  it("shared mode has no reset and leaves the shell's main column alone", () => {
+    expect(run(".a { color: red; }").css).not.toMatch(/@layer reset|main:has/);
   });
 
   it("isolated mode refuses a sub-layer named reset; shared mode allows it", () => {
@@ -127,23 +137,23 @@ describe("selector scope", () => {
   });
 
   it.each([
-    ["html", S],
-    ["body", S],
-    [":root", S],
-    [":host", S],
-    ["HTML", S],
-    ["html.dark .a", `${S}.dark .a`],
-    [':root[data-theme="dark"]', `${S}[data-theme="dark"]`],
-    [":root .a", `${S} .a`],
-    ["html:root", S],
-    ["body > main", `${S} > main`],
-  ])("%s → the scope element", (input, expected) => {
+    ["html", R],
+    ["body", R],
+    [":root", R],
+    [":host", R],
+    ["HTML", R],
+    ["html.dark .a", `${R}.dark .a`],
+    [':root[data-theme="dark"]', `${R}[data-theme="dark"]`],
+    [":root .a", `${R} .a`],
+    ["html:root", R],
+    ["body > main", `${R} > main`],
+  ])("%s → the mount element (never the header slot)", (input, expected) => {
     expect(selectors(run(`${input} { color: red; }`).css)).toEqual([expected]);
   });
 
   it("scopes each selector of a list and keeps root duplicates once (Tailwind's html, :host)", () => {
     expect(selectors(run(".a, .b,\n.c { color: red; }").css)).toEqual([`${S} .a, ${S} .b, ${S} .c`]);
-    expect(selectors(run("html, :host { line-height: 1.5; }").css)).toEqual([S]);
+    expect(selectors(run("html, :host { line-height: 1.5; }").css)).toEqual([R]);
   });
 
   it.each([
@@ -163,7 +173,8 @@ describe("selector scope", () => {
     fc.assert(
       fc.property(fc.uniqueArray(complex, { minLength: 1, maxLength: 4 }), (list) => {
         const [scoped = ""] = selectors(run(`${list.join(", ")} { color: red; }`).css);
-        expect(scoped.split(", ")).toEqual(list.map((selector) => `${S} ${selector}`));
+        // The scope itself holds ", " (two scope elements), so the list is compared joined.
+        expect(scoped).toBe(list.map((selector) => `${S} ${selector}`).join(", "));
       }),
     );
   });
@@ -245,7 +256,7 @@ describe("global names", () => {
 describe("real inputs", () => {
   it("TeamSync teams-stepper.css (shared): every rule scoped, its layer becomes miniapp.teams.components", () => {
     const css = transformMiniAppCss(fixture("teams-stepper.css"), { id: "teams", mode: "shared", reserved: new Map(), file: "teams-stepper.css" }).css;
-    const scope = ':where([data-miniapp="teams"])';
+    const scope = ':where([data-miniapp="teams"], [data-header-slot="teams"])';
     const top = selectors(css).filter((selector) => !selector.startsWith("&"));
     expect(top).toEqual([`${scope} .stepper`, `${scope} .stepper-button`, `${scope} .stepper-value`]);
     expect(css).toMatch(/^@layer miniapp\.teams \{\s*\/\*[^]*@layer components \{/);
@@ -253,13 +264,14 @@ describe("real inputs", () => {
 
   it("GG Counter's compiled Tailwind (isolated): preflight, :root/:host, utilities and properties map into the scope", () => {
     const { css, warnings } = transformMiniAppCss(fixture("gg-counter-compiled.css"), { id: "scores", mode: "isolated", reserved: new Map(), file: "gg.css" });
-    const scope = ':where([data-miniapp="scores"])';
+    const scope = ':where([data-miniapp="scores"], [data-header-slot="scores"])';
+    const root = ':where([data-miniapp="scores"])';
     const all = selectors(css);
     expect(all).toContain(`${scope} *, ${scope} ::after, ${scope} ::before, ${scope} ::backdrop, ${scope} ::file-selector-button`);
-    expect(all).toContain(scope); // html, :host and the print :root
+    expect(all).toContain(root); // html, :host and the print :root
     expect(all).toContain(`${scope} .\\!block`);
     expect(all).toContain(`${scope} *, ${scope} ::before, ${scope} ::after, ${scope} ::backdrop`); // @layer properties
-    expect(all.filter((selector) => !selector.startsWith(scope) && !["&", "from"].some((start) => selector.startsWith(start)))).toEqual([]);
+    expect(all.filter((selector) => ![scope, root, "&", "from"].some((start) => selector.startsWith(start)))).toEqual([]);
     expect(warnings.map((warning) => warning.code)).toEqual(["IMPORTANT"]); // preflight [hidden] + the !block utility
     expect(css.indexOf("@layer reset")).toBeLessThan(css.indexOf("@layer properties;"));
   });

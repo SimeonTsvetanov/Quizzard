@@ -40,7 +40,9 @@ const PACKAGES = vendoredMiniApps(join(ROOT, "vendor"));
 
 describe("vendored mini-app contract", () => {
   it("the submodules are checked out (git submodule update --init)", () => {
-    expect(PACKAGES.map((dir) => dir.slice(ROOT.length + 1))).toContain("vendor/teamsync/packages/miniapp");
+    const folders = PACKAGES.map((dir) => dir.slice(ROOT.length + 1));
+    expect(folders).toContain("vendor/teamsync/packages/miniapp");
+    expect(folders).toContain("vendor/gg-counter/packages/miniapp");
   });
   it("every vendored src/contract.ts is byte-for-byte packages/core/src/contract.ts", () => {
     expect(contractDrift(PACKAGES, CONTRACT)).toEqual([]);

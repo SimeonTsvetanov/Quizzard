@@ -26,6 +26,15 @@ const TEAMS_PROJECT_NAMES: Readonly<Record<(typeof DEVICES)[number]["name"], str
   "mobile-safari": "teams-mobile-safari",
 };
 
+/** Project names of the Scores suite per device: `scores` (desktop Chrome), `scores-mobile` (Pixel 7) … */
+const SCORES_PROJECT_NAMES: Readonly<Record<(typeof DEVICES)[number]["name"], string>> = {
+  chromium: "scores",
+  webkit: "scores-webkit",
+  firefox: "scores-firefox",
+  "mobile-chrome": "scores-mobile",
+  "mobile-safari": "scores-mobile-safari",
+};
+
 /**
  * TeamSync's own screen flows (PLAN T-11, SPEC AC2), unedited from the submodule; they open the
  * screen through their support/entry.ts and find host UI through support/host.ts. Absolute, so a
@@ -33,9 +42,19 @@ const TEAMS_PROJECT_NAMES: Readonly<Record<(typeof DEVICES)[number]["name"], str
  */
 const TEAMS_SUITE = fileURLToPath(new URL("./vendor/teamsync/tests/e2e/miniapp", import.meta.url));
 
-// The vendored helpers read these at import time in every worker: the route of the screen and which
-// host UI (toasts, confirm, share sheet) to look in. Only the vendored specs read them. GG Counter
-// (PLAN T-12/T-13) needs its own variables or a per-project switch before it joins.
+/**
+ * GG Counter's own screen flows (PLAN T-13, SPEC AC2, F14), unedited from the submodule; its helpers
+ * (support/entry.ts, support/host.ts) take the host and the route from each project's `metadata`.
+ */
+const SCORES_SUITE = fileURLToPath(new URL("./vendor/gg-counter/tests/e2e/miniapp", import.meta.url));
+
+/** What GG Counter's helpers read per project (`metadata.host`, `metadata.miniappHash`). */
+const SCORES_METADATA = { host: "quizzard", miniappHash: "#/scores" } as const;
+
+// TeamSync's vendored helpers read only these environment variables (no per-project metadata), at
+// import time in every worker: the route of the screen and which host UI to look in. GG Counter's
+// helpers read the project's metadata first and fall back to these only without it, so the `scores*`
+// projects (which always set it) never see `#/teams`; shell specs read neither.
 process.env["E2E_MINIAPP_HASH"] ??= "#/teams";
 process.env["E2E_HOST"] ??= "quizzard";
 
@@ -51,5 +70,6 @@ export default defineConfig({
   projects: [
     ...DEVICES.map(({ name, device }) => ({ name, use: { ...device } })),
     ...DEVICES.map(({ name, device }) => ({ name: TEAMS_PROJECT_NAMES[name], testDir: TEAMS_SUITE, use: { ...device } })),
+    ...DEVICES.map(({ name, device }) => ({ name: SCORES_PROJECT_NAMES[name], testDir: SCORES_SUITE, metadata: SCORES_METADATA, use: { ...device } })),
   ],
 });

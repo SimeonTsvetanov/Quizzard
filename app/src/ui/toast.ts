@@ -1,10 +1,12 @@
 // Toasts in a polite live region: one at a time; a pinned toast (e.g. "New version available")
 // comes back after any later toast ends, until its action runs. While a modal is open the toast
 // lives inside the topmost open dialog — outside it would be inert and hidden (accessibility §5);
-// it moves back to the page when that dialog closes.
+// it moves back to the page when that dialog closes. A mini-app's own dialog counts too
+// (toast-island.ts).
 import { t } from "../i18n/index.ts";
 import { h } from "./dom.ts";
 import { icon } from "./icons.ts";
+import { islandRegion, syncIslandFocus, topMiniAppModal, watchMiniAppModals } from "./toast-island.ts";
 
 /** Options of {@link showToast}; `message` is always rendered as text, never as HTML. */
 export interface ToastOptions {
@@ -36,11 +38,27 @@ export function createToastRegion(): HTMLDivElement {
   return h("div", { class: "toast-region", role: "status", "aria-live": "polite", "data-toasts": "" });
 }
 
-/** The region inside the topmost open modal dialog (created on demand), else the page's region. */
+/**
+ * The region inside the topmost open modal (created on demand): a shell `<dialog>` first — it is in the
+ * top layer, above anything a mini-app renders — then a mini-app's own dialog, else the page's region.
+ */
 function currentRegion(): HTMLElement | null {
   const dialog = [...document.querySelectorAll("dialog")].filter((d) => d.matches(":modal")).at(-1);
-  if (!dialog) return document.querySelector<HTMLElement>("body > [data-toasts]");
-  return dialog.querySelector<HTMLElement>(":scope > [data-toasts]") ?? dialog.appendChild(createToastRegion());
+  if (dialog) return dialog.querySelector<HTMLElement>(":scope > [data-toasts]") ?? dialog.appendChild(createToastRegion());
+  const miniAppModal = topMiniAppModal();
+  if (miniAppModal) return islandRegion(miniAppModal, createToastRegion);
+  return document.querySelector<HTMLElement>("body > [data-toasts]");
+}
+
+/** Moves the toast whenever a dialog closes or a mini-app's dialog opens or closes; set up once. */
+function watchDialogs(): void {
+  if (isWatchingDialogs) return;
+  isWatchingDialogs = true;
+  // A closing dialog (sheet, alert, menu) takes its region with it: bring the toast back.
+  // `close` does not bubble, so listen in the capture phase.
+  document.addEventListener("close", () => { relocateToasts(); }, true);
+  const outlet = document.querySelector("[data-outlet]");
+  if (outlet) watchMiniAppModals(outlet, relocateToasts);
 }
 
 /**
@@ -70,14 +88,23 @@ export function pausableTimer(ms: number, onEnd: () => void): { pause: () => voi
   };
 }
 
+/** Focus is inside `element` — also when it sits in a shadow root (toast-island.ts), whose focus the document only sees as its host. */
+function hasFocusWithin(element: HTMLElement): boolean {
+  const root = element.getRootNode();
+  const active = root instanceof ShadowRoot ? root.activeElement : document.activeElement;
+  return element.contains(active);
+}
+
 /** Removes the live toast and its timer; if it had focus, focus goes back to its trigger. */
 function dismissLive(): void {
   if (!live) return;
   const { toast, trigger, timer } = live;
   live = null;
   timer?.cancel();
-  const hadFocus = toast.contains(document.activeElement);
+  const hadFocus = hasFocusWithin(toast);
+  const region = toast.parentElement;
   toast.remove();
+  if (region) syncIslandFocus(region);
   if (hadFocus && trigger instanceof HTMLElement && trigger.isConnected) trigger.focus();
 }
 
@@ -85,12 +112,7 @@ function render(region: HTMLElement, options: ToastOptions): void {
   const { message, action, persistent = false, pinned = false } = options;
   const duration = action ? Math.max(options.duration ?? ACTION_MIN_MS, ACTION_MIN_MS) : (options.duration ?? 5000);
   dismissLive(); // one at a time: the old toast's timer stops, and its focus goes home first
-  if (!isWatchingDialogs) {
-    // A closing dialog (sheet, alert, menu) takes its region with it: bring the toast back.
-    // `close` does not bubble, so listen in the capture phase.
-    document.addEventListener("close", () => { relocateToasts(); }, true);
-    isWatchingDialogs = true;
-  }
+  watchDialogs();
   const trigger = document.activeElement; // focus returns here if the toast goes while focused
   const toast = options.tone === "error"
     ? h("div", { class: "toast toast--error", role: "alert" }, icon("error"), h("span", {}, message))
@@ -106,12 +128,13 @@ function render(region: HTMLElement, options: ToastOptions): void {
     toast.append(button);
   }
   region.append(toast);
+  syncIslandFocus(region);
   const timer = persistent || pinned ? null : pausableTimer(duration, () => { dismissLive(); restorePinned(); });
   live = { toast, trigger, timer };
   if (!timer) return;
   // Time-boxed content waits while the person is on it (WCAG 2.2.1, HIG): hover or focus pauses.
   let isHovered = false;
-  const sync = (): void => { if (isHovered || toast.contains(document.activeElement)) timer.pause(); else timer.resume(); };
+  const sync = (): void => { if (isHovered || hasFocusWithin(toast)) timer.pause(); else timer.resume(); };
   toast.addEventListener("pointerenter", () => { isHovered = true; sync(); });
   toast.addEventListener("pointerleave", () => { isHovered = false; sync(); });
   toast.addEventListener("focusin", sync);
@@ -129,8 +152,14 @@ function restorePinned(): void {
  * back to the page (or the next modal) when one closes. Call after showModal() and on close.
  */
 export function relocateToasts(): void {
+  if (!live && !pinnedToast) return; // nothing to move: no island is made for an empty region
   const region = currentRegion();
-  if (live && region && live.toast.parentElement !== region) region.append(live.toast);
+  if (live && region && live.toast.parentElement !== region) {
+    const from = live.toast.parentElement;
+    region.append(live.toast);
+    if (from) syncIslandFocus(from);
+    syncIslandFocus(region);
+  }
   restorePinned();
 }
 

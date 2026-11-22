@@ -121,4 +121,20 @@
       justify-items: normal;
     }
   }
+
+  /* Inside a mini-app's own dialog (ui/toast-island.ts): a block at the dialog's start, not a bar
+     fixed to the screen — the dialog may be transformed (centred), and `fixed` would then follow it. */
+  .toast-region--inline {
+    position: static;
+    transform: none;
+    width: auto;
+    display: grid;
+    justify-items: center;
+    margin-block-end: var(--space-3);
+
+    & .toast {
+      max-width: 100%;
+      white-space: normal;
+    }
+  }
 }

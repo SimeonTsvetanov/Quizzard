@@ -19,6 +19,12 @@
     accent-color: var(--color-accent);
   }
 
+  /* A mini-app's modal library (Radix in Scores) sets `pointer-events: none` on <body> while its
+     dialog is open; a shell dialog opened over it (share sheet, confirm, menu) must stay usable. */
+  dialog {
+    pointer-events: auto;
+  }
+
   body {
     margin: 0;
     min-height: 100dvh;

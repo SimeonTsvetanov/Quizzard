@@ -3,6 +3,7 @@
 import { validateRegistry, type MiniAppEntry, type RegistryError, type StorageArea } from "@simeonts/quizzard-core";
 import { TEAMS_PARAM } from "@simeonts/teamsync-random-team-generator-miniapp/host-api";
 import { meta as teamsMeta } from "@simeonts/teamsync-random-team-generator-miniapp/meta";
+import { meta as scoresMeta } from "gg-counter-miniapp/meta";
 import { app } from "../config.ts";
 import { getLanguage } from "../i18n/index.ts";
 import { e2eEntries } from "./e2e-entries.ts";
@@ -13,9 +14,9 @@ export const SHELL_STORAGE_AREA: StorageArea = { prefix: `${app.id}:v1:` };
 /**
  * Mini-apps shipped to users, in registry order. A vendored mini-app's line takes its package's own
  * `meta` (id, names, tagline, icon path, languages, storage area — one source, PLAN §1.1 item 2) and
- * loads its body and Help lazily. The "coming" cards stay hand-written until their code lands
- * (PLAN T-12 `scores`); their storage areas are the real keys of the standalone apps (F7): GG
- * Counter's prefix plus its two pre-forge keys.
+ * loads its body and Help lazily; its storage area is the standalone site's real keys (F7) — for GG
+ * Counter its prefix plus its two pre-forge keys. The "coming" card stays hand-written until its code
+ * lands.
  */
 const SHIPPED: readonly MiniAppEntry[] = [
   {
@@ -24,16 +25,9 @@ const SHIPPED: readonly MiniAppEntry[] = [
     help: () => import("@simeonts/teamsync-random-team-generator-miniapp/help"),
   },
   {
-    meta: {
-      contract: 1,
-      id: "scores",
-      name: { en: "Scores", bg: "Точки" },
-      tagline: { en: "Keep score on game night", bg: "Резултатът на игралната вечер" },
-      icon: "miniapps/scores.svg",
-      languages: ["en", "bg"],
-      status: "coming",
-      storage: { prefix: "gg-counter:v1:", extraKeys: ["gg-counter/state", "gg-counter-theme"] },
-    },
+    meta: scoresMeta,
+    load: () => import("gg-counter-miniapp"),
+    help: () => import("gg-counter-miniapp/help"),
   },
   {
     meta: {
@@ -53,9 +47,10 @@ const SHIPPED: readonly MiniAppEntry[] = [
  * The launch parameters Quizzard passes on to a mini-app (`context.query`), from each package's
  * host API; the rest of a route's query stays out. TeamSync's `shared` (Android share target) and
  * embed mode belong to its standalone site (PLAN §2: none in Quizzard v1), so `#/teams?shared=…`
- * never fills its list. A mini-app without a line here gets the whole query.
+ * never fills its list. GG Counter's screen reads no launch parameter (its host-api lists none), so
+ * `scores` gets an empty query. A mini-app without a line here gets the whole query.
  */
-const LAUNCH_PARAMS: Readonly<Partial<Record<string, readonly string[]>>> = { teams: [TEAMS_PARAM] };
+const LAUNCH_PARAMS: Readonly<Partial<Record<string, readonly string[]>>> = { teams: [TEAMS_PARAM], scores: [] };
 
 /** Every registered mini-app; the e2e build adds the routing probe (see e2e-entries.ts). */
 export const miniApps: readonly MiniAppEntry[] = [...SHIPPED, ...e2eEntries];

@@ -6,7 +6,10 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { gzipSync } from "node:zlib";
 import { describe, expect, it } from "vitest";
-import { HOME_JS_BUDGET_KB, MINIAPP_JS_BUDGETS_KB, checkBudget, checkMiniAppBudget, firstLoadScripts, measureHomeScripts, measureMiniAppScripts, miniAppChunkPrefix } from "./size-check.ts";
+import {
+  HOME_JS_BUDGET_KB, MINIAPP_FIRST_OPEN_BUDGETS_KB, MINIAPP_JS_BUDGETS_KB, checkBudget, checkFirstOpenBudget, checkHomeHasNoMiniAppCode, checkMiniAppBudget, firstLoadScripts,
+  measureFirstOpen, measureHomeScripts, measureMiniAppScripts, miniAppChunkPrefix, staticImports,
+} from "./size-check.ts";
 
 const BASE = "/Quizzard/";
 const HTML = `<!doctype html><html><head>
@@ -91,5 +94,40 @@ describe("mini-app budgets (PLAN T-10)", () => {
   });
   it("every shipped budget is a positive number of KB", () => {
     for (const budget of Object.values(MINIAPP_JS_BUDGETS_KB)) expect(budget).toBeGreaterThan(0);
+  });
+});
+
+describe("first open of a mini-app (PLAN T-12)", () => {
+  const dist = mkdtempSync(join(tmpdir(), "size-check-first-open-"));
+  mkdirSync(join(dist, "assets"));
+  const write = (name: string, code: string): void => { writeFileSync(join(dist, "assets", name), code); };
+  write("miniapp-scores-main-a.js", `import{a}from"./miniapp-scores-react-b.js";import"./side-c.js";import{h}from"./index-home.js";const l=()=>import("./miniapp-scores-sheet-d.js");${"x".repeat(2000)}`);
+  write("miniapp-scores-react-b.js", `import{h}from"./index-home.js";export const a=1;${"y".repeat(3000)}`);
+  write("side-c.js", 'import{a}from"./miniapp-scores-react-b.js";');
+  write("miniapp-scores-sheet-d.js", "z".repeat(50_000)); // lazy: only import()
+  write("index-home.js", "h".repeat(50_000)); // Home's entry: already loaded
+  const home = ["assets/index-home.js"];
+
+  it("reads static imports only, relative to the chunk's folder, once each", () => {
+    expect(staticImports('import{a}from"./x.js";import "./y.js";import("./z.js");export{b}from"./x.js"', "assets/m.js")).toEqual(["assets/x.js", "assets/y.js"]);
+  });
+  it("counts the main chunk and its static imports, never a lazy chunk or Home's entry", () => {
+    const sizes = measureFirstOpen(dist, "scores", home);
+    expect(sizes.map(({ file }) => file)).toEqual(["assets/miniapp-scores-main-a.js", "assets/miniapp-scores-react-b.js", "assets/side-c.js"]);
+    expect(checkFirstOpenBudget("scores", sizes, 125)).toMatchObject({ isWithinBudget: true });
+  });
+  it("fails over the budget, and when the build has no main chunk", () => {
+    expect(checkFirstOpenBudget("scores", [{ file: "assets/miniapp-scores-main-a.js", gzipBytes: 126 * 1024 }], 125).report).toContain('FAIL: Mini-app "scores" first-open JS 126 KB');
+    const none = checkFirstOpenBudget("teams", measureFirstOpen(dist, "teams", home), 40);
+    expect(none.isWithinBudget).toBe(false);
+    expect(none.report).toContain("no assets/miniapp-teams-main-*.js");
+  });
+  it("Home's first load must carry no mini-app chunk and no React runtime", () => {
+    expect(checkHomeHasNoMiniAppCode(dist, home).isWithinBudget).toBe(true);
+    write("index-react.js", 'const e=Symbol.for("react.transitional.element");');
+    expect(checkHomeHasNoMiniAppCode(dist, ["assets/index-react.js", "assets/miniapp-scores-main-a.js"])).toMatchObject({ isWithinBudget: false });
+  });
+  it("Scores is held to SPEC §7's 125 KB", () => {
+    expect(MINIAPP_FIRST_OPEN_BUDGETS_KB).toEqual({ scores: 125 });
   });
 });

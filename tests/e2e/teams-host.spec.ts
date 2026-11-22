@@ -154,7 +154,7 @@ test("the service worker precaches every Teams chunk (PLAN §1.1 item 7)", async
   const worker = await (await request.get("./service-worker.js")).text();
   const chunks = [...new Set(worker.match(/assets\/miniapp-teams-[\w-]+\.js/g))];
   // The body, its lazily rendered screen and its Help (app/build/miniapp-chunks.ts names them).
-  for (const part of ["src", "render", "help"]) expect(chunks.filter((file) => file.startsWith(`assets/miniapp-teams-${part}-`)), part).toHaveLength(1);
+  for (const part of ["main", "render", "help"]) expect(chunks.filter((file) => file.startsWith(`assets/miniapp-teams-${part}-`)), part).toHaveLength(1);
 });
 
 test("after one visit #/teams reloads offline (its chunks are precached)", async ({ page, context, browserName }) => {

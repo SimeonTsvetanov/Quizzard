@@ -85,8 +85,8 @@ describe("quizzard-miniapp-css in a Vite build", () => {
     const css = await buildCss(FIXTURE, [fx]);
     expect(css["miniapp"]).toMatch(/^@layer miniapp\.fx \{/);
     expect(css["miniapp"]).toContain('all: revert');
-    expect(css["miniapp"]).toContain(':where([data-miniapp="fx"]) .part');
-    expect(css["miniapp"]).toContain(':where([data-miniapp="fx"]) .card');
+    expect(css["miniapp"]).toContain(':where([data-miniapp="fx"], [data-header-slot="fx"]) .part');
+    expect(css["miniapp"]).toContain(':where([data-miniapp="fx"], [data-header-slot="fx"]) .card');
     expect(css["shell"]).not.toContain("data-miniapp");
     expect(css["shell"]).toContain(".button");
   });
@@ -120,7 +120,7 @@ describe("quizzard-miniapp-css in the dev server", () => {
       const miniapp = await server.transformRequest("/miniapp/style.css");
       const shell = await server.transformRequest("/shell/shell.css");
       expect(miniapp?.code).toContain("@layer miniapp.fx");
-      expect(miniapp?.code).toContain(':where([data-miniapp=\\"fx\\"]) .card');
+      expect(miniapp?.code).toContain(':where([data-miniapp=\\"fx\\"], [data-header-slot=\\"fx\\"]) .card');
       expect(shell?.code).not.toContain("data-miniapp");
     } finally {
       await server.close();

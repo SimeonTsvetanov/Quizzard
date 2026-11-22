@@ -9,7 +9,7 @@ import { relative, resolve, sep } from "node:path";
 import postcss from "postcss";
 import type { Plugin, PluginOption } from "vite";
 import { checkMiniAppCss, formatFinding, listCssFiles, readCssFiles, shellTokens } from "../../scripts/check-miniapp-tokens.ts";
-import { miniAppChunksPlugin } from "./miniapp-chunks.ts";
+import { miniAppChunksPlugin, packageMainModule } from "./miniapp-chunks.ts";
 import { transformMiniAppCss, type MiniAppCssMode } from "./miniapp-css.ts";
 import { MiniAppCssError } from "./miniapp-css-errors.ts";
 import { collectGlobalNames, type GlobalNameOwner } from "./miniapp-css-names.ts";
@@ -65,7 +65,7 @@ export function mergeMiniAppPresets(packages: readonly MiniAppPackage[], shell: 
       alias[name] = target;
     }
   }
-  const owners = packages.map(({ preset, root }) => ({ id: preset.id, root }));
+  const owners = packages.map(({ preset, root }) => ({ id: preset.id, root, main: packageMainModule(root) }));
   return { alias, plugins: [...packages.flatMap(({ preset }) => preset.plugins), miniAppCssPlugin(packages, shell), miniAppChunksPlugin(owners)] };
 }
 

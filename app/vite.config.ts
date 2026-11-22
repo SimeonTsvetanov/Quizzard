@@ -7,6 +7,7 @@ import { app as config, type AppConfig } from "../app.config.ts";
 import { OG_IMAGE, escapeHtml, ogImageAlt, ogImageUrl, siteVerificationTag, structuredData } from "../scripts/seo.ts";
 import { SW_HANDOVER_FILE, swHandoverScript } from "../scripts/sw-handover.ts";
 import { vitePreset as teamsPreset } from "@simeonts/teamsync-random-team-generator-miniapp/vite-preset";
+import { vitePreset as scoresPreset } from "gg-counter-miniapp/vite-preset";
 import { mergeMiniAppPresets, type MiniAppPackage, type ShellStyles } from "./build/miniapp-presets.ts";
 
 const app: AppConfig = config;
@@ -22,6 +23,7 @@ const fromHere = (path: string): string => fileURLToPath(new URL(path, import.me
  */
 const MINIAPP_PACKAGES: readonly MiniAppPackage[] = [
   { preset: teamsPreset, root: fromHere("../vendor/teamsync/packages/miniapp") },
+  { preset: scoresPreset, root: fromHere("../vendor/gg-counter/packages/miniapp") },
 ];
 
 /** The shell's stylesheets (global names) and token files (what mini-app CSS may use), for the mini-app CSS plugin. */

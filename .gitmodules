@@ -1,3 +1,6 @@
 [submodule "vendor/teamsync"]
 	path = vendor/teamsync
 	url = https://github.com/SimeonTsvetanov/teamsync-random-team-generator
+[submodule "vendor/gg-counter"]
+	path = vendor/gg-counter
+	url = https://github.com/SimeonTsvetanov/GG-counter

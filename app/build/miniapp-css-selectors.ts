@@ -1,6 +1,7 @@
 // Selector scoping of the mini-app CSS transform (PLAN §1.3, miniapp-css.ts): every top-level selector
-// gets the scope `:where([data-miniapp="<id>"])` as an ancestor, so specificity is unchanged; the
-// document roots (`html`, `body`, `:root`, `:host`) become the scope element itself.
+// gets the scope `:where([data-miniapp="<id>"], [data-header-slot="<id>"])` as an ancestor — the mount
+// element and the header slot, the two places a mini-app renders into — so specificity is unchanged;
+// the document roots (`html`, `body`, `:root`, `:host`) become the mount element itself.
 import type { AtRule } from "postcss";
 import selectorParser from "postcss-selector-parser";
 import { MiniAppCssError } from "./miniapp-css-errors.ts";
@@ -18,10 +19,22 @@ export interface SelectorSource {
 }
 
 /**
- * Returns the scope selector of a mini-app: `:where([data-miniapp="<id>"])` (specificity 0).
+ * Returns the scope selector of a mini-app's elements (specificity 0): its mount element
+ * (`[data-miniapp="<id>"]`, miniapps/outlet.ts) and its header slot (`[data-header-slot="<id>"]`,
+ * miniapps/context.ts `slots.headerActions`), where an isolated mini-app's header buttons must get its
+ * own styles and none of the shell's.
  * @param id - the mini-app id; callers validate it as a route slug first
  */
 export function scopeSelector(id: string): string {
+  return `:where([data-miniapp="${id}"], [data-header-slot="${id}"])`;
+}
+
+/**
+ * Returns the selector document roots map to: the mount element only (specificity 0) — the header slot
+ * is a box in the shell's header, so a mini-app's page background or font size never lands on it.
+ * @param id - the mini-app id; callers validate it as a route slug first
+ */
+export function rootScopeSelector(id: string): string {
   return `:where([data-miniapp="${id}"])`;
 }
 
@@ -33,10 +46,10 @@ export function scopeSelector(id: string): string {
  */
 export function scopeSelectorList(selectors: string, id: string, source: SelectorSource): string {
   const scoped: string[] = [];
-  const scopeNode = parseScopeNode(id);
+  const scopes: ScopeNodes = { ancestor: parseScopeNode(scopeSelector(id)), root: parseScopeNode(rootScopeSelector(id)) };
   selectorParser((list) => {
     list.each((selector) => {
-      scopeComplexSelector(selector, scopeNode, source);
+      scopeComplexSelector(selector, scopes, source);
       scoped.push(selector.toString().trim());
     });
   }).processSync(selectors);
@@ -84,7 +97,13 @@ function parenthesized(text: string): string | null {
   return null;
 }
 
-function scopeComplexSelector(selector: selectorParser.Selector, scopeNode: selectorParser.Pseudo, source: SelectorSource): void {
+/** The parsed scope selectors: ancestor of every other selector, and what a document root becomes. */
+interface ScopeNodes {
+  readonly ancestor: selectorParser.Pseudo;
+  readonly root: selectorParser.Pseudo;
+}
+
+function scopeComplexSelector(selector: selectorParser.Selector, scopes: ScopeNodes, source: SelectorSource): void {
   const text = selector.toString().trim();
   const firstCombinator = selector.nodes.findIndex((node) => node.type === "combinator");
   const compoundEnd = firstCombinator === -1 ? selector.nodes.length : firstCombinator;
@@ -98,15 +117,14 @@ function scopeComplexSelector(selector: selectorParser.Selector, scopeNode: sele
   });
   if (selector.first.type === "combinator") throw unsupported(text, "a leading combinator", source);
   const [firstRoot, ...otherRoots] = roots;
-  const scope = scopeNode.clone();
   if (firstRoot === undefined) {
-    // Ancestor form: `:where(S) X` — the scope element itself never matches X, only its subtree.
+    // Ancestor form: `:where(S) X` — the scope elements themselves never match X, only their subtrees.
     selector.first.spaces.before = "";
     selector.prepend(selectorParser.combinator({ value: " " }));
-    selector.prepend(scope);
+    selector.prepend(scopes.ancestor.clone());
     return;
   }
-  firstRoot.replaceWith(scope);
+  firstRoot.replaceWith(scopes.root.clone());
   for (const root of otherRoots) root.remove(); // `html:root` → one scope element
 }
 
@@ -120,9 +138,9 @@ function isRootNode(node: selectorParser.Node, source: SelectorSource): boolean 
   return ROOT_PSEUDOS.has(name);
 }
 
-function parseScopeNode(id: string): selectorParser.Pseudo {
-  const node = selectorParser().astSync(scopeSelector(id)).first.first;
-  if (node.type !== "pseudo") throw new Error(`Scope selector did not parse as a pseudo-class: ${scopeSelector(id)}`);
+function parseScopeNode(selector: string): selectorParser.Pseudo {
+  const node = selectorParser().astSync(selector).first.first;
+  if (node.type !== "pseudo") throw new Error(`Scope selector did not parse as a pseudo-class: ${selector}`);
   return node;
 }
 
