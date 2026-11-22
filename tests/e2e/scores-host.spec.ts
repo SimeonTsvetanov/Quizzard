@@ -268,6 +268,10 @@ test.describe("without a service worker", () => {
   });
 
   test("a full game raises no CSP violation: players, scores, custom amount, history sheet, remove, clear, share", async ({ page }) => {
+    // The longest flow of the suite (a whole game plus two Settings changes): three times the usual
+    // 30 s. On CI's emulated mobile WebKit it ran out of time in the Settings steps on all three
+    // attempts while every step itself was fine (2026-11-22).
+    test.slow();
     const violations = await watchCsp(page);
     await page.addInitScript(() => {
       Object.defineProperty(navigator, "share", { configurable: true, value: () => Promise.resolve() });
