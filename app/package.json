@@ -14,7 +14,7 @@
     "@simeonts/quizzard-sheet-miniapp": "workspace:^",
     "@simeonts/teamsync-random-team-generator-miniapp": "workspace:^",
     "gg-counter-miniapp": "workspace:^",
-    "i18next": "^26.7.1",
+    "i18next": "^27.2.3",
     "lucide": "^1.68.0",
     "zod": "^4.6.0"
   },

@@ -236,8 +236,8 @@ importers:
         specifier: workspace:^
         version: link:../miniapps/scores/packages/miniapp
       i18next:
-        specifier: ^26.7.1
-        version: 26.7.2(typescript@6.0.3)
+        specifier: ^27.2.3
+        version: 27.2.3(typescript@6.0.3)
       lucide:
         specifier: ^1.68.0
         version: 1.77.0
@@ -290,8 +290,8 @@ importers:
         specifier: workspace:*
         version: link:../core
       i18next:
-        specifier: 26.7.2
-        version: 26.7.2(typescript@6.0.3)
+        specifier: 27.2.3
+        version: 27.2.3(typescript@6.0.3)
       lucide-react:
         specifier: 0.554.0
         version: 0.554.0(react@19.2.0)
@@ -2507,8 +2507,9 @@ packages:
     resolution: {integrity: sha512-UikN5yr7xsCDAq87Or5or0PAlD3HJJOKVzM05az588WnpDJ4Ux7a2A53Qi6gofGg2/EtvF/H4hCi/TXfCW4Y6w==}
     engines: {node: ^22.13.0 || >=24.0.0}
 
-  i18next@26.7.2:
-    resolution: {integrity: sha512-RsOY3BeaCDdkk52NeJSFAXELQ2rQXBO/tOub6L8ue2ICPfR/FRDWDOfEDg4xMPd1SqO5goVYQ6i72qWEUB/PPw==}
+  i18next@27.2.3:
+    resolution: {integrity: sha512-14wcQLAu5Aykwk4scBGl8tosKYth4S2PQDcusbES/bUsQ7X7DbcPygMzCe298U/NcAvDpqr+CX6oygbQoyLBRA==}
+    engines: {node: '>=22'}
     peerDependencies:
       typescript: ^5 || ^6 || ^7
     peerDependenciesMeta:
@@ -5770,7 +5771,7 @@ snapshots:
     transitivePeerDependencies:
       - '@noble/hashes'
 
-  i18next@26.7.2(typescript@6.0.3):
+  i18next@27.2.3(typescript@6.0.3):
     optionalDependencies:
       typescript: 6.0.3
 
