@@ -24,6 +24,13 @@
       font-weight: var(--weight-semibold);
     }
 
+    /* Error tone (context.shell.toast): a red mark, the text keeps --color-text — #FF453A on the
+       dark raised surface is 4.09:1, enough for an icon (3:1), not for text (4.5:1). */
+    & > svg {
+      flex: none;
+      color: var(--color-danger-text);
+    }
+
     /* Desktop: the region sits at the bottom, so toasts rise from below. */
     @media (width > 600px) {
       --toast-enter-y: var(--toast-enter-offset);

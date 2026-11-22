@@ -4,9 +4,10 @@
   /* || Components: header start (Back + logo) */
   .header-start {
     display: flex;
+    flex: none;
     align-items: center;
     gap: var(--space-1);
-    min-width: 0;
+    /* Never shrinks: a mini-app's header slot gives way first, so Back and the logo stay on screen. */
   }
 
   /* Only inside a mini-app (router/screen.ts): standalone mode has no browser Back (pwa-ios §6). */
@@ -22,6 +23,7 @@
   /* || Components: header actions */
   .header-actions {
     display: flex;
+    min-width: 0;
     gap: var(--space-1);
 
     /* Phones: the header is logo + name + menu only — Share app and the theme live in the
@@ -34,6 +36,33 @@
       @media (width > 600px) {
         display: inline-grid;
       }
+    }
+  }
+
+  /* || Components: header slot (context.slots.headerActions, only while a mini-app is mounted) */
+  /* Too many buttons for the width (320 px): the slot scrolls sideways inside the header instead of
+     growing it or pushing the logo out; the mini-app is told nothing. No visible scrollbar — a
+     classic one would make the header taller; Tab scrolls a focused button into view. */
+  .header-slot {
+    --header-slot-ring: calc(var(--focus-ring-width) + var(--focus-ring-offset));
+
+    display: flex;
+    min-width: 0;
+    gap: var(--space-1);
+    align-items: center;
+    /* Room for the focus ring, which the scroll box would clip; the negative margin keeps the size. */
+    margin: calc(-1 * var(--header-slot-ring));
+    padding: var(--header-slot-ring);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+
+    & > * {
+      flex: none;
+    }
+
+    &:empty {
+      display: none;
     }
   }
 

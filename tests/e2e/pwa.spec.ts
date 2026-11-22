@@ -59,3 +59,40 @@ test("offline: an unsaved address shows our offline page; saved pages reload wit
   }
   await context.setOffline(false);
 });
+
+/** Opens the probe mini-app (e2e build only) in a controlled page and makes it busy. */
+async function openBusyProbe(page: Page): Promise<void> {
+  await openControlled(page);
+  await page.evaluate(() => { location.hash = "#/probe"; });
+  await page.locator("[data-probe]").getByRole("button", { name: "Busy on", exact: true }).click();
+}
+
+/** Deploys a new worker (the preview seam in app/vite.config.ts) and waits until it is waiting. */
+async function deployNextVersion(page: Page): Promise<void> {
+  await page.context().addCookies([{ name: "e2e-next-deploy", value: String(Date.now()), url: page.url() }]);
+  await page.evaluate(async () => { await (await navigator.serviceWorker.ready).update(); });
+  await expect.poll(() => page.evaluate(async () => (await navigator.serviceWorker.getRegistration())?.waiting != null), { timeout: 15_000 }).toBe(true);
+  // because the page hears of the waiting worker in its own task right after the registration does
+  await page.evaluate(() => new Promise((resolve) => { setTimeout(resolve, 500); }));
+}
+
+const updateOffer = (page: Page) => page.getByRole("status").filter({ hasText: "New version available" });
+
+test("an update waits while a mini-app is busy and is offered when it is idle again (context.shell.setBusy)", async ({ page, browserName }) => {
+  test.skip(browserName !== "chromium", "Service workers are Chromium-only in Playwright");
+  await openBusyProbe(page);
+  await deployNextVersion(page);
+  await expect(updateOffer(page)).toHaveCount(0);
+  await page.locator("[data-probe]").getByRole("button", { name: "Busy off", exact: true }).click();
+  await expect(updateOffer(page)).toBeVisible();
+});
+
+test("a busy mini-app that unmounts releases the update offer", async ({ page, browserName }) => {
+  test.skip(browserName !== "chromium", "Service workers are Chromium-only in Playwright");
+  await openBusyProbe(page);
+  await deployNextVersion(page);
+  await expect(updateOffer(page)).toHaveCount(0);
+  await page.getByRole("banner").getByRole("button", { name: "Back to Home" }).click();
+  await expect(page.locator("[data-view=home]")).toBeVisible();
+  await expect(updateOffer(page)).toBeVisible();
+});

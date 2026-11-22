@@ -4,9 +4,13 @@
 // it moves back to the page when that dialog closes.
 import { t } from "../i18n/index.ts";
 import { h } from "./dom.ts";
+import { icon } from "./icons.ts";
 
+/** Options of {@link showToast}; `message` is always rendered as text, never as HTML. */
 export interface ToastOptions {
   readonly message: string;
+  /** "error" is announced at once (`role="alert"`) and shows the danger colour; default "info". */
+  readonly tone?: "info" | "error";
   readonly action?: { readonly label: string; readonly run: () => void };
   readonly persistent?: boolean;
   /** Persistent and shown again whenever a later toast ends, until its action runs (update offer). */
@@ -88,7 +92,9 @@ function render(region: HTMLElement, options: ToastOptions): void {
     isWatchingDialogs = true;
   }
   const trigger = document.activeElement; // focus returns here if the toast goes while focused
-  const toast = h("div", { class: "toast" }, h("span", {}, message));
+  const toast = options.tone === "error"
+    ? h("div", { class: "toast toast--error", role: "alert" }, icon("error"), h("span", {}, message))
+    : h("div", { class: "toast" }, h("span", {}, message));
   if (action) {
     const button = h("button", { type: "button" }, action.label);
     button.addEventListener("click", () => {

@@ -1,18 +1,22 @@
 // The mini-app outlet (PLAN §1.4): loads a registry entry's chunk, mounts it into a fresh
 // `[data-miniapp="<id>"]` element and unmounts it on the next screen. One mini-app at a time;
 // a failed load or mount shows the shell's error view, never a blank page.
-import type { MiniAppContext, MiniAppEntry, MiniAppModule, Unmount } from "@simeonts/quizzard-core";
+import type { MiniAppEntry, MiniAppModule, Unmount } from "@simeonts/quizzard-core";
 import { h } from "../ui/dom.ts";
 import { errorButton, errorViewParts, toError } from "../ui/error-screen.ts";
 import { t } from "../i18n/index.ts";
 import { miniAppName } from "./registry.ts";
+import type { MountedContext } from "./context.ts";
 
 /** Inputs of {@link createOutlet}. */
 export interface OutletOptions {
   /** The element the outlet owns; the shell guarantees no transform/filter/contain/clip ancestor. */
   readonly element: HTMLElement;
-  /** Builds the context of one mount; `isCurrent()` turns false once that mount is replaced. */
-  readonly createContext: (entry: MiniAppEntry, query: URLSearchParams, isCurrent: () => boolean) => MiniAppContext;
+  /**
+   * Builds the context of one mount; `isCurrent()` turns false once that mount is replaced. The
+   * outlet releases it after the mount's unmount, or at once when the mount fails or is replaced.
+   */
+  readonly createContext: (entry: MiniAppEntry, query: URLSearchParams, isCurrent: () => boolean) => MountedContext;
   /** "Back to Home" of the error view. */
   readonly onHome: () => void;
 }
@@ -37,16 +41,21 @@ type Failure = "load" | "mount";
 export function createOutlet({ element, createContext, onHome }: OutletOptions): Outlet {
   let generation = 0;
   let unmountCurrent: Unmount | null = null;
+  // Set as soon as a context exists, so a mount still loading is released when the screen moves on.
+  let releaseCurrent: (() => void) | null = null;
 
   const clear = (): void => {
     generation += 1;
     const unmount = unmountCurrent;
+    const release = releaseCurrent;
     unmountCurrent = null;
+    releaseCurrent = null;
     try {
       unmount?.();
     } finally {
-      // because a throwing unmount is the mini-app's bug: the outlet is emptied anyway and the
-      // error still reaches the global error screen.
+      // because a throwing unmount is the mini-app's bug: the outlet is emptied and the context
+      // released anyway, and the error still reaches the global error screen.
+      release?.();
       element.replaceChildren();
       element.removeAttribute("aria-busy");
     }
@@ -77,17 +86,19 @@ export function createOutlet({ element, createContext, onHome }: OutletOptions):
     }
     // null: the page is reloading for a stale chunk — the skeleton stays, no error flashes before it.
     if (module === null || !isCurrent()) return;
-    const host = h("div", { "data-miniapp": entry.meta.id });
-    element.replaceChildren(host);
+    const mounted = createContext(entry, query, isCurrent);
+    releaseCurrent = mounted.release;
+    const host = mountElement(element, entry, mounted);
     try {
-      const unmount = await module.mount(host, createContext(entry, query, isCurrent));
+      const unmount = await module.mount(host, mounted.context);
       if (!isCurrent()) {
-        unmount(); // the screen moved on while this mount was running
+        unmount(); // the screen moved on while this mount was running; clear() released its context
         return;
       }
       unmountCurrent = unmount;
       element.removeAttribute("aria-busy");
     } catch (error: unknown) {
+      mounted.release(); // idempotent: a replaced mount was already released by clear()
       showError("mount", toError(error));
     }
   };
@@ -112,6 +123,18 @@ async function loadModule(entry: MiniAppEntry): Promise<MiniAppModule | null> {
 
 function isMiniAppModule(value: unknown): value is MiniAppModule {
   return typeof value === "object" && value !== null && typeof Reflect.get(value, "mount") === "function";
+}
+
+/**
+ * Puts a fresh `[data-miniapp="<id>"]` element into the outlet; its `lang` follows the context's
+ * language (English when the mini-app lacks the UI language, SPEC F13).
+ */
+function mountElement(element: HTMLElement, entry: MiniAppEntry, { context }: MountedContext): HTMLElement {
+  const host = h("div", { "data-miniapp": entry.meta.id });
+  element.replaceChildren(host);
+  host.lang = context.language.get();
+  context.language.subscribe((lang) => { host.lang = lang; });
+  return host;
 }
 
 /** Placeholder of the loading state: reserves the screen so nothing jumps (CSS shows it late). */

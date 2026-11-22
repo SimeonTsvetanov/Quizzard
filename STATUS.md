@@ -1,6 +1,6 @@
 # STATUS — Quizzard
 
-**Updated:** 2026-11-22 · **Phase:** 3 Build — **M1 live 2026-11-22** (T-01–T-05, T-07, T-08 done); next T-06 context, then M2 TeamSync
+**Updated:** 2026-11-22 · **Phase:** 3 Build — M1 live 2026-11-22 (T-01–T-08 done); M2 TeamSync in progress (TS-01 next)
 
 ## Done
 - Old code in branch `legacy-2025`; `main` + `gh-pages` still serve the 2025 site until T-08.
@@ -12,9 +12,10 @@
 - T-05 hash router, outlet (load/mount/unmount, error screen), Back button, titles; probe mini-app only in the e2e build (`app/test/dist`).
 - T-07 Home launcher: three "coming" cards (Teams, Scores, Quiz creator), last used first, Home JS 39.7 KB gzip of 60, size-check in verify.
 - T-08 first deploy: CI green on 5 browsers (4th run), Deploy succeeded (Pages source was already GitHub Actions); live smoke on a phone profile: 3 cards, worker `service-worker.js`, Help opens, offline reload works, no console errors.
+- T-06 shell services for mini-apps (signals, toast/confirm/share, busy gate, header slot, namespaced prefs); manifest colours black (Moni).
 
 ## Next
-- T-06 shell services (context) → TS-01/TS-02 in the TeamSync repo → T-09 CSS transform → T-10/T-11.
+- TS-01/TS-02 in the TeamSync repo → T-09 CSS transform → T-10/T-11.
 
 ## Blockers / open
 - Browsers still on the June 2025 `sw.js` worker are not reached by the take-over (a self-removing `sw.js` is not built).

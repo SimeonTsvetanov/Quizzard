@@ -12,6 +12,7 @@ vi.mock("./i18n/index.ts", () => ({ t: (key: string) => key }));
 const { registerSW } = await import("virtual:pwa-register");
 const { showToast } = await import("./ui/toast.ts");
 const pwa = await import("./pwa.ts");
+const { setBusy } = await import("./state.ts");
 const { checkForUpdate, controllerChangeAction, shouldReloadAfterPreloadError, initPwa } = pwa;
 
 function registration(installing: boolean): { installing: ServiceWorker | null; update: Mock<() => Promise<void>> } {
@@ -139,6 +140,16 @@ describe("initPwa: updates", () => {
     expect(updateSW).toHaveBeenCalledWith(true);
     serviceWorker.dispatchEvent(new Event("controllerchange"));
     expect(reload).toHaveBeenCalledOnce();
+  });
+  it("an update found while a mini-app is busy is offered only once it is idle (context.shell.setBusy)", () => {
+    const { options } = start();
+    const miniApp = Symbol("mini-app");
+    setBusy(miniApp, true);
+    options.onNeedRefresh?.();
+    expect(vi.mocked(showToast)).not.toHaveBeenCalled();
+    setBusy(miniApp, false);
+    expect(vi.mocked(showToast)).toHaveBeenCalledOnce();
+    expect(vi.mocked(showToast)).toHaveBeenLastCalledWith(expect.objectContaining({ pinned: true }));
   });
   it("another tab's update only offers a reload here, never reloads by itself", () => {
     const { serviceWorker, reload } = start();

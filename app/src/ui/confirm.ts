@@ -3,9 +3,10 @@ import { h } from "./dom.ts";
 import { closeDelay } from "./dialog.ts";
 import { relocateToasts } from "./toast.ts";
 
+/** Options of {@link confirmAction}; every text is rendered as text, never as HTML. */
 export interface ConfirmOptions {
   readonly title: string; // the question with the action: "Delete all data?" — never "Are you sure?"
-  readonly message: string; // the consequence: "This can't be undone."
+  readonly message?: string; // the consequence: "This can't be undone." (a mini-app may leave it out)
   readonly confirm: string; // the verb again: "Delete" — never "OK" / "Yes"
   readonly cancel?: string; // default "Cancel"
   readonly danger?: boolean; // red confirm button (default true: confirms guard losing something)
@@ -20,10 +21,13 @@ export function confirmAction(o: ConfirmOptions): Promise<boolean> {
   return new Promise((resolve) => {
     const cancel = h("button", { class: "button", type: "button", value: "cancel" }, o.cancel ?? t("shell.cancel"));
     const ok = h("button", { class: `button ${o.danger === false ? "button--primary" : "button--danger"}`, type: "button", value: "ok" }, o.confirm);
-    const dialog = h("dialog", { class: "alert", role: "alertdialog", "aria-labelledby": "alert-title", "aria-describedby": "alert-text" },
-      h("h2", { id: "alert-title", class: "alert-title" }, o.title),
-      h("p", { id: "alert-text", class: "alert-text" }, o.message),
-      h("div", { class: "alert-actions" }, cancel, ok));
+    const dialog = h("dialog", { class: "alert", role: "alertdialog", "aria-labelledby": "alert-title" },
+      h("h2", { id: "alert-title", class: "alert-title" }, o.title));
+    if (o.message !== undefined) {
+      dialog.setAttribute("aria-describedby", "alert-text");
+      dialog.append(h("p", { id: "alert-text", class: "alert-text" }, o.message));
+    }
+    dialog.append(h("div", { class: "alert-actions" }, cancel, ok));
     let result = false;
     cancel.addEventListener("click", () => { dialog.close(); });
     ok.addEventListener("click", () => { result = true; dialog.close(); });

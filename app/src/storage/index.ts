@@ -7,33 +7,51 @@ import { isRouteSlug } from "@simeonts/quizzard-core";
 import { app } from "../config.ts";
 
 const PREFIX = `${app.id}:v1:`;
-const memory = new Map<string, string>(); // fallback when storage is blocked (private mode)
+const memory = new Map<string, string>(); // full key → JSON; fallback when storage is blocked (private mode)
 
-function safeGet(key: string): string | null {
-  try { return localStorage.getItem(PREFIX + key); } catch { return memory.get(key) ?? null; }
+/** Tier 0 preferences (small JSON values) under one localStorage prefix; keys are relative to it. */
+export interface Prefs {
+  /** Returns the saved value, or `fallback` when there is none or it is not valid JSON. */
+  get<T>(key: string, fallback: T): T;
+  /** Saves the value; false when storage is full or blocked (kept in memory for this visit). */
+  set(key: string, value: unknown): boolean;
+  remove(key: string): void;
+  /** The relative keys saved under the prefix. */
+  keys(): string[];
 }
 
-/** Tier 0 preferences (strings/JSON, small). */
-export const prefs = {
-  get<T>(key: string, fallback: T): T {
-    const raw = safeGet(key);
-    if (raw === null) return fallback;
-    try { return JSON.parse(raw) as T; } catch { return fallback; }
-  },
-  set(key: string, value: unknown): boolean {
-    const raw = JSON.stringify(value);
-    try { localStorage.setItem(PREFIX + key, raw); return true; } catch { memory.set(key, raw); return false; }
-  },
-  remove(key: string): void {
-    try { localStorage.removeItem(PREFIX + key); } catch { /* blocked */ }
-    memory.delete(key);
-  },
-  keys(): string[] {
-    try {
-      return Object.keys(localStorage).filter((k) => k.startsWith(PREFIX)).map((k) => k.slice(PREFIX.length));
-    } catch { return [...memory.keys()]; }
-  },
-};
+/**
+ * Returns the preferences stored under `prefix`: the shell's own (`prefs`) and each mini-app's
+ * area (`context.storage.prefs`, PLAN §1.2) — so only this module touches localStorage.
+ * @param prefix - the namespace, e.g. `"quizzard:v1:"`; the caller checks it is its own
+ */
+export function createPrefs(prefix: string): Prefs {
+  const read = (key: string): string | null => {
+    try { return localStorage.getItem(prefix + key); } catch { return memory.get(prefix + key) ?? null; }
+  };
+  return {
+    get<T>(key: string, fallback: T): T {
+      const raw = read(key);
+      if (raw === null) return fallback;
+      try { return JSON.parse(raw) as T; } catch { return fallback; }
+    },
+    set(key, value) {
+      const raw = JSON.stringify(value);
+      try { localStorage.setItem(prefix + key, raw); return true; } catch { memory.set(prefix + key, raw); return false; }
+    },
+    remove(key) {
+      try { localStorage.removeItem(prefix + key); } catch { /* blocked */ }
+      memory.delete(prefix + key);
+    },
+    keys() {
+      const own = (keys: Iterable<string>): string[] => [...keys].filter((k) => k.startsWith(prefix)).map((k) => k.slice(prefix.length));
+      try { return own(Object.keys(localStorage)); } catch { return own(memory.keys()); }
+    },
+  };
+}
+
+/** The shell's Tier 0 preferences (`quizzard:v1:*`). */
+export const prefs: Prefs = createPrefs(PREFIX);
 
 /** Space used / available for this origin (shared by all apps on it). */
 export async function estimate(): Promise<{ usage: number; quota: number } | null> {

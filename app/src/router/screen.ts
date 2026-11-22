@@ -17,6 +17,8 @@ interface ScreenElements {
   readonly outlet: HTMLElement;
   readonly back: HTMLButtonElement;
   readonly brand: HTMLAnchorElement;
+  /** The header's button group; a mounted mini-app's header slot goes first in it. */
+  readonly headerActions: HTMLElement;
 }
 
 /**
@@ -39,6 +41,7 @@ export function startScreens(entries: readonly MiniAppEntry[]): void {
       entry,
       query,
       navigation: router.navigation,
+      headerActions: elements.headerActions,
       setTitle: (part) => {
         if (!isCurrent() || active === null) return; // a replaced mount no longer owns the title
         active.titlePart = part;
@@ -99,6 +102,7 @@ function findElements(): ScreenElements {
     outlet: required(HTMLElement, "[data-outlet]"),
     back: required(HTMLButtonElement, "[data-back]"),
     brand: required(HTMLAnchorElement, "[data-home-link]"),
+    headerActions: required(HTMLElement, "[data-header-actions]"),
   };
 }
 

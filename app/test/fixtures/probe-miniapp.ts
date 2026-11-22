@@ -2,11 +2,13 @@
 // heading and a button, adds one `document` listener and one timer, and counts everything on
 // `window.quizzardProbe` so the e2e can prove that unmount leaves no node, listener or timer.
 // Launch parameters: `?fail=mount` throws in mount, `?mountDelay=<ms>` mounts asynchronously,
-// `?n=<text>` is shown in the output (tells instances apart in race tests).
+// `?n=<text>` is shown in the output (tells instances apart in race tests). The shell-service panel
+// (PLAN T-06) is in probe-services.ts.
 import type { MiniAppContext, MiniAppModule, Unmount } from "@simeonts/quizzard-core";
+import { renderServices, type ServiceCounters } from "./probe-services.ts";
 
 /** What the e2e reads from `window.quizzardProbe`. */
-export interface ProbeCounters {
+export interface ProbeCounters extends ServiceCounters {
   mounts: number;
   unmounts: number;
   /** `probe:ping` events seen on `document` (only a mounted instance listens). */
@@ -22,7 +24,7 @@ const TICK_MS = 50;
 /** Longest accepted `?mountDelay`, so a typo cannot stall a test run. */
 const MAX_MOUNT_DELAY_MS = 5000;
 
-const counters: ProbeCounters = { mounts: 0, unmounts: 0, pings: 0, ticks: 0 };
+const counters: ProbeCounters = { mounts: 0, unmounts: 0, pings: 0, ticks: 0, signalFires: 0 };
 Object.assign(window, { quizzardProbe: counters });
 
 /** The probe's contract module. */
@@ -55,6 +57,7 @@ function render(element: HTMLElement, context: MiniAppContext): Unmount {
   const root = document.createElement("section");
   root.dataset["probe"] = "";
   root.append(heading, output, button);
+  renderServices(root, context, counters);
   element.append(root);
   const onPing = (): void => { counters.pings += 1; };
   document.addEventListener(PROBE_PING_EVENT, onPing);

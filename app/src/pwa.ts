@@ -4,7 +4,7 @@
 import { registerSW } from "virtual:pwa-register";
 import { app } from "./config.ts";
 import { showToast } from "./ui/toast.ts";
-import { isTaskRunning } from "./state.ts";
+import { IDLE_EVENT, isBusy } from "./state.ts";
 import { hasLegacyCaches } from "./legacy-caches.ts";
 import { t } from "./i18n/index.ts";
 
@@ -82,14 +82,15 @@ export function shouldReloadAfterPreloadError(lastReloadAt: number | null, now: 
 }
 
 /**
- * Shows the pinned "New version available — Reload" toast once no task is running; pinned so a
- * later "Copied" or "Undo" toast does not make the offer disappear.
+ * Shows the pinned "New version available — Reload" toast once nothing is busy (a shell task or a
+ * mini-app's `setBusy(true)`, state.ts); pinned so a later "Copied" or "Undo" toast does not make
+ * the offer disappear.
  */
 function offerReload(reload: () => void): void {
   const offer = (): void => {
     showToast({ message: t("shell.update.available"), action: { label: t("shell.update.reload"), run: reload }, pinned: true });
   };
-  if (isTaskRunning()) document.addEventListener("task:idle", offer, { once: true });
+  if (isBusy()) document.addEventListener(IDLE_EVENT, offer, { once: true });
   else offer();
 }
 

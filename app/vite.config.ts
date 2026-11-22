@@ -124,6 +124,30 @@ function previewLegacySite(): Plugin {
   };
 }
 
+/** Cookie with which tests/e2e/pwa.spec.ts asks `vite preview` for the next deploy's worker. */
+const NEXT_DEPLOY_COOKIE = /(?:^|;\s*)e2e-next-deploy=(\w+)/;
+
+/**
+ * `vite preview` only (GitHub Pages never runs it): with the cookie `e2e-next-deploy=<id>` the service
+ * worker gets a comment added, so the browser sees a new version — how the e2e makes an update wait
+ * for Reload (Playwright cannot intercept a service worker's own script request).
+ */
+function previewNextDeploy(): Plugin {
+  return {
+    name: "quizzard-preview-next-deploy",
+    configurePreviewServer(server) {
+      const script = join(resolve(server.config.root, server.config.build.outDir), "service-worker.js");
+      server.middlewares.use((req, res, next) => {
+        const deploy = NEXT_DEPLOY_COOKIE.exec(req.headers.cookie ?? "")?.[1];
+        if (deploy === undefined || req.url?.split("?")[0] !== `${BASE}service-worker.js`) { next(); return; }
+        res.setHeader("content-type", "text/javascript; charset=utf-8");
+        res.setHeader("cache-control", "no-cache");
+        res.end(`${readFileSync(script, "utf8")}\n// e2e next deploy ${deploy}\n`);
+      });
+    },
+  };
+}
+
 /**
  * The e2e build (test/vite.e2e.config.ts, part of `pnpm build`) goes to `app/test/dist`; `vite preview`
  * serves it when QUIZZARD_E2E=1 (playwright.config.ts). `app/dist` — what deploy.yml uploads — never
@@ -137,6 +161,7 @@ export default defineConfig({
   plugins: [
     appHtml(),
     previewLegacySite(),
+    previewNextDeploy(),
     pagesNotFound(),
     swHandover(),
     VitePWA({
@@ -155,7 +180,7 @@ export default defineConfig({
         // installed app updates in place instead of becoming a second app (DECISIONS T-02).
         id: BASE, name: app.name, short_name: app.name, description: app.description,
         lang: app.languages[0] ?? "en", start_url: BASE, scope: BASE, display: "standalone",
-        background_color: "#F5F5F7", theme_color: "#F5F5F7", orientation: "any",
+        background_color: "#000000", theme_color: "#000000", orientation: "any",
         categories: [...app.categories],
         launch_handler: { client_mode: ["navigate-existing", "auto"] },
         ...(screenshots.length ? { screenshots } : {}),
