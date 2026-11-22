@@ -72,10 +72,10 @@ function start(state: RouterState): void {
     show(state, HOME); // a dialog link (#help) on load opens over Home
   }
   window.addEventListener("hashchange", (event) => { onHashChange(state, event); });
-  // Back/Forward between two entries of this document always fires popstate; a browser that then
-  // fires no hashchange for entries written with pushState/replaceState (seen with Firefox in CI:
-  // Back from a deep link left Home hidden) would leave the old screen up. Showing the screen the
-  // address names is idempotent, so the hashchange that normally follows changes nothing.
+  // Back/Forward between two entries of this document always fires popstate, also where no
+  // hashchange follows (the address did not change, or a browser skips it for entries written with
+  // pushState/replaceState). Showing the screen the address names is idempotent, so the hashchange
+  // that normally follows changes nothing.
   window.addEventListener("popstate", () => { onPopState(state); });
 }
 

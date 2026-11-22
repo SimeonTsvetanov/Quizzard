@@ -49,6 +49,16 @@ const expectHome = async (page: Page): Promise<void> => {
   await expect(page).toHaveTitle(HOME_TITLE);
 };
 
+// Why the Back tests open a neutral page before the deep link: page.goBack() in Playwright's Firefox
+// (Juggler `Page.goBack`) returns without doing anything unless the tab's `canGoBack` is true, and
+// Firefox's Back-button intervention (browser.navigation.requireUserInteraction: bugzil.la/1515073,
+// bugzil.la/1645211) does not count entries a page left without a user interaction — which is what
+// the seeded Home entry is. With the deep link as the only load, the history is [Home, mini-app],
+// nothing counts, and goBack() is a no-op (CI run 45033230432: before and after goBack() Firefox
+// reported `length: 2, hash: '#/alpha'`; Chromium and WebKit went from '#/alpha' to '#/'). With a
+// page below, canGoBack is true and the traversal is one step, to the seeded Home, as on a phone.
+// In stock Firefox with the intervention on, the toolbar Back skips the seeded Home and leaves the
+// app (never a stale screen); the header Back uses history.back(), which is not affected.
 test("deep link mounts the probe with Home seeded below it; Android Back shows Home, a second Back leaves", async ({ page }) => {
   await page.goto("about:blank");
   await page.goto("./#/probe");
@@ -183,31 +193,19 @@ test("the mount element carries data-miniapp and has no transform, filter, conta
 
 test("a chunk that cannot load (offline, not cached) shows the error view; Try again reloads and recovers", async ({ page }) => {
   await page.route(PROBE_CHUNK, (route) => route.abort("internetdisconnected"));
+  await page.goto("about:blank"); // see the note above "deep link mounts the probe"
   await page.goto("./#/probe");
   const error = page.locator("[data-outlet] .es");
   await expect(error.getByRole("heading", { name: "Couldn't open Probe" })).toBeVisible();
   await expect(error.getByRole("heading")).toBeFocused();
   await expect(back(page)).toBeVisible();
   await page.unroute(PROBE_CHUNK);
-  const lengthBefore = await page.evaluate(() => history.length);
   await error.getByRole("button", { name: "Try again" }).click();
   await expect(probe(page)).toBeVisible();
   await expect(page.locator("[data-outlet] .es")).toHaveCount(0);
   // The reload kept the route's mark, so the router did not seed Home again.
   expect(await page.evaluate((): unknown => history.state)).toEqual({ quizzardScreen: { homeBelow: true } });
-  // Playwright's Firefox build adds a history entry on a script reload (it runs with the pref
-  // fission.webContentIsolationStrategy=0: bugzil.la/1832341, microsoft/playwright#22640; stock
-  // Firefox does not), so Back lands on the pre-reload copy of this route there. Detected by what
-  // the harness does, not by browser name: wherever a reload keeps the history, Home must be below.
-  const reloadAddedEntry = (await page.evaluate(() => history.length)) > lengthBefore;
-  if (reloadAddedEntry) {
-    test.info().annotations.push({ type: "harness", description: "reload added a history entry: Back after the reload not checked" });
-    return;
-  }
-  // Temporary CI diagnostic (Firefox cannot run locally): what Back does to the address and the history.
-  console.warn("[diag back]", test.info().project.name, await page.evaluate(() => ({ length: history.length, hash: location.hash, state: history.state as unknown })));
   await page.goBack();
-  console.warn("[diag back after]", test.info().project.name, await page.evaluate(() => ({ length: history.length, hash: location.hash, state: history.state as unknown })));
   await expectHome(page);
 });
 
