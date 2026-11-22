@@ -27,7 +27,8 @@
     "../scripts/seo.ts",
     "../scripts/sw-handover.ts",
     "../scripts/check-miniapp-tokens.ts",
-    "../scripts/css-colors.ts"
+    "../scripts/css-colors.ts",
+    "../scripts/size-check.ts"
   ],
   "references": [
     {

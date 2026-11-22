@@ -1,6 +1,6 @@
 # STATUS — Quizzard
 
-**Updated:** 2026-11-22 · **Phase:** 3 Build — M1 live 2026-11-22 (T-01–T-08 done); M2 TeamSync in progress (TS-01 next)
+**Updated:** 2026-11-22 · **Phase:** 3 Build — M1 live 2026-11-22 (T-01–T-08 done); M2 TeamSync: T-10/T-11 built, not yet committed
 
 ## Done
 - Old code in branch `legacy-2025`; `main` + `gh-pages` still serve the 2025 site until T-08.
@@ -15,9 +15,10 @@
 - T-06 shell services for mini-apps (signals, toast/confirm/share, busy gate, header slot, namespaced prefs); manifest colours black (Moni).
 - TS-01/TS-02 (TeamSync repo): team screen as `packages/miniapp`, e2e split, 1.0.3 pushed (deploy waits for its CI).
 - T-09 mini-app CSS transform (layer `miniapp`, scope prefix, isolated reset, global-name collisions) + token check.
+- T-10/T-11 TeamSync at `#/teams` from submodule `vendor/teamsync` (f93c769 = 1.0.3): Home JS 44.7 KB, teams 30.8 KB; its e2e suite green in `teams` + `teams-mobile` (WebKit/Firefox only in CI).
 
 ## Next
-- T-10 add TeamSync (submodule at its 1.0.3 commit) → T-11 its e2e inside Quizzard → GG-01…03 → T-12/T-13.
+- Commit T-10/T-11, CI on 5 browsers → GG-01…03 → T-12/T-13.
 
 ## Blockers / open
 - Browsers still on the June 2025 `sw.js` worker are not reached by the take-over (a self-removing `sw.js` is not built).
@@ -25,3 +26,4 @@
 - Known flake: `csp.spec` "every shell dialog" timed out once under full parallel load (1 of ~38 runs; 25/25 alone) — watch in CI.
 - A leftover `vite preview` on port 4173 makes e2e test the wrong build (reuseExistingServer): kill it first.
 - e2e run on Chromium + mobile Chrome only (Playwright's pinned Firefox/WebKit are not installed in the cloud session).
+- Settings → "Clear my data" still clears only `quizzard:v1:*`; Teams' saved names stay until T-15 (scoped clear); privacy text is T-19.

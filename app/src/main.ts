@@ -1,3 +1,4 @@
+import "./zod-setup.ts"; // first: before any module creates a Zod schema (CSP; frontend-level1 §5)
 import "@fontsource-variable/inter";
 import "./styles/app.css"; // layer order, tokens, accent and every app style (design → css-architecture)
 import { app } from "./config.ts";

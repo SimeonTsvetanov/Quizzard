@@ -1,8 +1,10 @@
 // `pnpm size` (the last step of `pnpm verify`) — Home's first-load JavaScript budget (SPEC §7, PLAN
 // T-07): the gzip size of every script the built app/dist/index.html loads up front — `<script src>`
 // (module entry and classic) and `<link rel="modulepreload">` — never lazy chunks or the service
-// worker. Counted like the forge perf-check: zlib's default gzip level, 1 KB = 1024 bytes.
-import { readFileSync } from "node:fs";
+// worker. Then each mini-app's lazy JavaScript (PLAN T-10): every `assets/miniapp-<id>-*.js` chunk
+// (named by app/build/miniapp-chunks.ts). Counted like the forge perf-check: zlib's default gzip
+// level, 1 KB = 1024 bytes.
+import { readdirSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { gzipSync } from "node:zlib";
@@ -10,6 +12,20 @@ import { app } from "../app.config.ts";
 
 /** Home first-load JS budget in KB gzip (SPEC §7: "Home (shell only) first-load JS ≤ 60 KB gzip"). */
 export const HOME_JS_BUDGET_KB = 60;
+
+/**
+ * Lazy JS budget per mini-app in KB gzip: all its chunks together (body, lazy parts, Help). TeamSync
+ * 1.0.3 is 35 KB, most of it zod (its core validates input); SPEC §7 caps GG Counter at 125 KB.
+ */
+export const MINIAPP_JS_BUDGETS_KB: Readonly<Record<string, number>> = { teams: 40 };
+
+/**
+ * Returns the file name prefix of a mini-app's chunks inside `assets/` (the build names them so).
+ * @param id - the mini-app's registry id
+ */
+export function miniAppChunkPrefix(id: string): string {
+  return `miniapp-${id}-`;
+}
 
 /** One first-load script and its gzip size. */
 export interface ScriptSize {
@@ -67,11 +83,49 @@ export function measureHomeScripts(distDir: string, basePath: string): ScriptSiz
  * @param budgetKb - the budget in KB gzip
  */
 export function checkBudget(sizes: readonly ScriptSize[], budgetKb: number = HOME_JS_BUDGET_KB): BudgetResult {
+  return budgetVerdict({ label: "Home first-load JS", sizes, budgetKb });
+}
+
+/**
+ * Measures the lazy chunks of one mini-app in a build.
+ * @param distDir - the build folder (`app/dist`)
+ * @param id - the mini-app's registry id
+ * @returns its `assets/miniapp-<id>-*.js` files, sorted; none when the build has no such chunk
+ */
+export function measureMiniAppScripts(distDir: string, id: string): ScriptSize[] {
+  const prefix = miniAppChunkPrefix(id);
+  return readdirSync(join(distDir, "assets"))
+    .filter((name) => name.startsWith(prefix) && name.endsWith(".js"))
+    .sort()
+    .map((name) => ({ file: `assets/${name}`, gzipBytes: gzipSync(readFileSync(join(distDir, "assets", name))).length }));
+}
+
+/**
+ * Compares a mini-app's chunks with its budget.
+ * @param id - the mini-app's registry id (the report names it)
+ * @param sizes - from {@link measureMiniAppScripts}; none fails, because a budgeted mini-app without
+ * chunks means the build stopped naming them and the budget would pass unchecked
+ * @param budgetKb - the budget in KB gzip
+ */
+export function checkMiniAppBudget(id: string, sizes: readonly ScriptSize[], budgetKb: number): BudgetResult {
+  const result = budgetVerdict({ label: `Mini-app "${id}" JS`, sizes, budgetKb });
+  if (sizes.length > 0) return result;
+  return { isWithinBudget: false, totalKb: 0, report: `size-check FAIL: no assets/${miniAppChunkPrefix(id)}*.js in the build (app/build/miniapp-chunks.ts names them)` };
+}
+
+/** Inputs of {@link budgetVerdict}. */
+interface BudgetInput {
+  readonly label: string;
+  readonly sizes: readonly ScriptSize[];
+  readonly budgetKb: number;
+}
+
+function budgetVerdict({ label, sizes, budgetKb }: BudgetInput): BudgetResult {
   const totalKb = toKb(sizes.reduce((sum, { gzipBytes }) => sum + gzipBytes, 0));
   const isWithinBudget = totalKb <= budgetKb;
   const files = sizes.map(({ file, gzipBytes }) => `${file} ${String(toKb(gzipBytes))} KB`).join(" · ");
   const verdict = isWithinBudget ? "PASS" : "FAIL";
-  return { isWithinBudget, totalKb, report: `size-check ${verdict}: Home first-load JS ${String(totalKb)} KB gzip (budget ${String(budgetKb)} KB) — ${files}` };
+  return { isWithinBudget, totalKb, report: `size-check ${verdict}: ${label} ${String(totalKb)} KB gzip (budget ${String(budgetKb)} KB) — ${files}` };
 }
 
 /** Bytes → KB with one decimal (perf-check's rounding). */
@@ -81,9 +135,12 @@ function toKb(bytes: number): number {
 
 function main(): void {
   const distDir = resolve(import.meta.dirname, "../app/dist");
-  const result = checkBudget(measureHomeScripts(distDir, app.basePath));
-  console.log(result.report);
-  if (!result.isWithinBudget) process.exitCode = 1;
+  const results = [
+    checkBudget(measureHomeScripts(distDir, app.basePath)),
+    ...Object.entries(MINIAPP_JS_BUDGETS_KB).map(([id, budgetKb]) => checkMiniAppBudget(id, measureMiniAppScripts(distDir, id), budgetKb)),
+  ];
+  for (const result of results) console.log(result.report);
+  if (results.some((result) => !result.isWithinBudget)) process.exitCode = 1;
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) main();

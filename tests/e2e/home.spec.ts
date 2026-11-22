@@ -7,7 +7,8 @@ import { app } from "../../app.config.ts";
 
 // Home launcher (PLAN T-07, SPEC F1). The e2e build (app/test/dist) registers the 3 shipped cards +
 // the routing probe + 8 Home fixtures (app/test/fixtures/home-entries.ts) = 12 cards; one test
-// serves the production build (app/dist) instead and expects exactly the 3 shipped "coming" cards.
+// serves the production build (app/dist) instead and expects exactly the 3 shipped cards: Teams
+// ready (PLAN T-10), Scores and Quiz creator coming.
 test.use({ serviceWorkers: "block" });
 
 const cards = (page: Page) => page.locator("[data-launcher] [data-card]");
@@ -15,7 +16,7 @@ const card = (page: Page, id: string) => page.locator(`[data-card="${id}"]`);
 const ids = (page: Page): Promise<string[]> => cards(page).evaluateAll((all) => all.map((el) => el.getAttribute("data-card") ?? ""));
 const back = (page: Page) => page.getByRole("banner").getByRole("button", { name: "Back to Home" });
 /** Registry order of the e2e build's ready cards, then its coming ones (shipped first). */
-const E2E_ORDER = ["probe", "alpha", "beta", "gamma", "teams", "scores", "quiz", "delta", "epsilon", "zeta", "eta", "theta"];
+const E2E_ORDER = ["teams", "probe", "alpha", "beta", "gamma", "scores", "quiz", "delta", "epsilon", "zeta", "eta", "theta"];
 
 for (const viewport of [{ width: 320, height: 640 }, { width: 1280, height: 800 }]) {
   test.describe(`at ${String(viewport.width)}×${String(viewport.height)}`, () => {
@@ -94,7 +95,7 @@ test("the last used mini-app comes first, also after a reload and after browser 
   await expect(card(page, "beta")).toBeFocused();
   expect(await page.evaluate(() => localStorage.getItem("quizzard:v1:last-app"))).toBe('"beta"');
   await page.reload();
-  expect(await ids(page)).toEqual(["beta", "probe", "alpha", "gamma", ...E2E_ORDER.slice(4)]);
+  expect(await ids(page)).toEqual(["beta", "teams", "probe", "alpha", "gamma", ...E2E_ORDER.slice(5)]);
 });
 
 test("a deep link renders Home's cards too: the list is never left busy (footer and Home text stay hidden while busy)", async ({ page }) => {
@@ -114,12 +115,12 @@ test("a deep link renders Home's cards too: the list is never left busy (footer 
 
 test("a coming card is not a control: no link, not focusable, announced as coming soon, a tap does nothing", async ({ page }) => {
   await page.goto("./");
-  const teams = card(page, "teams");
-  await expect(teams).toContainText("Soon");
-  await expect(teams).toContainText("Coming soon");
-  expect(await teams.evaluate((el) => ({ isLink: el.matches(":any-link"), tabIndex: el.tabIndex, role: el.getAttribute("role") }))).toEqual({ isLink: false, tabIndex: -1, role: null });
+  const scores = card(page, "scores");
+  await expect(scores).toContainText("Soon");
+  await expect(scores).toContainText("Coming soon");
+  expect(await scores.evaluate((el) => ({ isLink: el.matches(":any-link"), tabIndex: el.tabIndex, role: el.getAttribute("role") }))).toEqual({ isLink: false, tabIndex: -1, role: null });
   const url = page.url();
-  await teams.click();
+  await scores.click();
   expect(page.url()).toBe(url);
   await expect(page.locator("[data-view=home]")).toBeVisible();
   await expect(page.locator("[data-outlet]")).toBeHidden();
@@ -140,7 +141,9 @@ test("switching the language to Bulgarian translates names and taglines (English
   await expect(card(page, "teams")).toContainText("Честни случайни отбори за секунди");
   await expect(card(page, "alpha")).toContainText("Алфа");
   await expect(card(page, "delta")).toContainText("Delta"); // no Bulgarian text → English
-  await expect(card(page, "teams")).toContainText("Скоро");
+  await expect(card(page, "scores")).toContainText("Точки");
+  await expect(card(page, "scores")).toContainText("Скоро");
+  await expect(card(page, "teams")).toContainText("Отвори");
 });
 
 test("no serious accessibility violations on Home", async ({ page }) => {
@@ -151,7 +154,7 @@ test("no serious accessibility violations on Home", async ({ page }) => {
   expect(results.violations.filter((v) => v.impact === "serious" || v.impact === "critical").map((v) => v.id)).toEqual([]);
 });
 
-test("the production build (app/dist) shows exactly the three coming cards", async ({ page, baseURL }) => {
+test("the production build (app/dist) shows Teams ready and the two coming cards", async ({ page, baseURL }) => {
   const dist = fileURLToPath(new URL("../../app/dist/", import.meta.url));
   await page.route(`${baseURL ?? ""}**`, async (route) => {
     const path = decodeURIComponent(new URL(route.request().url()).pathname).slice(app.basePath.length);
@@ -164,6 +167,9 @@ test("the production build (app/dist) shows exactly the three coming cards", asy
   await expect(cards(page)).toHaveCount(3);
   expect(await ids(page)).toEqual(["teams", "scores", "quiz"]);
   await expect(cards(page)).toHaveText([/Teams/, /Scores/, /Quiz creator/]);
-  await expect(page.locator("[data-launcher] a")).toHaveCount(0);
-  for (const id of ["teams", "scores", "quiz"]) await expect(card(page, id)).toHaveAttribute("data-state", "coming");
+  await expect(page.locator("[data-launcher] a")).toHaveCount(1);
+  await expect(card(page, "teams")).toHaveRole("link");
+  await expect(card(page, "teams")).toHaveAttribute("href", "#/teams");
+  await expect(card(page, "teams")).toContainText("Open");
+  for (const id of ["scores", "quiz"]) await expect(card(page, id)).toHaveAttribute("data-state", "coming");
 });

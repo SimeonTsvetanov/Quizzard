@@ -9,7 +9,7 @@
   },
   "scripts": {
     "generate": "node scripts/generate.ts",
-    "dev": "pnpm generate && pnpm -F app dev",
+    "dev": "pnpm generate && pnpm -F \"./vendor/*/packages/core\" build && pnpm -F app dev",
     "lint": "eslint .",
     "typecheck": "tsc -b",
     "test": "vitest run && node --test scripts/*.test.mjs",

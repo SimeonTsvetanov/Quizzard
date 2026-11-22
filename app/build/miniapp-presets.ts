@@ -1,13 +1,15 @@
 // Build presets of mini-app packages (PLAN §1.3): each package exports `vite-preset.ts`
 // (`{ id, css, alias, plugins }`); app/vite.config.ts lists the packages with their folder and merges
 // them here. The merged plugins include `quizzard-miniapp-css`, which scopes every stylesheet inside a
-// package's folder (miniapp-css.ts) in dev and build, and fails the build on a token-check finding.
+// package's folder (miniapp-css.ts) in dev and build, and fails the build on a token-check finding,
+// and `quizzard-miniapp-chunks` (miniapp-chunks.ts), which names their JS chunks per mini-app.
 // With no package listed it changes nothing.
 import { readFileSync } from "node:fs";
 import { relative, resolve, sep } from "node:path";
 import postcss from "postcss";
 import type { Plugin, PluginOption } from "vite";
 import { checkMiniAppCss, formatFinding, listCssFiles, readCssFiles, shellTokens } from "../../scripts/check-miniapp-tokens.ts";
+import { miniAppChunksPlugin } from "./miniapp-chunks.ts";
 import { transformMiniAppCss, type MiniAppCssMode } from "./miniapp-css.ts";
 import { MiniAppCssError } from "./miniapp-css-errors.ts";
 import { collectGlobalNames, type GlobalNameOwner } from "./miniapp-css-names.ts";
@@ -63,7 +65,8 @@ export function mergeMiniAppPresets(packages: readonly MiniAppPackage[], shell: 
       alias[name] = target;
     }
   }
-  return { alias, plugins: [...packages.flatMap(({ preset }) => preset.plugins), miniAppCssPlugin(packages, shell)] };
+  const owners = packages.map(({ preset, root }) => ({ id: preset.id, root }));
+  return { alias, plugins: [...packages.flatMap(({ preset }) => preset.plugins), miniAppCssPlugin(packages, shell), miniAppChunksPlugin(owners)] };
 }
 
 /**

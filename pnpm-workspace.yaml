@@ -2,6 +2,10 @@
 packages:
   - packages/*
   - app
+  # Mini-apps vendored as git submodules (PLAN §1.1 item 2): only their core and mini-app packages,
+  # never their standalone app/, mcp or root (their own workspace file and lockfile stay unused).
+  - vendor/*/packages/core
+  - vendor/*/packages/miniapp
 
 minimumReleaseAge: 1440
 minimumReleaseAgeExclude: []

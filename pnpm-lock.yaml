@@ -223,12 +223,18 @@ importers:
       '@simeonts/quizzard-core':
         specifier: workspace:^
         version: link:../packages/core
+      '@simeonts/teamsync-random-team-generator-miniapp':
+        specifier: workspace:^
+        version: link:../vendor/teamsync/packages/miniapp
       i18next:
         specifier: ^26.7.1
         version: 26.7.2(typescript@6.0.3)
       lucide:
         specifier: ^1.68.0
         version: 1.77.0
+      zod:
+        specifier: ^4.6.0
+        version: 4.6.7
     devDependencies:
       '@types/node':
         specifier: ^24.19.0
@@ -257,6 +263,21 @@ importers:
       zod:
         specifier: ^4.6.0
         version: 4.6.7
+
+  vendor/teamsync/packages/core:
+    dependencies:
+      zod:
+        specifier: ^4.6.0
+        version: 4.6.7
+
+  vendor/teamsync/packages/miniapp:
+    dependencies:
+      '@simeonts/teamsync-random-team-generator-core':
+        specifier: workspace:^
+        version: link:../core
+      lucide:
+        specifier: ^1.70.0
+        version: 1.77.0
 
 packages:
 

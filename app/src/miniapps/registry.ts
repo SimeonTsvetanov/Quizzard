@@ -1,6 +1,8 @@
 // The shell's mini-app registry (PLAN §1.4): the only file a new mini-app changes. Home order;
 // validated by registry.test.ts and at start in development and the e2e build (main.ts).
 import { validateRegistry, type MiniAppEntry, type RegistryError, type StorageArea } from "@simeonts/quizzard-core";
+import { TEAMS_PARAM } from "@simeonts/teamsync-random-team-generator-miniapp/host-api";
+import { meta as teamsMeta } from "@simeonts/teamsync-random-team-generator-miniapp/meta";
 import { app } from "../config.ts";
 import { getLanguage } from "../i18n/index.ts";
 import { e2eEntries } from "./e2e-entries.ts";
@@ -9,22 +11,17 @@ import { e2eEntries } from "./e2e-entries.ts";
 export const SHELL_STORAGE_AREA: StorageArea = { prefix: `${app.id}:v1:` };
 
 /**
- * Mini-apps shipped to users, in registry order. All three are "coming" cards until their code lands
- * (PLAN T-10 `teams`, T-12 `scores`); their storage areas are the real keys of the standalone apps
- * (F7): TeamSync's storage module prefix, GG Counter's prefix plus its two pre-forge keys.
+ * Mini-apps shipped to users, in registry order. A vendored mini-app's line takes its package's own
+ * `meta` (id, names, tagline, icon path, languages, storage area — one source, PLAN §1.1 item 2) and
+ * loads its body and Help lazily. The "coming" cards stay hand-written until their code lands
+ * (PLAN T-12 `scores`); their storage areas are the real keys of the standalone apps (F7): GG
+ * Counter's prefix plus its two pre-forge keys.
  */
 const SHIPPED: readonly MiniAppEntry[] = [
   {
-    meta: {
-      contract: 1,
-      id: "teams",
-      name: { en: "Teams", bg: "Отбори" },
-      tagline: { en: "Fair random teams in seconds", bg: "Честни случайни отбори за секунди" },
-      icon: "miniapps/teams.svg",
-      languages: ["en", "bg"],
-      status: "coming",
-      storage: { prefix: "teamsync-random-team-generator:v1:" },
-    },
+    meta: teamsMeta,
+    load: () => import("@simeonts/teamsync-random-team-generator-miniapp"),
+    help: () => import("@simeonts/teamsync-random-team-generator-miniapp/help"),
   },
   {
     meta: {
@@ -51,6 +48,14 @@ const SHIPPED: readonly MiniAppEntry[] = [
     },
   },
 ];
+
+/**
+ * The launch parameters Quizzard passes on to a mini-app (`context.query`), from each package's
+ * host API; the rest of a route's query stays out. TeamSync's `shared` (Android share target) and
+ * embed mode belong to its standalone site (PLAN §2: none in Quizzard v1), so `#/teams?shared=…`
+ * never fills its list. A mini-app without a line here gets the whole query.
+ */
+const LAUNCH_PARAMS: Readonly<Partial<Record<string, readonly string[]>>> = { teams: [TEAMS_PARAM] };
 
 /** Every registered mini-app; the e2e build adds the routing probe (see e2e-entries.ts). */
 export const miniApps: readonly MiniAppEntry[] = [...SHIPPED, ...e2eEntries];
@@ -84,4 +89,16 @@ export function miniAppName(entry: MiniAppEntry): string {
  */
 export function miniAppTagline(entry: MiniAppEntry): string {
   return entry.meta.tagline[getLanguage()] ?? entry.meta.tagline.en;
+}
+
+/**
+ * Returns the launch parameters of a route that the mini-app takes from Quizzard.
+ * @param entry - the registry line
+ * @param query - the query of the route (`#/<id>?…`)
+ * @returns a new object; only the parameters listed for the mini-app, all of them when none are listed
+ */
+export function launchQuery(entry: MiniAppEntry, query: URLSearchParams): URLSearchParams {
+  const allowed = LAUNCH_PARAMS[entry.meta.id];
+  if (allowed === undefined) return new URLSearchParams(query);
+  return new URLSearchParams([...query].filter(([name]) => allowed.includes(name)));
 }

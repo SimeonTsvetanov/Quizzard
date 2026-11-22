@@ -12,3 +12,8 @@ updates:
   - package-ecosystem: github-actions
     directory: "/"
     schedule: { interval: monthly }
+  # Vendored mini-apps (vendor/*, PLAN T-10): a PR when a mini-app repo's default branch moves. Bump
+  # only to a released commit of that repo (its CHANGELOG), then run `pnpm verify` and the e2e here.
+  - package-ecosystem: gitsubmodule
+    directory: "/"
+    schedule: { interval: weekly }

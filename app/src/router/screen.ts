@@ -5,7 +5,7 @@ import type { MiniAppEntry } from "@simeonts/quizzard-core";
 import { createHome, rememberLastUsed } from "../home/home.ts";
 import { createMiniAppContext } from "../miniapps/context.ts";
 import { createOutlet } from "../miniapps/outlet.ts";
-import { miniAppName, openableIds } from "../miniapps/registry.ts";
+import { launchQuery, miniAppName, openableIds } from "../miniapps/registry.ts";
 import { setScreenTitle } from "../ui/title.ts";
 import { createRouter, type ScreenRoute } from "./router.ts";
 
@@ -58,7 +58,7 @@ export function startScreens(entries: readonly MiniAppEntry[]): void {
       if (!isFirst) home.render(); // the last used mini-app may have changed while Home was hidden
     } else {
       rememberLastUsed(entry.meta.id);
-      void outlet.show(entry, route.query);
+      void outlet.show(entry, launchQuery(entry, route.query));
     }
     elements.homeView.hidden = active !== null;
     elements.outlet.hidden = active === null;

@@ -1,11 +1,12 @@
 // Unit tests for scripts/size-check.ts (PLAN T-07): which scripts count as Home's first load and how
-// the budget verdict is reached. `pnpm verify` runs the script itself on the real app/dist.
+// the budget verdict is reached, and the per-mini-app lazy budgets (T-10). `pnpm verify` runs the
+// script itself on the real app/dist.
 import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { gzipSync } from "node:zlib";
 import { describe, expect, it } from "vitest";
-import { HOME_JS_BUDGET_KB, checkBudget, firstLoadScripts, measureHomeScripts } from "./size-check.ts";
+import { HOME_JS_BUDGET_KB, MINIAPP_JS_BUDGETS_KB, checkBudget, checkMiniAppBudget, firstLoadScripts, measureHomeScripts, measureMiniAppScripts, miniAppChunkPrefix } from "./size-check.ts";
 
 const BASE = "/Quizzard/";
 const HTML = `<!doctype html><html><head>
@@ -58,5 +59,37 @@ describe("measureHomeScripts + checkBudget", () => {
     const broken = mkdtempSync(join(tmpdir(), "size-check-"));
     writeFileSync(join(broken, "index.html"), '<script type="module" src="/Quizzard/assets/gone.js"></script>');
     expect(() => measureHomeScripts(broken, BASE)).toThrow(/gone\.js/);
+  });
+});
+
+describe("mini-app budgets (PLAN T-10)", () => {
+  const dist = mkdtempSync(join(tmpdir(), "size-check-miniapp-"));
+  mkdirSync(join(dist, "assets"));
+  writeFileSync(join(dist, "assets/miniapp-teams-src-abc.js"), "export const teams = 1;\n".repeat(100));
+  writeFileSync(join(dist, "assets/miniapp-teams-help-def.js"), "export const help = 2;");
+  writeFileSync(join(dist, "assets/miniapp-teams-src-abc.css"), "x".repeat(10_000)); // CSS is not JS
+  writeFileSync(join(dist, "assets/miniapp-teamsplus-src-ghi.js"), "x".repeat(10_000)); // another id that only starts alike
+  writeFileSync(join(dist, "assets/index-abc.js"), "x".repeat(10_000));
+
+  it("chunk names start with miniapp-<id>-", () => {
+    expect(miniAppChunkPrefix("teams")).toBe("miniapp-teams-");
+  });
+  it("counts every JS chunk of the mini-app and nothing else", () => {
+    const sizes = measureMiniAppScripts(dist, "teams");
+    expect(sizes.map(({ file }) => file)).toEqual(["assets/miniapp-teams-help-def.js", "assets/miniapp-teams-src-abc.js"]);
+    expect(checkMiniAppBudget("teams", sizes, 1)).toMatchObject({ isWithinBudget: true });
+  });
+  it("fails over the budget and names the mini-app", () => {
+    const result = checkMiniAppBudget("teams", [{ file: "assets/miniapp-teams-src-abc.js", gzipBytes: 41 * 1024 }], 40);
+    expect(result).toMatchObject({ isWithinBudget: false, totalKb: 41 });
+    expect(result.report).toContain('FAIL: Mini-app "teams" JS 41 KB');
+  });
+  it("fails when a budgeted mini-app has no chunk at all (the naming broke)", () => {
+    const result = checkMiniAppBudget("scores", measureMiniAppScripts(dist, "scores"), 125);
+    expect(result.isWithinBudget).toBe(false);
+    expect(result.report).toContain("no assets/miniapp-scores-*.js");
+  });
+  it("every shipped budget is a positive number of KB", () => {
+    for (const budget of Object.values(MINIAPP_JS_BUDGETS_KB)) expect(budget).toBeGreaterThan(0);
   });
 });

@@ -50,7 +50,7 @@ async function buildError(root: string, packages: readonly MiniAppPackage[]): Pr
 }
 
 describe("mergeMiniAppPresets", () => {
-  it("merges aliases and puts the preset plugins before the CSS plugin", () => {
+  it("merges aliases and puts the preset plugins before the CSS plugin and the chunk namer", () => {
     const tailwind: Plugin = { name: "fake-tailwind" };
     const merged = mergeMiniAppPresets(
       [
@@ -60,7 +60,7 @@ describe("mergeMiniAppPresets", () => {
       shellOf("/r"),
     );
     expect(merged.alias).toEqual({ a: "/x/a.ts", b: "/x/b.ts" });
-    expect(merged.plugins.map((plugin: PluginOption) => (plugin !== null && typeof plugin === "object" && "name" in plugin ? plugin.name : "?"))).toEqual(["fake-tailwind", "quizzard-miniapp-css"]);
+    expect(merged.plugins.map((plugin: PluginOption) => (plugin !== null && typeof plugin === "object" && "name" in plugin ? plugin.name : "?"))).toEqual(["fake-tailwind", "quizzard-miniapp-css", "quizzard-miniapp-chunks"]);
   });
 
   it("refuses a duplicate id, nested folders and one alias with two targets", () => {

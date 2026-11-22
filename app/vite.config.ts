@@ -6,6 +6,7 @@ import { VitePWA } from "vite-plugin-pwa";
 import { app as config, type AppConfig } from "../app.config.ts";
 import { OG_IMAGE, escapeHtml, ogImageAlt, ogImageUrl, siteVerificationTag, structuredData } from "../scripts/seo.ts";
 import { SW_HANDOVER_FILE, swHandoverScript } from "../scripts/sw-handover.ts";
+import { vitePreset as teamsPreset } from "@simeonts/teamsync-random-team-generator-miniapp/vite-preset";
 import { mergeMiniAppPresets, type MiniAppPackage, type ShellStyles } from "./build/miniapp-presets.ts";
 
 const app: AppConfig = config;
@@ -15,8 +16,13 @@ const BASE = app.basePath;
 
 const fromHere = (path: string): string => fileURLToPath(new URL(path, import.meta.url));
 
-/** Mini-app packages and their folders; their CSS is scoped at build time (PLAN §1.3). TeamSync joins in T-10. */
-const MINIAPP_PACKAGES: readonly MiniAppPackage[] = [];
+/**
+ * Mini-app packages and their folders; their CSS is scoped at build time (PLAN §1.3) and checked
+ * against the shell's tokens. Vendored packages live in git submodules under `vendor/` (PLAN T-10).
+ */
+const MINIAPP_PACKAGES: readonly MiniAppPackage[] = [
+  { preset: teamsPreset, root: fromHere("../vendor/teamsync/packages/miniapp") },
+];
 
 /** The shell's stylesheets (global names) and token files (what mini-app CSS may use), for the mini-app CSS plugin. */
 export const SHELL_STYLES: ShellStyles = {
