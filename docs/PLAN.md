@@ -1,6 +1,6 @@
 # PLAN — Quizzard
 
-> Status: **draft** · Phase 2 output. Based on SPEC approved 2026-11-22.
+> Status: **approved 2026-11-22 by Moni** · Phase 2 output. Based on SPEC approved 2026-11-22.
 > Task ids: `T-` = this repo · `TS-` = repo `teamsync-random-team-generator` · `GG-` = repo `gg-counter`.
 
 ## 1. Architecture
