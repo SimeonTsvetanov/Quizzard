@@ -4,6 +4,16 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-11-23
+### Added
+- Answer sheet: each round can say what a right answer gives ("A right answer gives" — 1 by default, for
+  example 2 for a double round). Every line of the round follows; a question you change by hand keeps
+  its own points and gets a green edge.
+### Changed
+- Answer sheet is now one app screen instead of a long page: the total stays at the top, the rounds are
+  numbers with their points (tap one to open it, + for the next round), and only the questions of the
+  open round scroll. "Clear game" moved to the eraser at the top.
+
 ## [0.6.0] - 2026-11-23
 ### Added
 - Answer sheet: a new tool for your team's scribe. Write the answers of each round on your phone instead

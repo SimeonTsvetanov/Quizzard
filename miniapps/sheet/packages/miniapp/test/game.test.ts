@@ -2,10 +2,11 @@ import { describe, expect, it } from "vitest";
 import fc from "fast-check";
 import {
   LIMITS, blankGame, blankQuestion, blankRound, formatPoints, gameTotal, isBlankGame, keepBlankLine, parseGame, parsePoints,
-  roundCounts, roundPoints, toSaved, type Game, type Mark, type Round,
+  roundCounts, roundPoints, setWorth, toSaved, worthOf, type Game, type Mark, type Round,
 } from "../src/core/game.ts";
 
-const question = (text: string, mark: Mark, points = 1) => ({ text, mark, points });
+const question = (text: string, mark: Mark, points: number | null = null) => ({ text, mark, points });
+const round = (questions: ReturnType<typeof question>[], extra: Partial<Round> = {}): Round => ({ name: "", points: 1, bonus: 0, questions, ...extra });
 
 describe("parsePoints", () => {
   it("reads whole numbers, halves with a dot or a comma, and signs", () => {
@@ -45,27 +46,39 @@ describe("formatPoints", () => {
 });
 
 describe("points of a round and of the sheet", () => {
-  const round: Round = { name: "History", bonus: 2, questions: [question("Paris", "right"), question("1066", "wrong"), question("Nile", "right", 0.5), question("", "none"), question("x", "right", 2)] };
+  const history = round([question("Paris", "right"), question("1066", "wrong"), question("Nile", "right", 0.5), question("", "none"), question("x", "right", 2)], { name: "History", bonus: 2 });
 
   it("a round = the points of its right answers + the bonus", () => {
-    expect(roundPoints(round)).toBe(5.5);
-    expect(roundPoints({ ...round, bonus: -1 })).toBe(2.5);
-    expect(roundCounts(round)).toEqual({ right: 3, judged: 4 });
+    expect(roundPoints(history)).toBe(5.5);
+    expect(roundPoints({ ...history, bonus: -1 })).toBe(2.5);
+    expect(roundCounts(history)).toEqual({ right: 3, judged: 4 });
   });
 
   it("wrong and unjudged answers give nothing, whatever they are worth", () => {
-    expect(roundPoints({ name: "", bonus: 0, questions: [question("a", "wrong", 5), question("b", "none", 5)] })).toBe(0);
+    expect(roundPoints(round([question("a", "wrong", 5), question("b", "none", 5)]))).toBe(0);
+  });
+
+  it("the round's points apply to every question without its own; a question's own points win", () => {
+    const double = round([question("a", "right"), question("b", "right"), question("c", "right", 0.5), question("d", "wrong")], { points: 2 });
+    expect(roundPoints(double)).toBe(4.5);
+    expect(roundPoints({ ...double, points: 3 })).toBe(6.5);
+    const one = question("e", "right");
+    setWorth(double, one, 5);
+    expect(one.points).toBe(5);
+    setWorth(double, one, 2); // the round's own value = no exception any more
+    expect(one.points).toBeNull();
+    expect(worthOf({ ...double, points: 7 }, one)).toBe(7);
   });
 
   it("the total is the sum of the rounds, without floating-point dust", () => {
-    const tenths: Round = { name: "", bonus: 0, questions: [question("a", "right", 0.1), question("b", "right", 0.2)] };
+    const tenths = round([question("a", "right", 0.1), question("b", "right", 0.2)]);
     expect(roundPoints(tenths)).toBe(0.3);
-    expect(gameTotal({ version: 1, rounds: [round, tenths, blankRound()] })).toBe(5.8);
+    expect(gameTotal({ version: 1, rounds: [history, tenths, blankRound()] })).toBe(5.8);
   });
 
   it("the total equals the sum of every round, for any sheet", () => {
-    const anyQuestion = fc.record({ text: fc.string({ maxLength: 5 }), mark: fc.constantFrom<Mark>("none", "right", "wrong"), points: fc.integer({ min: -400, max: 400 }).map((n) => n / 4) });
-    const anyRound = fc.record({ name: fc.constant(""), bonus: fc.integer({ min: -40, max: 40 }).map((n) => n / 4), questions: fc.array(anyQuestion, { maxLength: 8 }) });
+    const anyQuestion = fc.record({ text: fc.string({ maxLength: 5 }), mark: fc.constantFrom<Mark>("none", "right", "wrong"), points: fc.option(fc.integer({ min: -400, max: 400 }).map((n) => n / 4), { nil: null }) });
+    const anyRound = fc.record({ name: fc.constant(""), points: fc.integer({ min: 0, max: 8 }).map((n) => n / 2), bonus: fc.integer({ min: -40, max: 40 }).map((n) => n / 4), questions: fc.array(anyQuestion, { maxLength: 8 }) });
     fc.assert(fc.property(fc.array(anyRound, { maxLength: 6 }), (rounds) => {
       const sum = rounds.reduce((total, one) => total + roundPoints(one), 0);
       expect(gameTotal({ version: 1, rounds })).toBeCloseTo(sum, 6);
@@ -75,16 +88,16 @@ describe("points of a round and of the sheet", () => {
 
 describe("the blank line at the end of a round", () => {
   it("is added after a written line and never doubled", () => {
-    const round: Round = { name: "", bonus: 0, questions: [question("Paris", "none")] };
-    expect(keepBlankLine(round).questions).toHaveLength(2);
-    expect(keepBlankLine(round).questions).toHaveLength(2);
-    round.questions.push(blankQuestion(), blankQuestion());
-    expect(keepBlankLine(round).questions).toHaveLength(2);
+    const one = round([question("Paris", "none")]);
+    expect(keepBlankLine(one).questions).toHaveLength(2);
+    expect(keepBlankLine(one).questions).toHaveLength(2);
+    one.questions.push(blankQuestion(), blankQuestion());
+    expect(keepBlankLine(one).questions).toHaveLength(2);
   });
 
   it("is not added to a full round", () => {
-    const round: Round = { name: "", bonus: 0, questions: Array.from({ length: LIMITS.questions }, () => question("a", "right")) };
-    expect(keepBlankLine(round).questions).toHaveLength(LIMITS.questions);
+    const full = round(Array.from({ length: LIMITS.questions }, () => question("a", "right")));
+    expect(keepBlankLine(full).questions).toHaveLength(LIMITS.questions);
   });
 });
 
@@ -95,7 +108,7 @@ describe("saving and loading", () => {
   });
 
   it("round-trips a sheet, without the blank lines in storage and with them on screen", () => {
-    const game: Game = { version: 1, rounds: [keepBlankLine({ name: "Music", bonus: 1, questions: [question("ABBA", "right"), question("", "wrong", 2)] }), blankRound()] };
+    const game: Game = { version: 1, rounds: [keepBlankLine(round([question("ABBA", "right"), question("", "wrong", 3)], { name: "Music", bonus: 1, points: 2 })), blankRound()] };
     const saved = toSaved(game);
     expect(saved?.rounds[0]?.questions).toHaveLength(2);
     expect(saved?.rounds[1]?.questions).toHaveLength(0);
@@ -109,9 +122,17 @@ describe("saving and loading", () => {
     const dirty = { rounds: [null, 7, { name: 5, bonus: "2", questions: [null, { text: "a".repeat(500), mark: "maybe", points: 1e9 }, { text: 3, mark: "right", points: 0.5 }] }] };
     const game = parseGame(dirty);
     expect(game.rounds).toHaveLength(1);
-    expect(game.rounds[0]).toMatchObject({ name: "", bonus: 0 });
-    expect(game.rounds[0]?.questions[0]).toEqual({ text: "a".repeat(LIMITS.answer), mark: "none", points: 1 });
+    expect(game.rounds[0]).toMatchObject({ name: "", bonus: 0, points: 1 });
+    expect(game.rounds[0]?.questions[0]).toEqual({ text: "a".repeat(LIMITS.answer), mark: "none", points: null });
     expect(game.rounds[0]?.questions[1]).toEqual({ text: "", mark: "right", points: 0.5 });
+  });
+
+  it("a sheet saved before rounds had their own points (0.6.0) reads the same: 1 = the round's, others stay", () => {
+    const old = { rounds: [{ name: "", bonus: 0, questions: [{ text: "a", mark: "right", points: 1 }, { text: "b", mark: "right", points: 0.5 }] }] };
+    const game = parseGame(old);
+    expect(game.rounds[0]?.points).toBe(1);
+    expect(game.rounds[0]?.questions.slice(0, 2).map((one) => one.points)).toEqual([null, 0.5]);
+    expect(gameTotal(game)).toBe(1.5);
   });
 
   it("never returns more rounds or questions than the limits, whatever is stored", () => {

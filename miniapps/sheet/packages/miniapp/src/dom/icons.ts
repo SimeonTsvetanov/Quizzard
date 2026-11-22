@@ -1,8 +1,8 @@
 // The body's Lucide icons (ISC): inline SVG, 20 px, stroke 1.75 (2.25 for the two marks, which are
 // read at a glance), currentColor, aria-hidden. Only the marks the sheet shows are bundled.
-import { Check, ChevronDown, Plus, Trash2, X, createElement, type IconNode } from "lucide";
+import { Check, Eraser, Plus, Trash2, X, createElement, type IconNode } from "lucide";
 
-const ICONS = { check: Check, chevron: ChevronDown, plus: Plus, trash: Trash2, x: X } satisfies Record<string, IconNode>;
+const ICONS = { check: Check, eraser: Eraser, plus: Plus, trash: Trash2, x: X } satisfies Record<string, IconNode>;
 
 /** A mark the body can draw. */
 export type IconName = keyof typeof ICONS;

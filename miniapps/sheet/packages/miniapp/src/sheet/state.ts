@@ -17,8 +17,10 @@ export interface Sheet {
   lang: Lang;
   t: Translate;
   game: Game;
-  /** Index of the round that is open; -1 = all closed. */
+  /** Index of the round on screen. */
   open: number;
+  /** "Clear game" in the host's header; null until it is built. */
+  clearButton: HTMLButtonElement | null;
   saveTimer: ReturnType<typeof setTimeout> | undefined;
   /** The "not saved" note is shown once per mount. */
   hasWarned: boolean;

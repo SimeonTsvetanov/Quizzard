@@ -21,8 +21,8 @@ export interface Question {
   /** What the team wrote. */
   text: string;
   mark: Mark;
-  /** What a right answer is worth (1 unless the quiz says otherwise, e.g. 0.5 or 2). */
-  points: number;
+  /** What this question is worth when it differs from the round's points; null = the round's. */
+  points: number | null;
 }
 
 /** One round of the quiz. */
@@ -30,6 +30,8 @@ export interface Round {
   /** Optional topic, e.g. "History"; empty = just "Round N". */
   name: string;
   questions: Question[];
+  /** What a right answer is worth in this round (1 unless the quiz says otherwise, e.g. 2 or 0.5). */
+  points: number;
   /** Extra points for the round, either sign (a bonus, a correction by the quiz master). */
   bonus: number;
 }
@@ -47,12 +49,12 @@ const round2 = (value: number): number => Math.round(value * 100) / 100;
 
 /** Returns a new question nobody has touched. */
 export function blankQuestion(): Question {
-  return { text: "", mark: "none", points: DEFAULT_POINTS };
+  return { text: "", mark: "none", points: null };
 }
 
 /** Returns a new round with one blank line to write on. */
 export function blankRound(): Round {
-  return { name: "", questions: [blankQuestion()], bonus: 0 };
+  return { name: "", questions: [blankQuestion()], points: DEFAULT_POINTS, bonus: 0 };
 }
 
 /** Returns a new sheet: round 1, ready to write. */
@@ -62,12 +64,12 @@ export function blankGame(): Game {
 
 /** Returns whether nobody has written, marked or re-valued the question. */
 export function isBlankQuestion(question: Question): boolean {
-  return question.text === "" && question.mark === "none" && question.points === DEFAULT_POINTS;
+  return question.text === "" && question.mark === "none" && question.points === null;
 }
 
 /** Returns whether the round holds nothing worth keeping. */
 export function isBlankRound(round: Round): boolean {
-  return round.name === "" && round.bonus === 0 && round.questions.every(isBlankQuestion);
+  return round.name === "" && round.bonus === 0 && round.points === DEFAULT_POINTS && round.questions.every(isBlankQuestion);
 }
 
 /** Returns whether the whole sheet is untouched. */
@@ -96,10 +98,25 @@ export function formatPoints(value: number, lang: string): string {
   return new Intl.NumberFormat(lang, { maximumFractionDigits: 2, useGrouping: false }).format(round2(value) + 0);
 }
 
-/** Returns the points of a round: every right answer's points plus the bonus. */
+/** Returns what a right answer to the question gives: its own points, else the round's. */
+export function worthOf(round: Round, question: Question): number {
+  return question.points ?? round.points;
+}
+
+/**
+ * Sets what one question is worth; the round's own value means "no exception".
+ * @param round - the question's round
+ * @param question - changed in place
+ * @param value - the points typed for it
+ */
+export function setWorth(round: Round, question: Question, value: number): void {
+  question.points = value === round.points ? null : value;
+}
+
+/** Returns the points of a round: every right answer's worth plus the bonus. */
 export function roundPoints(round: Round): number {
   let sum = round.bonus;
-  for (const question of round.questions) if (question.mark === "right") sum += question.points;
+  for (const question of round.questions) if (question.mark === "right") sum += worthOf(round, question);
   return round2(sum);
 }
 
@@ -141,7 +158,7 @@ export function toSaved(game: Game): Game | null {
     rounds: game.rounds.map((round) => {
       const questions = round.questions.map((question) => ({ ...question }));
       while (questions.length > 0 && isBlankQuestion(questions.at(-1) ?? blankQuestion())) questions.pop();
-      return { name: round.name, questions, bonus: round.bonus };
+      return { name: round.name, questions, points: round.points, bonus: round.bonus };
     }),
   };
 }
@@ -152,21 +169,23 @@ function parseNumber(value: unknown, fallback: number): number {
   return typeof value === "number" && Number.isFinite(value) && Math.abs(value) <= LIMITS.points ? round2(value) : fallback;
 }
 
-function parseQuestion(value: unknown): Question | null {
+function parseQuestion(value: unknown, roundWorth: number): Question | null {
   if (!isRecord(value)) return null;
   const { text, mark } = value;
+  const worth = parseNumber(value["points"], roundWorth);
   return {
     text: typeof text === "string" ? text.slice(0, LIMITS.answer) : "",
     mark: mark === "right" || mark === "wrong" ? mark : "none",
-    points: parseNumber(value["points"], DEFAULT_POINTS),
+    points: worth === roundWorth ? null : worth,
   };
 }
 
 function parseRound(value: unknown): Round | null {
   if (!isRecord(value)) return null;
   const { name, questions } = value;
-  const parsed = Array.isArray(questions) ? questions.map(parseQuestion).filter((question) => question !== null).slice(0, LIMITS.questions) : [];
-  return keepBlankLine({ name: typeof name === "string" ? name.slice(0, LIMITS.name) : "", questions: parsed, bonus: parseNumber(value["bonus"], 0) });
+  const worth = parseNumber(value["points"], DEFAULT_POINTS);
+  const parsed = Array.isArray(questions) ? questions.map((question) => parseQuestion(question, worth)).filter((question) => question !== null).slice(0, LIMITS.questions) : [];
+  return keepBlankLine({ name: typeof name === "string" ? name.slice(0, LIMITS.name) : "", questions: parsed, points: worth, bonus: parseNumber(value["bonus"], 0) });
 }
 
 /**

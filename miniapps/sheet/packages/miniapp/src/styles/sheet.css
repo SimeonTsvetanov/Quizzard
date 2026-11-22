@@ -1,35 +1,52 @@
 /* Answer sheet stylesheet (shared mode, PLAN §1.3): only the screen's own `sheet-*` components. No
    layer order line, tokens, accent or fonts — the shell declares the layers and supplies the tokens.
-   Tokens only, no borders (forge design); every tappable thing is at least --tap-target. */
+   One app screen, not a page: the total and the round tabs stay put, the open round fills the rest
+   and only its question rows scroll. Tokens only, no borders; every control is at least --tap-target. */
 @layer components {
-  /* || Components: sheet */
+  /* || Components: screen */
   .sheet-screen {
     /* iOS Safari zooms into any field whose text is smaller than 16px. */
     --sheet-field-min-font: 16px;
     /* Room for "0.25" or "−10" in the points column. */
     --sheet-points-width: 3.5rem;
-    --sheet-number-width: 1.5rem;
+    --sheet-number-width: 1.25rem;
+
+    @media (width < 360px) {
+      --sheet-points-width: 3rem;
+    }
+
+    /* Below this the screen stops shrinking and the page scrolls instead (a phone on its side). */
+    --sheet-min-height: 21rem;
+    /* The header is --header-height plus its own block padding; one more pixel is the scroll sentinel under it. */
+    --sheet-header: calc(var(--header-height) + var(--space-2) + 1px);
+    /* What the page frame takes around the screen: header, main padding (top + bottom), safe areas. */
+    --sheet-frame: calc(var(--sheet-header) + var(--safe-top) + var(--safe-bottom) + var(--space-12));
 
     display: grid;
-    gap: var(--space-4);
+    /* minmax(0, …): a field's or the tab strip's own width must never widen the screen. */
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(0, 1fr);
+    gap: var(--space-3);
+    height: calc(100dvh - var(--sheet-frame));
+    min-height: var(--sheet-min-height);
     max-width: var(--content-narrow);
     margin-inline: auto;
+
+    @media (width > 600px) {
+      --sheet-frame: calc(var(--sheet-header) + var(--safe-top) + var(--safe-bottom) + var(--space-16) + var(--space-4));
+    }
   }
 
-  /* || Components: running total — always in view while the rounds scroll under it */
+  /* || Components: running total */
   .sheet-total {
-    position: sticky;
-    top: calc(var(--header-height) + var(--safe-top) + var(--space-2));
-    z-index: 1;
-    display: grid;
-    grid-template-columns: 1fr auto;
-    align-items: center;
-    column-gap: var(--space-4);
-    padding: var(--space-3) var(--space-5);
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-3);
+    padding: var(--space-2) var(--space-5);
     border-radius: var(--radius-lg);
     background: var(--color-accent);
     color: var(--color-on-accent);
-    box-shadow: var(--shadow-2);
+    box-shadow: var(--shadow-1);
   }
 
   .sheet-total-label {
@@ -38,115 +55,120 @@
   }
 
   .sheet-total-rounds {
-    grid-column: 1;
+    flex: 1;
     font-size: var(--text-sm);
   }
 
   .sheet-total-value {
-    grid-column: 2;
-    grid-row: 1 / span 2;
-    font-size: var(--text-3xl);
+    font-size: var(--text-2xl);
     font-weight: var(--weight-bold);
     font-variant-numeric: tabular-nums;
     letter-spacing: var(--tracking-tight);
     line-height: var(--leading-tight);
   }
 
-  /* || Components: round card */
-  .sheet-rounds {
-    display: grid;
-    gap: var(--space-3);
-  }
-
-  .sheet-round {
-    border-radius: var(--radius-lg);
-    background: var(--color-surface);
-    box-shadow: var(--shadow-1);
-    /* The sticky total must not cover a round scrolled into view. */
-    scroll-margin-top: calc(var(--header-height) + var(--safe-top) + var(--space-16) + var(--space-8));
-  }
-
-  .sheet-round-head {
-    margin: 0;
-    font: inherit;
-  }
-
-  .sheet-round-toggle {
+  /* || Components: round tabs (1, 2, 3 … +) */
+  .sheet-tabs {
     display: flex;
-    align-items: center;
-    gap: var(--space-3);
-    width: 100%;
-    min-height: calc(var(--tap-target) + var(--space-4));
-    padding: var(--space-3) var(--space-4);
+    gap: var(--space-2);
+    /* Room for the focus ring and the shadow inside the scrolling strip. */
+    margin: calc(-1 * var(--space-1));
+    padding: var(--space-1);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+
+  .sheet-tab {
+    /* Wide enough for a two-digit round and "12.5" under it. */
+    --sheet-tab-width: 3.25rem;
+
+    display: grid;
+    flex: none;
+    place-items: center;
+    min-width: var(--sheet-tab-width);
+    min-height: calc(var(--tap-target) + var(--space-1));
+    padding: var(--space-1) var(--space-2);
     border: 0;
-    border-radius: var(--radius-lg);
-    background: none;
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
     color: var(--color-text);
     font: inherit;
-    text-align: start;
+    line-height: var(--leading-tight);
     cursor: pointer;
     -webkit-user-select: none;
     user-select: none;
+    transition: background-color var(--duration-fast) var(--ease-standard), color var(--duration-fast) var(--ease-standard);
 
     &:focus-visible {
       outline: var(--focus-ring-width) solid var(--color-focus);
-      outline-offset: calc(-1 * var(--focus-ring-width));
+      outline-offset: var(--focus-ring-offset);
+    }
+
+    &[aria-current="true"] {
+      background: var(--color-accent-tint);
+      color: var(--color-accent-text);
+      box-shadow: inset 0 0 0 var(--focus-ring-width) var(--color-accent);
     }
   }
 
-  .sheet-round-titles {
-    display: grid;
-    flex: 1;
-    min-width: 0;
-  }
-
-  .sheet-round-title {
-    overflow: hidden;
-    font-size: var(--text-lg);
-    font-weight: var(--weight-semibold);
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .sheet-round-name {
-    font-weight: var(--weight-regular);
-    color: var(--color-text-secondary);
-  }
-
-  .sheet-round-meta {
-    font-size: var(--text-sm);
-    color: var(--color-text-secondary);
-
-    &:empty {
-      display: none;
-    }
-  }
-
-  .sheet-round-points {
-    font-size: var(--text-xl);
+  .sheet-tab-number {
     font-weight: var(--weight-bold);
+  }
+
+  .sheet-tab-points {
+    font-size: var(--text-xs);
     font-variant-numeric: tabular-nums;
+    color: var(--color-text-secondary);
+
+    .sheet-tab[aria-current="true"] & {
+      color: inherit;
+    }
+  }
+
+  .sheet-tab--add {
     color: var(--color-accent-text);
   }
 
-  .sheet-round-chevron {
-    display: inline-flex;
-    color: var(--color-text-tertiary);
-    transition: rotate var(--duration-fast) var(--ease-standard);
+  /* || Components: the open round — fills what is left of the screen */
+  .sheet-round {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(0, 1fr);
+    gap: var(--space-2);
+    min-height: 0;
+    padding: var(--space-3) var(--space-4) 0;
 
-    .sheet-round[data-open] & {
-      rotate: 180deg;
+    /* The narrowest phones (320 px): less padding, so the answer field keeps a usable width. */
+    @media (width < 360px) {
+      padding-inline: var(--space-2);
     }
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-1);
   }
 
-  .sheet-round-body {
-    display: grid;
+  .sheet-round-head {
+    display: flex;
+    align-items: center;
     gap: var(--space-3);
-    padding: 0 var(--space-4) var(--space-4);
+  }
 
-    &[hidden] {
-      display: none;
-    }
+  .sheet-round-title {
+    flex: none;
+    margin: 0;
+    font-size: var(--text-lg);
+    font-weight: var(--weight-bold);
+  }
+
+  .sheet-round-points {
+    flex: none;
+    min-width: var(--sheet-points-width);
+    font-size: var(--text-2xl);
+    font-weight: var(--weight-bold);
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+    color: var(--color-accent-text);
   }
 
   /* || Components: fields (round name, answer, points) */
@@ -164,13 +186,17 @@
     font-size: max(var(--sheet-field-min-font), var(--text-base));
 
     &::placeholder {
-      color: var(--color-text-tertiary);
+      color: var(--color-text-secondary);
     }
 
     &:focus-visible {
       outline: var(--focus-ring-width) solid var(--color-focus);
       outline-offset: var(--focus-ring-offset);
     }
+  }
+
+  .sheet-name {
+    flex: 1;
   }
 
   .sheet-points {
@@ -181,21 +207,34 @@
     font-variant-numeric: tabular-nums;
   }
 
-  /* The small "Points" heading over the points column. */
-  .sheet-columns {
+  /* "A right answer gives [1]": the head of the points column — it sets every row below it. */
+  .sheet-each {
     display: flex;
+    align-items: center;
     justify-content: flex-end;
-    margin-bottom: calc(-1 * var(--space-2));
-    font-size: var(--text-xs);
-    color: var(--color-text-secondary);
-
-    & span {
-      width: var(--sheet-points-width);
-      text-align: center;
-    }
+    gap: var(--space-2);
   }
 
-  /* || Components: question rows */
+  .sheet-each-label {
+    font-size: var(--text-sm);
+    color: var(--color-text-secondary);
+  }
+
+  /* || Components: the scrolling part — rows, bonus, delete */
+  .sheet-scroll {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-content: start;
+    gap: var(--space-3);
+    min-height: 0;
+    /* The focus ring of the first and last field must not be cut by the scroll box. */
+    margin-inline: calc(-1 * var(--space-1));
+    padding: var(--space-1) var(--space-1) var(--space-4);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scroll-padding-block: var(--space-4);
+  }
+
   .sheet-questions {
     display: grid;
     gap: var(--space-2);
@@ -214,6 +253,12 @@
        fainter colour — a faint number on the field fill fails contrast). */
     &:not([data-mark="right"]) .sheet-points {
       font-weight: var(--weight-regular);
+    }
+
+    /* A question worth something else than the round says stands out. */
+    &[data-own-points] .sheet-points {
+      color: var(--color-accent-text);
+      box-shadow: inset 0 0 0 var(--focus-ring-width) var(--color-accent);
     }
 
     &[data-mark="wrong"] .sheet-answer {
@@ -267,13 +312,11 @@
     color: var(--color-on-danger);
   }
 
-  /* || Components: bonus row */
   .sheet-bonus {
     display: grid;
     grid-template-columns: 1fr var(--sheet-points-width);
     align-items: center;
     column-gap: var(--space-2);
-    padding-top: var(--space-2);
   }
 
   .sheet-bonus-label {
@@ -289,14 +332,21 @@
 
   .sheet-round-foot {
     display: flex;
-    justify-content: flex-end;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    min-height: var(--tap-target);
   }
 
-  /* || Components: quiet text buttons (Delete round, Clear game) */
+  /* "Clear game" in the shell's header: its icon-button display would show it while hidden. */
+  [data-sheet-clear][hidden] {
+    display: none;
+  }
+
+  /* || Components: quiet text button (Delete round) */
   .sheet-link {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
     gap: var(--space-2);
     min-height: var(--tap-target);
     padding: 0 var(--space-2);
@@ -321,29 +371,20 @@
   .sheet-link--danger {
     color: var(--color-danger-text);
   }
-
-  .sheet-actions {
-    display: grid;
-    gap: var(--space-2);
-    justify-items: center;
-
-    & .button {
-      width: 100%;
-    }
-  }
 }
 
 @layer overrides {
   @media (prefers-reduced-motion: reduce) {
-    .sheet-round-chevron,
+    .sheet-tab,
     .sheet-mark {
       transition: none;
     }
   }
 
-  /* Windows High Contrast: the pressed mark must not rely on its background colour. */
+  /* Windows High Contrast: the pressed mark and the open tab must not rely on a background colour. */
   @media (forced-colors: active) {
-    .sheet-mark[aria-pressed="true"] {
+    .sheet-mark[aria-pressed="true"],
+    .sheet-tab[aria-current="true"] {
       outline: var(--focus-ring-width) solid CanvasText;
     }
   }
