@@ -1,6 +1,6 @@
 # SPEC — Quizzard
 
-> Status: **draft 2026-11-22** (intake done, waiting for "spec approved") · Phase 0–1 output (flow). Facts and numbers only.
+> Status: **approved 2026-11-22 by Moni** · Phase 0–1 output (flow). Facts and numbers only.
 > Background and sources: forge `docs/RESEARCH-QUIZZARD-2026-11-22.md`.
 
 ## 1. Problem and users
@@ -32,6 +32,8 @@
 | F11 | **Brand:** the wizard logo (variant A, three stars), tagline "The Quiz Toolkit", palette from DECISIONS, cream install icon | AC7 |
 | F12 | **Offline PWA** with update prompt; mini-app code is loaded on first open and then works offline | AC8 |
 | F13 | **English + Bulgarian**; a mini-app without a language falls back to English | AC4 |
+| F14 | **Nothing is lost on the way in:** every behaviour of the standalone apps works inside Quizzard — in GG Counter the last-scored tint, the last-changes line and history sheet with remove/restore, medals, the motion (card in/out, score roll, reorder), the field that stays above the keyboard, the choice dialogs, share text; in TeamSync its flows, share and remembered names | AC2 |
+| F15 | **Storage that lasts and is visible:** each mini-app has its own storage area (prefs keys with its prefix; its own IndexedDB database / OPFS folder when it needs one); Quizzard asks the browser for persistent storage after the first saved data; Settings → Data shows the space used per mini-app and the space left (Storage API estimate), and warns before the quota is near | AC9 |
 
 ## 4. Usage modes
 - Hosting type: **standard** (static GitHub Pages, everything in the browser).
@@ -43,6 +45,7 @@
 - Mini-apps: their existing keys (`gg-counter:v1:*`, TeamSync's keys) — unchanged, shared with the standalone sites.
 - Data of the old Quizzard (its localStorage/IndexedDB): not read, not migrated, not deleted (DECISIONS).
 - Export/import: per mini-app, as each already has.
+- Space: the 5 MiB `localStorage` cap is shared by every app on the origin, so anything large (future quizzes, media) goes to IndexedDB/OPFS in the mini-app's own database; persistence requested (F15); Safari's 7-day eviction for non-installed sites is explained in Help.
 
 ## 6. UI
 - Shell: decided in PLAN (forge template Level 1 is the default; mini-apps bring their own framework lazily).
@@ -69,6 +72,7 @@
   in Quizzard leaves the GG Counter game intact.
 - AC6: `pnpm new:miniapp demo` + `pnpm verify` is green and "demo" is on Home, with no change to shell files besides the registry.
 - AC7: logo, tagline, palette and install icon match `brand/`; a11y-check 0 FAIL in both themes.
+- AC9: Settings → Data lists Teams, Scores and Quizzard with their sizes and the free space; after the first save `navigator.storage.persisted()` is requested (result shown); a mini-app's clear button changes only its own size.
 - AC8: offline after one visit: Home and every mini-app opened before still work; a new version waits for "Reload".
 
 ## 10. Risks

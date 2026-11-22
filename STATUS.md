@@ -1,6 +1,6 @@
 # STATUS — Quizzard
 
-**Updated:** 2026-11-22 · **Phase:** 0 Intake done → 1 Spec (draft, waiting for Moni's "spec approved")
+**Updated:** 2026-11-22 · **Phase:** 1 Spec approved 2026-11-22 → 2 Plan (in progress)
 
 ## Done
 - Old code archived in branch `legacy-2025`; `main` still serves the old site until the new one is ready.
@@ -9,7 +9,7 @@
 
 ## Next
 - Palette decided: C · Emerald (DECISIONS).
-- "spec approved" → `/plan` (shell level, where mini-app source lives, tasks) → scaffold from the forge template.
+- `/plan` (shell level, where mini-app source lives, tasks) → scaffold from the forge template.
 
 ## Blockers / open
 - None. Work happens on branch `claude/eager-bardeen-t8t7b7`; nothing is pushed to `main` before the new app builds.
