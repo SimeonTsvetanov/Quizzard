@@ -189,10 +189,22 @@ test("a chunk that cannot load (offline, not cached) shows the error view; Try a
   await expect(error.getByRole("heading")).toBeFocused();
   await expect(back(page)).toBeVisible();
   await page.unroute(PROBE_CHUNK);
+  const lengthBefore = await page.evaluate(() => history.length);
   await error.getByRole("button", { name: "Try again" }).click();
   await expect(probe(page)).toBeVisible();
   await expect(page.locator("[data-outlet] .es")).toHaveCount(0);
-  await page.goBack(); // the reload kept the route's mark: Home is still below
+  // The reload kept the route's mark, so the router did not seed Home again.
+  expect(await page.evaluate((): unknown => history.state)).toEqual({ quizzardScreen: { homeBelow: true } });
+  // Playwright's Firefox build adds a history entry on a script reload (it runs with the pref
+  // fission.webContentIsolationStrategy=0: bugzil.la/1832341, microsoft/playwright#22640; stock
+  // Firefox does not), so Back lands on the pre-reload copy of this route there. Detected by what
+  // the harness does, not by browser name: wherever a reload keeps the history, Home must be below.
+  const reloadAddedEntry = (await page.evaluate(() => history.length)) > lengthBefore;
+  if (reloadAddedEntry) {
+    test.info().annotations.push({ type: "harness", description: "reload added a history entry: Back after the reload not checked" });
+    return;
+  }
+  await page.goBack();
   await expectHome(page);
 });
 

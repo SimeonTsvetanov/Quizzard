@@ -2,9 +2,15 @@ import { expect, test } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { app } from "../../app.config.ts";
 
+// WebKit logs this console error for the viewport key the forge template sets on purpose: Android
+// resizes the layout for the on-screen keyboard through it, Safari ignores it and the app measures
+// VisualViewport instead (forge design → responsive-layout §5). Exact text only: every other
+// console error still fails the test.
+const KNOWN_WEBKIT_VIEWPORT_ERROR = 'Viewport argument key "interactive-widget" not recognized and ignored.';
+
 test("app loads with title, footer year and no CSP errors", async ({ page }) => {
   const errors: string[] = [];
-  page.on("console", (m) => { if (m.type() === "error") errors.push(m.text()); });
+  page.on("console", (m) => { if (m.type() === "error" && m.text() !== KNOWN_WEBKIT_VIEWPORT_ERROR) errors.push(m.text()); });
   await page.goto("./");
   await expect(page).toHaveTitle(/Quizzard/);
   await expect(page.locator("[data-year]")).toHaveText(String(new Date().getFullYear()));

@@ -103,7 +103,10 @@ test("a deep link renders Home's cards too: the list is never left busy (footer 
   await expect(page.locator("[data-launcher]")).not.toHaveAttribute("aria-busy", "true");
   expect(await page.evaluate(() => localStorage.getItem("quizzard:v1:last-app"))).toBe('"alpha"');
   await page.goBack();
-  expect((await ids(page))[0]).toBe("alpha");
+  // Web-first: goBack() can return before the hashchange that re-renders Home (Firefox does), and
+  // the cards rendered at load still have the registry order.
+  await expect(page.locator("[data-view=home]")).toBeVisible();
+  await expect(cards(page).first()).toHaveAttribute("data-card", "alpha");
 });
 
 test("a coming card is not a control: no link, not focusable, announced as coming soon, a tap does nothing", async ({ page }) => {

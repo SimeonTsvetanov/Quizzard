@@ -68,14 +68,15 @@ export function createOutlet({ element, createContext, onHome }: OutletOptions):
       const onRetry = failure === "load" ? () => { location.reload(); } : () => void show(entry, query);
       renderError({ element, entry, failure, error, onRetry, onHome });
     };
-    let module: MiniAppModule;
+    let module: MiniAppModule | null;
     try {
       module = await loadModule(entry);
     } catch (error: unknown) {
       showError("load", toError(error));
       return;
     }
-    if (!isCurrent()) return;
+    // null: the page is reloading for a stale chunk — the skeleton stays, no error flashes before it.
+    if (module === null || !isCurrent()) return;
     const host = h("div", { "data-miniapp": entry.meta.id });
     element.replaceChildren(host);
     try {
@@ -96,12 +97,14 @@ export function createOutlet({ element, createContext, onHome }: OutletOptions):
 
 /**
  * Loads the entry's chunk and checks its shape at the boundary (a vendored mini-app may be stale).
+ * @returns the module, or `null` when the chunk failed and app/src/pwa.ts is already reloading the
+ * page for it (its `vite:preloadError` handler makes Vite resolve the import with `undefined`)
  * @throws {@link Error} when there is nothing to load or the chunk has no `mount` (load failure)
  */
-async function loadModule(entry: MiniAppEntry): Promise<MiniAppModule> {
+async function loadModule(entry: MiniAppEntry): Promise<MiniAppModule | null> {
   if (entry.load === undefined) throw new Error(`Mini-app "${entry.meta.id}" has nothing to load`);
-  // unknown: a stale-chunk reload (app/src/pwa.ts) makes Vite resolve the import with undefined.
   const loaded: unknown = await entry.load();
+  if (loaded === undefined) return null;
   const module: unknown = typeof loaded === "object" && loaded !== null ? Reflect.get(loaded, "default") : undefined;
   if (!isMiniAppModule(module)) throw new Error(`Mini-app "${entry.meta.id}" did not export a module with mount()`);
   return module;
