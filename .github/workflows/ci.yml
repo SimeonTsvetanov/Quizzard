@@ -67,7 +67,10 @@ jobs:
       - run: pnpm exec playwright install-deps chromium webkit firefox
         timeout-minutes: 10
       - run: pnpm build
-      - run: pnpm e2e --fail-on-flaky-tests --shard=${{ matrix.shard }}/4
+      # A test that passes on a retry is reported as flaky but does not block the deploy (DECISIONS
+      # 2026-11-22): the vendored suites run on emulated mobile WebKit and Firefox, where two harness
+      # flakes kept a working build off the site for hours. Real failures (all retries red) still block.
+      - run: pnpm e2e --shard=${{ matrix.shard }}/4
         timeout-minutes: 15
       # Lighthouse budgets (lighthouserc.json). Moni's decision 2026-11-05: run the pinned CLI in CI only,
       # outside the project lockfile (its chromium-bidi dep fails our trustPolicy; it never ships to users).
