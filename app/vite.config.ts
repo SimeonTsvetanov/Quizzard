@@ -8,6 +8,7 @@ import { OG_IMAGE, escapeHtml, ogImageAlt, ogImageUrl, siteVerificationTag, stru
 import { SW_HANDOVER_FILE, swHandoverScript } from "../scripts/sw-handover.ts";
 import { vitePreset as teamsPreset } from "@simeonts/teamsync-random-team-generator-miniapp/vite-preset";
 import { vitePreset as scoresPreset } from "gg-counter-miniapp/vite-preset";
+import { vitePreset as sheetPreset } from "@simeonts/quizzard-sheet-miniapp/vite-preset";
 import { mergeMiniAppPresets, type MiniAppPackage, type ShellStyles } from "./build/miniapp-presets.ts";
 
 const app: AppConfig = config;
@@ -19,11 +20,12 @@ const fromHere = (path: string): string => fileURLToPath(new URL(path, import.me
 
 /**
  * Mini-app packages and their folders; their CSS is scoped at build time (PLAN §1.3) and checked
- * against the shell's tokens. Vendored packages live in git submodules under `vendor/` (PLAN T-10).
+ * against the shell's tokens. They live in this repo under `miniapps/` (DECISIONS 2026-11-23).
  */
 const MINIAPP_PACKAGES: readonly MiniAppPackage[] = [
   { preset: teamsPreset, root: fromHere("../miniapps/teams/packages/miniapp") },
   { preset: scoresPreset, root: fromHere("../miniapps/scores/packages/miniapp") },
+  { preset: sheetPreset, root: fromHere("../miniapps/sheet/packages/miniapp") },
 ];
 
 /** The shell's stylesheets (global names) and token files (what mini-app CSS may use), for the mini-app CSS plugin. */

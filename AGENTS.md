@@ -34,16 +34,18 @@ brand/          logo, icons, palette research (source for T-03/T-18)
 miniapps/teams  Teams (was TeamSync): packages/core + packages/miniapp are workspace packages; tests/e2e/miniapp runs as
                 Playwright projects `teams*`. Quizzard's own code since 2026-11-23 — edit it here
 miniapps/scores Scores (was GG Counter; React + Tailwind, isolated CSS): the same, projects `scores*` (per-project metadata)
+miniapps/sheet  Answer sheet (written here, Level 1): packages/miniapp only (src/core = pure logic); linted and type-checked
+                with the shell; e2e in tests/e2e/sheet-host.spec.ts
 ```
 
 ## Mini-apps (in this repo since 2026-11-23, DECISIONS)
 - Teams and Scores started as copies of TeamSync 1.0.4 (`0dab352`) and GG Counter 1.2.5 (`88a825a`). Nothing is pulled
   from those repos any more: no submodule, no Dependabot bump. A fix wanted in both places is made twice.
-- Their data is Quizzard's own: `quizzard-teams:v1:*`, `quizzard-scores:v1:*`. Never read or write the standalone
+- Their data is Quizzard's own: `quizzard-teams:v1:*`, `quizzard-scores:v1:*`, `quizzard-sheet:v1:*`. Never read or write the standalone
   sites' keys (`teamsync-random-team-generator:v1:*`, `gg-counter:v1:*`, `gg-counter/state`, `gg-counter-theme`).
 - Package names are unchanged (`@simeonts/teamsync-random-team-generator-miniapp`, `gg-counter-miniapp`, their cores).
-- Vitest runs their unit tests (`miniapps/*/packages/*/test`). ESLint, Prettier and `tsc` still skip `miniapps/`
-  (open: bring them under the shell's lint and typecheck); `tsc` reads only a package's `miniapp.d.ts` and its light
+- Vitest runs their unit tests (`miniapps/*/packages/*/test`). ESLint, Prettier and `tsc` still skip `miniapps/teams`
+  and `miniapps/scores` (open: bring them under the shell's lint and typecheck; `miniapps/sheet` already is); `tsc` reads only a package's `miniapp.d.ts` and its light
   modules (`meta`, `help`, `host-api`, `vite-preset`). A mini-app's `core` is built to `dist/` first (`pnpm dev`, `pnpm build`).
 - a11y: `node …/a11y-check.mjs http://localhost:4173/Quizzard/ --screens "$(node scripts/a11y-screens.ts)"`
   (`"scope": "miniapp"` scenarios, opened from Home — a hash URL would not reload between them).

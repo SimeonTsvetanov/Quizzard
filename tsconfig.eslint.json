@@ -22,7 +22,8 @@
   ],
   "exclude": [
     "**/node_modules/**",
-    "miniapps/**",
+    "miniapps/teams/**",
+    "miniapps/scores/**",
     "**/dist/**",
     ".tsbuild/**"
   ]

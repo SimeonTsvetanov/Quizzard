@@ -226,6 +226,9 @@ importers:
       '@simeonts/quizzard-core':
         specifier: workspace:^
         version: link:../packages/core
+      '@simeonts/quizzard-sheet-miniapp':
+        specifier: workspace:^
+        version: link:../miniapps/sheet/packages/miniapp
       '@simeonts/teamsync-random-team-generator-miniapp':
         specifier: workspace:^
         version: link:../miniapps/teams/packages/miniapp
@@ -314,6 +317,12 @@ importers:
       tailwindcss:
         specifier: 4.3.5
         version: 4.3.5
+
+  miniapps/sheet/packages/miniapp:
+    dependencies:
+      lucide:
+        specifier: ^1.70.0
+        version: 1.77.0
 
   miniapps/teams/packages/core:
     dependencies:

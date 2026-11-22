@@ -1,0 +1,21 @@
+{
+  "name": "@simeonts/quizzard-sheet-miniapp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Answer sheet: a team's own answers and points, round by round, behind the Quizzard mini-app contract.",
+  "type": "module",
+  "license": "MIT",
+  "exports": {
+    ".": {
+      "types": "./miniapp.d.ts",
+      "default": "./src/index.ts"
+    },
+    "./contract": "./src/contract.ts",
+    "./meta": "./src/meta.ts",
+    "./help": "./src/help.ts",
+    "./vite-preset": "./vite-preset.ts"
+  },
+  "dependencies": {
+    "lucide": "^1.70.0"
+  }
+}

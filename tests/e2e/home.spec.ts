@@ -5,10 +5,10 @@ import { expect, test, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { app } from "../../app.config.ts";
 
-// Home launcher (PLAN T-07, SPEC F1). The e2e build (app/test/dist) registers the 3 shipped cards +
-// the routing probe + 8 Home fixtures (app/test/fixtures/home-entries.ts) = 12 cards; one test
-// serves the production build (app/dist) instead and expects exactly the 3 shipped cards: Teams
-// (PLAN T-10) and Scores (PLAN T-12) ready, Quiz creator coming.
+// Home launcher (PLAN T-07, SPEC F1). The e2e build (app/test/dist) registers the 4 shipped cards +
+// the routing probe + 7 Home fixtures (app/test/fixtures/home-entries.ts) = 12 cards; one test
+// serves the production build (app/dist) instead and expects exactly the 4 shipped cards: Teams,
+// Scores and Answer sheet ready, Quiz creator coming.
 test.use({ serviceWorkers: "block" });
 
 const cards = (page: Page) => page.locator("[data-launcher] [data-card]");
@@ -16,7 +16,7 @@ const card = (page: Page, id: string) => page.locator(`[data-card="${id}"]`);
 const ids = (page: Page): Promise<string[]> => cards(page).evaluateAll((all) => all.map((el) => el.getAttribute("data-card") ?? ""));
 const back = (page: Page) => page.getByRole("banner").getByRole("button", { name: "Back to Home" });
 /** Registry order of the e2e build's ready cards, then its coming ones (shipped first). */
-const E2E_ORDER = ["teams", "scores", "probe", "alpha", "beta", "gamma", "quiz", "delta", "epsilon", "zeta", "eta", "theta"];
+const E2E_ORDER = ["teams", "scores", "sheet", "probe", "alpha", "beta", "gamma", "quiz", "delta", "epsilon", "zeta", "eta"];
 
 for (const viewport of [{ width: 320, height: 640 }, { width: 1280, height: 800 }]) {
   test.describe(`at ${String(viewport.width)}×${String(viewport.height)}`, () => {
@@ -95,7 +95,7 @@ test("the last used mini-app comes first, also after a reload and after browser 
   await expect(card(page, "beta")).toBeFocused();
   expect(await page.evaluate(() => localStorage.getItem("quizzard:v1:last-app"))).toBe('"beta"');
   await page.reload();
-  expect(await ids(page)).toEqual(["beta", "teams", "scores", "probe", "alpha", "gamma", ...E2E_ORDER.slice(6)]);
+  expect(await ids(page)).toEqual(["beta", "teams", "scores", "sheet", "probe", "alpha", "gamma", ...E2E_ORDER.slice(7)]);
 });
 
 test("a deep link renders Home's cards too: the list is never left busy (footer and Home text stay hidden while busy)", async ({ page }) => {
@@ -156,7 +156,7 @@ test("no serious accessibility violations on Home", async ({ page }) => {
   expect(results.violations.filter((v) => v.impact === "serious" || v.impact === "critical").map((v) => v.id)).toEqual([]);
 });
 
-test("the production build (app/dist) shows Teams and Scores ready and the Quiz creator coming", async ({ page, baseURL }) => {
+test("the production build (app/dist) shows Teams, Scores and Answer sheet ready and the Quiz creator coming", async ({ page, baseURL }) => {
   const dist = fileURLToPath(new URL("../../app/dist/", import.meta.url));
   await page.route(`${baseURL ?? ""}**`, async (route) => {
     const path = decodeURIComponent(new URL(route.request().url()).pathname).slice(app.basePath.length);
@@ -166,11 +166,11 @@ test("the production build (app/dist) shows Teams and Scores ready and the Quiz 
     else await route.fulfill({ status: 404 });
   });
   await page.goto("./");
-  await expect(cards(page)).toHaveCount(3);
-  expect(await ids(page)).toEqual(["teams", "scores", "quiz"]);
-  await expect(cards(page)).toHaveText([/Teams/, /Scores/, /Quiz creator/]);
-  await expect(page.locator("[data-launcher] a")).toHaveCount(2);
-  for (const id of ["teams", "scores"]) {
+  await expect(cards(page)).toHaveCount(4);
+  expect(await ids(page)).toEqual(["teams", "scores", "sheet", "quiz"]);
+  await expect(cards(page)).toHaveText([/Teams/, /Scores/, /Answer sheet/, /Quiz creator/]);
+  await expect(page.locator("[data-launcher] a")).toHaveCount(3);
+  for (const id of ["teams", "scores", "sheet"]) {
     await expect(card(page, id)).toHaveRole("link");
     await expect(card(page, id)).toHaveAttribute("href", `#/${id}`);
     await expect(card(page, id)).toContainText("Open");

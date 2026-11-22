@@ -1,0 +1,36 @@
+/** English texts of the Answer sheet — the source of truth for every key (bg.ts must match). */
+export const en = {
+  total: "Total",
+  totalLabel: "Total so far: {{points}} points",
+  rounds_one: "{{count}} round",
+  rounds_other: "{{count}} rounds",
+  round: "Round {{n}}",
+  roundRight: "{{right}} of {{judged}} right",
+  roundPointsLabel: "{{points}} points",
+  roundNameLabel: "Name of round {{n}} (optional)",
+  roundNamePlaceholder: "Round name (optional)…",
+  answerLabel: "Answer {{n}}",
+  answerPlaceholder: "Answer…",
+  right: "Right",
+  wrong: "Wrong",
+  markGroup: "Question {{n}}",
+  pointsLabel: "Points for question {{n}}",
+  pointsHead: "Points",
+  bonus: "Bonus points",
+  bonusHint: "Extra or lost points for this round, e.g. 2 or −1",
+  newRound: "New round",
+  deleteRound: "Delete round",
+  roundDeleted: "Round {{n}} deleted",
+  clearGame: "Clear game",
+  clearTitle: "Clear the whole game?",
+  clearText: "Every round, answer and point of this game will be deleted.",
+  clearConfirm: "Clear",
+  cleared: "Game cleared",
+  undo: "Undo",
+  cancel: "Cancel",
+  roundsFull: "A game can have up to {{max}} rounds.",
+  notSaved: "This browser did not save the game. It stays on screen until you close the page.",
+} as const;
+
+/** The shape every language's dictionary must have. */
+export type Messages = { readonly [K in keyof typeof en]: string };

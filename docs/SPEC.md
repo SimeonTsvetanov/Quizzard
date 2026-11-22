@@ -34,6 +34,7 @@
 | F13 | **English + Bulgarian**; a mini-app without a language falls back to English | AC4 |
 | F14 | **Nothing is lost on the way in:** every behaviour of the standalone apps works inside Quizzard — in GG Counter the last-scored tint, the last-changes line and history sheet with remove/restore, medals, the motion (card in/out, score roll, reorder), the field that stays above the keyboard, the choice dialogs, share text; in TeamSync its flows, share and remembered names | AC2 |
 | F15 | **Storage that lasts and is visible:** each mini-app has its own storage area (prefs keys with its prefix; its own IndexedDB database / OPFS folder when it needs one); Quizzard asks the browser for persistent storage after the first saved data; Settings → Data shows the space used per mini-app and the space left (Storage API estimate), and warns before the quota is near | AC9 |
+| F16 | **Answer sheet** (added 2026-11-23, Moni): a team's own sheet during a quiz instead of paper — rounds; in a round one line per question (write the answer, the next line appears by itself, Enter moves to it), each line marked right or wrong, 1 point per right answer by default and the points of any question changeable (e.g. 0.5, 2); bonus points per round (also negative); the round's result on its card and the running total always in view; earlier rounds fold and can be reopened and fixed; Clear game with Undo; its own storage area `quizzard-sheet:v1:`; EN + BG | AC10 |
 
 ## 4. Usage modes
 - Hosting type: **standard** (static GitHub Pages, everything in the browser).
@@ -74,6 +75,8 @@
 - AC7: logo, tagline, palette and install icon match `brand/`; a11y-check 0 FAIL in both themes.
 - AC9: Settings → Data lists Teams, Scores and Quizzard with their sizes and the free space; after the first save `navigator.storage.persisted()` is requested (result shown); a mini-app's clear button changes only its own size.
 - AC8: offline after one visit: Home and every mini-app opened before still work; a new version waits for "Reload".
+- AC10: in Answer sheet, three right answers worth 1, 0.5 and 2 with a bonus of 1 show 4.5 for the round and in the total; a new round folds
+  the first one to its result; after a reload the game is the same; Clear game empties it and Undo restores it; Bulgarian shows 4,5.
 
 ## 10. Risks
 | Risk | Mitigation |

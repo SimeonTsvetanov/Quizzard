@@ -86,7 +86,7 @@ test("Export holds the tools' data and Import brings it back", async ({ page }) 
   const file = JSON.parse(await readFile(path, "utf8")) as { app: string; tools: Record<string, Record<string, string>> };
   expect(file.app).toBe(app.id);
   expect(file.tools["teams"]).toEqual(saved);
-  expect(Object.keys(file.tools)).toEqual(["teams", "scores"]);
+  expect(Object.keys(file.tools)).toEqual(["teams", "scores", "sheet"]);
 
   await page.evaluate(() => { localStorage.clear(); });
   await page.goto("./");

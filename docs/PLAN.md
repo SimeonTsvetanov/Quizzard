@@ -244,6 +244,11 @@ export interface MiniAppEntry {             // one registry line
 - Reading list: app-shell → help-docs §1–§3, app-shell §4, i18n §2
 - Acceptance: e2e: both Help sections in EN and BG; an exported GG game imports at the standalone URL
 - Depends on: T-13
+### T-16b · Answer sheet mini-app (SPEC F16, done 0.6.0)
+- Goal: third tool on Home, under Teams and Scores: `miniapps/sheet/packages/miniapp` (Level 1, shared CSS, no dependency besides lucide)
+- Files: `src/core/game.ts` (model, points arithmetic, parse/limits), `src/sheet/{state,view,mount}.ts`, `src/i18n/{en,bg}.ts`, `src/help.ts`, `src/styles/sheet.css`, `test/game.test.ts`; shell: `app/src/miniapps/registry.ts`, `app/vite.config.ts`, `app/public/miniapps/sheet.svg`, `tests/e2e/sheet-host.spec.ts`
+- Acceptance: AC10 (e2e); unit + property tests of the arithmetic and of reading untrusted storage; axe clean
+- Later (ideas, not scheduled): share the sheet as text, a name for the team/quiz, several saved games, per-round question count preset, link to Scores
 ### T-17 · `pnpm new:miniapp <id>` and the quiz creator card
 - Goal: generator writes `miniapps/<id>/` (package, `meta.ts`, `src/index.ts`, test) and one registry line; `quiz` entry as "coming" with the reserved route
 - Files: `scripts/new-miniapp.ts` (+ test), `scripts/miniapp-template/**`, `app/src/miniapps/registry.ts`, `docs/ARCHITECTURE.md`

@@ -16,9 +16,9 @@ describe("mini-app registry", () => {
     expect(registryErrors(e2eRegistry)).toEqual([]);
     expect(e2eRegistry).toHaveLength(12);
   });
-  it("ships teams (PLAN T-10) and scores (PLAN T-12) ready and one coming card: quiz", () => {
-    expect(miniApps.map(({ meta }) => [meta.id, meta.status])).toEqual([["teams", "ready"], ["scores", "ready"], ["quiz", "coming"]]);
-    expect(openableIds()).toEqual(["teams", "scores"]);
+  it("ships teams, scores and sheet ready and one coming card: quiz", () => {
+    expect(miniApps.map(({ meta }) => [meta.id, meta.status])).toEqual([["teams", "ready"], ["scores", "ready"], ["sheet", "ready"], ["quiz", "coming"]]);
+    expect(openableIds()).toEqual(["teams", "scores", "sheet"]);
   });
   it("teams is the vendored package's own meta (one source) and loads its body and Help lazily", async () => {
     const teams = miniApps.find(({ meta }) => meta.id === "teams");
@@ -41,6 +41,7 @@ describe("mini-app registry", () => {
     expect(areas).toEqual({
       teams: { prefix: "quizzard-teams:v1:" },
       scores: { prefix: "quizzard-scores:v1:" },
+      sheet: { prefix: "quizzard-sheet:v1:" },
       quiz: { prefix: "quizzard-quiz:v1:" },
     });
   });

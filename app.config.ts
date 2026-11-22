@@ -82,7 +82,7 @@ export const app = {
   description: "A free toolkit for quiz and game nights, offline and private in your browser: fair random teams and score keeping first, then a quiz creator.",
   url: "https://simeontsvetanov.github.io/Quizzard/",
   repo: "https://github.com/SimeonTsvetanov/Quizzard",
-  version: "0.5.0",
+  version: "0.6.0",
   languages: ["en", "bg"],
   // Palette C · Emerald (DECISIONS 2026-11-22): white text on the light one (5.00:1), dark text on the dark one.
   accent: { light: "#00804F", dark: "#34D399" },
@@ -106,6 +106,7 @@ export const app = {
     steps: [
       "Tap Teams to split people into fair random teams.",
       "Tap Scores to keep score during the game.",
+      "Tap Answer sheet to write your team's answers and count its points round by round.",
       "The arrow at the top left takes you back to all tools; a card marked “Soon” is still on its way.",
       "Install Quizzard to use it offline at your quiz night.",
     ],
@@ -129,6 +130,7 @@ export const app = {
         steps: [
           "Докоснете „Отбори“, за да разделите хората на честни случайни отбори.",
           "Докоснете „Точки“, за да водите резултата по време на играта.",
+          "Докоснете „Лист с отговори“, за да записвате отговорите на отбора и да броите точките му рунд по рунд.",
           "Стрелката горе вляво връща към всички инструменти; карта с „Скоро“ още предстои.",
           "Инсталирайте Quizzard, за да го ползвате офлайн на куиз вечерта.",
         ],

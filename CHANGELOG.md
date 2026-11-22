@@ -4,6 +4,13 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-11-23
+### Added
+- Answer sheet: a new tool for your team's scribe. Write the answers of each round on your phone instead
+  of paper, tap ✓ or ✗ when they are read out and see the round's points and the total at once. A right
+  answer gives 1 point; change it for any question (0.5, 2 …) and add bonus points to a round. The game
+  stays on your device until you clear it.
+
 ## [0.5.0] - 2026-11-23
 ### Changed
 - Teams and Scores now keep their data only inside Quizzard, separate from the TeamSync and GG Counter

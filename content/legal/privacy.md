@@ -20,6 +20,8 @@
   - **Scores:** your game — player names, scores and when they were last changed, and for each
     player a history of their most recent score changes (the points of each change and when it was
     made, up to 50 per player).
+  - **Answer sheet:** your team's game — each round's name, the answers you wrote, whether you
+    marked each one right or wrong, the points of each question and the round's bonus points.
   - **Separate from the author's other apps:** {App} keeps its data under its own names. The
     TeamSync and GG Counter sites are on the same web address (`simeontsvetanov.github.io`), but
     {App} does not read, change or delete what they saved, and they do not see {App}'s data.

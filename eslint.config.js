@@ -10,8 +10,9 @@ const TOOL_CONFIG_FILES = ["**/*.config.{js,ts,mjs,mts}", "**/pw.*.config.ts"];
 const TEST_FILES = ["**/*.test.ts", "**/*.spec.ts", "tests/**"];
 
 export default tseslint.config(
-  // vendor/: mini-apps vendored as git submodules — linted in their own repos (PLAN T-10).
-  { ignores: ["miniapps/**", "**/*.d.ts", "**/dist/**", "**/.tsbuild/**", "app/public/**", "tests/e2e/fixtures/**", "coverage/**", "playwright-report/**", "test-results/**"] },
+  // miniapps/teams and miniapps/scores came from their own repos with their own lint setups and are not
+  // linted here yet (STATUS); miniapps/sheet was written here and is.
+  { ignores: ["miniapps/teams/**", "miniapps/scores/**", "**/*.d.ts", "**/dist/**", "**/.tsbuild/**", "app/public/**", "tests/e2e/fixtures/**", "coverage/**", "playwright-report/**", "test-results/**"] },
   js.configs.recommended,
   ...tseslint.configs.strictTypeChecked,
   ...tseslint.configs.stylisticTypeChecked,

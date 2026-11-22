@@ -4,6 +4,7 @@ import { validateRegistry, type MiniAppEntry, type RegistryError, type StorageAr
 import { ATTRIBUTION_NAME_PARAM, ATTRIBUTION_URL_PARAM, TEAMS_PARAM } from "@simeonts/teamsync-random-team-generator-miniapp/host-api";
 import { meta as teamsMeta } from "@simeonts/teamsync-random-team-generator-miniapp/meta";
 import { meta as scoresMeta } from "gg-counter-miniapp/meta";
+import { meta as sheetMeta } from "@simeonts/quizzard-sheet-miniapp/meta";
 import { app } from "../config.ts";
 import { getLanguage } from "../i18n/index.ts";
 import { e2eEntries } from "./e2e-entries.ts";
@@ -30,6 +31,11 @@ const SHIPPED: readonly MiniAppEntry[] = [
     help: () => import("gg-counter-miniapp/help"),
   },
   {
+    meta: sheetMeta,
+    load: () => import("@simeonts/quizzard-sheet-miniapp"),
+    help: () => import("@simeonts/quizzard-sheet-miniapp/help"),
+  },
+  {
     meta: {
       contract: 1,
       id: "quiz",
@@ -50,7 +56,7 @@ const SHIPPED: readonly MiniAppEntry[] = [
  * never fills its list. GG Counter's screen reads no launch parameter (its host-api lists none), so
  * `scores` gets an empty query. A mini-app without a line here gets the whole query.
  */
-const LAUNCH_PARAMS: Readonly<Partial<Record<string, readonly string[]>>> = { teams: [TEAMS_PARAM], scores: [] };
+const LAUNCH_PARAMS: Readonly<Partial<Record<string, readonly string[]>>> = { teams: [TEAMS_PARAM], scores: [], sheet: [] };
 
 /**
  * Parameters Quizzard adds on its own (never read from the address): Teams names the app in the last
