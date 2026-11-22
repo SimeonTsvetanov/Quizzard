@@ -59,7 +59,7 @@ export function mergeMiniAppPresets(packages: readonly MiniAppPackage[], shell: 
     const nested = packages.find((other) => other.root !== root && isInside(root, other.root));
     if (nested !== undefined) throw new Error(`Mini-app folder ${root} is inside ${nested.root}; each package needs its own folder`);
     for (const [name, target] of Object.entries(preset.alias)) {
-      if (name in alias && alias[name] !== target) throw new Error(`Alias "${name}" points to ${String(alias[name])} and ${target} (mini-app "${preset.id}")`);
+      if (Object.hasOwn(alias, name) && alias[name] !== target) throw new Error(`Alias "${name}" points to ${String(alias[name])} and ${target} (mini-app "${preset.id}")`);
       alias[name] = target;
     }
   }

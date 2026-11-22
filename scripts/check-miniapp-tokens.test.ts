@@ -60,7 +60,7 @@ describe("checkMiniAppCss", () => {
   });
 
   it.each([
-    ['@import "../../../design/tokens.css";'],
+    ['@import "../design/tokens.css";'],
     ['@import "../generated/accent.css";'],
     ['@import "./fonts.css";'],
     ['@import "@fontsource-variable/inter";'],

@@ -13,9 +13,11 @@
 - T-07 Home launcher: three "coming" cards (Teams, Scores, Quiz creator), last used first, Home JS 39.7 KB gzip of 60, size-check in verify.
 - T-08 first deploy: CI green on 5 browsers (4th run), Deploy succeeded (Pages source was already GitHub Actions); live smoke on a phone profile: 3 cards, worker `service-worker.js`, Help opens, offline reload works, no console errors.
 - T-06 shell services for mini-apps (signals, toast/confirm/share, busy gate, header slot, namespaced prefs); manifest colours black (Moni).
+- TS-01/TS-02 (TeamSync repo): team screen as `packages/miniapp`, e2e split, 1.0.3 pushed (deploy waits for its CI).
+- T-09 mini-app CSS transform (layer `miniapp`, scope prefix, isolated reset, global-name collisions) + token check.
 
 ## Next
-- TS-01/TS-02 in the TeamSync repo → T-09 CSS transform → T-10/T-11.
+- T-10 add TeamSync (submodule at its 1.0.3 commit) → T-11 its e2e inside Quizzard → GG-01…03 → T-12/T-13.
 
 ## Blockers / open
 - Browsers still on the June 2025 `sw.js` worker are not reached by the take-over (a self-removing `sw.js` is not built).

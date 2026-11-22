@@ -35,7 +35,7 @@ export interface MiniAppCssResult {
 }
 
 /** The shell's last cascade layer (app/src/styles/app.css); each mini-app gets `miniapp.<id>`. */
-export const MINIAPP_LAYER = "miniapp";
+const MINIAPP_LAYER = "miniapp";
 
 /** At-rules whose children are ordinary rules to scope. */
 const GROUPING_AT_RULES = new Set(["media", "supports", "container", "layer", "starting-style"]);
@@ -126,7 +126,7 @@ function warnImportant(root: Root, context: WalkContext): void {
     code: "IMPORTANT",
     message:
       `${context.file}: ${String(lines.length)} !important declaration(s) (line ${lines.join(", ")}). Important declarations reverse the ` +
-      "layer order: an important shell rule beats them and they beat every shell rule — remove them (css-architecture §2).",
+      "layer order: an important shell rule beats them, and they beat every normal shell rule — remove them (css-architecture §2).",
   });
 }
 

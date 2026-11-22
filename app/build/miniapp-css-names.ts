@@ -6,11 +6,11 @@ import type { AtRule, Declaration, Root } from "postcss";
 import { MiniAppCssError } from "./miniapp-css-errors.ts";
 
 /** Kinds of global names the transform tracks. */
-export type GlobalNameKind = "keyframes" | "property" | "counter-style" | "font-palette-values" | "position-try" | "container";
+type GlobalNameKind = "keyframes" | "property" | "counter-style" | "font-palette-values" | "position-try" | "container";
 
 /** Who defines a global name, and how. */
 export interface GlobalNameOwner {
-  /** `shell` or `mini-app "<id>"`; the same owner may repeat a name. */
+  /** `the shell` or `mini-app "<id>"`; the same owner may repeat a name. */
   readonly owner: string;
   /** File that defines it (relative path), for the error message. */
   readonly file: string;
@@ -18,7 +18,7 @@ export interface GlobalNameOwner {
   readonly definition: string;
 }
 
-/** Global names by {@link globalNameKey}. */
+/** Global names by key `<kind> <name>`, e.g. `keyframes toast-in`. */
 export type GlobalNames = ReadonlyMap<string, GlobalNameOwner>;
 
 const AT_RULE_KINDS = new Map<string, GlobalNameKind>([
@@ -33,19 +33,15 @@ const AT_RULE_KINDS = new Map<string, GlobalNameKind>([
 const CONTAINER_KEYWORDS = new Set(["not", "and", "or"]);
 const IDENT_AT_START = /^-?[A-Za-z_][\w-]*/;
 
-/**
- * Returns the map key of a global name, e.g. `keyframes toast-in`.
- * @param kind - what the name is
- * @param name - the name as written (quotes removed)
- */
-export function globalNameKey(kind: GlobalNameKind, name: string): string {
+/** The map key of a global name, e.g. `keyframes toast-in`. */
+function globalNameKey(kind: GlobalNameKind, name: string): string {
   return `${kind} ${name}`;
 }
 
 /**
  * Collects every global name a stylesheet defines or queries (container names in `@container`).
  * @param root - the parsed stylesheet
- * @param owner - `shell` or `mini-app "<id>"`
+ * @param owner - `the shell` or `mini-app "<id>"`
  * @param file - the stylesheet's path for messages
  */
 export function collectGlobalNames(root: Root, owner: string, file: string): Map<string, GlobalNameOwner> {
