@@ -193,7 +193,7 @@ test.describe("without a service worker", () => {
     expect(await page.evaluate(() => localStorage.getItem("quizzard:v1:lang"))).toBeNull();
   });
 
-  test("a dialog of Scores covers the whole screen with the shell header, traps focus, closes on Escape and locks the scroll", async ({ page }) => {
+  test("a dialog of Scores covers the whole screen with the shell header, traps focus, closes on Escape and locks the scroll", async ({ page, browserName, isMobile }) => {
     await page.setViewportSize({ width: 390, height: 700 });
     await openWithGame(page);
     const opener = headerSlot(page).getByRole("button", { name: "Open leaderboard" });
@@ -217,10 +217,15 @@ test.describe("without a service worker", () => {
       expect(await hasFocus(dialog)).toBe(true);
     }
     expect(await page.evaluate(() => getComputedStyle(document.body).overflowY)).toBe("hidden");
-    const before = await page.evaluate(() => scrollY);
-    await page.mouse.wheel(0, 600);
-    await page.waitForTimeout(100);
-    expect(await page.evaluate(() => scrollY)).toBe(before);
+    // Playwright cannot turn a wheel in mobile WebKit ("Mouse wheel is not supported in mobile WebKit")
+    // and has no touch scroll, so on the iPhone project the lock is proved by `overflow: hidden` above
+    // alone; every other project also tries to scroll the page under the dialog.
+    if (!(browserName === "webkit" && isMobile)) {
+      const before = await page.evaluate(() => scrollY);
+      await page.mouse.wheel(0, 600);
+      await page.waitForTimeout(100);
+      expect(await page.evaluate(() => scrollY)).toBe(before);
+    }
     await page.keyboard.press("Escape");
     await expect(dialog).toBeHidden();
     await expect(opener).toBeFocused();

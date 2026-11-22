@@ -96,3 +96,48 @@ test("a busy mini-app that unmounts releases the update offer", async ({ page, b
   await expect(page.locator("[data-view=home]")).toBeVisible();
   await expect(updateOffer(page)).toBeVisible();
 });
+
+// A toast nobody asked for must not take an Undo away (ui/toast.ts `background`). Seen in CI: the
+// worker finished saving the app right after "Clear" in Teams, and "Ready to work offline" replaced
+// the Undo toast before it could be pressed.
+const probeToast = (page: Page) => page.locator(".toast").filter({ hasText: "Probe" });
+
+test("\"Ready to work offline\" waits for a toast with an action instead of replacing it", async ({ page, browserName }) => {
+  test.skip(browserName !== "chromium", "Service workers are Chromium-only in Playwright");
+  // The worker registers only when the test says so: the action toast is on screen first, in every run.
+  await page.addInitScript(() => {
+    const container = navigator.serviceWorker;
+    const register = container.register.bind(container);
+    const gate = new Promise<void>((resolve) => { window.addEventListener("e2e:release-worker", () => { resolve(); }, { once: true }); });
+    container.register = (...args: Parameters<ServiceWorkerContainer["register"]>) => gate.then(() => register(...args));
+  });
+  await page.goto("./#/probe");
+  await page.locator("[data-probe]").getByRole("button", { name: "Toast", exact: true }).click();
+  await expect(probeToast(page)).toBeVisible();
+  await probeToast(page).hover(); // pauses its 10 s, however long the worker takes to save the app
+  await page.evaluate(async () => {
+    window.dispatchEvent(new Event("e2e:release-worker"));
+    await navigator.serviceWorker.ready;
+    // because the page hears that the worker is installed in its own task right after the registration does
+    await new Promise((resolve) => { setTimeout(resolve, 500); });
+  });
+  await expect(probeToast(page)).toBeVisible();
+  await expect(page.locator(".toast")).toHaveCount(1);
+  await probeToast(page).getByRole("button", { name: "Act" }).click();
+  await expect(page.locator("[data-probe-action]")).toHaveText("acted");
+  await expect(page.locator(".toast").filter({ hasText: "Ready to work offline" })).toBeVisible();
+});
+
+test("the update offer waits for a toast with an action, then stays", async ({ page, browserName }) => {
+  test.skip(browserName !== "chromium", "Service workers are Chromium-only in Playwright");
+  await openControlled(page);
+  await page.evaluate(() => { location.hash = "#/probe"; });
+  await page.locator("[data-probe]").getByRole("button", { name: "Toast", exact: true }).click();
+  await expect(probeToast(page)).toBeVisible();
+  await probeToast(page).hover(); // pauses its 10 s while the next version deploys
+  await deployNextVersion(page);
+  await expect(probeToast(page)).toBeVisible();
+  await expect(updateOffer(page)).toHaveCount(0);
+  await probeToast(page).getByRole("button", { name: "Act" }).click();
+  await expect(updateOffer(page)).toBeVisible();
+});

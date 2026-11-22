@@ -84,11 +84,11 @@ export function shouldReloadAfterPreloadError(lastReloadAt: number | null, now: 
 /**
  * Shows the pinned "New version available — Reload" toast once nothing is busy (a shell task or a
  * mini-app's `setBusy(true)`, state.ts); pinned so a later "Copied" or "Undo" toast does not make
- * the offer disappear.
+ * the offer disappear, and in the background so it never takes the place of a visible Undo.
  */
 function offerReload(reload: () => void): void {
   const offer = (): void => {
-    showToast({ message: t("shell.update.available"), action: { label: t("shell.update.reload"), run: reload }, pinned: true });
+    showToast({ message: t("shell.update.available"), action: { label: t("shell.update.reload"), run: reload }, pinned: true, background: true });
   };
   if (isBusy()) document.addEventListener(IDLE_EVENT, offer, { once: true });
   else offer();
@@ -196,7 +196,8 @@ export function initPwa(): void {
       // update; the controllerchange listener decides per tab instead (pwa §5 multi-tab).
     },
     onOfflineReady() {
-      showToast({ message: t("shell.update.offlineReady") });
+      // background: it must not replace an Undo the person has just been offered (toast.ts).
+      showToast({ message: t("shell.update.offlineReady"), background: true });
     },
     onRegisteredSW(swUrl, registration) {
       if (registration) scheduleUpdateChecks(swUrl, registration);

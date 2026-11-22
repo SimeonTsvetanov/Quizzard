@@ -18,7 +18,7 @@
 - T-12/T-13 GG Counter at `#/scores` from submodule `vendor/gg-counter` (a6745fb = 1.2.4), isolated CSS (Tailwind under Vite 8), header buttons in the slot, toasts inside its dialogs: Home 45.4 KB, Scores first open 92.3 KB of 125; its suite 74/76 in `scores` + `scores-mobile` (motion/keyboard ×5 green), scores-host.spec green ×5.
 
 ## Next
-- Commit T-12/T-13; GG patch: `tests/e2e/support/host.ts` `QUIZZARD.copyWithoutShareSheet` closes the sheet after Copy (AC5 fails until then), then bump the pin → T-14/T-15.
+- CI fix after run 45063914534 (uncommitted): background toasts wait for an Undo toast (toast.ts, pwa.ts; DECISIONS), no wheel step on mobile WebKit — commit, then watch WebKit/Firefox in the next run. GG patch: `tests/e2e/support/host.ts` `QUIZZARD.copyWithoutShareSheet` closes the sheet after Copy (AC5 fails until then), then bump the pin → T-14/T-15.
 
 ## Blockers / open
 - Browsers still on the June 2025 `sw.js` worker are not reached by the take-over (a self-removing `sw.js` is not built).

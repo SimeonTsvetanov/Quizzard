@@ -1,5 +1,7 @@
 // Toasts in a polite live region: one at a time; a pinned toast (e.g. "New version available")
-// comes back after any later toast ends, until its action runs. While a modal is open the toast
+// comes back after any later toast ends, until its action runs. A `background` toast (offline ready,
+// the update offer) never replaces a toast with an action: it waits until that one ends, so nobody
+// loses an Undo to a message they did not ask for. While a modal is open the toast
 // lives inside the topmost open dialog — outside it would be inert and hidden (accessibility §5);
 // it moves back to the page when that dialog closes. A mini-app's own dialog counts too
 // (toast-island.ts).
@@ -17,6 +19,11 @@ export interface ToastOptions {
   readonly persistent?: boolean;
   /** Persistent and shown again whenever a later toast ends, until its action runs (update offer). */
   readonly pinned?: boolean;
+  /**
+   * Not an answer to something the person just did (the worker finished saving the app, an update
+   * arrived): while a toast with an action is showing, this one waits for it to end.
+   */
+  readonly background?: boolean;
   /** ms; default 5000 — toasts with an action last at least ACTION_MIN_MS (WCAG 2.2.1, HIG). */
   readonly duration?: number;
 }
@@ -26,10 +33,14 @@ interface LiveToast {
   /** The control that had focus when the toast appeared; focus returns there. */
   readonly trigger: Element | null;
   readonly timer: ReturnType<typeof pausableTimer> | null;
+  /** It offers an action the person may still want (Undo, Install) and is not the pinned offer, which returns by itself. */
+  readonly holdsAction: boolean;
 }
 
 const ACTION_MIN_MS = 10_000;
 let pinnedToast: ToastOptions | null = null;
+/** The last `background` toast that arrived while an action toast was showing; shown when that one ends. */
+let waitingToast: ToastOptions | null = null;
 let live: LiveToast | null = null;
 let isWatchingDialogs = false;
 
@@ -123,14 +134,14 @@ function render(region: HTMLElement, options: ToastOptions): void {
       dismissLive();
       if (pinned) pinnedToast = null;
       action.run();
-      restorePinned();
+      showNext();
     });
     toast.append(button);
   }
   region.append(toast);
   syncIslandFocus(region);
-  const timer = persistent || pinned ? null : pausableTimer(duration, () => { dismissLive(); restorePinned(); });
-  live = { toast, trigger, timer };
+  const timer = persistent || pinned ? null : pausableTimer(duration, () => { dismissLive(); showNext(); });
+  live = { toast, trigger, timer, holdsAction: action !== undefined && !pinned };
   if (!timer) return;
   // Time-boxed content waits while the person is on it (WCAG 2.2.1, HIG): hover or focus pauses.
   let isHovered = false;
@@ -141,10 +152,16 @@ function render(region: HTMLElement, options: ToastOptions): void {
   toast.addEventListener("focusout", () => { setTimeout(sync); }); // activeElement updates after focusout
 }
 
-/** Shows the pinned toast again when no toast is visible (a later toast has ended). */
-function restorePinned(): void {
+/**
+ * When no toast is visible (the last one has ended): shows the background toast that waited for it,
+ * else the pinned toast again.
+ */
+function showNext(): void {
   const region = currentRegion();
-  if (pinnedToast && region && !live) render(region, pinnedToast);
+  if (!region || live) return;
+  const next = waitingToast ?? pinnedToast;
+  waitingToast = null;
+  if (next) render(region, next);
 }
 
 /**
@@ -152,7 +169,7 @@ function restorePinned(): void {
  * back to the page (or the next modal) when one closes. Call after showModal() and on close.
  */
 export function relocateToasts(): void {
-  if (!live && !pinnedToast) return; // nothing to move: no island is made for an empty region
+  if (!live && !pinnedToast && !waitingToast) return; // nothing to move: no island is made for an empty region
   const region = currentRegion();
   if (live && region && live.toast.parentElement !== region) {
     const from = live.toast.parentElement;
@@ -160,14 +177,21 @@ export function relocateToasts(): void {
     if (from) syncIslandFocus(from);
     syncIslandFocus(region);
   }
-  restorePinned();
+  showNext();
 }
 
-/** Shows one toast at a time (inside the open modal, if any); a `pinned` toast returns after later ones. */
+/**
+ * Shows one toast at a time (inside the open modal, if any); a `pinned` toast returns after later
+ * ones, a `background` toast waits while a toast with an action is showing.
+ */
 export function showToast(options: ToastOptions): void {
   const region = currentRegion();
   if (!region) return;
   if (options.pinned) pinnedToast = options;
+  if (options.background && live?.holdsAction) {
+    if (!options.pinned) waitingToast = options; // a pinned one is shown by showNext() anyway
+    return;
+  }
   render(region, options);
 }
 
