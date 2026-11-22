@@ -1,7 +1,7 @@
 // The shell's mini-app registry (PLAN §1.4): the only file a new mini-app changes. Home order;
 // validated by registry.test.ts and at start in development and the e2e build (main.ts).
 import { validateRegistry, type MiniAppEntry, type RegistryError, type StorageArea } from "@simeonts/quizzard-core";
-import { TEAMS_PARAM } from "@simeonts/teamsync-random-team-generator-miniapp/host-api";
+import { ATTRIBUTION_NAME_PARAM, ATTRIBUTION_URL_PARAM, TEAMS_PARAM } from "@simeonts/teamsync-random-team-generator-miniapp/host-api";
 import { meta as teamsMeta } from "@simeonts/teamsync-random-team-generator-miniapp/meta";
 import { meta as scoresMeta } from "gg-counter-miniapp/meta";
 import { app } from "../config.ts";
@@ -52,6 +52,15 @@ const SHIPPED: readonly MiniAppEntry[] = [
  */
 const LAUNCH_PARAMS: Readonly<Partial<Record<string, readonly string[]>>> = { teams: [TEAMS_PARAM], scores: [] };
 
+/**
+ * Parameters Quizzard adds on its own (never read from the address): Teams names the app in the last
+ * line of copied and shared teams, so inside Quizzard that line says Quizzard and links here
+ * (TeamSync host API; DECISIONS 2026-11-22).
+ */
+const HOST_PARAMS: Readonly<Partial<Record<string, readonly (readonly [string, string])[]>>> = {
+  teams: [[ATTRIBUTION_NAME_PARAM, app.name], [ATTRIBUTION_URL_PARAM, app.url]],
+};
+
 /** Every registered mini-app; the e2e build adds the routing probe (see e2e-entries.ts). */
 export const miniApps: readonly MiniAppEntry[] = [...SHIPPED, ...e2eEntries];
 
@@ -94,6 +103,8 @@ export function miniAppTagline(entry: MiniAppEntry): string {
  */
 export function launchQuery(entry: MiniAppEntry, query: URLSearchParams): URLSearchParams {
   const allowed = LAUNCH_PARAMS[entry.meta.id];
-  if (allowed === undefined) return new URLSearchParams(query);
-  return new URLSearchParams([...query].filter(([name]) => allowed.includes(name)));
+  const fromRoute = allowed === undefined ? new URLSearchParams(query) : new URLSearchParams([...query].filter(([name]) => allowed.includes(name)));
+  // Set by Quizzard itself, after the filter: a link can never supply or change them.
+  for (const [name, value] of HOST_PARAMS[entry.meta.id] ?? []) fromRoute.set(name, value);
+  return fromRoute;
 }

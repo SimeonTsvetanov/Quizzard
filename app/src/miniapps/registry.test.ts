@@ -62,7 +62,15 @@ describe("mini-app registry", () => {
     const teams = miniApps.find(({ meta }) => meta.id === "teams");
     if (teams === undefined) throw new Error("teams is not registered");
     const query = new URLSearchParams("teams=4&shared=Eve%0AFrank&embed=1&teams=5");
-    expect([...launchQuery(teams, query)]).toEqual([["teams", "4"], ["teams", "5"]]);
+    expect([...launchQuery(teams, query)]).toEqual([
+      ["teams", "4"], ["teams", "5"],
+      ["attribution-name", "Quizzard"], ["attribution-url", "https://simeontsvetanov.github.io/Quizzard/"],
+    ]);
+    // A link cannot name another app or turn the host's parameters into its own.
+    const forged = launchQuery(teams, new URLSearchParams("attribution-name=Evil&attribution-url=https://evil.example/&shuffle-count=off"));
+    expect(forged.get("attribution-name")).toBe("Quizzard");
+    expect(forged.get("attribution-url")).toBe("https://simeontsvetanov.github.io/Quizzard/");
+    expect(forged.has("shuffle-count")).toBe(false);
     expect([...query]).toHaveLength(4); // the router's object is not changed
   });
   it("scores gets no launch parameter (its screen reads none)", () => {
