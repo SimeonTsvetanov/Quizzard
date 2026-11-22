@@ -19,12 +19,15 @@
   "include": [
     "src",
     "test",
+    "build",
     "src/generated/*.json",
     "vite.config.ts",
     "pwa-assets.config.ts",
     "../app.config.ts",
     "../scripts/seo.ts",
-    "../scripts/sw-handover.ts"
+    "../scripts/sw-handover.ts",
+    "../scripts/check-miniapp-tokens.ts",
+    "../scripts/css-colors.ts"
   ],
   "references": [
     {

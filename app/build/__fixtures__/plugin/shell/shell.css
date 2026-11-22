@@ -1,0 +1,20 @@
+/* Fixture shell stylesheet for app/build/miniapp-presets.test.ts: one token, one component, one
+   keyframes name the mini-app must not reuse. */
+@layer tokens {
+  :root {
+    --color-accent: oklch(52.8% 0.123 158.1);
+  }
+}
+
+@layer components {
+  .button {
+    color: var(--color-accent);
+    animation: shell-in 1s;
+  }
+
+  @keyframes shell-in {
+    from {
+      opacity: 0;
+    }
+  }
+}

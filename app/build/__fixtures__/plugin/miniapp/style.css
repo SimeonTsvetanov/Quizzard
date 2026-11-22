@@ -1,0 +1,9 @@
+/* Fixture mini-app entry stylesheet (app/build/miniapp-presets.test.ts): its import is inlined by Vite
+   before the transform, so both files end up scoped. */
+@import "./part.css";
+
+@layer components {
+  .card {
+    color: var(--color-accent);
+  }
+}

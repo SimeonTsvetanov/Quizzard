@@ -8,7 +8,7 @@ export default defineConfig({
     restoreMocks: true,
     unstubGlobals: true,
     unstubEnvs: true,
-    include: ["packages/*/test/**/*.test.ts", "app/src/**/*.test.ts", "scripts/**/*.test.ts"],
+    include: ["packages/*/test/**/*.test.ts", "app/src/**/*.test.ts", "app/build/**/*.test.ts", "scripts/**/*.test.ts"],
     coverage: {
       provider: "v8",
       include: ["packages/core/src/**"],

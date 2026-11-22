@@ -1,15 +1,31 @@
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { defineConfig, type Plugin } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
 import { app as config, type AppConfig } from "../app.config.ts";
 import { OG_IMAGE, escapeHtml, ogImageAlt, ogImageUrl, siteVerificationTag, structuredData } from "../scripts/seo.ts";
 import { SW_HANDOVER_FILE, swHandoverScript } from "../scripts/sw-handover.ts";
+import { mergeMiniAppPresets, type MiniAppPackage, type ShellStyles } from "./build/miniapp-presets.ts";
 
 const app: AppConfig = config;
 
 // GitHub Pages path from app.config (differs from the id: "/Quizzard/"); dev, build and preview use it.
 const BASE = app.basePath;
+
+const fromHere = (path: string): string => fileURLToPath(new URL(path, import.meta.url));
+
+/** Mini-app packages and their folders; their CSS is scoped at build time (PLAN §1.3). TeamSync joins in T-10. */
+const MINIAPP_PACKAGES: readonly MiniAppPackage[] = [];
+
+/** The shell's stylesheets (global names) and token files (what mini-app CSS may use), for the mini-app CSS plugin. */
+export const SHELL_STYLES: ShellStyles = {
+  paths: [fromHere("./src/styles"), fromHere("../design/tokens.css"), fromHere("./src/generated/accent.css")],
+  tokenFiles: [fromHere("../design/tokens.css"), fromHere("./src/generated/accent.css")],
+  projectRoot: fromHere(".."),
+};
+
+const miniApps = mergeMiniAppPresets(MINIAPP_PACKAGES, SHELL_STYLES);
 
 // Manifest screenshots for the richer install dialog (Chrome/Edge) — made by `pnpm screenshots`
 // (tests/screenshots) before a release and committed; skipped until they exist.
@@ -158,7 +174,9 @@ const outDir = process.env["QUIZZARD_E2E"] === "1" ? "test/dist" : "dist";
 export default defineConfig({
   base: BASE,
   build: { target: "es2024", outDir },
+  resolve: { alias: miniApps.alias },
   plugins: [
+    ...miniApps.plugins,
     appHtml(),
     previewLegacySite(),
     previewNextDeploy(),

@@ -1,7 +1,9 @@
-@layer tokens, base, layout, components, utilities, overrides;
+@layer tokens, base, layout, components, utilities, overrides, miniapp;
 /* App stylesheet entry (main.ts imports only this file). The line above fixes the cascade order
    once; every imported file wraps its rules in one of these layers (design →
-   css-architecture §1). Components are imported in on-screen order. */
+   css-architecture §1). Components are imported in on-screen order.
+   `miniapp` is last and empty here: each mini-app's stylesheet is wrapped in `miniapp.<id>` at build
+   time (app/build/miniapp-css.ts, PLAN §1.3), so mini-app CSS beats shell CSS whatever the specificity. */
 
 @import "../../../design/tokens.css";
 /* Per-app accent from app.config (empty = default); after tokens.css so it replaces the defaults. */

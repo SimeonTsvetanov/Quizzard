@@ -1,0 +1,139 @@
+/* Fixture: a trimmed slice of GG Counter's Tailwind-compiled stylesheet (real input for the mini-app
+   CSS transform, PLAN T-09). Source: github.com/SimeonTsvetanov/GG-counter app/src/styles/app.css at
+   commit 1f4de7b9, compiled with its own tailwindcss 4.3.5 (@tailwindcss/node compile + oxide scan of
+   app/src), unminified. Whole rules are cut (tokens layer, most of preflight, utilities, layout and
+   components); the rules that remain are verbatim. */
+/*! tailwindcss v4.3.5 | MIT License | https://tailwindcss.com */
+@layer properties;
+@layer tokens, theme, base, layout, components, utilities, overrides;
+@layer base {
+  *, ::after, ::before, ::backdrop, ::file-selector-button {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    border: 0 solid;
+  }
+  html, :host {
+    line-height: 1.5;
+    -webkit-text-size-adjust: 100%;
+    tab-size: 4;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', 'Noto Sans', Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    font-feature-settings: normal;
+    font-variation-settings: normal;
+    -webkit-tap-highlight-color: transparent;
+  }
+  abbr:where([title]) {
+    -webkit-text-decoration: underline dotted;
+    text-decoration: underline dotted;
+  }
+  button, input:where([type='button'], [type='reset'], [type='submit']), ::file-selector-button {
+    appearance: button;
+  }
+  [hidden]:where(:not([hidden='until-found'])) {
+    display: none !important;
+  }
+}
+@layer utilities {
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border-width: 0;
+  }
+  .\!block {
+    display: block !important;
+  }
+  .hidden {
+    display: none;
+  }
+}
+@layer layout {
+  .app-main {
+    container: main / inline-size;
+    position: relative;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+    padding-block: var(--space-4) var(--space-10);
+    @media (width > 600px) {
+      gap: var(--space-8);
+      padding-block: var(--space-8) var(--space-12);
+    }
+  }
+}
+@layer components {
+  .player-grid {
+    --player-grid-columns: 2;
+    display: grid;
+    grid-template-columns: repeat(var(--player-grid-columns), minmax(0, 1fr));
+    gap: var(--space-3);
+    @container main (width > 45rem) {
+      --player-grid-columns: 4;
+      gap: var(--space-4);
+    }
+    &[data-density="compact"] {
+      gap: var(--space-2);
+      @container main (width > 29rem) {
+        --player-grid-columns: 3;
+      }
+    }
+  }
+  .toast {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    width: 100%;
+    max-width: var(--content-narrow);
+    padding: var(--space-1) var(--space-1) var(--space-1) var(--space-4);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface-raised);
+    color: var(--color-text);
+    box-shadow: var(--shadow-3);
+    font-size: var(--text-md);
+    pointer-events: auto;
+    animation: toast-in var(--duration-alert) var(--ease-spring);
+    & p {
+      flex: 1;
+      padding-block: var(--space-2);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      animation: modal-fade-in var(--duration-fade) var(--ease-out);
+    }
+  }
+  @keyframes toast-in {
+    from {
+      transform: translateY(var(--space-4)) scale(0.98);
+    }
+  }
+}
+@layer overrides {
+  @media (forced-colors: active) {
+    .card, .page-info, .button, .field, .score, .segmented, .menu, .sheet, .alert, .toast, .error-details {
+      border: 1px solid CanvasText;
+    }
+  }
+  @media print {
+    :root {
+      color-scheme: light;
+    }
+  }
+}
+@property --tw-shadow {
+  syntax: "*";
+  inherits: false;
+  initial-value: 0 0 #0000;
+}
+@layer properties {
+  @supports ((-webkit-hyphens: none) and (not (margin-trim: block))) or ((-moz-orient: inline) and (not (color:rgb(from red r g b)))) {
+    *, ::before, ::after, ::backdrop {
+      --tw-shadow: 0 0 #0000;
+      --tw-outline-style: solid;
+    }
+  }
+}

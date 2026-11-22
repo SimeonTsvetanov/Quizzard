@@ -1,0 +1,52 @@
+/* E2E fixture: the stylesheet of an "isolated" mini-app (registered for the probe's id in
+   app/test/vite.e2e.config.ts; e2e build only). tests/e2e/css-layers.spec.ts proves in real browsers
+   what app/build/miniapp-css.ts makes of it: scoped to [data-miniapp="probe"], wrapped in
+   @layer miniapp.probe after a reset sub-layer, tokens still flowing in. */
+@layer base, components;
+
+/* The mini-app's own token: lands on the scope element, never on <html>. */
+:root {
+  --css-probe-gap: var(--space-3);
+}
+
+@layer base {
+  /* Universal: only the mini-app's elements, never the shell's (the spec reads it outside too). */
+  * {
+    text-underline-offset: var(--space-1);
+  }
+
+  :focus-visible {
+    outline: var(--focus-ring-width) solid var(--color-highlight);
+    outline-offset: var(--focus-ring-offset);
+  }
+
+  /* Two classes in an early sub-layer: loses to the one-class rule below, which is unlayered. */
+  .css-probe .css-probe-order {
+    color: var(--color-danger-text);
+  }
+}
+
+@layer components {
+  .css-probe {
+    display: grid;
+    gap: var(--css-probe-gap);
+  }
+
+  .css-probe-card {
+    padding: var(--space-4);
+    background: var(--color-accent);
+    animation: css-probe-in var(--duration-fast) var(--ease-out);
+  }
+
+  @keyframes css-probe-in {
+    from {
+      opacity: 0;
+    }
+  }
+}
+
+/* Unlayered on purpose (a real mini-app keeps everything in named layers): proves that rules directly
+   in `miniapp.probe` beat its sub-layers whatever the specificity. */
+.css-probe-order {
+  color: var(--color-success-text);
+}

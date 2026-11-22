@@ -2,8 +2,8 @@
 // heading and a button, adds one `document` listener and one timer, and counts everything on
 // `window.quizzardProbe` so the e2e can prove that unmount leaves no node, listener or timer.
 // Launch parameters: `?fail=mount` throws in mount, `?mountDelay=<ms>` mounts asynchronously,
-// `?n=<text>` is shown in the output (tells instances apart in race tests). The shell-service panel
-// (PLAN T-06) is in probe-services.ts.
+// `?n=<text>` is shown in the output (tells instances apart in race tests), `?css=isolated` adds the
+// isolated-CSS probe (css-probe/, PLAN T-09). The shell-service panel (PLAN T-06) is in probe-services.ts.
 import type { MiniAppContext, MiniAppModule, Unmount } from "@simeonts/quizzard-core";
 import { renderServices, type ServiceCounters } from "./probe-services.ts";
 
@@ -31,6 +31,7 @@ Object.assign(window, { quizzardProbe: counters });
 export const probeMiniApp: MiniAppModule = {
   mount(element: HTMLElement, context: MiniAppContext): Unmount | Promise<Unmount> {
     if (context.query.get("fail") === "mount") throw new Error("Probe mount failed on purpose (?fail=mount)");
+    if (context.query.get("css") === "isolated") return mountWithCssProbe(element, context);
     const delay = Math.min(Number(context.query.get("mountDelay") ?? "0"), MAX_MOUNT_DELAY_MS);
     if (!Number.isFinite(delay) || delay <= 0) return render(element, context);
     return new Promise((resolve) => {
@@ -38,6 +39,17 @@ export const probeMiniApp: MiniAppModule = {
     });
   },
 };
+
+/** The probe plus the isolated-CSS probe, whose chunk brings the scoped stylesheet. */
+async function mountWithCssProbe(element: HTMLElement, context: MiniAppContext): Promise<Unmount> {
+  const { renderCssProbe } = await import("./css-probe/css-probe.ts");
+  const removeCssProbe = renderCssProbe(element);
+  const unmount = render(element, context);
+  return () => {
+    removeCssProbe();
+    unmount();
+  };
+}
 
 function render(element: HTMLElement, context: MiniAppContext): Unmount {
   counters.mounts += 1;
