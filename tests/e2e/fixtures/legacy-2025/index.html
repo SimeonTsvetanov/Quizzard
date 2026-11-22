@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<!--
+  Test fixture — stand-in for the 2025 Quizzard page (branch gh-pages @ 075f224 = the live site, read 2026-11-22).
+  The head keeps the parts the take-over depends on (manifest link, title); the React bundle is replaced by the
+  service worker registration of its src/main.tsx (branch legacy-2025), production path, same calls.
+  Served by `vite preview` for tests/e2e/legacy-2025.spec.ts (app/vite.config.ts, cookie e2e-legacy-2025=1).
+-->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="manifest" href="/Quizzard/manifest.json" />
+    <title>Quizzard</title>
+  </head>
+  <body>
+    <h1 data-legacy-2025>Quizzard (2025 site)</h1>
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker
+            .register("/Quizzard/service-worker.js")
+            .then((registration) => {
+              console.log("ServiceWorker registration successful with scope: ", registration.scope);
+            })
+            .catch((error) => {
+              console.log("ServiceWorker registration failed: ", error);
+            });
+        });
+      }
+    </script>
+  </body>
+</html>

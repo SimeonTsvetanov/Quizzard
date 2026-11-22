@@ -13,19 +13,19 @@ async function openControlled(page: Page): Promise<void> {
 }
 
 test("manifest carries shortcuts only when app.config has them, and no share target (PLAN §2)", async ({ request }) => {
-  const m = (await (await request.get("./manifest.webmanifest")).json()) as Record<string, unknown>;
+  const m = (await (await request.get("./manifest.json")).json()) as Record<string, unknown>;
   expect(m["shortcuts"] !== undefined).toBe(Boolean(app.shortcuts?.length));
   expect(m["share_target"]).toBeUndefined();
 });
 
 test("manifest scope and start URL are the Pages path from app.config", async ({ request }) => {
-  const m = (await (await request.get("./manifest.webmanifest")).json()) as { start_url?: string; scope?: string };
+  const m = (await (await request.get("./manifest.json")).json()) as { start_url?: string; scope?: string };
   expect(m.start_url).toBe(app.basePath);
   expect(m.scope).toBe(app.basePath);
 });
 
 test("shortcuts have a 96 px icon (pwa §2)", async ({ request }) => {
-  const m = (await (await request.get("./manifest.webmanifest")).json()) as { shortcuts?: { icons?: { src: string; sizes: string }[] }[] };
+  const m = (await (await request.get("./manifest.json")).json()) as { shortcuts?: { icons?: { src: string; sizes: string }[] }[] };
   for (const shortcut of m.shortcuts ?? []) expect(shortcut.icons?.some((i) => i.sizes === "96x96")).toBe(true);
   const icon = await request.get("./pwa-96x96.png");
   expect(icon.ok()).toBe(true);

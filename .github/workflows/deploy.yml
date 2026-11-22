@@ -1,6 +1,8 @@
-# Deploy to GitHub Pages via OIDC (no tokens). Repo Settings → Pages → Source: GitHub Actions.
+# Deploy to GitHub Pages via OIDC (no tokens, no secrets). Needs repo Settings → Pages → Source:
+# GitHub Actions. The 2025 site was published from branch gh-pages by a push action (DECISIONS
+# 2026-11-22 T-02): until the source is switched, the live site keeps serving that branch.
 name: Deploy
-# Deploys only after CI (verify, audit, licences, e2e, Lighthouse) passed on main.
+# Deploys only main, and only after CI (verify, audit, licences, e2e, Lighthouse) passed on it.
 on:
   workflow_run:
     workflows: [CI]
@@ -16,8 +18,9 @@ jobs:
   build:
     # workflow_run gets write/OIDC rights even when the CI run came from a fork PR (GitHub docs,
     # events-that-trigger-workflows): deploy only CI runs from a push to this repository.
+    # A manual run may pick any branch in the UI: only main is published.
     if: >-
-      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
       (github.event.workflow_run.conclusion == 'success' &&
        github.event.workflow_run.event == 'push' &&
        github.event.workflow_run.head_repository.full_name == github.repository)

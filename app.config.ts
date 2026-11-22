@@ -61,6 +61,12 @@ export interface AppConfig {
   readonly seo?: { readonly googleVerification?: string }; // Search Console meta token (growth → seo-geo §3); omit when unused
   readonly faq: readonly { readonly q: string; readonly a: string }[]; // 5–10, also FAQPage JSON-LD
   readonly shortcuts?: readonly { readonly name: string; readonly url: string }[];
+  /**
+   * Cache Storage names an older site at `basePath` left in browsers. The new service worker takes
+   * over at once when it finds one and deletes exactly these (scripts/sw-handover.ts); the page then
+   * shows no update offer for that take-over (app/src/pwa.ts).
+   */
+  readonly legacyCacheNames?: readonly string[];
 }
 
 export const app = {
@@ -78,6 +84,12 @@ export const app = {
   support: { buyMeACoffee: "https://buymeacoffee.com/simeontsvetanov" },
   ai: { builtWithAI: true, usesAIFeatures: false },
   ads: { enabled: false },
+  // Every name a 2025 worker (public/sw.js, then public/service-worker.js) ever used — read from the
+  // whole history of branch `legacy-2025` (PLAN T-02, DECISIONS 2026-11-22).
+  legacyCacheNames: [
+    "quizzard-v1.0.1", "quizzard-static-v1.0.1", "quizzard-v2.1", "quizzard-simple", "quizzard-fixed-theme-2025",
+    "quizzard-mint-icons-2025", "quizzard-favicons-new-logo-2024", "quizzard-complete-icons-2025", "quizzard-cache-v1",
+  ],
   analytics: { umami: false },
   storage: { tiers: ["prefs"], stores: ["theme", "language", "dismissed prompts", "report draft"] },
   limits: {},

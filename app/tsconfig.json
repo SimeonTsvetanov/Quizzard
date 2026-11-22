@@ -22,7 +22,8 @@
     "vite.config.ts",
     "pwa-assets.config.ts",
     "../app.config.ts",
-    "../scripts/seo.ts"
+    "../scripts/seo.ts",
+    "../scripts/sw-handover.ts"
   ],
   "references": [
     {

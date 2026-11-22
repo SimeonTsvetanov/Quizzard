@@ -24,8 +24,15 @@ function memoryStorage(): Pick<Storage, "getItem" | "setItem"> {
   return { getItem: (key) => items.get(key) ?? null, setItem: (key, value) => { items.set(key, value); } };
 }
 
-/** Stubs window, document, navigator, location and sessionStorage, then runs initPwa(). */
-function start({ controlled = true, storage = memoryStorage() }: { controlled?: boolean; storage?: Pick<Storage, "getItem" | "setItem"> } = {}) {
+interface StartOptions {
+  controlled?: boolean;
+  storage?: Pick<Storage, "getItem" | "setItem">;
+  /** Cache Storage names; omitted = no Cache Storage at all. */
+  cacheNames?: Promise<string[]>;
+}
+
+/** Stubs window, document, navigator, location, sessionStorage and caches, then runs initPwa(). */
+function start({ controlled = true, storage = memoryStorage(), cacheNames }: StartOptions = {}) {
   const win = new EventTarget();
   const doc = Object.assign(new EventTarget(), { visibilityState: "visible" });
   const serviceWorker = Object.assign(new EventTarget(), { controller: controlled ? {} : null });
@@ -35,10 +42,16 @@ function start({ controlled = true, storage = memoryStorage() }: { controlled?: 
   vi.stubGlobal("navigator", { serviceWorker, onLine: true });
   vi.stubGlobal("location", { reload });
   vi.stubGlobal("sessionStorage", storage);
+  if (cacheNames) vi.stubGlobal("caches", { keys: () => cacheNames });
   initPwa();
   const options: RegisterSWOptions | undefined = vi.mocked(registerSW).mock.calls.at(-1)?.[0];
   if (!options) throw new Error("initPwa() did not call registerSW()");
   return { win, doc, serviceWorker, reload, options };
+}
+
+/** Waits until every pending promise callback has run (a macrotask runs after all microtasks). */
+function settle(): Promise<void> {
+  return new Promise((resolve) => { setTimeout(resolve, 0); });
 }
 
 /** Runs the action of the last toast shown (the Reload button). */
@@ -83,13 +96,19 @@ describe("checkForUpdate", () => {
 
 describe("controllerChangeAction", () => {
   it("reloads only the tab that asked for the update", () => {
-    expect(controllerChangeAction({ hadController: true, updateRequested: true })).toBe("reload");
+    expect(controllerChangeAction({ hadController: true, updateRequested: true, isLegacyTakeover: false })).toBe("reload");
   });
   it("offers a reload when another tab activated the new version", () => {
-    expect(controllerChangeAction({ hadController: true, updateRequested: false })).toBe("offer-reload");
+    expect(controllerChangeAction({ hadController: true, updateRequested: false, isLegacyTakeover: false })).toBe("offer-reload");
   });
   it("ignores the first service worker taking control", () => {
-    expect(controllerChangeAction({ hadController: false, updateRequested: false })).toBe("ignore");
+    expect(controllerChangeAction({ hadController: false, updateRequested: false, isLegacyTakeover: false })).toBe("ignore");
+  });
+  it("ignores the take-over from the 2025 worker (this page already runs the new version)", () => {
+    expect(controllerChangeAction({ hadController: true, updateRequested: false, isLegacyTakeover: true })).toBe("ignore");
+  });
+  it("still reloads a tab that asked for the update", () => {
+    expect(controllerChangeAction({ hadController: true, updateRequested: true, isLegacyTakeover: true })).toBe("reload");
   });
 });
 
@@ -134,6 +153,25 @@ describe("initPwa: updates", () => {
     serviceWorker.dispatchEvent(new Event("controllerchange"));
     expect(reload).not.toHaveBeenCalled();
     expect(vi.mocked(showToast)).not.toHaveBeenCalled();
+  });
+  it("a page loaded under the 2025 worker: its take-over offers nothing, a later update does", async () => {
+    const { serviceWorker, reload } = start({ cacheNames: Promise.resolve(["quizzard-complete-icons-2025"]) });
+    await settle(); // the Cache Storage answer arrives
+    serviceWorker.dispatchEvent(new Event("controllerchange"));
+    expect(vi.mocked(showToast)).not.toHaveBeenCalled();
+    serviceWorker.dispatchEvent(new Event("controllerchange"));
+    expect(vi.mocked(showToast)).toHaveBeenLastCalledWith(expect.objectContaining({ pinned: true }));
+    expect(reload).not.toHaveBeenCalled();
+  });
+  it("a Cache Storage answer after the first controller change never silences a later update", async () => {
+    let answer: (names: string[]) => void = () => undefined;
+    const { serviceWorker } = start({ cacheNames: new Promise((resolve) => { answer = resolve; }) });
+    serviceWorker.dispatchEvent(new Event("controllerchange"));
+    expect(vi.mocked(showToast)).toHaveBeenCalledOnce();
+    answer(["quizzard-complete-icons-2025"]);
+    await settle();
+    serviceWorker.dispatchEvent(new Event("controllerchange"));
+    expect(vi.mocked(showToast)).toHaveBeenCalledTimes(2);
   });
   it("a tab without a controller (hard reload) reloads directly after Reload", async () => {
     const { options, reload } = start({ controlled: false });

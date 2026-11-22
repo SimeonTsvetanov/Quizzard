@@ -4,6 +4,7 @@ import { defineConfig, type Plugin } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
 import { app as config, type AppConfig } from "../app.config.ts";
 import { OG_IMAGE, escapeHtml, ogImageAlt, ogImageUrl, siteVerificationTag, structuredData } from "../scripts/seo.ts";
+import { SW_HANDOVER_FILE, swHandoverScript } from "../scripts/sw-handover.ts";
 
 const app: AppConfig = config;
 
@@ -81,20 +82,70 @@ function pagesNotFound(): Plugin {
   };
 }
 
+/** Emits sw-handover.js next to the service worker, which imports it (scripts/sw-handover.ts, PLAN T-02). */
+function swHandover(): Plugin {
+  return {
+    name: "quizzard-sw-handover",
+    apply: "build",
+    generateBundle() {
+      this.emitFile({ type: "asset", fileName: SW_HANDOVER_FILE, source: swHandoverScript(app) });
+    },
+  };
+}
+
+/** Cookie with which tests/e2e/legacy-2025.spec.ts asks `vite preview` for the 2025 site. */
+const LEGACY_SITE_COOKIE = /(?:^|;\s*)e2e-legacy-2025=1(?:;|$)/;
+/** The 2025 files the take-over e2e needs, by path below BASE (tests/e2e/fixtures/legacy-2025/). */
+const LEGACY_SITE_FILES = new Map([
+  ["", "index.html"], ["index.html", "index.html"], ["service-worker.js", "service-worker.js"], ["manifest.json", "manifest.json"],
+]);
+const LEGACY_SITE_TYPES: Record<string, string> = { html: "text/html", js: "text/javascript", json: "application/json" };
+
+/**
+ * `vite preview` only (GitHub Pages never runs it): with the cookie `e2e-legacy-2025=1` the page, the
+ * service worker and the manifest are the 2025 site's, so the e2e test can install the real 2025
+ * worker on this origin and path, then "deploy" this build by dropping the cookie (Playwright cannot
+ * intercept a service worker's own script request).
+ */
+function previewLegacySite(): Plugin {
+  const fixtures = new URL("../tests/e2e/fixtures/legacy-2025/", import.meta.url);
+  return {
+    name: "quizzard-preview-legacy-2025",
+    configurePreviewServer(server) {
+      server.middlewares.use((req, res, next) => {
+        const path = req.url?.split("?")[0] ?? "";
+        const file = path.startsWith(BASE) ? LEGACY_SITE_FILES.get(path.slice(BASE.length)) : undefined;
+        if (file === undefined || !LEGACY_SITE_COOKIE.test(req.headers.cookie ?? "")) { next(); return; }
+        res.setHeader("content-type", `${LEGACY_SITE_TYPES[file.slice(file.lastIndexOf(".") + 1)] ?? "text/plain"}; charset=utf-8`);
+        res.setHeader("cache-control", "no-cache");
+        res.end(readFileSync(new URL(file, fixtures)));
+      });
+    },
+  };
+}
+
 export default defineConfig({
   base: BASE,
   build: { target: "es2024" },
   plugins: [
     appHtml(),
+    previewLegacySite(),
     pagesNotFound(),
+    swHandover(),
     VitePWA({
       registerType: "prompt",
       injectRegister: false,
+      // The 2025 site's URLs (DECISIONS 2026-11-22 T-02): installed copies update the worker and
+      // re-read the manifest at the URLs they know; a renamed worker would leave theirs running.
+      filename: "service-worker.js",
+      manifestFilename: "manifest.json",
       // No includeAssets: globPatterns below already match every public file worth precaching.
       // injectThemeColor off: index.html has two media theme-color metas (light/dark); a third
       // media-less one would override both (pwa → pwa §2).
       pwaAssets: { config: true, overrideManifestIcons: true, injectThemeColor: false },
       manifest: {
+        // id = start_url = the identity Chrome computed for the 2025 manifest (it had no id): the
+        // installed app updates in place instead of becoming a second app (DECISIONS T-02).
         id: BASE, name: app.name, short_name: app.name, description: app.description,
         lang: app.languages[0] ?? "en", start_url: BASE, scope: BASE, display: "standalone",
         background_color: "#F5F5F7", theme_color: "#F5F5F7", orientation: "any",
@@ -116,8 +167,15 @@ export default defineConfig({
           // Install-dialog screenshots and the social image are never needed offline (pwa §3).
           "screenshots/**",
           "og-image.png",
+          // Loaded by the worker itself (importScripts); the browser keeps it with the worker.
+          SW_HANDOVER_FILE,
+          // The plugin precaches the manifest itself; matched by "json" above it would be listed twice
+          // with different revisions, and Workbox then fails to start its precache.
+          "manifest.json",
         ],
         cleanupOutdatedCaches: true,
+        // Takes over from the 2025 worker at once and deletes its caches (scripts/sw-handover.ts).
+        importScripts: [SW_HANDOVER_FILE],
         // Any query (?lang=, ?teams=) still matches the precached page.
         ignoreURLParametersMatching: [/.*/],
         // No navigateFallback (vite-plugin-pwa defaults it to index.html): Workbox would answer

@@ -1,18 +1,18 @@
 # STATUS — Quizzard
 
-**Updated:** 2026-11-22 · **Phase:** 3 Build · T-01 done (scaffold from the forge template)
+**Updated:** 2026-11-22 · **Phase:** 3 Build — M1 in progress (T-01, T-02 done; next T-03)
 
 ## Done
-- Old code archived in branch `legacy-2025`; `main` still serves the old site until the new one is ready.
-- Brand files in `brand/` (wizard logo variant A as SVG, icons); palette C · Emerald (DECISIONS).
-- `docs/SPEC.md` and `docs/PLAN.md` approved by Moni 2026-11-22.
-- T-01: forge template (forge 0.27.4 repo) scaffolded in; `basePath: "/Quizzard/"` drives Vite, generate
-  and Playwright; MCP, embed, share target, title rotation, Dexie/OPFS removed (PLAN §2); EN + BG.
+- Old code in branch `legacy-2025`; `main` + `gh-pages` still serve the 2025 site until T-08.
+- Spec and plan approved by Moni (2026-11-22). Brand in `brand/` (logo A, palette C Emerald).
+- T-01 scaffold from the forge template, `basePath` `/Quizzard/`.
+- T-02 take-over: worker served as `service-worker.js`, 2025 caches deleted, manifest identity `/Quizzard/` as `manifest.json`.
 
 ## Next
-- T-02 take over the 2025 site (service worker, manifest identity, CI + deploy); T-03 Emerald accent + logo;
-  T-04 core contract, registry, route parser.
+- T-03 accent + logo → T-04 core contract → T-05 router/outlet → T-06 context → T-07 Home → T-08 first deploy.
 
 ## Blockers / open
-- None. Work happens on branch `claude/eager-bardeen-t8t7b7`; nothing is pushed to `main` before the new app builds.
-- Placeholders still open: Bulgarian tagline (T-19, Moni), `content/legal` placeholders (T-19), template logo (T-03).
+- **Before T-08 (Moni):** repo Settings → Pages → Source must be "GitHub Actions" (today almost certainly branch `gh-pages`).
+- Browsers still on the June 2025 `sw.js` worker are not reached by the take-over (a self-removing `sw.js` is not built).
+- The 2025 page had a `google-site-verification` meta tag: carry the token into `app.config.ts` seo in T-20, or Search Console verification is lost.
+- e2e run on Chromium + mobile Chrome only (Playwright's pinned Firefox/WebKit are not installed in the cloud session).

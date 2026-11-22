@@ -5,6 +5,7 @@ import { registerSW } from "virtual:pwa-register";
 import { app } from "./config.ts";
 import { showToast } from "./ui/toast.ts";
 import { isTaskRunning } from "./state.ts";
+import { hasLegacyCaches } from "./legacy-caches.ts";
 import { t } from "./i18n/index.ts";
 
 /** How often an open app asks the server for a new service worker (pwa §5: every 60 min). */
@@ -52,13 +53,22 @@ export async function checkForUpdate({ swUrl, registration, isOnline, fetchScrip
 /** What a tab does when its service worker controller changes. */
 export type ControllerChangeAction = "reload" | "offer-reload" | "ignore";
 
+/** Inputs of {@link controllerChangeAction}. */
+export interface ControllerChangeState {
+  readonly hadController: boolean;
+  readonly updateRequested: boolean;
+  /** This page runs the new code under the 2025 site's worker, which the new one just replaced. */
+  readonly isLegacyTakeover: boolean;
+}
+
 /**
  * Decides how to react to `controllerchange`: reload only when this tab asked for the update;
- * offer a reload when another tab activated a new version under it; ignore the first install.
+ * offer a reload when another tab activated a new version under it; ignore the first install and
+ * the take-over from the 2025 worker (this page already is the new version).
  */
-export function controllerChangeAction({ hadController, updateRequested }: { readonly hadController: boolean; readonly updateRequested: boolean }): ControllerChangeAction {
+export function controllerChangeAction({ hadController, updateRequested, isLegacyTakeover }: ControllerChangeState): ControllerChangeAction {
   if (updateRequested) return "reload";
-  if (!hadController) return "ignore";
+  if (!hadController || isLegacyTakeover) return "ignore";
   return "offer-reload";
 }
 
@@ -126,41 +136,21 @@ function handlePreloadErrors(): void {
   });
 }
 
-/** Registers the service worker and wires update prompts, periodic checks and stale-chunk recovery. */
-export function initPwa(): void {
-  handlePreloadErrors();
-  if (!("serviceWorker" in navigator)) return;
-  let hadController = navigator.serviceWorker.controller !== null;
-  let updateRequested = false;
-  const updateSW = registerSW({
-    immediate: true,
-    onNeedRefresh() {
-      offerReload(() => {
-        updateRequested = true;
-        // A tab without a controller (opened with a hard reload) gets no controllerchange: the
-        // new worker activates without it, so reload it directly once skip-waiting is sent.
-        const isControlled = navigator.serviceWorker.controller !== null;
-        void updateSW(true).then(() => {
-          if (!isControlled) location.reload();
-        });
-      });
-    },
-    onNeedReload() {
-      // Intentionally empty: the default would reload EVERY open tab when one tab applies the
-      // update; the controllerchange listener below decides per tab instead (pwa §5 multi-tab).
-    },
-    onOfflineReady() {
-      showToast({ message: t("shell.update.offlineReady") });
-    },
-    onRegisteredSW(swUrl, registration) {
-      if (registration) scheduleUpdateChecks(swUrl, registration);
-    },
-    onRegisterError(error: unknown) {
-      console.warn("Service worker registration failed", error);
-    },
-  });
+/** What a tab remembers between service worker events. */
+interface UpdateState {
+  hadController: boolean;
+  updateRequested: boolean;
+  /** "checking" until Cache Storage answers; only the first controller change can be the take-over. */
+  legacyTakeover: "checking" | "yes" | "no";
+}
+
+/** Reacts to each controller change of this tab (pwa §5 multi-tab; take-over from the 2025 worker). */
+function watchControllerChange(state: UpdateState): void {
   navigator.serviceWorker.addEventListener("controllerchange", () => {
-    switch (controllerChangeAction({ hadController, updateRequested })) {
+    const action = controllerChangeAction({ ...state, isLegacyTakeover: state.legacyTakeover === "yes" });
+    state.hadController = true;
+    state.legacyTakeover = "no";
+    switch (action) {
       case "reload":
         location.reload();
         break;
@@ -173,6 +163,46 @@ export function initPwa(): void {
       default:
         break;
     }
-    hadController = true;
   });
+}
+
+/** Registers the service worker and wires update prompts, periodic checks and stale-chunk recovery. */
+export function initPwa(): void {
+  handlePreloadErrors();
+  if (!("serviceWorker" in navigator)) return;
+  const hadController = navigator.serviceWorker.controller !== null;
+  const state: UpdateState = { hadController, updateRequested: false, legacyTakeover: hadController ? "checking" : "no" };
+  if (hadController) {
+    void hasLegacyCaches("caches" in globalThis ? caches : undefined, app.legacyCacheNames ?? []).then((found) => {
+      if (state.legacyTakeover === "checking") state.legacyTakeover = found ? "yes" : "no";
+    });
+  }
+  const updateSW = registerSW({
+    immediate: true,
+    onNeedRefresh() {
+      offerReload(() => {
+        state.updateRequested = true;
+        // A tab without a controller (opened with a hard reload) gets no controllerchange: the
+        // new worker activates without it, so reload it directly once skip-waiting is sent.
+        const isControlled = navigator.serviceWorker.controller !== null;
+        void updateSW(true).then(() => {
+          if (!isControlled) location.reload();
+        });
+      });
+    },
+    onNeedReload() {
+      // Intentionally empty: the default would reload EVERY open tab when one tab applies the
+      // update; the controllerchange listener decides per tab instead (pwa §5 multi-tab).
+    },
+    onOfflineReady() {
+      showToast({ message: t("shell.update.offlineReady") });
+    },
+    onRegisteredSW(swUrl, registration) {
+      if (registration) scheduleUpdateChecks(swUrl, registration);
+    },
+    onRegisterError(error: unknown) {
+      console.warn("Service worker registration failed", error);
+    },
+  });
+  watchControllerChange(state);
 }
