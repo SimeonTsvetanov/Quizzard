@@ -37,7 +37,12 @@ export interface AppConfig {
   readonly languages: readonly ("en" | "bg")[]; // English first and default
   /** One entry per extra language in `languages`, same number of steps/features/FAQ (generate.ts checks). */
   readonly l10n?: { readonly bg?: AppText };
-  readonly accent?: string; // hex; must pass design color.mjs check
+  /**
+   * The one accent (design-system §3): a #RRGGBB that scripts/accent.ts derives both themes from, or
+   * an explicit `{ light, dark }` pair that it only checks (text on it, link text and focus ring on
+   * bg/surface/raised surface, both themes, WCAG 2.2 AA) — `pnpm generate` fails when one misses.
+   */
+  readonly accent?: string | { readonly light: string; readonly dark: string };
   readonly categories: readonly string[]; // manifest categories, e.g. ["utilities"]
   readonly contact: { readonly email: string };
   readonly support: { readonly buyMeACoffee: string; readonly githubSponsors?: string; readonly kofi?: string };
@@ -79,6 +84,8 @@ export const app = {
   repo: "https://github.com/SimeonTsvetanov/Quizzard",
   version: "0.1.0",
   languages: ["en", "bg"],
+  // Palette C · Emerald (DECISIONS 2026-11-22): white text on the light one (5.00:1), dark text on the dark one.
+  accent: { light: "#00804F", dark: "#34D399" },
   categories: ["utilities", "entertainment"],
   contact: { email: "tsvetanov.simeon@gmail.com" },
   support: { buyMeACoffee: "https://buymeacoffee.com/simeontsvetanov" },

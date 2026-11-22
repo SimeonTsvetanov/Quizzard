@@ -1,8 +1,8 @@
 // Per-app accent colours (design → design-system §3, accessibility §2): derives the accent
 // token set from app.config.accent and refuses colours that fail WCAG. Used by scripts/generate.ts.
+// Quizzard addition (PLAN T-03): besides one hex, an explicit light/dark pair that is checked, not derived.
 
-type Rgb = readonly [number, number, number];
-type Oklch = readonly [number, number, number];
+import { contrast, displayable, formatOklch as fmt, hexToOklch, toRgb, type Oklch, type Rgb } from "./color-math.ts";
 
 /** The generated accent tokens, each as a `light-dark()` pair of oklch() strings. */
 export interface AccentTokens {
@@ -27,58 +27,12 @@ const BACKGROUNDS: readonly { readonly name: string; readonly light: Rgb; readon
 ];
 const WHITE: Rgb = [1, 1, 1];
 const INK: Rgb = [0.114, 0.114, 0.122]; // #1D1D1F ≈ oklch(21% 0.004 286), written as --color-on-accent
+const WHITE_CSS = "oklch(100% 0 0)";
+const INK_CSS = "oklch(21% 0.004 286)";
+const TEXT_MIN = 4.5;
 const FOCUS_MIN = 3;
+const HEX = /^#[0-9a-fA-F]{6}$/;
 
-const lin = (c: number): number => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
-const delin = (c: number): number => Math.min(1, Math.max(0, c <= 0.0031308 ? 12.92 * c : 1.055 * c ** (1 / 2.4) - 0.055));
-
-/** Converts #RRGGBB to OKLCH [L 0–1, C, H degrees]. */
-function hexToOklch(hex: string): Oklch {
-  const [r, g, b] = [1, 3, 5].map((i) => lin(parseInt(hex.slice(i, i + 2), 16) / 255)) as [number, number, number]; // because map keeps the length 3
-  const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b);
-  const m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b);
-  const s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);
-  const lightness = 0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s;
-  const a = 1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s;
-  const bb = 0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s;
-  return [lightness, Math.hypot(a, bb), ((Math.atan2(bb, a) * 180) / Math.PI + 360) % 360];
-}
-
-/** Converts OKLCH to linear sRGB, unclipped (values outside 0–1 = outside the sRGB gamut). */
-function toLinear([lightness, chroma, hue]: Oklch): Rgb {
-  const a = chroma * Math.cos((hue * Math.PI) / 180);
-  const b = chroma * Math.sin((hue * Math.PI) / 180);
-  const l = (lightness + 0.3963377774 * a + 0.2158037573 * b) ** 3;
-  const m = (lightness - 0.1055613458 * a - 0.0638541728 * b) ** 3;
-  const s = (lightness - 0.0894841775 * a - 1.291485548 * b) ** 3;
-  return [4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s, -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s, -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s];
-}
-
-/** Converts OKLCH to sRGB (0–1); callers pass displayable() colours, so nothing is clipped. */
-function toRgb(v: Oklch): Rgb {
-  const [r, g, b] = toLinear(v);
-  return [delin(r), delin(g), delin(b)];
-}
-
-/**
- * Returns the colour exactly as it will be written (fmt precision) with the chroma lowered until
- * it is inside sRGB — so the contrast measured here is the contrast the browser paints.
- */
-export function displayable([lightness, chroma, hue]: Oklch): Oklch {
-  const v: [number, number, number] = [Math.round(lightness * 1000) / 1000, Math.round(chroma * 1000) / 1000, Math.round(hue * 10) / 10];
-  const isInside = (c: Oklch): boolean => toLinear(c).every((x) => x >= -1e-4 && x <= 1 + 1e-4);
-  while (!isInside(v) && v[1] > 0) v[1] = Math.max(0, Math.round((v[1] - 0.001) * 1000) / 1000);
-  return v;
-}
-
-/** Returns the WCAG 2.2 contrast ratio of two sRGB colours. */
-export function contrast(x: Rgb, y: Rgb): number {
-  const lum = (c: Rgb): number => 0.2126 * lin(c[0]) + 0.7152 * lin(c[1]) + 0.0722 * lin(c[2]);
-  const [a, b] = [lum(x), lum(y)];
-  return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
-}
-
-const fmt = (v: Oklch, alpha = ""): string => `oklch(${(v[0] * 100).toFixed(1)}% ${v[1].toFixed(3)} ${v[2].toFixed(1)}${alpha})`;
 const pair = (light: string, dark: string): string => `light-dark(${light}, ${dark})`;
 
 /**
@@ -88,7 +42,7 @@ const pair = (light: string, dark: string): string => `light-dark(${light}, ${da
  * its pressed shade, accent text misses 4.5:1, or the focus ring misses 3:1 (accessibility §2).
  */
 export function deriveAccent(hex: string): AccentTokens {
-  if (!/^#[0-9a-fA-F]{6}$/.test(hex)) throw new Error(`app.config.accent must be #RRGGBB, got ${hex}`);
+  if (!HEX.test(hex)) throw new Error(`app.config.accent must be #RRGGBB, got ${hex}`);
   const base = displayable(hexToOklch(hex));
   const onWhite = contrast(toRgb(base), WHITE);
   const onInk = contrast(toRgb(base), INK);
@@ -113,13 +67,101 @@ export function deriveAccent(hex: string): AccentTokens {
   if (weak.length) throw new Error(`Accent ${hex}: focus ring below ${String(FOCUS_MIN)}:1 — ${weak.map((c) => `${c.pair} ${c.ratio.toFixed(2)}:1`).join(", ")}`);
   return {
     accent: pair(fmt(base), fmt(base)),
-    onAccent: onAccent === WHITE ? "oklch(100% 0 0)" : "oklch(21% 0.004 286)",
+    onAccent: onAccent === WHITE ? WHITE_CSS : INK_CSS,
     pressed: pair(fmt(pressed), fmt(pressed)),
     text: pair(fmt(textLight), fmt(textDark)),
     tint: pair(fmt(base, " / 0.1"), fmt(textDark, " / 0.16")),
     focus: pair(fmt(textLight), fmt(textDark)),
     focusContrast,
   };
+}
+
+/** An explicit accent per theme: `light` is painted in the light theme, `dark` in the dark one. */
+export interface AccentPair {
+  readonly light: string;
+  readonly dark: string;
+}
+
+/** app.config.accent: one #RRGGBB (both themes derived from it) or an explicit {@link AccentPair}. */
+export type AccentConfig = string | AccentPair;
+
+/** One measured contrast of the accent set and the WCAG 2.2 AA minimum it must reach. */
+export interface ContrastCheck {
+  readonly pair: string;
+  readonly ratio: number;
+  readonly min: number;
+}
+
+type Theme = "light" | "dark";
+
+interface ThemeAccent {
+  readonly base: Oklch;
+  readonly onAccent: Rgb;
+  readonly pressed: Oklch;
+  readonly checks: readonly ContrastCheck[];
+}
+
+/**
+ * Measures one theme's half of a pair. The colour is used as written for the fill, the text/link
+ * colour and the focus ring (Moni picked exact colours), so it is only checked, never adjusted.
+ */
+function measureTheme(theme: Theme, hex: string): ThemeAccent {
+  if (!HEX.test(hex)) throw new Error(`app.config.accent.${theme} must be #RRGGBB, got ${hex}`);
+  const base = displayable(hexToOklch(hex));
+  const fill = toRgb(base);
+  const onAccent = contrast(fill, WHITE) >= TEXT_MIN ? WHITE : INK;
+  const pressed = displayable([base[0] - 0.04, base[1], base[2]]);
+  const textName = onAccent === WHITE ? "white" : "dark";
+  const checks: ContrastCheck[] = [
+    { pair: `${theme} ${textName} --color-on-accent on --color-accent`, ratio: contrast(onAccent, fill), min: TEXT_MIN },
+    { pair: `${theme} ${textName} --color-on-accent on --color-accent-pressed`, ratio: contrast(onAccent, toRgb(pressed)), min: TEXT_MIN },
+    ...BACKGROUNDS.flatMap((bg) => [
+      { pair: `${theme} --color-accent-text on ${bg.name}`, ratio: contrast(fill, bg[theme]), min: TEXT_MIN },
+      { pair: `${theme} --color-focus on ${bg.name}`, ratio: contrast(fill, bg[theme]), min: FOCUS_MIN },
+    ]),
+  ];
+  return { base, onAccent, pressed, checks };
+}
+
+/**
+ * Returns every contrast an explicit pair must pass, both themes: text on the accent and on its
+ * pressed shade (4.5:1), the accent as text on bg, surface and raised surface (4.5:1) and as the
+ * focus ring there (3:1, WCAG 1.4.11).
+ * @throws {@link Error} when a colour is not #RRGGBB.
+ */
+export function accentPairChecks(accent: AccentPair): readonly ContrastCheck[] {
+  return [...measureTheme("light", accent.light).checks, ...measureTheme("dark", accent.dark).checks];
+}
+
+/**
+ * Builds the accent token set from an explicit light/dark pair; the text on each half is white
+ * when it reaches 4.5:1, else near-black.
+ * @throws {@link Error} listing every failed check of {@link accentPairChecks} — generate stops.
+ */
+export function deriveAccentPair(accent: AccentPair): AccentTokens {
+  const light = measureTheme("light", accent.light);
+  const dark = measureTheme("dark", accent.dark);
+  const checks = [...light.checks, ...dark.checks];
+  const failed = checks.filter((c) => c.ratio < c.min);
+  if (failed.length) {
+    const list = failed.map((c) => `${c.pair} ${c.ratio.toFixed(2)}:1 (needs ${String(c.min)}:1)`).join(", ");
+    throw new Error(`Accent pair ${accent.light} / ${accent.dark} fails WCAG 2.2 AA: ${list}. Darken the light accent or lighten the dark one.`);
+  }
+  const textCss = (rgb: Rgb): string => (rgb === WHITE ? WHITE_CSS : INK_CSS);
+  return {
+    accent: pair(fmt(light.base), fmt(dark.base)),
+    onAccent: pair(textCss(light.onAccent), textCss(dark.onAccent)),
+    pressed: pair(fmt(light.pressed), fmt(dark.pressed)),
+    text: pair(fmt(light.base), fmt(dark.base)),
+    tint: pair(fmt(light.base, " / 0.1"), fmt(dark.base, " / 0.16")),
+    focus: pair(fmt(light.base), fmt(dark.base)),
+    focusContrast: checks.filter((c) => c.pair.includes("--color-focus")).map(({ pair: name, ratio }) => ({ pair: name, ratio })),
+  };
+}
+
+/** Returns the accent token set for app.config.accent, a single hex or an explicit pair. */
+export function resolveAccent(accent: AccentConfig): AccentTokens {
+  return typeof accent === "string" ? deriveAccent(accent) : deriveAccentPair(accent);
 }
 
 /** Returns the generated accent.css (same `tokens` layer as design/tokens.css, loaded after it). */

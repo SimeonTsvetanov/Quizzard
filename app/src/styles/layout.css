@@ -49,6 +49,8 @@
     display: inline-flex;
     align-items: center;
     gap: var(--space-2);
+    /* The home link is a main control: 44 px like the header buttons, though the wizard is 36 px. */
+    min-block-size: var(--tap-target);
     color: var(--color-text);
     text-decoration: none;
     font-weight: var(--weight-semibold);

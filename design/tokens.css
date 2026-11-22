@@ -8,6 +8,8 @@
  * Everything is inside `@layer tokens` (design → css-architecture §1): the first layer, so any
  * app or page rule wins over it; the generated per-app accent appends to the same layer later.
  * Version: forge-standards 0.8.0 · 2026-11-06 (in @layer tokens)
+ * Quizzard additions (PLAN T-03, DECISIONS 2026-11-22): --color-highlight / --color-on-highlight.
+ * The accent comes from app.config.accent (the Emerald pair) via app/src/generated/accent.css.
  */
 
 @layer tokens {
@@ -42,6 +44,12 @@
     --color-success-text: light-dark(oklch(51.1% 0.134 147.4), oklch(75.6% 0.208 147)); /* #1F7A35 / #30D158 */
     --color-warning-text: light-dark(oklch(55.2% 0.192 35.3), oklch(78.2% 0.171 67.2)); /* #C93400 / #FF9F0A */
     --color-focus: light-dark(oklch(56.3% 0.193 256.2), oklch(66.9% 0.181 251.8));
+
+    /* ---------- Color: highlight (Quizzard: the logo's star gold) ---------- */
+    /* Medals and winner marks only. A FILL with --color-on-highlight on it (11.7:1), never a text or
+       icon colour: as text it is 1.32:1 on the light page (scripts/tokens.test.ts guards app CSS). */
+    --color-highlight: light-dark(oklch(87.9% 0.143 92), oklch(87.9% 0.143 92)); /* #F9D45C */
+    --color-on-highlight: light-dark(oklch(23.2% 0.004 286.1), oklch(23.2% 0.004 286.1)); /* #1D1D1F in both themes */
 
     /* ---------- Frosted header ---------- */
     --header-bg: light-dark(oklch(97.1% 0.003 286.4 / 0.72), oklch(0% 0 0 / 0.72));
