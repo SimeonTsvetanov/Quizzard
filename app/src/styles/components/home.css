@@ -9,6 +9,9 @@
     @media (scripting: enabled) {
       &:has(.launcher-list[aria-busy="true"]) > :not(.launcher) {
         visibility: hidden;
+        /* Safety net: if the app script never runs (it failed to load or to parse), the text
+           appears by itself after 4 s instead of staying hidden for good. */
+        animation: reveal-anyway 0s 4s forwards;
       }
     }
   }
@@ -135,5 +138,12 @@
     flex: none;
     font-size: var(--text-sm);
     color: var(--color-text-secondary);
+  }
+
+  /* Used by the busy rules here and in layout.css (footer). */
+  @keyframes reveal-anyway {
+    to {
+      visibility: visible;
+    }
   }
 }

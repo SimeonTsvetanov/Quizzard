@@ -96,6 +96,7 @@
     @media (scripting: enabled) {
       :root:has(.launcher-list[aria-busy="true"]) & {
         visibility: hidden;
+        animation: reveal-anyway 0s 4s forwards; /* same safety net as home.css: the links to Privacy and Terms */
       }
     }
   }

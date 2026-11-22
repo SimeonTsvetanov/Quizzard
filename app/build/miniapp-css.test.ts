@@ -207,11 +207,14 @@ describe("nesting and at-rules", () => {
     expect(codeOf(() => run("@scope { img { color: red; } }"))).toBe("UNSUPPORTED_SELECTOR");
   });
 
-  it("keeps @font-face but warns; warns about !important and document-level at-rules", () => {
-    const result = run("@font-face { font-family: X; src: url(x.woff2); }\n.a { display: none !important; }\n@view-transition { navigation: auto; }");
+  it("keeps @font-face but warns; warns about !important; refuses document-level at-rules", () => {
+    const result = run("@font-face { font-family: X; src: url(x.woff2); }\n.a { display: none !important; }");
     expect(result.css).toContain("@font-face");
-    expect(result.warnings.map((warning) => warning.code)).toEqual(["FONT_FACE", "DOCUMENT_AT_RULE", "IMPORTANT"]);
-    expect(result.warnings[2]?.message).toContain("line 2");
+    expect(result.warnings.map((warning) => warning.code)).toEqual(["FONT_FACE", "IMPORTANT"]);
+    expect(result.warnings[1]?.message).toContain("line 2");
+    // They act on the whole Quizzard page, so they never ship from a mini-app (review 2026-11-22).
+    expect(codeOf(() => run("@view-transition { navigation: auto; }"))).toBe("DOCUMENT_AT_RULE");
+    expect(codeOf(() => run("@page { margin: 0; }"))).toBe("DOCUMENT_AT_RULE");
   });
 
   it("drops @charset and refuses at-rules it cannot scope (left-over @import, uncompiled Tailwind)", () => {

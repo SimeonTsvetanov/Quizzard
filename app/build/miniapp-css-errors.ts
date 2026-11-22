@@ -3,6 +3,7 @@
 
 /** Why a mini-app stylesheet cannot be scoped; the build stops. */
 export type MiniAppCssErrorCode =
+  | "DOCUMENT_AT_RULE"
   | "INVALID_ID"
   | "UNSUPPORTED_SELECTOR"
   | "UNSUPPORTED_AT_RULE"
@@ -27,7 +28,7 @@ export class MiniAppCssError extends Error {
 }
 
 /** Something the transform keeps but a person should fix (the token check fails on most of them). */
-export type MiniAppCssWarningCode = "FONT_FACE" | "IMPORTANT" | "DOCUMENT_AT_RULE";
+export type MiniAppCssWarningCode = "FONT_FACE" | "IMPORTANT";
 
 /** One warning of the transform; unlike a {@link MiniAppCssError}, the CSS is still emitted. */
 export interface MiniAppCssWarning {

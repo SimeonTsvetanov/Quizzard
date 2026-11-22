@@ -1,7 +1,7 @@
 // The mini-app outlet (PLAN §1.4): loads a registry entry's chunk, mounts it into a fresh
 // `[data-miniapp="<id>"]` element and unmounts it on the next screen. One mini-app at a time;
 // a failed load or mount shows the shell's error view, never a blank page.
-import type { MiniAppEntry, MiniAppModule, Unmount } from "@simeonts/quizzard-core";
+import { CONTRACT_VERSION, type MiniAppEntry, type MiniAppModule, type Unmount } from "@simeonts/quizzard-core";
 import { h } from "../ui/dom.ts";
 import { errorButton, errorViewParts, toError } from "../ui/error-screen.ts";
 import { t } from "../i18n/index.ts";
@@ -52,9 +52,12 @@ export function createOutlet({ element, createContext, onHome }: OutletOptions):
     releaseCurrent = null;
     try {
       unmount?.();
+    } catch (error: unknown) {
+      // because a throwing unmount is the mini-app's bug, not a reason to take the shell down
+      // (review 2026-11-22: it covered every Back with the full-screen error): the outlet is
+      // emptied and the context released below, and the error is logged for the report dialog.
+      console.error("mini-app unmount failed", toError(error));
     } finally {
-      // because a throwing unmount is the mini-app's bug: the outlet is emptied and the context
-      // released anyway, and the error still reaches the global error screen.
       release?.();
       element.replaceChildren();
       element.removeAttribute("aria-busy");
@@ -114,6 +117,9 @@ export function createOutlet({ element, createContext, onHome }: OutletOptions):
  */
 async function loadModule(entry: MiniAppEntry): Promise<MiniAppModule | null> {
   if (entry.load === undefined) throw new Error(`Mini-app "${entry.meta.id}" has nothing to load`);
+  // PLAN §1.1 item 4: the contract version is checked at mount (production runs no registry validation).
+  const spoken: unknown = entry.meta.contract; // typed as the literal, but a stale vendored package decides at run time
+  if (spoken !== CONTRACT_VERSION) throw new Error(`Mini-app "${entry.meta.id}" speaks contract ${String(spoken)}, the shell ${String(CONTRACT_VERSION)}`);
   const loaded: unknown = await entry.load();
   if (loaded === undefined) return null;
   const module: unknown = typeof loaded === "object" && loaded !== null ? Reflect.get(loaded, "default") : undefined;

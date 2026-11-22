@@ -109,8 +109,7 @@ function scopeAtRule(atRule: AtRule, context: WalkContext): void {
       return;
     default:
       if (DOCUMENT_AT_RULES.has(name)) {
-        context.warnings.push({ code: "DOCUMENT_AT_RULE", message: `${at}: @${name} acts on the whole Quizzard page, not on the mini-app — remove it from the mini-app CSS (PLAN §1.1 item 5).` });
-        return;
+        throw new MiniAppCssError("DOCUMENT_AT_RULE", `${at}: @${name} acts on the whole Quizzard page, not on the mini-app — remove it from the mini-app CSS (PLAN §1.1 item 5).`);
       }
       throw new MiniAppCssError("UNSUPPORTED_AT_RULE", `${at}: @${atRule.name} cannot be scoped to a mini-app (an @import Vite did not inline, @namespace, or uncompiled Tailwind such as @theme/@apply). Remove it or compile it first.`);
   }
