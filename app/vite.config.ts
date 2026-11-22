@@ -124,9 +124,16 @@ function previewLegacySite(): Plugin {
   };
 }
 
+/**
+ * The e2e build (test/vite.e2e.config.ts, part of `pnpm build`) goes to `app/test/dist`; `vite preview`
+ * serves it when QUIZZARD_E2E=1 (playwright.config.ts). `app/dist` — what deploy.yml uploads — never
+ * contains test code.
+ */
+const outDir = process.env["QUIZZARD_E2E"] === "1" ? "test/dist" : "dist";
+
 export default defineConfig({
   base: BASE,
-  build: { target: "es2024" },
+  build: { target: "es2024", outDir },
   plugins: [
     appHtml(),
     previewLegacySite(),

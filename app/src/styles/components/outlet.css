@@ -1,0 +1,44 @@
+/* The mini-app outlet (miniapps/outlet.ts) and its loading skeleton. The outlet and its ancestors
+   never get transform, filter, contain or clipping: mini-app overlays render inside it (PLAN §1.1
+   item 5, guarded by tests/e2e/routing.spec.ts). */
+@layer components {
+  /* || Components: outlet */
+  .outlet {
+    /* Focus target after a route change (accessibility §3): the region, not a control — the
+       mini-app's own first control gets the ring when the person tabs on. */
+    &:focus {
+      outline: none;
+    }
+  }
+
+  /* || Components: outlet skeleton */
+  /* Holds the screen while a chunk loads, so the mini-app replaces it without a jump; shown only
+     after the loading delay of ui-patterns ("spinner after 300 ms") so a fast load never flickers. */
+  .outlet-skeleton {
+    --outlet-skeleton-delay: var(--duration-alert);
+
+    display: grid;
+    gap: var(--space-4);
+    animation: outlet-skeleton-in var(--duration-fade) var(--ease-standard) var(--outlet-skeleton-delay) both;
+  }
+
+  .outlet-skeleton-title {
+    inline-size: 40%;
+    block-size: var(--space-8);
+    border-radius: var(--radius-md);
+    background: var(--color-fill);
+  }
+
+  .outlet-skeleton-block {
+    block-size: calc(2 * var(--space-16));
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-1);
+  }
+
+  @keyframes outlet-skeleton-in {
+    from {
+      opacity: 0;
+    }
+  }
+}

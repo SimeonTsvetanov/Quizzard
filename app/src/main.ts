@@ -5,7 +5,7 @@ import { hydrateIcons } from "./ui/icons.ts";
 import { applyTheme, getTheme, initTheme } from "./ui/theme.ts";
 import { initI18n } from "./i18n/index.ts";
 import { shareApp } from "./ui/share.ts";
-import { installErrorScreen } from "./ui/error-screen.ts";
+import { installErrorScreen, show as showErrorScreen } from "./ui/error-screen.ts";
 import { initOfflineIndicator } from "./ui/offline.ts";
 import { initTitle } from "./ui/title.ts";
 import { openHelp } from "./ui/help.ts";
@@ -17,6 +17,8 @@ import { initInstall, openInstall, updateMenuLabel } from "./ui/install.ts";
 import { initPwa } from "./pwa.ts";
 import { relocateToasts } from "./ui/toast.ts";
 import { trackKeyboardInset } from "./ui/keyboard-inset.ts";
+import { miniApps, registryErrors } from "./miniapps/registry.ts";
+import { startScreens } from "./router/screen.ts";
 
 initI18n(); // first: every later module (incl. the error screen) uses t()
 installErrorScreen();
@@ -63,7 +65,13 @@ const openFromHash = (): void => {
   if (name !== "share" && Object.hasOwn(actions, name)) actions[name]?.();
 };
 window.addEventListener("hashchange", openFromHash);
-openFromHash();
+
+// Screens: Home or one mini-app (#/<id>), header Back, title. Development and the e2e build check
+// the registry first; production relies on registry.test.ts and ships without the validator.
+const registryProblems = import.meta.env.DEV || import.meta.env.MODE === "e2e" ? registryErrors() : [];
+if (registryProblems.length > 0) showErrorScreen(new Error(registryProblems.map(({ code, message }) => `${code}: ${message}`).join("\n")));
+else startScreens(miniApps);
+openFromHash(); // after the router: a #help launch opens over the Home it shows
 
 document.querySelector("[data-menu-open]")?.addEventListener("click", () => {
   menu?.showModal();

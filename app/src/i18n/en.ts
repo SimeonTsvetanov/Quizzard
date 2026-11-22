@@ -8,6 +8,7 @@ export const en = {
   shell: {
     skip: "Skip to content",
     home: "{{name}} — home",
+    back: "Back to Home",
     cancel: "Cancel",
     undo: "Undo",
     undone: "Undone ✓",
@@ -188,6 +189,13 @@ export const en = {
       selectText: "Select the text below to copy",
       details: "Technical details",
       docTitle: "Error · {{name}}",
+    },
+    miniapp: {
+      errorTitle: "Couldn't open {{name}}",
+      loadText: "Check your internet connection and try again. Your saved data is safe on this device.",
+      mountText: "{{name}} hit an error while starting. Try again — if it happens again, report the problem from the menu.",
+      retry: "Try again",
+      home: "Back to Home",
     },
   },
   app: {

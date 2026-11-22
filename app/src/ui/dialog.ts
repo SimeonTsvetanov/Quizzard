@@ -2,6 +2,7 @@ import { h } from "./dom.ts";
 import { icon } from "./icons.ts";
 import { t } from "../i18n/index.ts";
 import { createToastRegion, relocateToasts } from "./toast.ts";
+import { screenUrl } from "../router/history.ts";
 
 /** ms to keep a closed dialog for its exit animation (the short fade with reduced motion). */
 export const closeDelay = (): number => {
@@ -81,12 +82,13 @@ export function openDialog(id: string, title: string, body: Node[], options: Dia
     }
     // Keep it in the DOM until the closing animation ends (CSS overlay/display allow-discrete).
     setTimeout(() => { dialog.remove(); }, closeDelay());
-    if (location.hash === `#${id}`) history.replaceState(null, "", location.pathname + location.search);
+    // Back to the screen's address (a mini-app keeps its #/<id>); the router's mark stays.
+    if (location.hash === `#${id}`) history.replaceState(history.state, "", screenUrl());
     opener?.focus();
   });
   document.body.append(dialog);
   dialog.showModal();
   relocateToasts(); // a toast shown before the sheet opened moves into it (accessibility §5)
-  if (location.hash !== `#${id}`) history.replaceState(null, "", `#${id}`);
+  if (location.hash !== `#${id}`) history.replaceState(history.state, "", `#${id}`);
   return dialog;
 }

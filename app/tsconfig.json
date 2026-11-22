@@ -18,6 +18,7 @@
   },
   "include": [
     "src",
+    "test",
     "src/generated/*.json",
     "vite.config.ts",
     "pwa-assets.config.ts",

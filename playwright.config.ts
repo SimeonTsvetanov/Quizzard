@@ -9,7 +9,9 @@ export default defineConfig({
   forbidOnly: !!process.env["CI"],
   retries: process.env["CI"] ? 2 : 0,
   use: { trace: "on-first-retry", baseURL: `http://localhost:4173${app.basePath}` },
-  webServer: { command: "pnpm -F app preview --port 4173 --strictPort", port: 4173, reuseExistingServer: !process.env["CI"] },
+  // QUIZZARD_E2E=1: preview serves app/test/dist — the same app plus the routing probe mini-app
+  // (app/vite.config.ts); `pnpm build` writes both, app/dist stays production-only.
+  webServer: { command: "pnpm -F app preview --port 4173 --strictPort", port: 4173, reuseExistingServer: !process.env["CI"], env: { QUIZZARD_E2E: "1" } },
   projects: [
     { name: "chromium", use: { ...devices["Desktop Chrome"] } },
     { name: "webkit", use: { ...devices["Desktop Safari"] } },

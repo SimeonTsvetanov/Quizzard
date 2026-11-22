@@ -1,5 +1,24 @@
-/* Header contents: the action buttons on the right and the offline pill (APP-STANDARD §1). */
+/* Header contents: Back + logo on the left, the action buttons on the right and the offline pill
+   (APP-STANDARD §1). */
 @layer components {
+  /* || Components: header start (Back + logo) */
+  .header-start {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    min-width: 0;
+  }
+
+  /* Only inside a mini-app (router/screen.ts): standalone mode has no browser Back (pwa-ios §6). */
+  .header-back {
+    /* The chevron sits at the header's edge like iOS Back, the logo keeps its own spacing. */
+    margin-inline-start: calc(-1 * var(--space-2));
+
+    &[hidden] {
+      display: none;
+    }
+  }
+
   /* || Components: header actions */
   .header-actions {
     display: flex;

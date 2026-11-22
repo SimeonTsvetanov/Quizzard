@@ -12,7 +12,9 @@
     .button,
     .segmented,
     .alert,
-    .group-card {
+    .group-card,
+    .outlet-skeleton-block,
+    .es-details {
       border: 1px solid CanvasText;
     }
   }

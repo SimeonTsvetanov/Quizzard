@@ -33,10 +33,13 @@
     <div class="splash" aria-hidden="true"><img src="./logo.svg" alt="" width="88" height="88" /><p data-text="tagline">%APP_TAGLINE%</p></div>
     <a class="skip-link" href="#main" data-i18n="shell.skip">Skip to content</a>
     <header class="app-header" data-header>
-      <a class="brand" href="./" aria-label="%APP_NAME% — home" data-i18n-aria-label="shell.home">
-        <img src="./logo.svg" alt="" width="36" height="36" />
-        <span>%APP_NAME%</span>
-      </a>
+      <div class="header-start">
+        <button class="icon-button header-back" data-back data-icon="back" data-i18n-aria-label="shell.back" type="button" aria-label="Back to Home" hidden></button>
+        <a class="brand" data-home-link data-i18n-aria-label="shell.home" href="./" aria-label="%APP_NAME% — home">
+          <img src="./logo.svg" alt="" width="36" height="36" />
+          <span>%APP_NAME%</span>
+        </a>
+      </div>
       <div class="header-actions">
         <button class="icon-button" type="button" data-action="share" data-icon="share" aria-label="Share app" data-i18n-aria-label="shell.menu.share"></button>
         <button class="icon-button" type="button" data-theme-toggle aria-label="Theme"></button>
@@ -45,23 +48,26 @@
     </header>
     <main id="main" class="main">
       <span class="scroll-sentinel" data-sentinel aria-hidden="true"></span>
-      <section class="hero">
-        <h1>%APP_NAME%</h1>
-        <p class="lead" data-text="tagline">%APP_TAGLINE%</p>
-        <p data-text="description">%APP_DESCRIPTION%</p>
-      </section>
-      <section class="empty-state" data-empty>
-        <p data-i18n="app.emptyState">This is a fresh micro-app. The tool UI is built in Phase 3 (/build).</p>
-      </section>
-      <section class="steps">
-        <h2 data-i18n="shell.howItWorks">How it works</h2>
-        <ol data-text="steps">%APP_STEPS%</ol>
-      </section>
-      <section class="faq-list">
-        <h2 data-i18n="shell.faq">FAQ</h2>
-        <div data-text="faq">%APP_FAQ%</div>
-      </section>
-      <noscript><p>The tool needs JavaScript. The policies and docs above work without it.</p></noscript>
+      <div data-view="home">
+        <section class="hero">
+          <h1 data-home-heading tabindex="-1">%APP_NAME%</h1>
+          <p class="lead" data-text="tagline">%APP_TAGLINE%</p>
+          <p data-text="description">%APP_DESCRIPTION%</p>
+        </section>
+        <section class="empty-state" data-empty>
+          <p data-i18n="app.emptyState">This is a fresh micro-app. The tool UI is built in Phase 3 (/build).</p>
+        </section>
+        <section class="steps">
+          <h2 data-i18n="shell.howItWorks">How it works</h2>
+          <ol data-text="steps">%APP_STEPS%</ol>
+        </section>
+        <section class="faq-list">
+          <h2 data-i18n="shell.faq">FAQ</h2>
+          <div data-text="faq">%APP_FAQ%</div>
+        </section>
+        <noscript><p>The tool needs JavaScript. The policies and docs above work without it.</p></noscript>
+      </div>
+      <section class="outlet" data-outlet tabindex="-1" hidden></section>
     </main>
     <footer class="app-footer">
       <p>© <span data-year>%BUILD_YEAR%</span> Simeon Tsvetanov. <span data-i18n="shell.rights">All rights reserved.</span></p>

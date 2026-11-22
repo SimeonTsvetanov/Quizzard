@@ -1,0 +1,108 @@
+/* The error view (ui/error-screen.ts): full screen for a crash, inline in the outlet when a
+   mini-app cannot load or start. The same look as the 404 page (error-page.css), in app tokens. */
+@layer components {
+  /* || Components: error view */
+  .es {
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: var(--space-4);
+    text-align: center;
+  }
+
+  /* A crash: covers the whole app, above the header and toasts (it is added last). */
+  .es--screen {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-toast);
+    padding: var(--space-12) var(--space-5) calc(var(--space-12) + var(--safe-bottom));
+    background: var(--color-bg);
+    overflow-y: auto;
+  }
+
+  /* Inside the outlet: the header stays, so Back and the menu still work. */
+  .es--inline {
+    padding-block: var(--space-8);
+  }
+
+  .es-icon {
+    display: grid;
+    place-items: center;
+    inline-size: calc(var(--tap-target) + var(--space-3));
+    block-size: calc(var(--tap-target) + var(--space-3));
+    border-radius: var(--radius-full);
+    background: color-mix(in oklch, var(--color-danger-text) 14%, transparent);
+    color: var(--color-danger-text);
+    font-weight: var(--weight-bold);
+  }
+
+  .es-title {
+    margin: 0;
+    font-size: var(--text-2xl);
+    letter-spacing: var(--tracking-tight);
+    text-wrap: balance;
+
+    &:focus {
+      outline: none; /* a programmatic focus target, not a control (accessibility §3) */
+    }
+  }
+
+  .es-text {
+    max-inline-size: var(--measure);
+    margin: 0;
+    color: var(--color-text-secondary);
+    text-wrap: pretty;
+  }
+
+  .es-chip {
+    margin: 0;
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-full);
+    background: var(--color-fill);
+    /* Full text colour: secondary text on --color-fill is 4.15:1 (axe, routing.spec.ts). */
+    color: var(--color-text);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+  }
+
+  /* Equal-width buttons (button-stack) across the readable column. */
+  .es-actions {
+    inline-size: min(100%, var(--content-narrow));
+  }
+
+  .es-status {
+    min-block-size: 1.5em;
+    margin: 0;
+    color: var(--color-text-secondary);
+    font-size: var(--text-sm);
+  }
+
+  .es-details {
+    inline-size: min(100%, var(--content-narrow));
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-1);
+    text-align: start;
+
+    & summary {
+      display: flex;
+      align-items: center;
+      min-block-size: var(--tap-target);
+      padding: var(--space-3) var(--space-4);
+      font-weight: var(--weight-medium);
+      cursor: pointer;
+    }
+
+    & pre {
+      max-block-size: 40dvh;
+      margin: 0;
+      padding: var(--space-3) var(--space-4) var(--space-4);
+      overflow: auto;
+      color: var(--color-text-secondary);
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+  }
+}
