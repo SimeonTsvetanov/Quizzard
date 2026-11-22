@@ -111,6 +111,22 @@ test.describe("without a service worker", () => {
     expect(shellValues.filter((value) => value.includes("Gergana"))).toEqual([]);
   });
 
+  // Moni 2026-11-22: "Teams copied ✓" stayed on top of the menu he opened right after copying.
+  test("a plain note is gone when the menu opens over it; a note with Undo moves into the menu", async ({ page }) => {
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: () => Promise.resolve() } });
+    });
+    await page.goto("./#/teams");
+    await screenRoot(page).locator("#names").fill("Ana\nBoris\nChen\nDana");
+    await screenRoot(page).getByRole("button", { name: "Generate teams" }).click();
+    await screenRoot(page).getByRole("button", { name: "Copy", exact: true }).click();
+    const note = page.locator("[data-toasts]").getByText("Teams copied");
+    await expect(note).toBeVisible();
+    await page.locator("[data-menu-open]").click();
+    await expect(page.locator("dialog[data-menu][open]")).toBeVisible();
+    await expect(note).toHaveCount(0);
+  });
+
   test("using the screen raises no CSP violation: teams, share sheet, toast with Undo, confirm, language", async ({ page }) => {
     const violations = await watchCsp(page);
     await page.goto("./#/teams");

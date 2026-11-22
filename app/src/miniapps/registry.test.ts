@@ -76,7 +76,9 @@ describe("mini-app registry", () => {
   it("scores gets no launch parameter (its screen reads none)", () => {
     const scores = miniApps.find(({ meta }) => meta.id === "scores");
     if (scores === undefined) throw new Error("scores is not registered");
-    expect([...launchQuery(scores, new URLSearchParams("teams=4&embed=1"))]).toEqual([]);
+    expect([...launchQuery(scores, new URLSearchParams("teams=4&embed=1&attribution-name=Evil"))]).toEqual([
+      ["attribution-name", "Quizzard"], ["attribution-url", "https://simeontsvetanov.github.io/Quizzard/"],
+    ]);
   });
   it("a mini-app without a parameter list gets the whole query, as a copy", () => {
     const query = new URLSearchParams("step=2&x=y");

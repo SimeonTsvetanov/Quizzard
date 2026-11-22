@@ -35,6 +35,8 @@ interface LiveToast {
   readonly timer: ReturnType<typeof pausableTimer> | null;
   /** It offers an action the person may still want (Undo, Install) and is not the pinned offer, which returns by itself. */
   readonly holdsAction: boolean;
+  /** A pinned toast (the update offer): it moves into an opening dialog, it is not dismissed by it. */
+  readonly isPinned: boolean;
 }
 
 const ACTION_MIN_MS = 10_000;
@@ -141,7 +143,7 @@ function render(region: HTMLElement, options: ToastOptions): void {
   region.append(toast);
   syncIslandFocus(region);
   const timer = persistent || pinned ? null : pausableTimer(duration, () => { dismissLive(); showNext(); });
-  live = { toast, trigger, timer, holdsAction: action !== undefined && !pinned };
+  live = { toast, trigger, timer, holdsAction: action !== undefined && !pinned, isPinned: pinned };
   if (!timer) return;
   // Time-boxed content waits while the person is on it (WCAG 2.2.1, HIG): hover or focus pauses.
   let isHovered = false;
@@ -171,6 +173,14 @@ function showNext(): void {
 export function relocateToasts(): void {
   if (!live && !pinnedToast && !waitingToast) return; // nothing to move: no island is made for an empty region
   const region = currentRegion();
+  // A plain note ("Teams copied ✓") has done its job once the user opens a menu or a dialog over it:
+  // carrying it along put it on top of the menu (Moni 2026-11-22). Toasts with an action (Undo,
+  // Reload) and pinned ones still move, so they stay reachable.
+  if (live && region && live.toast.parentElement !== region && !live.holdsAction && !live.isPinned && region.closest("dialog") && !live.toast.closest("dialog")) {
+    dismissLive();
+    showNext();
+    return;
+  }
   if (live && region && live.toast.parentElement !== region) {
     const from = live.toast.parentElement;
     region.append(live.toast);

@@ -59,6 +59,8 @@ const LAUNCH_PARAMS: Readonly<Partial<Record<string, readonly string[]>>> = { te
  */
 const HOST_PARAMS: Readonly<Partial<Record<string, readonly (readonly [string, string])[]>>> = {
   teams: [[ATTRIBUTION_NAME_PARAM, app.name], [ATTRIBUTION_URL_PARAM, app.url]],
+  // GG Counter's shared leaderboard reads the same two keys (its packages/miniapp/src/share/attribution.ts).
+  scores: [[ATTRIBUTION_NAME_PARAM, app.name], [ATTRIBUTION_URL_PARAM, app.url]],
 };
 
 /** Every registered mini-app; the e2e build adds the routing probe (see e2e-entries.ts). */
