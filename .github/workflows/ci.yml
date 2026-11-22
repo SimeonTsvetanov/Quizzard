@@ -32,6 +32,14 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     needs: verify
+    # 15 Playwright projects (the shell on five browsers + the vendored Teams and Scores suites on five
+    # each) are about 800 tests: one runner needed 12.5 minutes. Four shards run side by side
+    # (Playwright --shard splits by test file); every shard must be green for Deploy to start.
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
+    name: e2e (${{ matrix.shard }}/4)
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -59,9 +67,10 @@ jobs:
       - run: pnpm exec playwright install-deps chromium webkit firefox
         timeout-minutes: 10
       - run: pnpm build
-      - run: pnpm e2e --fail-on-flaky-tests
+      - run: pnpm e2e --fail-on-flaky-tests --shard=${{ matrix.shard }}/4
         timeout-minutes: 15
       # Lighthouse budgets (lighthouserc.json). Moni's decision 2026-11-05: run the pinned CLI in CI only,
       # outside the project lockfile (its chromium-bidi dep fails our trustPolicy; it never ships to users).
       - name: Lighthouse budgets (LCP < 2.5 s, CLS < 0.1, scores ≥ 0.9/0.95)
+        if: matrix.shard == 1 # once per run, not once per shard
         run: npx --yes @lhci/cli@0.16.0 autorun
