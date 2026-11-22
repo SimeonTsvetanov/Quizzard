@@ -1,6 +1,6 @@
 # STATUS — Quizzard
 
-**Updated:** 2026-11-22 · **Phase:** 3 Build — M1 in progress (T-01–T-05 done; next T-06, T-07)
+**Updated:** 2026-11-22 · **Phase:** 3 Build — M1 in progress (T-01–T-05, T-07 done; T-08 first deploy pushed, waiting for the Pages setting; then T-06)
 
 ## Done
 - Old code in branch `legacy-2025`; `main` + `gh-pages` still serve the 2025 site until T-08.
@@ -10,12 +10,15 @@
 - T-03 Emerald accent pair with a build-time contrast check, gold highlight token, wizard logo in the header (31.8 KB static SVG).
 - T-04 core: mini-app contract, registry validation, route parser (82 tests, 97.5 % lines).
 - T-05 hash router, outlet (load/mount/unmount, error screen), Back button, titles; probe mini-app only in the e2e build (`app/test/dist`).
+- T-07 Home launcher: three "coming" cards (Teams, Scores, Quiz creator), last used first, Home JS 39.7 KB gzip of 60, size-check in verify.
 
 ## Next
-- T-06 context, T-07 Home → T-08 first deploy.
+- T-08: Moni switches Pages to GitHub Actions → re-run Deploy → live checks. Then T-06 context, M2 TeamSync.
 
 ## Blockers / open
 - **Before T-08 (Moni):** repo Settings → Pages → Source must be "GitHub Actions" (today almost certainly branch `gh-pages`).
 - Browsers still on the June 2025 `sw.js` worker are not reached by the take-over (a self-removing `sw.js` is not built).
 - The 2025 page had a `google-site-verification` meta tag: carry the token into `app.config.ts` seo in T-20, or Search Console verification is lost.
+- Known flake: `csp.spec` "every shell dialog" timed out once under full parallel load (1 of ~38 runs; 25/25 alone) — watch in CI.
+- A leftover `vite preview` on port 4173 makes e2e test the wrong build (reuseExistingServer): kill it first.
 - e2e run on Chromium + mobile Chrome only (Playwright's pinned Firefox/WebKit are not installed in the cloud session).

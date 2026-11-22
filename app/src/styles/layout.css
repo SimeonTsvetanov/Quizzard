@@ -90,6 +90,14 @@
     @media (width > 600px) and (not (display-mode: standalone)) {
       display: block;
     }
+
+    /* Like the text under the Home launcher (home.css): invisible until the cards are rendered, so
+       they never push a footer that was already on screen down (CLS 0 on load, T-07). */
+    @media (scripting: enabled) {
+      :root:has(.launcher-list[aria-busy="true"]) & {
+        visibility: hidden;
+      }
+    }
   }
 
   /* || Layout: toast region */

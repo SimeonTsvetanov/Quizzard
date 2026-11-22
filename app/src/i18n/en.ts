@@ -199,6 +199,11 @@ export const en = {
     },
   },
   app: {
-    emptyState: "This is a fresh micro-app. The tool UI is built in Phase 3 (/build).",
+    home: {
+      title: "Tools",
+      open: "Open",
+      soon: "Soon",
+      comingSoon: "Coming soon, not available yet",
+    },
   },
 } as const;

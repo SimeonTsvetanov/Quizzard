@@ -5,6 +5,7 @@
   /* Shadows are dropped in forced-colors mode; a system-colour border keeps surfaces visible. */
   @media (forced-colors: active) {
     .empty-state,
+    .launcher-card,
     .menu,
     .toast,
     .sheet,

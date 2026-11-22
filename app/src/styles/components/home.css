@@ -1,0 +1,139 @@
+/* Home launcher (home/home.ts, PLAN T-07): one card per mini-app in a grid that holds 12 cards from
+   320 px — one column on phones, two from 600 px, three from 900 px (responsive-layout §1). */
+@layer components {
+  /* || Components: home */
+  .home {
+    /* Until home.ts has rendered the cards, everything after the launcher stays invisible, so the
+       cards never push visible text down (CLS 0 on load, responsive-layout §6). Without scripting
+       there are no cards and the page text shows as before. */
+    @media (scripting: enabled) {
+      &:has(.launcher-list[aria-busy="true"]) > :not(.launcher) {
+        visibility: hidden;
+      }
+    }
+  }
+
+  /* || Components: launcher */
+  .launcher-list {
+    display: grid;
+    /* minmax(0, …): a long name wraps inside its card instead of widening the column. */
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    @media (width > 600px) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--space-4);
+    }
+
+    @media (width >= 900px) {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  /* A grid of its own, so the card fills the cell: cards in one row share the tallest height. */
+  .launcher-item {
+    display: grid;
+  }
+
+  /* || Components: launcher card */
+  /* ui-patterns §7: surface, large radius, resting shadow; a ready card is one link that lifts on
+     hover (fine pointers only) and scales on press, like .button. */
+  .launcher-card {
+    --launcher-mark-size: var(--space-12);
+    --launcher-icon-size: 28px;
+
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    min-block-size: var(--tap-target);
+    padding: var(--space-4) var(--space-5);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-1);
+    color: var(--color-text);
+    font-weight: var(--weight-regular);
+    text-decoration: none;
+    touch-action: manipulation;
+    transition: transform var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-standard);
+    /* UI chrome, not text: no selection callout on long-press (as .button). */
+    -webkit-user-select: none;
+    user-select: none;
+
+    &:any-link {
+      cursor: pointer;
+
+      @media (hover: hover) {
+        &:hover {
+          box-shadow: var(--shadow-2);
+          transform: var(--lift);
+        }
+      }
+
+      /* After :hover so the press wins while the pointer is over the card. */
+      &:active {
+        transform: scale(0.97);
+      }
+    }
+
+    /* Coming: same shape, flat and quieter — no shadow, a faded mark, a plain "Soon" — so it never
+       reads as a broken button. Text keeps full contrast. */
+    &[data-state="coming"] {
+      box-shadow: none;
+
+      & .launcher-mark {
+        opacity: 0.6;
+      }
+    }
+  }
+
+  .launcher-mark {
+    flex: none;
+    display: grid;
+    place-items: center;
+    inline-size: var(--launcher-mark-size);
+    block-size: var(--launcher-mark-size);
+    border-radius: var(--radius-md);
+    background: var(--color-accent-tint);
+
+    & img {
+      inline-size: var(--launcher-icon-size);
+      block-size: var(--launcher-icon-size);
+    }
+  }
+
+  .launcher-text {
+    flex: 1;
+    min-inline-size: 0;
+    display: grid;
+    gap: var(--space-1);
+    line-height: var(--leading-tight);
+    overflow-wrap: anywhere;
+  }
+
+  .launcher-name {
+    font-size: var(--text-base);
+    font-weight: var(--weight-semibold);
+  }
+
+  .launcher-tagline {
+    font-size: var(--text-md);
+    color: var(--color-text-secondary);
+  }
+
+  /* The card's own "Open" (palette mock-up, brand/palette-options.png): accent text, not a button. */
+  .launcher-action {
+    flex: none;
+    font-size: var(--text-md);
+    font-weight: var(--weight-semibold);
+    color: var(--color-accent-text);
+  }
+
+  .launcher-soon {
+    flex: none;
+    font-size: var(--text-sm);
+    color: var(--color-text-secondary);
+  }
+}

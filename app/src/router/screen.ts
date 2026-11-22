@@ -1,7 +1,8 @@
-// Shows one screen at a time (PLAN §1.1 item 6): the Home view or the mini-app outlet, the header
-// Back button, the title and — after a route change — focus on the new screen's heading or region
-// (accessibility §3). main.ts calls startScreens() once; it wires router, outlet and context.
+// Shows one screen at a time (PLAN §1.1 item 6): the Home launcher or the mini-app outlet, the header
+// Back button, the title and — after a route change — focus on the card that opened the mini-app,
+// else the new screen's heading or region (accessibility §3). main.ts calls startScreens() once.
 import type { MiniAppEntry } from "@simeonts/quizzard-core";
+import { createHome, rememberLastUsed } from "../home/home.ts";
 import { createMiniAppContext } from "../miniapps/context.ts";
 import { createOutlet } from "../miniapps/outlet.ts";
 import { miniAppName, openableIds } from "../miniapps/registry.ts";
@@ -12,6 +13,7 @@ import { createRouter, type ScreenRoute } from "./router.ts";
 interface ScreenElements {
   readonly homeView: HTMLElement;
   readonly homeHeading: HTMLElement;
+  readonly launcher: HTMLElement;
   readonly outlet: HTMLElement;
   readonly back: HTMLButtonElement;
   readonly brand: HTMLAnchorElement;
@@ -24,6 +26,7 @@ interface ScreenElements {
  */
 export function startScreens(entries: readonly MiniAppEntry[]): void {
   const elements = findElements();
+  const home = createHome(elements.launcher, entries);
   // The mini-app on show and its own title part (`context.shell.setTitle`); null = its name.
   let active: { readonly entry: MiniAppEntry; titlePart: string | null } | null = null;
   const showTitle = (): void => { setScreenTitle(active === null ? null : (active.titlePart ?? miniAppName(active.entry))); };
@@ -47,8 +50,13 @@ export function startScreens(entries: readonly MiniAppEntry[]): void {
   const show = (route: ScreenRoute, isFirst: boolean): void => {
     const entry = route.kind === "miniapp" ? entries.find((candidate) => candidate.meta.id === route.id) : undefined;
     active = entry === undefined ? null : { entry, titlePart: null };
-    if (route.kind === "home" || entry === undefined) outlet.clear();
-    else void outlet.show(entry, route.query);
+    if (route.kind === "home" || entry === undefined) {
+      outlet.clear();
+      if (!isFirst) home.render(); // the last used mini-app may have changed while Home was hidden
+    } else {
+      rememberLastUsed(entry.meta.id);
+      void outlet.show(entry, route.query);
+    }
     elements.homeView.hidden = active !== null;
     elements.outlet.hidden = active === null;
     elements.back.hidden = active === null;
@@ -56,7 +64,8 @@ export function startScreens(entries: readonly MiniAppEntry[]): void {
     showTitle();
     if (isFirst) return; // a page load keeps the browser's focus start (skip link first)
     window.scrollTo({ top: 0 });
-    (active === null ? elements.homeHeading : elements.outlet).focus({ preventScroll: true });
+    const target = active === null ? (home.takeReturnFocus() ?? elements.homeHeading) : elements.outlet;
+    target.focus({ preventScroll: true });
   };
 
   elements.back.addEventListener("click", () => { router.navigation.home(); });
@@ -66,9 +75,13 @@ export function startScreens(entries: readonly MiniAppEntry[]): void {
     router.navigation.home();
   });
   document.addEventListener("i18n:change", () => {
+    home.render();
     labelOutlet(elements.outlet, active?.entry);
     showTitle();
   });
+  // Before the first screen, whatever it is: the footer and the Home text stay invisible until the
+  // cards exist (home.css), so a deep link must not leave the list busy.
+  home.render();
   router.start();
 }
 
@@ -82,6 +95,7 @@ function findElements(): ScreenElements {
   return {
     homeView: required(HTMLElement, "[data-view=home]"),
     homeHeading: required(HTMLElement, "[data-home-heading]"),
+    launcher: required(HTMLElement, "[data-launcher]"),
     outlet: required(HTMLElement, "[data-outlet]"),
     back: required(HTMLButtonElement, "[data-back]"),
     brand: required(HTMLAnchorElement, "[data-home-link]"),

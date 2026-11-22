@@ -4,7 +4,7 @@
 
 > **For AI agents:** docs at [llms.txt](https://simeontsvetanov.github.io/Quizzard/llms.txt)
 
-A free toolkit for quiz and game nights: make fair teams and keep score, offline and private in your browser; a quiz creator is planned.
+A free toolkit for quiz and game nights, offline and private in your browser: fair random teams and score keeping first, then a quiz creator.
 
 ## Use it
 <!-- forge:usage:start -->

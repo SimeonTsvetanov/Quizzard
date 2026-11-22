@@ -48,14 +48,15 @@
     </header>
     <main id="main" class="main">
       <span class="scroll-sentinel" data-sentinel aria-hidden="true"></span>
-      <div data-view="home">
+      <div class="home" data-view="home">
         <section class="hero">
           <h1 data-home-heading tabindex="-1">%APP_NAME%</h1>
           <p class="lead" data-text="tagline">%APP_TAGLINE%</p>
           <p data-text="description">%APP_DESCRIPTION%</p>
         </section>
-        <section class="empty-state" data-empty>
-          <p data-i18n="app.emptyState">This is a fresh micro-app. The tool UI is built in Phase 3 (/build).</p>
+        <section class="launcher" aria-labelledby="launcher-title">
+          <h2 class="visually-hidden" id="launcher-title" data-i18n="app.home.title">Tools</h2>
+          <ul class="launcher-list" data-launcher role="list" aria-busy="true"></ul>
         </section>
         <section class="steps">
           <h2 data-i18n="shell.howItWorks">How it works</h2>

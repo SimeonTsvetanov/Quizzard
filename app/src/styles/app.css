@@ -11,6 +11,7 @@
 @import "./components/splash.css";
 @import "./components/header.css";
 @import "./components/content.css";
+@import "./components/home.css";
 @import "./components/outlet.css";
 @import "./components/error-screen.css";
 @import "./components/dropzone.css";

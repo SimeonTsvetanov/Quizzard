@@ -1,6 +1,8 @@
-// Registry line of the routing probe (tests/e2e/routing.spec.ts). The e2e build
-// (app/test/vite.e2e.config.ts) puts this module in place of app/src/miniapps/e2e-entries.ts.
+// Registry lines of the e2e build: the routing probe (tests/e2e/routing.spec.ts) and the Home
+// fixtures (tests/e2e/home.spec.ts). The e2e build (app/test/vite.e2e.config.ts) puts this module
+// in place of app/src/miniapps/e2e-entries.ts.
 import type { MiniAppEntry } from "@simeonts/quizzard-core";
+import { homeFixtureEntries } from "./home-entries.ts";
 
 /** The probe mini-app: route `#/probe`, its own storage prefix, lazy chunk `probe-miniapp`. */
 export const probeEntry: MiniAppEntry = {
@@ -19,4 +21,4 @@ export const probeEntry: MiniAppEntry = {
 };
 
 /** What the e2e build registers after the shipped mini-apps (same export as e2e-entries.ts). */
-export const e2eEntries: readonly MiniAppEntry[] = [probeEntry];
+export const e2eEntries: readonly MiniAppEntry[] = [probeEntry, ...homeFixtureEntries];

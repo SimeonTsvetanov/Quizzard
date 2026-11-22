@@ -79,7 +79,7 @@ export const app = {
   basePath: "/Quizzard/",
   name: "Quizzard",
   tagline: "The Quiz Toolkit",
-  description: "A free toolkit for quiz and game nights: make fair teams and keep score, offline and private in your browser; a quiz creator is planned.",
+  description: "A free toolkit for quiz and game nights, offline and private in your browser: fair random teams and score keeping first, then a quiz creator.",
   url: "https://simeontsvetanov.github.io/Quizzard/",
   repo: "https://github.com/SimeonTsvetanov/Quizzard",
   version: "0.1.0",
@@ -105,7 +105,7 @@ export const app = {
   help: {
     steps: [
       "Open Quizzard.",
-      "Pick a tool: Teams makes fair random teams, Scores keeps the score.",
+      "Tap a tool's card to open it; a card marked “Soon” is still on its way.",
       "Install Quizzard to use it offline at your quiz night.",
     ],
     features: [],
@@ -117,17 +117,17 @@ export const app = {
     { q: "Does my data leave my device?", a: "No. Everything you enter stays in this browser on your device." },
     { q: "Do I need an account?", a: "No. There is no account and no sign-in." },
     { q: "Does Quizzard work offline?", a: "Yes. After the first visit it works without a connection, also when installed." },
-    { q: "Can I make quizzes with Quizzard?", a: "Not yet. A quiz creator is planned; today Quizzard brings the tools for teams and scores." },
+    { q: "Can I make quizzes with Quizzard?", a: "Not yet. A quiz creator is planned after the tools for teams and scores." },
   ],
   l10n: {
     bg: {
       // The Bulgarian tagline is Moni's call (PLAN T-19); the English one stands until then.
       tagline: "The Quiz Toolkit",
-      description: "Безплатни инструменти за куиз и игрални вечери: честни отбори и точки, офлайн и само в браузъра Ви; предстои и създател на куизове.",
+      description: "Безплатни инструменти за куиз и игрални вечери, офлайн и само в браузъра Ви: първо честни случайни отбори и точки, после създател на куизове.",
       help: {
         steps: [
           "Отворете Quizzard.",
-          "Изберете инструмент: Отбори прави честни случайни отбори, Точки води резултата.",
+          "Докоснете картата на инструмент, за да го отворите; карта с „Скоро“ още предстои.",
           "Инсталирайте Quizzard, за да го ползвате офлайн на куиз вечерта.",
         ],
         features: [],
@@ -137,7 +137,7 @@ export const app = {
         { q: "Напускат ли данните ми устройството?", a: "Не. Всичко, което въведете, остава в този браузър на Вашето устройство." },
         { q: "Нужен ли е акаунт?", a: "Не. Няма акаунт и няма вход." },
         { q: "Работи ли Quizzard офлайн?", a: "Да. След първото посещение работи и без връзка, също и като инсталирано приложение." },
-        { q: "Мога ли да правя куизове с Quizzard?", a: "Още не. Предстои създател на куизове; днес Quizzard предлага инструменти за отбори и точки." },
+        { q: "Мога ли да правя куизове с Quizzard?", a: "Още не. Създател на куизове предстои след инструментите за отбори и точки." },
       ],
     },
   },

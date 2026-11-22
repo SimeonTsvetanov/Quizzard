@@ -3,6 +3,7 @@
  * indexedDB, caches or navigator.storage directly. Everything is namespaced by app.id because all
  * micro-apps share the origin simeontsvetanov.github.io.
  */
+import { isRouteSlug } from "@simeonts/quizzard-core";
 import { app } from "../config.ts";
 
 const PREFIX = `${app.id}:v1:`;
@@ -71,6 +72,7 @@ const prefChecks = new Map<string, (v: unknown) => boolean>([
   ["theme", (v) => v === "light" || v === "dark"],
   ["lang", (v) => typeof v === "string" && v.length <= 8],
   ["last-seen-version", (v) => typeof v === "string"],
+  ["last-app", (v) => typeof v === "string" && isRouteSlug(v)], // a mini-app id (home/home.ts)
   ["install-dismissed-at", (v) => typeof v === "number"],
   ["report-queue", (v) => Array.isArray(v)],
 ]);

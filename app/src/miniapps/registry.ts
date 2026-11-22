@@ -8,8 +8,49 @@ import { e2eEntries } from "./e2e-entries.ts";
 /** The shell's own storage area (`quizzard:v1:`); no mini-app area may overlap it. */
 export const SHELL_STORAGE_AREA: StorageArea = { prefix: `${app.id}:v1:` };
 
-/** Mini-apps shipped to users. The "teams", "scores" and "quiz" cards come with T-07/T-10/T-12. */
-const SHIPPED: readonly MiniAppEntry[] = [];
+/**
+ * Mini-apps shipped to users, in registry order. All three are "coming" cards until their code lands
+ * (PLAN T-10 `teams`, T-12 `scores`); their storage areas are the real keys of the standalone apps
+ * (F7): TeamSync's storage module prefix, GG Counter's prefix plus its two pre-forge keys.
+ */
+const SHIPPED: readonly MiniAppEntry[] = [
+  {
+    meta: {
+      contract: 1,
+      id: "teams",
+      name: { en: "Teams", bg: "Отбори" },
+      tagline: { en: "Fair random teams in seconds", bg: "Честни случайни отбори за секунди" },
+      icon: "miniapps/teams.svg",
+      languages: ["en", "bg"],
+      status: "coming",
+      storage: { prefix: "teamsync-random-team-generator:v1:" },
+    },
+  },
+  {
+    meta: {
+      contract: 1,
+      id: "scores",
+      name: { en: "Scores", bg: "Точки" },
+      tagline: { en: "Keep score on game night", bg: "Резултатът на игралната вечер" },
+      icon: "miniapps/scores.svg",
+      languages: ["en", "bg"],
+      status: "coming",
+      storage: { prefix: "gg-counter:v1:", extraKeys: ["gg-counter/state", "gg-counter-theme"] },
+    },
+  },
+  {
+    meta: {
+      contract: 1,
+      id: "quiz",
+      name: { en: "Quiz creator", bg: "Създател на куизове" },
+      tagline: { en: "Build your own quiz night", bg: "Подгответе своя куиз вечер" },
+      icon: "miniapps/quiz.svg",
+      languages: ["en", "bg"],
+      status: "coming",
+      storage: { prefix: "quizzard-quiz:v1:" },
+    },
+  },
+];
 
 /** Every registered mini-app; the e2e build adds the routing probe (see e2e-entries.ts). */
 export const miniApps: readonly MiniAppEntry[] = [...SHIPPED, ...e2eEntries];
@@ -35,4 +76,12 @@ export function openableIds(entries: readonly MiniAppEntry[] = miniApps): readon
  */
 export function miniAppName(entry: MiniAppEntry): string {
   return entry.meta.name[getLanguage()] ?? entry.meta.name.en;
+}
+
+/**
+ * Returns a mini-app's one-line tagline in the UI language, English when it has no translation.
+ * @param entry - the registry line
+ */
+export function miniAppTagline(entry: MiniAppEntry): string {
+  return entry.meta.tagline[getLanguage()] ?? entry.meta.tagline.en;
 }
