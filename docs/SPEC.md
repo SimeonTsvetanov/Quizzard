@@ -30,7 +30,7 @@
 | F9 | **Add a mini-app fast:** `pnpm new:miniapp <id>` creates the module, test and registry line; the new card appears on Home | AC6 |
 | F10 | **Path for the quiz creator:** a "Quiz creator — coming" card and a reserved route; the contract already covers what it will need (own storage namespace incl. IndexedDB/OPFS, own Settings/Help, lazy code) | AC6 |
 | F11 | **Brand:** the wizard logo (variant A, three stars), tagline "The Quiz Toolkit", palette from DECISIONS, cream install icon | AC7 |
-| F12 | **Offline PWA** with update prompt; mini-app code is loaded on first open and then works offline | AC8 |
+| F12 | **Offline PWA** with update prompt; mini-app code is saved for offline use in the background on the first visit and runs only when the mini-app is opened (PLAN §1.1 item 7) | AC8 |
 | F13 | **English + Bulgarian**; a mini-app without a language falls back to English | AC4 |
 | F14 | **Nothing is lost on the way in:** every behaviour of the standalone apps works inside Quizzard — in GG Counter the last-scored tint, the last-changes line and history sheet with remove/restore, medals, the motion (card in/out, score roll, reorder), the field that stays above the keyboard, the choice dialogs, share text; in TeamSync its flows, share and remembered names | AC2 |
 | F15 | **Storage that lasts and is visible:** each mini-app has its own storage area (prefs keys with its prefix; its own IndexedDB database / OPFS folder when it needs one); Quizzard asks the browser for persistent storage after the first saved data; Settings → Data shows the space used per mini-app and the space left (Storage API estimate), and warns before the quota is near | AC9 |

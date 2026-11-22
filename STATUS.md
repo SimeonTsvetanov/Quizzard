@@ -1,6 +1,6 @@
 # STATUS — Quizzard
 
-**Updated:** 2026-11-22 · **Phase:** 1 Spec approved 2026-11-22 → 2 Plan (in progress)
+**Updated:** 2026-11-22 · **Phase:** 2 Plan drafted 2026-11-22 (25 + 2 TeamSync + 3 GG Counter tasks) → waiting for Moni's approval
 
 ## Done
 - Old code archived in branch `legacy-2025`; `main` still serves the old site until the new one is ready.
