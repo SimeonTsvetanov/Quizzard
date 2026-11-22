@@ -225,6 +225,9 @@ test("policy pages render and keep the email out of the HTML source", async ({ p
   for (const slug of ["terms", "privacy", "ai-notice", "legal-notice", "support"]) {
     await page.goto(`./${slug}/`);
     await expect(page.locator(".page-body")).not.toContainText("PAGE_BODY");
+    // A template placeholder ("Last updated: {date}") once went live (scripts/legal.test.ts too).
+    await expect(page.locator(".page-body")).not.toContainText(/[{}]/);
+    await expect(page.locator(".page-body")).toContainText(/Last updated: \d{1,2} [A-Z][a-z]+ \d{4}/);
   }
   const html = await (await request.get("./support/")).text();
   expect(html).not.toMatch(/[\w.+-]+@[\w-]+\.[\w.]+/);

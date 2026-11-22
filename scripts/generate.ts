@@ -5,14 +5,14 @@
  * third-party-licenses.txt (full licence texts of everything shipped), and LICENSE (current
  * year) at the repo root. Never hand-edit the outputs.
  */
-import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { marked } from "marked";
 import sharp from "sharp";
 import { app as config, type AppConfig } from "../app.config.ts";
 import { accentCss, resolveAccent } from "./accent.ts";
-import { shippedPackages, thirdPartyLicensesTxt } from "./licenses.ts";
+import { POLICY_TITLES, legalFills, policyBodyHtml } from "./legal.ts";
+import { readUpstreamLicenseTexts, shippedPackages, thirdPartyLicensesTxt, withFallbackLicenseTexts } from "./licenses.ts";
 import { POLICY_PAGES, lastUpdatedDate, latestReleaseDate, llmsFullTxt, llmsTxt, perAppRobotsTxt, sitemapXml } from "./seo.ts";
 
 // Widen the `as const` literal types so optional modes (null today) type-check when enabled.
@@ -75,28 +75,15 @@ for (const f of ["error-page.css", "error-page.js", "page.css", "year.js"]) {
 }
 copyFileSync(join(root, "design", "tokens.css"), join(pub, "tokens.css"));
 
-// Standalone policy pages from content/legal/*.md (same text as the in-app dialogs).
+// Standalone policy pages from content/legal/*.md (same text as the in-app dialogs); a placeholder
+// left in a text fails the run (scripts/legal.ts).
 const shell = readFileSync(join(assets, "page.html"), "utf8");
-const legalDir = join(root, "content", "legal");
-const titles: Record<string, string> = {
-  terms: "Terms & Conditions", privacy: "Privacy", "ai-notice": "AI notice", "legal-notice": "Legal notice", support: "Support",
-};
-const replacements: Record<string, string> = {
-  "{App}": app.name, "{app url}": app.url, "{repo}": app.repo, "{base}": base, "{country}": app.author.country,
-  "{linkedin}": app.author.linkedin ?? "https://www.linkedin.com/",
-  // Email is rendered by year.js from data attributes, never as plain text in HTML (anti-scraping).
-  "{email}": `<a data-email-user="${app.contact.email.split("@")[0] ?? ""}" data-email-domain="${app.contact.email.split("@")[1] ?? ""}">email (needs JavaScript)</a>`,
-};
-let unfilled = 0;
-for (const file of readdirSync(legalDir).filter((f) => f.endsWith(".md"))) {
-  const slug = file.replace(/\.md$/, "");
-  const title = titles[slug];
-  if (!title) continue; // optional pages live in content/legal/optional until enabled
-  let md = readFileSync(join(legalDir, file), "utf8").replace(/<!--[\s\S]*?-->/g, "");
-  for (const [k, v] of Object.entries(replacements)) md = md.replaceAll(k, v);
-  unfilled += (md.match(/\{[^}\n]{2,60}\}/g) ?? []).length;
+const legalFillValues = legalFills(app);
+for (const slug of POLICY_PAGES) {
+  const title = POLICY_TITLES[slug]; // optional pages live in content/legal/optional until enabled
+  const body = policyBodyHtml(`content/legal/${slug}.md`, readFileSync(join(root, "content", "legal", `${slug}.md`), "utf8"), legalFillValues);
   const html = shell
-    .replace('<article class="page-body">PAGE_BODY</article>', `<article class="page-body">${await marked.parse(md)}</article>`)
+    .replace('<article class="page-body">PAGE_BODY</article>', `<article class="page-body">${body}</article>`)
     .replaceAll("PAGE_TITLE", title)
     .replaceAll("PAGE_DESCRIPTION", `${title} for ${app.name}.`)
     .replaceAll("PAGE_SLUG", slug);
@@ -154,11 +141,13 @@ writeFileSync(join(gen, "credits.json"), `${JSON.stringify(credits, null, 2)}\n`
 // (legal-pages §5: MIT/Apache-2.0/OFL need the text, not just the name); linked from About → Credits.
 {
   const shipped = shippedPackages(join(root, "app"));
-  if (shipped.missing.length) throw new Error(`third-party-licenses.txt: not installed — run pnpm i: ${shipped.missing.join(", ")}`);
-  if (shipped.withoutLicense.length) {
-    console.warn(`\n!!! generate: no LICENSE file in ${shipped.withoutLicense.join(", ")} — add the licence text to third-party-licenses.txt by hand (compliance-check FAILs for MIT/Apache-2.0/OFL).\n`);
-  }
-  write("third-party-licenses.txt", thirdPartyLicensesTxt(app.name, shipped.packages));
+  const packages = withFallbackLicenseTexts(shipped.packages, readUpstreamLicenseTexts(join(assets, "licenses")));
+  const problems = [
+    ...shipped.missing.map((name) => `${name}: not installed — run pnpm i`),
+    ...packages.filter((p) => p.licenseText === undefined).map((p) => `${p.name}: no licence file — add the upstream text to scripts/page-assets/licenses/`),
+  ];
+  if (problems.length) throw new Error(`third-party-licenses.txt:\n- ${problems.join("\n- ")}`);
+  write("third-party-licenses.txt", thirdPartyLicensesTxt(app.name, packages));
 }
 
 // og-image.png 1200×630 (logo + name + tagline on the light background).
@@ -231,6 +220,5 @@ writeFileSync(
   readFileSync(join(assets, "LICENSE.mit"), "utf8").replace("{year}", year),
 );
 
-if (unfilled) console.warn(`generate: ${String(unfilled)} {placeholder}(s) still unfilled in content/legal — fill them before release.`);
 if (!existsSync(join(pub, "logo.svg"))) console.warn("generate: app/public/logo.svg missing — run /icons.");
 console.log(`generate: done for ${app.id}`);

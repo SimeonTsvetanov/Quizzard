@@ -1,56 +1,85 @@
-<!-- Template from APP-STANDARD §6 + legal-pages §2 (2026-11-07). Not legal advice. One bullet per layer the app really has; delete the {If …} parts that don't apply. compliance-check.mjs checks this text against app.config.ts and the code. -->
+<!-- From the forge template app-shell/templates/legal/privacy.md (legal-pages §2, 2026-11-07), filled for Quizzard on 2026-11-22 with the wording of GG Counter's and TeamSync's privacy texts where the facts are the same, and checked against the code the same day (where: docs/DECISIONS.md 2026-11-22 "Policy pages filled"). Not legal advice. One bullet per layer the app really has: no feedback webhook, no API, no AI features. {App} and {email} are filled by scripts/generate.ts from app.config.ts. -->
 
-**Privacy** — Last updated: {date}
+**Privacy** — Last updated: 22 November 2026
 
-- **Who is responsible:** {App} is made by Simeon Tsvetanov, Bulgaria (contact: {email}). Data
-  that stays on your device is under your control only; where data reaches us, the section
-  "When data reaches us" below applies.
-- **In the browser:** your files are processed entirely on your device. They are not uploaded.
-- **Stored on your device only:** your settings (theme, language), which tips and prompts you
-  already dismissed, an unsent problem report draft, {If feedback webhook:} a report waiting to
-  be sent while you are offline (including your reply email, if you gave one), and {what the app
-  saves, e.g. history / saved items / files} are kept in your browser's own storage on this device (local storage,
-  IndexedDB, private file storage). They never leave your device and are not synced anywhere.
-  You can see the space used, export, or delete them in **Settings → Storage**, or by clearing
-  this site's data in your browser.
-- **Offline copy:** so the app works without internet, your browser keeps an offline copy of the
-  app's own files (not your data) in its Cache Storage, managed by a service worker. The app may
-  also ask the browser to keep this site's storage persistent (`navigator.storage.persist()`),
-  so it is not cleared automatically when space runs low. Clearing this site's data removes both.
+- **Who is responsible:** {App} is made by Simeon Tsvetanov, Bulgaria (contact: {email}). The
+  names, players and scores you enter stay on your device and under your control only; where data
+  reaches us, the section "When data reaches us" below applies.
+- **In the browser:** {App} and its tools (Teams and Scores) run entirely on your device. Names,
+  players and scores are not uploaded anywhere, and they are never put in the page address (only
+  the number of teams can be, e.g. `#/teams?teams=4`). There is no server of our own, and the app
+  loads nothing from other websites: no fonts, scripts, images or trackers from third parties.
+- **Stored on your device only:** everything below is kept in your browser's local storage on this
+  device. Nothing is kept in cookies, IndexedDB or the browser's private file storage.
+  - **{App} itself:** your settings (theme and language), the tool you opened last, the last
+    version whose "What's new" you saw, dismissed prompts (when you last closed the offer to
+    install the app) and an unsent problem report draft (its type, title and text).
+  - **Teams:** your last names list (so it is still there next time), the number of teams, and a
+    short code made from the last list you made teams from (not the names themselves) with how
+    many times in a row teams were made from it.
+  - **Scores:** your game — player names, scores and when they were last changed, and for each
+    player a history of their most recent score changes (the points of each change and when it was
+    made, up to 50 per player) — and a note that the data of an older GG Counter in this browser,
+    if there was any, was copied over once (that older copy stays as it is).
+  - **Shared with the standalone sites:** Teams and Scores keep their data under the same names as
+    the TeamSync and GG Counter sites, and all of the author's apps are on one web address
+    (`simeontsvetanov.github.io`), so in the same browser Teams and TeamSync show the same names
+    list, and Scores and GG Counter the same game.
+  - When part of a new version cannot load and the app reloads itself, this tab's session storage
+    keeps the time of that reload until the tab is closed, so the app never reloads in a loop.
+  - Data that the 2025 version of {App} saved in this browser is not read, changed or deleted.
+
+  None of this leaves your device or is synced anywhere. **Settings → Storage** shows the space
+  used, and **Export my data**, **Import data** and **Clear my data** there cover {App}'s own
+  settings only. Teams empties its list with **Clear and start over**, Scores its game with
+  **Clear session**. Clearing this site's data in your browser removes everything, including the
+  data of the author's other apps on the same address.
+- **Offline copy:** so {App} works without internet, your browser keeps an offline copy of the
+  app's own files (not your data) in its Cache Storage, managed by a service worker. If you tap
+  **Keep data on this device** in Settings → Storage, the app asks the browser to keep this site's
+  storage persistent (`navigator.storage.persist()`), so it is not cleared automatically when space
+  runs low. Clearing this site's data removes both.
+- **Sharing and copying:** the text you share is made on your device and leaves it only when you
+  share it. **Share** and **Copy** in Teams send the teams (the names in each team and a link to
+  {App}); **Share** in Scores sends the leaderboard (player names, scores, the date and time, and
+  a link to GG Counter); **Share app** sends only the link to {App}. The text goes to the app you
+  choose in your device's share menu, to WhatsApp, or to the clipboard, and is then covered by that
+  app's own privacy terms. Nothing is ever shared automatically.
 - **No accounts, no ads, no tracking, no cookies, no analytics.**
-- **{If API:}** when you or your tools call the API, the file is sent to our server, processed in
-  memory to return the result, and not stored. Standard server logs (time, IP address, size,
-  status — no file contents) are kept for {N} days for security, then deleted.
-- **Problem reports:** if you send a report, its text and the diagnostics you leave ticked are
-  posted as a **public** GitHub issue. An optional reply email is sent only to the author and is
-  never published.
-- **{If AI features:}** text you submit to {feature} is sent to {provider} to generate the result;
-  see their privacy policy.
+- **Problem reports:** **Report a problem** never sends anything by itself. **Open on GitHub**
+  opens GitHub's "new issue" page with your text filled in; the text is part of that page's
+  address, so GitHub receives it when the page opens, and it becomes a **public** issue only when
+  you submit it there (you need a free GitHub account; the GitHub Privacy Statement applies). If
+  you leave the technical details ticked, the report also contains the app version, your browser's
+  user agent (browser, version and operating system), the screen size, whether the app is
+  installed, your browser's language and the time — not your names, players or scores (you can see
+  and untick every detail before you send). The error screen sends nothing: **Copy details** copies
+  the error message, where in the app's code it happened, the last action, the app version, your
+  browser's user agent, whether the app is installed and the time to your clipboard.
+- **Links to other sites:** links to GitHub, LinkedIn, WhatsApp and Buy Me a Coffee open those
+  sites, which have their own privacy policies.
 - **Hosting:** the site is hosted on GitHub Pages. GitHub logs visitor IP addresses for security
   purposes — see the GitHub Privacy Statement.
 
-<!-- This block ships in every app: an email to the contact address already reaches us (legal-pages §2). Keep only the options that are true for the app. -->
-**When data reaches us** (GDPR Art. 13)
+## When data reaches us (GDPR Art. 13)
+
+This applies only to an email you send to the contact address and to a GitHub issue you submit.
 
 - **Controller:** Simeon Tsvetanov, Bulgaria — {email}.
-- **What and why (purpose):** {emails you send to the contact address (your message and address)
-  — to answer you / problem reports sent through the app (text, ticked diagnostics, optional
-  reply email) — to fix problems and answer you / API request logs — to keep the service
-  secure / text sent to the AI feature — to generate the result}.
-- **Legal basis:** {legitimate interest in answering the messages people send and in a secure,
-  working service (Art. 6(1)(f)) / consent, by sending the report (Art. 6(1)(a))}.
-- **Recipients:** {the provider of the contact mailbox (name it, e.g. Google) / GitHub (public
-  issue) / n8n / VPS host / AI model provider}.
-- **Transfers outside the EU:** {the mailbox provider, GitHub and … may process this data in the
-  USA; safeguard: EU–US Data Privacy Framework / standard contractual clauses}.
-- **Retention:** {emails: deleted at the latest one month after the conversation ends · webhook
-  logs: N days · API logs: N days · rate-limit state: N days}. Public GitHub issues stay until
-  you ask us to remove them.
-- **Your rights:** access, rectification, erasure, restriction, objection, data portability and
-  withdrawing consent at any time — write to {email}. You can also complain to the Commission
-  for Personal Data Protection (КЗЛД), 2 Prof. Tsvetan Lazarov Blvd, 1592 Sofia, kzld@cpdp.bg.
+- **What and why (purpose):** your message, your email address and any technical details you
+  included — to answer you and to fix the problem you report.
+- **Legal basis:** legitimate interest in answering the messages people send and in keeping
+  {App} working (Art. 6(1)(f) GDPR).
+- **Recipients:** Google (provider of the contact mailbox); for issues, GitHub, which hosts and
+  publishes them under its own privacy statement.
+- **Transfers outside the EU:** Google and GitHub may process this data in the USA. Both state
+  that they take part in the EU–US Data Privacy Framework (Commission adequacy decision of
+  10 July 2023); see their privacy statements.
+- **Retention:** emails are deleted at the latest one month after the conversation ends. Public
+  GitHub issues stay public until we delete them; you can edit your text on GitHub at any time or
+  ask us at {email} to delete the issue.
+- **Your rights:** access, rectification, erasure, restriction, objection and data portability —
+  write to {email}. You can also complain to the Commission for Personal Data Protection (КЗЛД),
+  2 Prof. Tsvetan Lazarov Blvd, 1592 Sofia, kzld@cpdp.bg.
 
-- **Email to the contact address:** if you write to {email}, your message and address are used
-  only to answer you. They are stored by the provider of that mailbox (see "Recipients" above),
-  passed on to no one else, and deleted at the latest one month after the conversation ends.
 - **Contact:** {email}

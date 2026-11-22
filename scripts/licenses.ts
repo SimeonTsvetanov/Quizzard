@@ -12,8 +12,12 @@ export interface ShippedPackage {
   readonly version: string;
   readonly license: string;
   readonly url: string;
+  /** The source repository without `git+` and `.git`, for the same-repository fallback. */
+  readonly repository: string | undefined;
   readonly licenseText: string | undefined;
   readonly noticeText: string | undefined;
+  /** Where the text comes from when the package has no licence file (shown in the file). */
+  readonly licenseSource?: string;
 }
 
 /** The shipped packages plus what could not be read: not installed, or no licence file inside. */
@@ -28,6 +32,7 @@ interface PackageJson {
   readonly version?: string;
   readonly license?: string;
   readonly homepage?: string;
+  readonly repository?: string | { readonly url?: string };
   readonly dependencies?: Record<string, string>;
   readonly devDependencies?: Record<string, string>;
 }
@@ -78,10 +83,16 @@ function findInjectedDir(appDir: string, name: string): string | undefined {
   return findPackageDir(appDir, name) ?? (pwa ? findPackageDir(pwa, name) : undefined) ?? (build ? findPackageDir(build, name) : undefined);
 }
 
+/** Returns the repository URL of a package.json without `git+` and `.git`, if it has one. */
+function repositoryUrl(pkg: PackageJson): string | undefined {
+  const url = typeof pkg.repository === "string" ? pkg.repository : pkg.repository?.url;
+  return url?.replace(/^git\+/, "").replace(/\.git$/, "");
+}
+
 function toShipped(dir: string, pkg: PackageJson & { name: string }): ShippedPackage {
   return {
     name: pkg.name, version: pkg.version ?? "", license: pkg.license ?? "UNKNOWN",
-    url: pkg.homepage ?? `https://www.npmjs.com/package/${pkg.name}`,
+    url: pkg.homepage ?? `https://www.npmjs.com/package/${pkg.name}`, repository: repositoryUrl(pkg),
     licenseText: readMatchingFile(dir, LICENSE_FILE), noticeText: readMatchingFile(dir, NOTICE_FILE),
   };
 }
@@ -122,12 +133,35 @@ export function shippedPackages(appDir: string): ShippedPackages {
   return { packages, missing: [...missing].sort(), withoutLicense: packages.filter((p) => !p.licenseText).map((p) => p.name) };
 }
 
+/**
+ * Returns `packages` with a licence text for those that ship none (ported from GG Counter, which
+ * ships the same packages): a copy of the upstream file from `upstreamTexts` (package name → text,
+ * scripts/page-assets/licenses/), else the licence file of another shipped package from the same
+ * repository (the `@radix-ui/*` helpers). Packages still without a text stay as they are.
+ */
+export function withFallbackLicenseTexts(packages: readonly ShippedPackage[], upstreamTexts: ReadonlyMap<string, string>): ShippedPackage[] {
+  return packages.map((pkg) => {
+    if (pkg.licenseText !== undefined) return pkg;
+    const upstream = upstreamTexts.get(pkg.name);
+    if (upstream !== undefined) return { ...pkg, licenseText: upstream, licenseSource: "copied from the upstream repository (the package ships no licence file)" };
+    const sibling = packages.find((other) => other.licenseText !== undefined && other.repository !== undefined && other.repository === pkg.repository);
+    if (sibling === undefined) return pkg;
+    return { ...pkg, licenseText: sibling.licenseText, licenseSource: `licence file of ${sibling.name}, same repository ${String(pkg.repository)} (the package ships none)` };
+  });
+}
+
+/** Returns the upstream licence copies in `dir` (scripts/page-assets/licenses): `<package>.txt` → text. */
+export function readUpstreamLicenseTexts(dir: string): ReadonlyMap<string, string> {
+  return new Map(readdirSync(dir).filter((f) => f.endsWith(".txt")).map((f) => [f.slice(0, -4), readFileSync(join(dir, f), "utf8").trim()] as const));
+}
+
 /** Returns the third-party-licenses.txt text: one block per package with its full licence and NOTICE. */
 export function thirdPartyLicensesTxt(appName: string, packages: readonly ShippedPackage[]): string {
   const blocks = packages.map((p) => [
     RULE,
     `${p.name} ${p.version} — ${p.license}`,
     p.url,
+    ...(p.licenseSource === undefined ? [] : [`Licence text: ${p.licenseSource}`]),
     RULE,
     "",
     p.licenseText ?? `No licence file is included in this package — see ${p.url}.`,

@@ -1,8 +1,9 @@
 import { mkdirSync, mkdtempSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { PWA_INJECTED, shippedPackages, thirdPartyLicensesTxt } from "./licenses.ts";
+import { PWA_INJECTED, readUpstreamLicenseTexts, shippedPackages, thirdPartyLicensesTxt, withFallbackLicenseTexts, type ShippedPackage } from "./licenses.ts";
 
 /** Writes files (path → content) into a fresh temp dir and returns it. */
 function fixture(files: Record<string, string>): string {
@@ -15,6 +16,11 @@ function fixture(files: Record<string, string>): string {
 }
 
 const pkg = (name: string, extra: object = {}): string => JSON.stringify({ name, version: "1.0.0", license: "MIT", ...extra });
+
+/** A shipped package for the pure functions. */
+function shipped(name: string, extra: Partial<ShippedPackage> = {}): ShippedPackage {
+  return { name, version: "1.0.0", license: "MIT", url: `https://${name}.example`, repository: undefined, licenseText: undefined, noticeText: undefined, ...extra };
+}
 
 describe("shippedPackages", () => {
   it("follows app deps, nested deps and a pnpm workspace symlink; the workspace package itself is not listed", () => {
@@ -68,13 +74,55 @@ describe("shippedPackages", () => {
 describe("thirdPartyLicensesTxt", () => {
   it("includes the full licence text, NOTICE and a fallback line for packages without a licence file", () => {
     const txt = thirdPartyLicensesTxt("Demo", [
-      { name: "a", version: "1.0.0", license: "MIT", url: "https://a.example", licenseText: "Copyright (c) 2026 A", noticeText: undefined },
-      { name: "b", version: "2.0.0", license: "Apache-2.0", url: "https://b.example", licenseText: "Apache License", noticeText: "B notice" },
-      { name: "c", version: "3.0.0", license: "ISC", url: "https://c.example", licenseText: undefined, noticeText: undefined },
+      shipped("a", { url: "https://a.example", licenseText: "Copyright (c) 2026 A" }),
+      shipped("b", { version: "2.0.0", license: "Apache-2.0", url: "https://b.example", licenseText: "Apache License", noticeText: "B notice" }),
+      shipped("c", { version: "3.0.0", license: "ISC", url: "https://c.example" }),
     ]);
     expect(txt).toContain("a 1.0.0 — MIT");
     expect(txt).toContain("Copyright (c) 2026 A");
     expect(txt).toContain("NOTICE (b)\n\nB notice");
     expect(txt).toContain("No licence file is included in this package — see https://c.example.");
+  });
+});
+
+describe("withFallbackLicenseTexts", () => {
+  it("keeps a package's own text, else uses an upstream copy, else a package of the same repository", () => {
+    const repository = "https://github.com/radix-ui/primitives";
+    const result = withFallbackLicenseTexts(
+      [
+        shipped("own", { licenseText: "Own text" }),
+        shipped("cva"),
+        shipped("@radix-ui/primitive", { repository, licenseText: "MIT WorkOS" }),
+        shipped("@radix-ui/rect", { repository }),
+        shipped("lonely", { repository: "https://github.com/x/y" }),
+      ],
+      new Map([["cva", "Apache text"]]),
+    );
+    expect(result.map((p) => p.licenseText)).toEqual(["Own text", "Apache text", "MIT WorkOS", "MIT WorkOS", undefined]);
+    expect(result[1]?.licenseSource).toMatch(/upstream repository/);
+    expect(result[3]?.licenseSource).toBe(`licence file of @radix-ui/primitive, same repository ${repository} (the package ships none)`);
+    expect(result[0]?.licenseSource).toBeUndefined();
+  });
+
+  it("reads the repository from package.json without git+ and .git, and the file names where a fallback text came from", () => {
+    const root = fixture({
+      "app/package.json": pkg("app", { dependencies: { a: "^1" } }),
+      "app/node_modules/a/package.json": pkg("a", { repository: { type: "git", url: "git+https://github.com/a/a.git" } }),
+    });
+    const [a] = shippedPackages(join(root, "app")).packages;
+    expect(a?.repository).toBe("https://github.com/a/a");
+    const txt = thirdPartyLicensesTxt("Demo", withFallbackLicenseTexts(a ? [a] : [], new Map([["a", "MIT text"]])));
+    expect(txt).toContain("Licence text: copied from the upstream repository");
+    expect(txt).toContain("MIT text");
+  });
+});
+
+describe("this app's third-party-licenses.txt", () => {
+  it("has a licence text for every shipped package (the Scores mini-app's Radix helpers, cva … ship none)", () => {
+    const root = join(dirname(fileURLToPath(import.meta.url)), "..");
+    const shipped = shippedPackages(join(root, "app"));
+    const packages = withFallbackLicenseTexts(shipped.packages, readUpstreamLicenseTexts(join(root, "scripts", "page-assets", "licenses")));
+    expect(shipped.missing).toEqual([]);
+    expect(packages.filter((p) => p.licenseText === undefined).map((p) => p.name)).toEqual([]);
   });
 });
