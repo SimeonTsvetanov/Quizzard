@@ -29,4 +29,4 @@ those facts come from search extracts of the primary pages and trade press. Mock
 Semantic colours (light / dark): success `#15803D` / `#4ADE80` · warning `#B45309` / `#FFB020` · danger `#D32222` / `#FF6B60`.
 Neutrals: the forge greys (already slightly cool), chroma ≤ 0.007; black stays black. Gold is a fill with dark text, never text on light.
 
-Recommendation: **A**, then B, then C. Decision: pending (Moni).
+Recommendation was A, then B, then C. **Decision: C · Emerald (Moni, 2026-11-22).**

@@ -8,7 +8,7 @@
 - `docs/SPEC.md` draft, `docs/DECISIONS.md`.
 
 ## Next
-- Palette from the 2026 colour research → Moni picks → DECISIONS.
+- Palette decided: C · Emerald (DECISIONS).
 - "spec approved" → `/plan` (shell level, where mini-app source lives, tasks) → scaffold from the forge template.
 
 ## Blockers / open

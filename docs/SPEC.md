@@ -46,7 +46,8 @@
 
 ## 6. UI
 - Shell: decided in PLAN (forge template Level 1 is the default; mini-apps bring their own framework lazily).
-- Languages EN (default) + BG · accent and palette: DECISIONS (colour research 2026-11-22) · special screens: Home launcher.
+- Languages EN (default) + BG · accent Emerald `#00804F` / dark `#34D399`, highlight gold `#F9D45C` (DECISIONS 2026-11-22) · special screens: Home launcher.
+- Look and behaviour = the forge design system as in TeamSync and GG Counter (sheets, dialogs, motion, header); nothing app-specific besides the accent and the brand.
 - Idea, not in v1: animated mini-wizard around the menu (`brand/README.md`).
 
 ## 7. Limits and performance
@@ -84,7 +85,6 @@
 ## 11. Deferred decisions
 | Decision | Who/when |
 |---|---|
-| Palette (accent, highlight, neutrals) | Moni, after the 2026 colour research |
 | Shell level (1 or 2) and where mini-app source lives | PLAN |
 | Bulgarian tagline | with the texts task |
 | Simplified mark for 16–24 px | icons task |
