@@ -1,6 +1,6 @@
 # STATUS — Quizzard
 
-**Updated:** 2026-11-22 · **Phase:** 3 Build — M1 live 2026-11-22; M2 TeamSync done; M3 GG Counter: T-12/T-13 built, not yet committed
+**Updated:** 2026-11-22 · **Phase:** 3 Build — M1–M3 done 2026-11-22: shell, Teams (TeamSync 1.0.3) and Scores (GG Counter 1.2.4) inside; next M4 (T-14…T-17)
 
 ## Done
 - Old code in branch `legacy-2025`. Spec and plan approved by Moni (2026-11-22). Brand in `brand/` (logo A, palette C Emerald).
