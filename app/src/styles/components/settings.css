@@ -96,6 +96,27 @@
     padding-inline: var(--space-1);
   }
 
+  /* A row with its own small action (Settings → Your data → Clear). */
+  .row--action {
+    align-items: center;
+
+    & .row-label {
+      flex: 1;
+    }
+  }
+
+  .row-button {
+    min-height: var(--tap-target);
+    padding-inline: var(--space-2);
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: none;
+    font: inherit;
+    font-weight: 600;
+    color: var(--color-danger);
+    cursor: pointer;
+  }
+
   .row-label {
     color: var(--color-text);
   }

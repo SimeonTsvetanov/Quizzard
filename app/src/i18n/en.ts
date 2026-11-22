@@ -128,6 +128,7 @@ export const en = {
       icons: "the icons",
       translations: "English and other languages",
       validation: "checks that data is correct",
+      ui: "building blocks of the Scores screen",
     },
     report: {
       title: "Report a problem",
@@ -204,6 +205,25 @@ export const en = {
       open: "Open",
       soon: "Soon",
       comingSoon: "Coming soon, not available yet",
+    },
+    data: {
+      title: "Your data",
+      shell: "{{name}} settings",
+      empty: "Nothing saved",
+      clearOne: "Clear",
+      clearOneLabel: "Clear {{tool}} data",
+      clearOneTitle: "Delete {{tool}} data?",
+      clearOneMessage: "Everything {{tool}} saved on this device will be deleted. {{tool}} also has its own site; it uses the same saved data in this browser, so it is deleted there too. This can't be undone.",
+      clearedOne: "{{tool}} data was cleared ✓",
+      clearAllMessage: "Everything {{name}} and its tools saved on this device will be deleted — settings, teams lists and games. The tools' own sites use the same saved data in this browser, so it is deleted there too. This can't be undone.",
+      importMessage: "Data that {{name}} and its tools saved on this device will be overwritten with the content of “{{file}}”. Export first if you want a backup.",
+      note: "Each tool keeps its own data in this browser. Export saves everything in one file.",
+    },
+    help: {
+      tool: "{{tool}} — how to use it",
+    },
+    report: {
+      public: "Reports become public GitHub issues.",
     },
   },
 } as const;

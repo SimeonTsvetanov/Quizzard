@@ -1,4 +1,6 @@
 import { app } from "../config.ts";
+import { dataAreas, miniAppName, type DataArea } from "../miniapps/registry.ts";
+import { areaSize, clearArea, readArea, writeArea } from "../storage/areas.ts";
 import { clearAll, estimate, exportAll, importAll, isPersisted, requestPersist } from "../storage/index.ts";
 import { getLanguage, LANG_NAMES, setLanguage, t } from "../i18n/index.ts";
 import { formatBytes, h } from "./dom.ts";
@@ -43,38 +45,76 @@ function importButton(): [HTMLButtonElement, HTMLInputElement] {
     file.value = "";
     if (!picked) return;
     void confirmAction({
-      title: t("shell.settings.importTitle"), message: t("shell.settings.importMessage", { name: app.name, file: picked.name }),
+      title: t("shell.settings.importTitle"), message: t("app.data.importMessage", { name: app.name, file: picked.name }),
       confirm: t("shell.settings.importConfirm"),
     }).then((confirmed) => {
       if (!confirmed) return;
-      importAll(picked).then((count) => { showToast({ message: t("shell.settings.imported", { count }) }); }, (e: unknown) => {
+      const areas = dataAreas();
+      // The open mini-app leaves first (it saves on its way out) and comes back with the imported data.
+      document.dispatchEvent(new Event("app:data-clearing"));
+      const writeTool = (id: string, data: unknown): number => {
+        const target = areas.find((candidate) => candidate.id === id && candidate.entry !== undefined);
+        return target === undefined ? 0 : writeArea(target.area, data);
+      };
+      importAll(picked, writeTool).then((count) => { showToast({ message: t("shell.settings.imported", { count }) }); }, (e: unknown) => {
         showToast({ message: importErrorMessage(e instanceof Error ? e.message : "") });
-      });
+      }).finally(() => { document.dispatchEvent(new Event("app:data-cleared")); });
     });
   });
   return [button, file];
 }
 
+/** The row's name: the mini-app's, or "Quizzard settings" for the shell's own area. */
+const areaName = (item: DataArea): string => (item.entry === undefined ? t("app.data.shell", { name: app.name }) : miniAppName(item.entry));
+
+/**
+ * Deletes saved data, always after a confirm: one mini-app's area, or everything when `only` is absent.
+ * The open mini-app is unmounted around it (router/screen.ts), so it cannot save its old state again.
+ */
+function confirmClear(only?: DataArea): void {
+  const texts = only === undefined
+    ? { title: t("shell.settings.clearTitle"), message: t("app.data.clearAllMessage", { name: app.name }) }
+    : { title: t("app.data.clearOneTitle", { tool: areaName(only) }), message: t("app.data.clearOneMessage", { tool: areaName(only) }) };
+  void confirmAction({ ...texts, confirm: t("shell.settings.clearConfirm") }).then(async (confirmed) => {
+    if (!confirmed) return;
+    document.dispatchEvent(new Event("app:data-clearing"));
+    try {
+      for (const item of only === undefined ? dataAreas() : [only]) if (item.entry !== undefined) clearArea(item.area);
+      if (only === undefined) await clearAll();
+      showToast({ message: only === undefined ? t("shell.settings.cleared") : t("app.data.clearedOne", { tool: areaName(only) }) });
+    } catch {
+      showToast({ message: t("shell.settings.clearFailed") }); // e.g. storage blocked by the browser
+    } finally {
+      document.dispatchEvent(new Event("app:data-cleared"));
+    }
+    // The sizes changed: show the sheet again when it is still the one on screen.
+    if (document.querySelector('dialog[data-dialog="settings"][open]')) openSettings();
+  });
+}
+
+/** One row per storage area: name, size and — for a mini-app with saved data — its own Clear. */
+function dataRows(): HTMLElement[] {
+  return dataAreas().map((item) => {
+    const size = areaSize(item.area);
+    const value = h("span", { class: "row-value" }, size === 0 ? t("app.data.empty") : formatBytes(size));
+    const line = h("div", { class: "row row--action", "data-area": item.id }, h("span", { class: "row-label" }, areaName(item)), value);
+    if (item.entry !== undefined && size > 0) {
+      const clear = h("button", { class: "row-button", type: "button", "aria-label": t("app.data.clearOneLabel", { tool: areaName(item) }) }, t("app.data.clearOne"));
+      clear.addEventListener("click", () => { confirmClear(item); });
+      line.append(clear);
+    }
+    return line;
+  });
+}
+
 /** "Delete all data" — quiet style (never the loudest button), always confirmed. */
 function clearButton(): HTMLButtonElement {
   const button = h("button", { class: "button button--destructive", type: "button" }, t("shell.settings.clear"));
-  button.addEventListener("click", () => {
-    void confirmAction({
-      title: t("shell.settings.clearTitle"), message: t("shell.settings.clearMessage", { name: app.name, stores: app.storage.stores.join(", ") }),
-      confirm: t("shell.settings.clearConfirm"),
-    }).then((confirmed) => {
-      if (!confirmed) return;
-      // App code listens for "app:data-cleared" to reset what is on screen (else it could be saved again).
-      clearAll().then(
-        () => { document.dispatchEvent(new Event("app:data-cleared")); showToast({ message: t("shell.settings.cleared") }); },
-        () => { showToast({ message: t("shell.settings.clearFailed") }); }, // e.g. storage blocked by the browser
-      );
-    });
-  });
+  button.addEventListener("click", () => { confirmClear(); });
   return button;
 }
 
-/** Opens the Settings sheet: theme, language, storage (usage, keep, export/import) and delete-all. */
+/** Opens the Settings sheet: theme, language, saved data per tool, storage (usage, keep, export/import) and delete-all. */
 export function openSettings(): void {
   const theme = segmented("theme", t("shell.theme.label"),
     (["system", "light", "dark"] as const satisfies readonly Theme[]).map((v) => ({ value: v, label: t(`shell.theme.${v}`) })),
@@ -98,7 +138,8 @@ export function openSettings(): void {
   });
   const exportBtn = h("button", { class: "button", type: "button" }, t("shell.settings.export"));
   exportBtn.addEventListener("click", () => {
-    const a = h("a", { href: URL.createObjectURL(exportAll()), download: `${app.id}-data-${new Date().toISOString().slice(0, 10)}.json` });
+    const tools = Object.fromEntries(dataAreas().filter((item) => item.entry !== undefined).map((item) => [item.id, readArea(item.area)]));
+    const a = h("a", { href: URL.createObjectURL(exportAll(tools)), download: `${app.id}-data-${new Date().toISOString().slice(0, 10)}.json` });
     a.click();
     setTimeout(() => { URL.revokeObjectURL(a.href); }, 1000);
   });
@@ -108,6 +149,8 @@ export function openSettings(): void {
   openDialog("settings", t("shell.settings.title"), [
     group(t("shell.theme.label"), theme),
     ...(app.languages.length > 1 ? [group(t("shell.language.label"), language)] : []),
+    group(t("app.data.title"), ...dataRows()),
+    h("p", { class: "group-note" }, t("app.data.note")),
     group(t("shell.settings.storage"),
       row(t("shell.settings.usedLabel"), used),
       row(t("shell.settings.keptLabel"), kept),

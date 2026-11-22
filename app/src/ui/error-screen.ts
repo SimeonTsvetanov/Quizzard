@@ -69,7 +69,7 @@ export function show(error: Error, lastAction = getLastAction()): void {
   const reload = errorButton({ label: t("shell.error.reload"), isPrimary: true, run: () => { location.reload(); } });
   const root = el("main", { className: "es es--screen", role: "alert", "aria-labelledby": "es-title" });
   const { nodes, heading } = errorViewParts({
-    error, title: t("shell.error.title"), text: t("shell.error.text"), actions: [reload, report], headingId: "es-title", extra: [status],
+    error, title: t("shell.error.title"), text: t("shell.error.text"), actions: app.feedback.webhook ? [reload, report] : [reload], headingId: "es-title", extra: [status],
   }, lastAction);
   root.append(...nodes);
   document.body.append(root);

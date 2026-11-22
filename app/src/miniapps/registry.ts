@@ -110,3 +110,22 @@ export function launchQuery(entry: MiniAppEntry, query: URLSearchParams): URLSea
   for (const [name, value] of HOST_PARAMS[entry.meta.id] ?? []) fromRoute.set(name, value);
   return fromRoute;
 }
+
+/** One row of Settings → Your data: a mini-app that can be opened, or Quizzard's own settings. */
+export interface DataArea {
+  /** The mini-app id, or the app id for the shell's own area. */
+  readonly id: string;
+  /** The mini-app behind the row; absent for the shell's own area. */
+  readonly entry?: MiniAppEntry;
+  readonly area: StorageArea;
+}
+
+/**
+ * Lists the storage areas people can see, export and clear in Settings: every mini-app that can be
+ * opened, then the shell's own.
+ * @param entries - the registry; the app's own by default
+ */
+export function dataAreas(entries: readonly MiniAppEntry[] = SHIPPED): readonly DataArea[] {
+  const tools = entries.filter((entry) => entry.meta.status === "ready").map((entry) => ({ id: entry.meta.id, entry, area: entry.meta.storage }));
+  return [...tools, { id: app.id, area: SHELL_STORAGE_AREA }];
+}

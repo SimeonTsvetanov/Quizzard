@@ -70,7 +70,7 @@ export async function shareText(message: string, { title = app.name, url }: Shar
   }
 }
 
-/** Share app (header + menu): tagline + link through the same single Share flow. */
+/** Share app (menu): "Quizzard — tagline" and the link through the same single Share flow. */
 export async function shareApp(): Promise<void> {
-  await shareText(`${text().tagline} — ${app.url}`);
+  await shareText(`${app.name} — ${text().tagline}`, { url: app.url });
 }

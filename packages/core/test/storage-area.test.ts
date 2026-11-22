@@ -43,3 +43,28 @@ describe("isPrefKey", () => {
     );
   });
 });
+
+describe("ownsKey and areaBytes", () => {
+  const area = { prefix: "gg-counter:v1:", extraKeys: ["gg-counter/state"] };
+
+  it("owns keys under the prefix and the extra keys, nothing else", async () => {
+    const { ownsKey } = await import("../src/index.js");
+    expect(ownsKey(area, "gg-counter:v1:state")).toBe(true);
+    expect(ownsKey(area, "gg-counter/state")).toBe(true);
+    expect(ownsKey(area, "gg-counter-theme")).toBe(false);
+    expect(ownsKey(area, "quizzard:v1:theme")).toBe(false);
+  });
+
+  it("counts two bytes per code unit of own keys and values only", async () => {
+    const { areaBytes } = await import("../src/index.js");
+    expect(areaBytes(area, [["gg-counter:v1:a", "12345"], ["quizzard:v1:theme", "dark"], ["gg-counter/state", ""]])).toBe((15 + 5 + 16) * 2);
+  });
+
+  it("never counts a key the area does not own", async () => {
+    const { areaBytes, ownsKey } = await import("../src/index.js");
+    fc.assert(fc.property(fc.array(fc.tuple(fc.string({ maxLength: 30 }), fc.string({ maxLength: 30 }))), (entries) => {
+      const own = entries.filter(([key]) => ownsKey(area, key));
+      expect(areaBytes(area, entries)).toBe(areaBytes(area, own));
+    }));
+  });
+});

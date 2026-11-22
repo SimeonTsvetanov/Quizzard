@@ -69,7 +69,8 @@ export function openReport(): void {
   const send = h("button", { class: "button button--primary", type: "submit" }, t("shell.report.send"));
   if (!app.feedback.webhook) send.hidden = true;
   const form = h("form", { class: "form" },
-    h("p", { class: "hint" }, t("shell.report.public"), ...(app.feedback.webhook ? [] : [" ", t("shell.report.githubOnly")])),
+    // No webhook = no email field, so the hint must not talk about an email.
+    h("p", { class: "hint" }, ...(app.feedback.webhook ? [t("shell.report.public")] : [t("app.report.public"), " ", t("shell.report.githubOnly")])),
     savedOnDeviceHint([type, title, text, email]), // before the fields it describes
     h("label", {}, t("shell.report.type"), type), h("label", {}, t("shell.report.shortTitle"), title), h("label", {}, t("shell.report.text"), text),
     ...(app.feedback.webhook ? [h("label", {}, t("shell.report.email"), email)] : []), trap, // email only when it can really be sent

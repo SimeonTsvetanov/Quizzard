@@ -4,7 +4,7 @@ import { t, text } from "../i18n/index.ts";
 import { h } from "./dom.ts";
 import { openDialog } from "./dialog.ts";
 
-const KINDS = ["font", "icons", "translations", "validation"] as const;
+const KINDS = ["font", "icons", "translations", "validation", "ui"] as const;
 type Kind = (typeof KINDS)[number];
 const isKind = (k: string): k is Kind => (KINDS as readonly string[]).includes(k);
 

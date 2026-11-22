@@ -29,4 +29,4 @@ export {
   type Route,
   type UnknownRoute,
 } from "./route.js";
-export { MAX_PREF_KEY_LENGTH, isPrefKey } from "./storage-area.js";
+export { MAX_PREF_KEY_LENGTH, areaBytes, isPrefKey, ownsKey } from "./storage-area.js";

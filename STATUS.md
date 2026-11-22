@@ -1,6 +1,6 @@
 # STATUS — Quizzard
 
-**Updated:** 2026-11-22 · **Phase:** 3 Build — M1–M3 done 2026-11-22: shell, Teams (TeamSync 1.0.3) and Scores (GG Counter 1.2.4) inside; next M4 (T-14…T-17)
+**Updated:** 2026-11-22 · **Phase:** 3 Build — v0.4.0: shell, Teams (TeamSync 1.0.4) and Scores (GG Counter 1.2.5) inside; menus filled (Help per tool, Settings → Your data, export/import); next T-17…T-25
 
 ## Done
 - Old code in branch `legacy-2025`. Spec and plan approved by Moni (2026-11-22). Brand in `brand/` (logo A, palette C Emerald).
@@ -18,13 +18,6 @@
 - T-12/T-13 GG Counter at `#/scores` from submodule `vendor/gg-counter` (a6745fb = 1.2.4), isolated CSS (Tailwind under Vite 8), header buttons in the slot, toasts inside its dialogs: Home 45.4 KB, Scores first open 92.3 KB of 125; its suite 74/76 in `scores` + `scores-mobile` (motion/keyboard ×5 green), scores-host.spec green ×5.
 
 ## Next
-- CI fix after run 45063914534 (uncommitted): background toasts wait for an Undo toast (toast.ts, pwa.ts; DECISIONS), no wheel step on mobile WebKit — commit, then watch WebKit/Firefox in the next run. GG patch: `tests/e2e/support/host.ts` `QUIZZARD.copyWithoutShareSheet` closes the sheet after Copy (AC5 fails until then), then bump the pin → T-14/T-15.
-
-## Blockers / open
-- Browsers still on the June 2025 `sw.js` worker are not reached by the take-over (a self-removing `sw.js` is not built).
-- The 2025 page had a `google-site-verification` meta tag: carry the token into `app.config.ts` seo in T-20, or Search Console verification is lost.
-- Known flake: `csp.spec` "every shell dialog" timed out once under full parallel load (1 of ~38 runs; 25/25 alone) — watch in CI.
-- A leftover `vite preview` on port 4173 makes e2e test the wrong build (reuseExistingServer): kill it first.
-- e2e run on Chromium + mobile Chrome only (Playwright's pinned Firefox/WebKit are not installed in the cloud session).
-- Settings → "Clear my data" still clears only `quizzard:v1:*`; Teams' names and Scores' game stay until T-15 (scoped clear); privacy text is T-19.
-- third-party-licenses.txt lacks the licence text of 8 GG packages without a LICENSE file (Radix helpers, cva, react-remove-scroll-bar) — `pnpm generate` warns; T-19 (GG ships the texts in scripts/page-assets/licenses/).
+- Open from T-15: quota warning and `notifySaved` → persist. Then T-17 (new:miniapp + quiz card), T-18 icons, T-19 texts (Bulgarian tagline), T-20 SEO, T-21 shortcuts, T-22 a11y, T-23 perf/security, T-24 user docs, T-25 release 1.0.0.
+- Open review findings 2, 4, 6–10, 13, 14 (progress/2026-11-22.md); two flaky tests, then `--fail-on-flaky-tests` back.
+- Waiting on Moni: phone check of Teams/Scores and the black navigation bar; Bulgarian tagline.

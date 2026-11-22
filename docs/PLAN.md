@@ -232,13 +232,13 @@ export interface MiniAppEntry {             // one registry line
 - Reading list: engineering → browser-storage §2, §6, §10, testing §3
 - Acceptance: property test: clearing area A never changes a key outside A; coverage ≥ 90 %
 - Depends on: T-04
-### T-15 · Settings → Data: sizes, free space, persistence, scoped clear
+### T-15 · Settings → Data: sizes, free space, persistence, scoped clear (rows, scoped clear, export/import done 0.4.0; open: quota warning, `notifySaved` → persist)
 - Goal: rows for Teams, Scores, Quizzard with size, free space from `navigator.storage.estimate()`, persistence state, warning near the quota; clear per mini-app and "everything of Quizzard" with confirm; `notifySaved()` asks `navigator.storage.persist()` once; IndexedDB/OPFS areas measured (OPFS exact, IndexedDB "about")
 - Files: `app/src/ui/settings-data.ts`, `app/src/storage/areas.ts`, `storage/persist.ts`, `app/src/styles/components/settings.css`, `tests/e2e/storage.spec.ts`; one-line `notifySaved` calls via TS/GG patch releases
 - Reading list: engineering → browser-storage §3, §7 · design → ui-patterns §12 · design → ux-principles
 - Acceptance: e2e AC5 (a game seeded under `gg-counter:v1:state` shows in Scores; clearing Teams leaves it and a foreign key) and AC9 (three rows, free space, persist requested after the first save, clear changes one size only)
 - Depends on: T-13, T-14
-### T-16 · Help and Settings contributions
+### T-16 · Help and Settings contributions (Help done 0.4.0; export/import done in the shell instead of `mountSettings`)
 - Goal: Help shows a section per mini-app from `entry.help` (lazy, English fallback); Settings shows each mini-app's `mountSettings` rows (GG export/import, TeamSync export/import)
 - Files: `app/src/ui/help-miniapps.ts`, `ui/help.ts`, `ui/settings.ts`, `tests/e2e/shell.spec.ts`; `mountSettings` in both vendored packages (TS/GG patch releases)
 - Reading list: app-shell → help-docs §1–§3, app-shell §4, i18n §2

@@ -29,10 +29,11 @@
     keeps the time of that reload until the tab is closed, so the app never reloads in a loop.
   - Data that the 2025 version of {App} saved in this browser is not read, changed or deleted.
 
-  None of this leaves your device or is synced anywhere. **Settings → Storage** shows the space
-  used, and **Export my data**, **Import data** and **Clear my data** there cover {App}'s own
-  settings only. Teams empties its list with **Clear and start over**, Scores its game with
-  **Clear session**. Clearing this site's data in your browser removes everything, including the
+  None of this leaves your device or is synced anywhere. **Settings → Your data** shows what
+  each tool and {App} itself have saved, with a **Clear** for each tool; **Export my data** and
+  **Import data** cover {App}'s settings and the tools' data in one file, and **Clear my data**
+  deletes all of it. Data cleared for Teams or Scores is also gone for TeamSync or GG Counter in
+  the same browser. Clearing this site's data in your browser removes everything, including the
   data of the author's other apps on the same address.
 - **Offline copy:** so {App} works without internet, your browser keeps an offline copy of the
   app's own files (not your data) in its Cache Storage, managed by a service worker. If you tap

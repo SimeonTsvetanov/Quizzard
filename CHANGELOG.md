@@ -4,6 +4,21 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-22
+### Added
+- Help has a section for Teams and one for Scores — steps, features and questions; inside a tool its
+  section comes first.
+- Settings → Your data shows what Teams, Scores and Quizzard have saved, with a Clear for each tool.
+  Export my data and Import data now carry the tools' data too.
+- About lists the open-source projects the tools are built with.
+### Changed
+- Sharing the leaderboard from Scores ends with a link to Quizzard, and Share app says "Quizzard".
+- Clear my data deletes the tools' data too and says so before you confirm.
+### Fixed
+- A note such as "Teams copied ✓" no longer stays on top of the menu you open right after it.
+- Report a problem no longer mentions an email it never asks for, and the error screen no longer offers
+  a "Send error report" button that could not send.
+
 ## [0.3.0] - 2026-11-22
 ### Added
 - Scores: keep score on game night inside Quizzard — players, +/− and custom amounts, the last changes

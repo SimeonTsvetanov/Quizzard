@@ -108,9 +108,14 @@ const changelog = changelogText
   .slice(0, 3);
 writeFileSync(join(gen, "changelog.json"), `${JSON.stringify(changelog, null, 2)}\n`);
 const depNames = new Set<string>();
-for (const pkg of ["app", "packages/core"]) {
-  const pj = JSON.parse(readFileSync(join(root, pkg, "package.json"), "utf8")) as { dependencies?: Record<string, string> };
-  for (const d of Object.keys(pj.dependencies ?? {})) if (!d.startsWith("@simeonts/")) depNames.add(d);
+// The shell's packages and the vendored mini-apps' (their libraries ship in this app too). The
+// packages themselves are Moni's own code, not credits.
+const creditDirs = ["app", "packages/core", ...["teamsync", "gg-counter"].flatMap((v) => ["core", "miniapp"].map((part) => `vendor/${v}/packages/${part}`))]
+  .filter((dir) => existsSync(join(root, dir, "package.json")));
+const creditPackages = creditDirs.map((dir) => JSON.parse(readFileSync(join(root, dir, "package.json"), "utf8")) as { name?: string; dependencies?: Record<string, string> });
+const ownNames = new Set(creditPackages.map((pj) => pj.name));
+for (const pj of creditPackages) {
+  for (const d of Object.keys(pj.dependencies ?? {})) if (!d.startsWith("@simeonts/") && !ownNames.has(d)) depNames.add(d);
 }
 // Credits in words people understand (About → "Made with"): a known name + what it does (i18n key
 // shell.credit.<kind>); unknown packages fall back to their own description.
@@ -119,9 +124,19 @@ const KNOWN: Record<string, { title: string; kind: string }> = {
   lucide: { title: "Lucide", kind: "icons" },
   i18next: { title: "i18next", kind: "translations" },
   zod: { title: "Zod", kind: "validation" },
+  // Scores (GG Counter) is built with these.
+  react: { title: "React", kind: "ui" },
+  "react-dom": { title: "React DOM", kind: "ui" },
+  "@radix-ui/react-alert-dialog": { title: "Radix Alert Dialog", kind: "ui" },
+  "@radix-ui/react-dialog": { title: "Radix Dialog", kind: "ui" },
+  "@radix-ui/react-slot": { title: "Radix Slot", kind: "ui" },
+  "class-variance-authority": { title: "Class Variance Authority", kind: "ui" },
+  clsx: { title: "clsx", kind: "ui" },
+  "tailwind-merge": { title: "tailwind-merge", kind: "ui" },
+  "lucide-react": { title: "Lucide for React", kind: "icons" },
 };
 const credits = [...depNames].sort().map((name) => {
-  for (const pkg of ["app", "packages/core", "."]) {
+  for (const pkg of [...creditDirs, "."]) {
     const f = join(root, pkg, "node_modules", name, "package.json");
     if (existsSync(f)) {
       const license = (JSON.parse(readFileSync(f, "utf8")) as { license?: string }).license ?? "see package";

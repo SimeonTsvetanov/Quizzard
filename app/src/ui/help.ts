@@ -1,5 +1,7 @@
+import type { HelpSection, MiniAppEntry } from "@simeonts/quizzard-core";
 import { app } from "../config.ts";
-import { t, text } from "../i18n/index.ts";
+import { getLanguage, t, text } from "../i18n/index.ts";
+import { miniAppName, miniApps } from "../miniapps/registry.ts";
 import { copyBlock, h } from "./dom.ts";
 import { openDialog } from "./dialog.ts";
 
@@ -10,6 +12,53 @@ function section(title: string, ...content: Node[]): HTMLDetailsElement {
 const p = (s: string): HTMLParagraphElement => h("p", {}, s);
 const list = (items: readonly string[], ordered = false): HTMLElement =>
   h(ordered ? "ol" : "ul", {}, ...items.map((i) => h("li", {}, i)));
+
+/** A mini-app's own Help (steps, features, FAQ) as one section; English when it has no translation. */
+function toolSection(entry: MiniAppEntry, help: HelpSection): HTMLDetailsElement {
+  const part = section(t("app.help.tool", { tool: miniAppName(entry) }),
+    h("h3", {}, t("shell.help.quickStart")), list(help.steps, true),
+    ...(help.features.length ? [h("h3", {}, t("shell.help.features")), ...help.features.map((f) => h("p", {}, h("strong", {}, `${f.name}: `), f.text))] : []),
+    ...(help.faq.length ? [h("h3", {}, t("shell.help.faq")), ...help.faq.map((f) => h("div", { class: "faq" }, h("strong", {}, f.q), p(f.a)))] : []));
+  part.dataset["helpTool"] = entry.meta.id;
+  return part;
+}
+
+/**
+ * Adds a section per mini-app after `anchor` once its Help chunk has loaded (precached, so also
+ * offline); the section of the mini-app on screen goes first and opens. A chunk that fails to load
+ * leaves its section out.
+ */
+function addToolSections(dialog: HTMLDialogElement, anchor: HTMLElement, isWide: boolean): void {
+  // The mini-app on screen (the address may already be the dialog link #help).
+  const onScreen = document.querySelector<HTMLElement>("[data-outlet]:not([hidden]) [data-miniapp]")?.dataset["miniapp"];
+  const entries = miniApps.filter((entry) => entry.meta.status === "ready" && entry.help !== undefined);
+  const load = async (entry: MiniAppEntry): Promise<({ readonly en: HelpSection } & Partial<Record<string, HelpSection>>) | undefined> => {
+    try {
+      return (await entry.help?.())?.default;
+    } catch {
+      return undefined; // offline before the chunk was cached: Help opens without this section
+    }
+  };
+  void Promise.all(entries.map(load)).then((loaded) => {
+    if (!dialog.isConnected) return; // closed or replaced meanwhile
+    const language = getLanguage();
+    let last = anchor;
+    entries.forEach((entry, index) => {
+      const help = loaded[index];
+      if (help === undefined) return;
+      const part = toolSection(entry, help[language] ?? help.en);
+      if (isWide) part.open = true;
+      if (entry.meta.id === onScreen) {
+        part.open = true;
+        if (!isWide) dialog.querySelectorAll<HTMLDetailsElement>("details.help-section[open]").forEach((other) => { other.open = false; });
+        dialog.querySelector(".help-section")?.before(part);
+      } else {
+        last.after(part);
+        last = part;
+      }
+    });
+  });
+}
 
 export function openHelp(): void {
   const m = app.modes;
@@ -43,5 +92,7 @@ export function openHelp(): void {
   sections[0]?.setAttribute("open", "");
   const wide = matchMedia("(min-width: 900px)").matches;
   if (wide) sections.forEach((s) => { s.open = true; });
-  openDialog("help", t("shell.help.title"), sections);
+  const dialog = openDialog("help", t("shell.help.title"), sections);
+  const quickStart = sections[1];
+  if (quickStart) addToolSections(dialog, quickStart, wide);
 }

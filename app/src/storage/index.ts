@@ -70,13 +70,23 @@ export async function requestPersist(): Promise<boolean> {
 
 // Quizzard's shell keeps preferences only (PLAN §2): no Dexie or OPFS tier. Mini-apps bring their
 // own storage modules and areas (PLAN §1.1 item 8).
-interface ExportData { app: string; schemaVersion: number; exportedAt: string; prefs: Record<string, unknown> }
+interface ExportData {
+  app: string;
+  schemaVersion: number;
+  exportedAt: string;
+  prefs: Record<string, unknown>;
+  /** Saved data of each mini-app: id → its raw localStorage entries. */
+  tools: Record<string, Record<string, string>>;
+}
 
-/** Export my data: this app's preferences as JSON. */
-export function exportAll(): Blob {
+/**
+ * Export my data: the shell's preferences and every mini-app's saved entries as one JSON file.
+ * @param tools - mini-app id → its raw entries (storage/areas.ts `readArea`)
+ */
+export function exportAll(tools: Record<string, Record<string, string>> = {}): Blob {
   const prefsData: Record<string, unknown> = {};
   for (const k of prefs.keys()) prefsData[k] = prefs.get<unknown>(k, null);
-  const data: ExportData = { app: app.id, schemaVersion: 1, exportedAt: new Date().toISOString(), prefs: prefsData };
+  const data: ExportData = { app: app.id, schemaVersion: 1, exportedAt: new Date().toISOString(), prefs: prefsData, tools };
   return new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
 }
 
@@ -99,10 +109,14 @@ export function registerPrefCheck(key: string, check: (v: unknown) => boolean): 
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null && !Array.isArray(v);
 
 /**
- * Import a JSON file made by exportAll(); returns how many preferences were restored.
- * Errors (codes, translated by the UI): IMPORT_TOO_BIG, IMPORT_INVALID, NOT_THIS_APP.
+ * Import a JSON file made by exportAll().
+ * @param file - the picked file
+ * @param writeTool - writes one mini-app's exported entries and returns how many it kept
+ * (storage/areas.ts `writeArea` behind the registry's areas); unknown ids write nothing
+ * @returns how many preferences and mini-app entries were restored
+ * @throws {@link Error} with the code `IMPORT_TOO_BIG`, `IMPORT_INVALID` or `NOT_THIS_APP` (translated by the UI)
  */
-export async function importAll(file: File): Promise<number> {
+export async function importAll(file: File, writeTool: (id: string, data: unknown) => number = () => 0): Promise<number> {
   if (file.size > MAX_IMPORT_BYTES) throw new Error("IMPORT_TOO_BIG");
   let raw: unknown;
   try {
@@ -120,6 +134,8 @@ export async function importAll(file: File): Promise<number> {
     if (k.length > 100 || JSON.stringify(v).length > MAX_PREF_BYTES || (check && !check(v))) continue; // skip, never break the app
     prefs.set(k, v); n++;
   }
+  const toolsIn = raw["tools"] ?? {};
+  if (isRecord(toolsIn)) for (const [id, data] of Object.entries(toolsIn)) n += writeTool(id, data);
   return n;
 }
 

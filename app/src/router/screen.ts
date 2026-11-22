@@ -30,7 +30,7 @@ export function startScreens(entries: readonly MiniAppEntry[]): void {
   const elements = findElements();
   const home = createHome(elements.launcher, entries);
   // The mini-app on show and its own title part (`context.shell.setTitle`); null = its name.
-  let active: { readonly entry: MiniAppEntry; titlePart: string | null } | null = null;
+  let active: { readonly entry: MiniAppEntry; readonly query: URLSearchParams; titlePart: string | null } | null = null;
   const showTitle = (): void => { setScreenTitle(active === null ? null : (active.titlePart ?? miniAppName(active.entry))); };
 
   const router = createRouter({ ids: openableIds(entries), onScreen: (route, isFirst) => { show(route, isFirst); } });
@@ -52,7 +52,7 @@ export function startScreens(entries: readonly MiniAppEntry[]): void {
 
   const show = (route: ScreenRoute, isFirst: boolean): void => {
     const entry = route.kind === "miniapp" ? entries.find((candidate) => candidate.meta.id === route.id) : undefined;
-    active = entry === undefined ? null : { entry, titlePart: null };
+    active = entry === undefined || route.kind !== "miniapp" ? null : { entry, query: route.query, titlePart: null };
     if (route.kind === "home" || entry === undefined) {
       outlet.clear();
       if (!isFirst) home.render(); // the last used mini-app may have changed while Home was hidden
@@ -76,6 +76,12 @@ export function startScreens(entries: readonly MiniAppEntry[]): void {
     if (active === null) return; // on Home the link reloads the start page, as before routing
     event.preventDefault();
     router.navigation.home();
+  });
+  // Settings → clear or import: the open mini-app is unmounted first (it saves what is on screen
+  // when it goes) and mounted again afterwards, so it shows the new saved state, not the old one.
+  document.addEventListener("app:data-clearing", () => { if (active !== null) outlet.clear(); });
+  document.addEventListener("app:data-cleared", () => {
+    if (active !== null) void outlet.show(active.entry, launchQuery(active.entry, active.query));
   });
   document.addEventListener("i18n:change", () => {
     home.render();
