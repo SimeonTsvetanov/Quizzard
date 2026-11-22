@@ -3,7 +3,8 @@
 The pure logic behind [Quizzard](https://simeontsvetanov.github.io/Quizzard/): TypeScript with no
 DOM, used only by the web app (private package, not published — PLAN §1.4).
 
-Functions return a `Result` (`{ ok: true, value }` or `{ ok: false, error: { code, message } }`)
-instead of throwing.
+It holds the mini-app contract (`contract.ts`), registry validation (`validateRegistry`) and the
+hash route parser (`parseRoute`, `routeHref`). Input problems come back as typed results with
+stable `{ code, message }` errors instead of throws (`validateRegistry` lists every error at once).
 
 [Source and issues](https://github.com/SimeonTsvetanov/Quizzard) · MIT licence.
