@@ -1,0 +1,14 @@
+{
+  "name": "quizzard",
+  "summary": "The Quiz Toolkit",
+  "inputs": [],
+  "outputs": [],
+  "core": "@simeonts/quizzard-core",
+  "mcpLocal": null,
+  "app": "https://simeontsvetanov.github.io/Quizzard/",
+  "api": null,
+  "mcp": null,
+  "llms": "https://simeontsvetanov.github.io/Quizzard/llms.txt",
+  "status": "draft",
+  "version": "0.1.0"
+}

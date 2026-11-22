@@ -1,0 +1,108 @@
+import { app } from "../config.ts";
+import { prefs } from "../storage/index.ts";
+import { h } from "./dom.ts";
+import { openDialog } from "./dialog.ts";
+import { confirmAction } from "./confirm.ts";
+import { keepDraft, savedOnDeviceHint } from "./draft.ts";
+import { t } from "../i18n/index.ts";
+
+/** How the app is running: installed, inside an iframe embed, or a normal tab. */
+function displayMode(): "standalone" | "embed" | "browser" {
+  if (matchMedia("(display-mode: standalone)").matches) return "standalone";
+  return window.self === window.top ? "browser" : "embed";
+}
+
+const diagnostics = (): Record<string, string> => ({
+  app: `${app.name} ${app.version}`,
+  browser: navigator.userAgent,
+  screen: `${String(screen.width)}×${String(screen.height)}`,
+  display: displayMode(),
+  language: navigator.language,
+  time: new Date().toISOString(),
+});
+
+/**
+ * Sends one report to the webhook, or queues it while offline (flushReportQueue sends it later).
+ * `onDone` runs once the report is queued or delivered.
+ */
+function sendReport(webhook: string, payload: Record<string, unknown>, status: HTMLElement, onDone: () => void): void {
+  if (!navigator.onLine) {
+    prefs.set("report-queue", [...prefs.get<unknown[]>("report-queue", []), payload]);
+    status.textContent = t("shell.report.offline");
+    onDone();
+    return;
+  }
+  status.textContent = t("shell.report.sending");
+  void fetch(webhook, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) })
+    .then(async (response) => {
+      if (!response.ok) throw new Error(String(response.status));
+      onDone(); // delivered: a body we can't read must not invite a duplicate resend
+      const body: unknown = await response.json().catch(() => null);
+      const issue = typeof body === "object" && body !== null && "issue" in body ? Number(body.issue) : Number.NaN;
+      status.textContent = Number.isFinite(issue) ? t("shell.report.sent", { issue }) : t("shell.report.sentNoNumber");
+    })
+    .catch(() => { status.textContent = t("shell.report.failed"); });
+}
+
+/** Report a problem (APP-STANDARD §7.1): send via the shared webhook, or open a pre-filled GitHub issue. */
+export function openReport(): void {
+  const type = h("select", { name: "type" }, ...(["Problem", "Idea", "Question"] as const).map((v) => h("option", { value: v }, t(`shell.report.type${v}`))));
+  const title = h("input", { name: "title", required: "", maxlength: "120", autocomplete: "off" });
+  const text = h("textarea", { name: "text", required: "", rows: "5", maxlength: "4000" });
+  const email = h("input", { name: "email", type: "email", autocomplete: "email", placeholder: "you@example.com…" });
+  const honeypot = h("input", { name: "website", tabindex: "-1", autocomplete: "off" });
+  const trap = h("div", { class: "honeypot", "aria-hidden": "true" }, honeypot); // bots fill it, people never see it
+  const draft = keepDraft("report", [type, title, text, email]); // survives reload / accidental close
+  const diag = diagnostics();
+  const checks = Object.entries(diag).map(([k, v]) => {
+    const box = h("input", { type: "checkbox", name: `d-${k}` });
+    box.checked = true;
+    return { k, v, box, row: h("label", { class: "check" }, box, `${k}: ${v}`) };
+  });
+  const status = h("p", { class: "status", "aria-live": "polite" });
+  const chosen = (): Record<string, string> => Object.fromEntries(checks.filter((c) => c.box.checked).map((c) => [c.k, c.v]));
+  const body = (): string => `${text.value}\n\n---\n${Object.entries(chosen()).map(([k, v]) => `${k}: ${v}`).join("\n")}`;
+  const github = h("a", { class: "button", target: "_blank", rel: "noopener", href: "#" }, t("shell.report.github"));
+  github.addEventListener("click", () => {
+    github.href = `${app.repo}/issues/new?template=${type.value === "Idea" ? "feature_request" : "bug_report"}.yml&title=${encodeURIComponent(`[${type.value}] ${title.value}`)}&body=${encodeURIComponent(body().slice(0, 6000))}`;
+  });
+  const send = h("button", { class: "button button--primary", type: "submit" }, t("shell.report.send"));
+  if (!app.feedback.webhook) send.hidden = true;
+  const form = h("form", { class: "form" },
+    h("p", { class: "hint" }, t("shell.report.public"), ...(app.feedback.webhook ? [] : [" ", t("shell.report.githubOnly")])),
+    savedOnDeviceHint([type, title, text, email]), // before the fields it describes
+    h("label", {}, t("shell.report.type"), type), h("label", {}, t("shell.report.shortTitle"), title), h("label", {}, t("shell.report.text"), text),
+    ...(app.feedback.webhook ? [h("label", {}, t("shell.report.email"), email)] : []), trap, // email only when it can really be sent
+    h("details", { class: "diag" }, h("summary", {}, t("shell.report.diagnosticsSummary", { count: checks.length })),
+      h("fieldset", {}, h("legend", { class: "hint" }, t("shell.report.diagnostics")), ...checks.map((c) => c.row))),
+    h("div", { class: "button-stack" }, ...(app.feedback.webhook ? [send] : []), github), status); // equal-width group
+  let sent = false; // queued or delivered → closing needs no confirmation
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const webhook = app.feedback.webhook;
+    if (!webhook) return;
+    const payload = { app: app.id, repo: app.repo, version: app.version, type: type.value.toLowerCase(), title: title.value, description: text.value, email: email.value, diagnostics: chosen(), website: honeypot.value };
+    sendReport(webhook, payload, status, () => { sent = true; draft.clear(); });
+  });
+  // Typed text is never lost silently: closing with unsent input asks first (ui-patterns §4).
+  openDialog("report", t("shell.report.title"), [form], {
+    beforeClose: async () => {
+      if (sent || draft.isEmpty()) return true;
+      const discard = await confirmAction({
+        title: t("shell.report.discardTitle"), message: t("shell.report.discardMessage"),
+        confirm: t("shell.report.discardConfirm"), cancel: t("shell.report.keepEditing"),
+      });
+      if (discard) draft.clear();
+      return discard;
+    },
+  });
+}
+
+/** Sends queued offline reports on start / when back online. */
+export function flushReportQueue(): void {
+  const webhook = app.feedback.webhook;
+  const queue = prefs.get<unknown[]>("report-queue", []);
+  if (!webhook || !queue.length || !navigator.onLine) return;
+  prefs.remove("report-queue");
+  for (const item of queue) void fetch(webhook, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(item) });
+}

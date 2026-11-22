@@ -1,0 +1,26 @@
+@layer tokens, base, layout, components, utilities, overrides;
+/* App stylesheet entry (main.ts imports only this file). The line above fixes the cascade order
+   once; every imported file wraps its rules in one of these layers (design →
+   css-architecture §1). Components are imported in on-screen order. */
+
+@import "../../../design/tokens.css";
+/* Per-app accent from app.config (empty = default); after tokens.css so it replaces the defaults. */
+@import "../generated/accent.css";
+@import "./base.css";
+@import "./layout.css";
+@import "./components/splash.css";
+@import "./components/header.css";
+@import "./components/content.css";
+@import "./components/dropzone.css";
+@import "./components/button.css";
+@import "./components/modal.css";
+@import "./components/menu.css";
+@import "./components/sheet.css";
+@import "./components/help.css";
+@import "./components/code-block.css";
+@import "./components/settings.css";
+@import "./components/form.css";
+@import "./components/alert.css";
+@import "./components/toast.css";
+@import "./utilities.css";
+@import "./overrides.css";
