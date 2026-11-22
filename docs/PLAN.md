@@ -112,49 +112,49 @@ export interface MiniAppEntry {             // one registry line
 ## 3. Tasks
 
 ### Milestone M1 — shell live at /Quizzard/ (proves AC1 with placeholder cards, AC3 routing and Back, part of AC7)
-### T-01 · Scaffold from the forge template
+### T-01 · Scaffold from the forge template ✅ 2026-11-22
 - Goal: template files in the repo (id `quizzard`, name "Quizzard", tagline "The Quiz Toolkit"), `basePath: "/Quizzard/"` in `app.config.ts` used by Vite, generate and Playwright; `packages/mcp`, embed, share-target, Dexie/OPFS files removed; `brand/` and `docs/` kept
 - Files: whole tree from `scaffold.mjs`; `app.config.ts`, `app/vite.config.ts`, `scripts/generate.ts`, `pnpm-workspace.yaml`, `AGENTS.md`, `STATUS.md`
 - Reading list: flow → architecture §2, build §1–§2 · engineering → structure §1, §5
 - Acceptance: `pnpm verify` green; `pnpm e2e` smoke green at `http://localhost:4173/Quizzard/`
 - Depends on: —
-### T-02 · Take over the 2025 site: service worker, manifest, CI and deploy
+### T-02 · Take over the 2025 site: service worker, manifest, CI and deploy ✅ 2026-11-22
 - Goal: installed and cached copies of the old site update in place: the new worker is served as `service-worker.js`, old caches are deleted, manifest identity decided from `legacy-2025` `public/manifest.json`; CI + deploy workflows run on `main`
 - Files: `app/vite.config.ts`, `scripts/sw-handover.ts` (+ test), `.github/workflows/ci.yml`, `deploy.yml`, `docs/DECISIONS.md`
 - Reading list: pwa → pwa §3, §5, §9, §11 · flow → migrate §1 · engineering → security §7
 - Acceptance: e2e: a page controlled by a copy of the old worker gets the new app after one reload, no old cache left; CI green
 - Depends on: T-01
-### T-03 · Emerald accent, gold highlight, logo in the header
+### T-03 · Emerald accent, gold highlight, logo in the header ✅ 2026-11-22
 - Goal: accent pair `#00804F` / `#34D399` with the right on-accent text, token `--color-highlight`, wizard logo and wordmark in the header and splash
 - Files: `app.config.ts`, `scripts/accent.ts` (+ test), `design/tokens.css`, `app/public/logo.svg`, `app/src/styles/components/header.css`
 - Reading list: design → design-system §2–§3, §8 · growth → brand §5
 - Acceptance: accent contrast test passes for both themes; forge `a11y-check` 0 FAIL light and dark on Home
 - Depends on: T-01
-### T-04 · Core: contract, registry validation, route parser
+### T-04 · Core: contract, registry validation, route parser ✅ 2026-11-22
 - Goal: `contract.ts` (§1.2), `validateRegistry`, `parseRoute`/`routeHref` as pure functions
 - Files: `packages/core/src/contract.ts`, `registry.ts`, `route.ts`, `index.ts`, `packages/core/test/*.test.ts`
 - Reading list: engineering → typescript, testing §3
 - Acceptance: unit + fast-check tests pass; errors `MINIAPP_ID_DUPLICATE`, `MINIAPP_CONTRACT_VERSION`, `STORAGE_AREA_OVERLAP`; coverage ≥ 90 %
 - Depends on: T-01
-### T-05 · Router, outlet, Back, title
+### T-05 · Router, outlet, Back, title ✅ 2026-11-22
 - Goal: hash router; outlet that loads, mounts and unmounts a registry entry; Home seeded under a direct launch; header Back button; title per route; error screen when a chunk fails
 - Files: `app/src/router/router.ts`, `router/history.ts`, `miniapps/outlet.ts`, `miniapps/registry.ts`, `ui/title.ts`, `app/index.html`, `tests/e2e/routing.spec.ts`, `app/test/fixtures/probe-miniapp.ts`
 - Reading list: engineering → frontend-level1 §2, §6 · app-shell → app-shell §2 · pwa → pwa-ios §6
 - Acceptance: e2e: deep link to the probe route mounts it; Back shows Home; unmount leaves no node or listener; unknown route → Home
 - Depends on: T-04
-### T-06 · Shell services for mini-apps (context)
+### T-06 · Shell services for mini-apps (context) ✅ 2026-11-22
 - Goal: `createContext(entry)`: language and theme signals, toast, confirm, share, setTitle, setBusy, navigation, header slot, namespaced prefs
 - Files: `app/src/miniapps/context.ts`, `app/src/ui/toast.ts`, `ui/confirm.ts`, `ui/share.ts`, `pwa.ts`, `app/src/miniapps/context.test.ts`
 - Reading list: engineering → frontend-level1 §2–§3 · design → ui-patterns §4, §6 · app-shell → i18n §2
 - Acceptance: unit tests for signals and prefs prefix; e2e with the probe: language switch reaches it, confirm resolves, update offer waits while busy
 - Depends on: T-05
-### T-07 · Home launcher
+### T-07 · Home launcher ✅ 2026-11-22
 - Goal: a card per registry entry (mark, name, one line), last used first, "coming" cards not clickable, grid that holds 12 cards from 320 px; placeholder entries `teams`, `scores`, `quiz` as "coming"
 - Files: `app/src/home/home.ts`, `app/src/styles/components/home.css`, `app/src/i18n/en.ts`, `bg.ts`, `tests/e2e/home.spec.ts`
 - Reading list: design → ui-patterns §7–§8, responsive-layout §1–§2, §6 · design → accessibility §1, §6
 - Acceptance: e2e at 320 px and desktop; 12 fixture cards without overflow; CLS 0 on load; `scripts/size-check.ts` reports Home JS ≤ 60 KB gzip
 - Depends on: T-05
-### T-08 · First deploy (replaces the 2025 site)
+### T-08 · First deploy (replaces the 2025 site) ✅ 2026-11-22
 - Goal: branch merged to `main`, Pages source = GitHub Actions, live checks. **Public action — ask Moni first**
 - Files: `STATUS.md`, `CHANGELOG.md`, `docs/DECISIONS.md`
 - Reading list: flow → build §3, §7, release §1 · pwa → pwa §9–§10
@@ -162,31 +162,31 @@ export interface MiniAppEntry {             // one registry line
 - Depends on: T-02, T-03, T-07
 
 ### Milestone M2 — TeamSync inside Quizzard (proves AC2 for TeamSync, AC3 `#/teams`)
-### TS-01 · [teamsync] Body package behind the contract
+### TS-01 · [teamsync] Body package behind the contract ✅ 2026-11-22
 - Goal: `packages/miniapp` (§1.5) with `mount` → `unmount`, `screen.html`, own texts, `meta.ts`, `help.ts`, `miniapp.d.ts`, `vite-preset.ts`; `app/` mounts it with a standalone context; no visible change
 - Files: `packages/miniapp/**`, `app/src/main.ts`, `app/index.html`, `app/vite.config.ts`, `app/src/styles/app.css`
 - Reading list: flow → migrate §1, §3 · engineering → structure §1–§2, frontend-level1 §2
 - Acceptance: `pnpm verify` + `pnpm e2e` green unchanged; mount → unmount → mount works in a unit test; built `index.html` still has the static form
 - Depends on: T-04
-### TS-02 · [teamsync] e2e split and release
+### TS-02 · [teamsync] e2e split and release ✅ 2026-11-22
 - Goal: `tests/e2e/miniapp/` (flows) and `tests/e2e/shell/` (standalone only); every `goto` through `tests/e2e/support/entry.ts` (`E2E_MINIAPP_HASH`); patch release, live site unchanged
 - Files: `tests/e2e/**`, `playwright.config.ts`, `CHANGELOG.md`
 - Reading list: engineering → testing §4, §6 · flow → release §1
 - Acceptance: both folders green locally and against the live URL; tag pushed
 - Depends on: TS-01
-### T-09 · Mini-app CSS transform and checks
+### T-09 · Mini-app CSS transform and checks ✅ 2026-11-22
 - Goal: `app/build/miniapp-css.ts` (§1.3: layer wrap, scope prefix, root mapping, collision errors, isolated reset) and `scripts/check-miniapp-tokens.ts`
 - Files: `app/build/miniapp-css.ts`, `app/build/miniapp-css.test.ts`, `app/build/miniapp-presets.ts`, `scripts/check-miniapp-tokens.ts` (+ test), `app/src/styles/app.css`, `tests/e2e/css-layers.spec.ts`
 - Reading list: design → css-architecture §1–§5 · engineering → security §1
 - Acceptance: unit tests on fixture CSS (nesting, `@media`, `@layer`, `@keyframes`, Tailwind output); css-layers spec expects the new order
 - Depends on: T-01
-### T-10 · Add TeamSync as a mini-app
+### T-10 · Add TeamSync as a mini-app ✅ 2026-11-22
 - Goal: submodule `vendor/teamsync` at the TS-02 tag, workspace globs, registry line, CI checkout with submodules, Dependabot `gitsubmodule`, contract-sync test; lint, format and `tsc` ignore `vendor/`
 - Files: `.gitmodules`, `pnpm-workspace.yaml`, `app/src/miniapps/registry.ts`, `app/vite.config.ts`, `scripts/contract-sync.test.ts`, `.github/workflows/*.yml`, `.github/dependabot.yml`, `eslint.config.js`
 - Reading list: engineering → structure §2, §6, security §5, §7 · flow → build §2
 - Acceptance: `#/teams` shows TeamSync in Emerald; `pnpm verify` green; Home JS still ≤ 60 KB
 - Depends on: T-06, T-09, TS-02
-### T-11 · TeamSync e2e inside Quizzard
+### T-11 · TeamSync e2e inside Quizzard ✅ 2026-11-22
 - Goal: Playwright project `teams` runs `vendor/teamsync/tests/e2e/miniapp` against `#/teams`; fix every difference in the shell or (via a TS task) in the body
 - Files: `playwright.config.ts`, `tests/e2e/teams-host.spec.ts`, `package.json`
 - Reading list: engineering → testing §4–§6 · design → accessibility §10
@@ -194,31 +194,31 @@ export interface MiniAppEntry {             // one registry line
 - Depends on: T-10
 
 ### Milestone M3 — GG Counter inside Quizzard (proves AC2 for GG Counter, F14, AC3 `#/scores`)
-### GG-01 · [gg-counter] Host seam in the body
+### GG-01 · [gg-counter] Host seam in the body ✅ 2026-11-22
 - Goal: the game screen takes language, theme, toast, title and the header-actions element from one `Host` object; the standalone shell supplies it; no visible change
 - Files: `app/src/app.tsx`, `app/src/session/app-header.tsx`, `app/src/providers/*`, `app/src/i18n/*`, `app/src/ui/toast.tsx`, new `app/src/host.ts`
 - Reading list: engineering → react §2, §6 · flow → migrate §1, §3
 - Acceptance: `pnpm verify` (incl. e2e) green with no test changed
 - Depends on: T-04
-### GG-02 · [gg-counter] Body package
+### GG-02 · [gg-counter] Body package ✅ 2026-11-22
 - Goal: `packages/miniapp` (§1.5): `mount` creates the React root, overlay container and extra tokens on the mount element, runs the storage migration; `meta.ts`, `help.ts`, `miniapp.d.ts`, `vite-preset.ts`; entry CSS without tokens, accent, fonts
 - Files: `packages/miniapp/**`, `app/src/main.tsx`, `app/src/app.tsx`, `app/src/styles/app.css`, `app/vite.config.ts`, `eslint.config.js`
 - Reading list: engineering → react §1, §6–§7, structure §1–§2 · design → css-architecture §1
 - Acceptance: `pnpm verify` green; first-load JS ≤ 125 KB gzip; unmount leaves no node, listener or timer (unit test)
 - Depends on: GG-01
-### GG-03 · [gg-counter] e2e split and release
+### GG-03 · [gg-counter] e2e split and release ✅ 2026-11-22
 - Goal: `tests/e2e/miniapp/` (game, history, clear, keyboard, motion, storage of the game) and `tests/e2e/shell/`; entry helper; `tests/a11y/screens.json` usable with a start hash; patch release
 - Files: `tests/e2e/**`, `tests/a11y/screens.json`, `playwright.config.ts`, `CHANGELOG.md`
 - Reading list: engineering → testing §4, §6 · flow → release §1
 - Acceptance: both folders green (`--repeat-each 5` for motion); live site unchanged; tag pushed
 - Depends on: GG-02
-### T-12 · Add GG Counter as an isolated mini-app
+### T-12 · Add GG Counter as an isolated mini-app ✅ 2026-11-22
 - Goal: submodule `vendor/gg-counter` at the GG-03 tag, preset merged (Tailwind, alias), registry line, one version of shared packages (`pnpm` overrides for i18next), size-check for the `scores` chunk
 - Files: `.gitmodules`, `pnpm-workspace.yaml`, `app/src/miniapps/registry.ts`, `app/build/miniapp-presets.ts`, `scripts/size-check.ts`, `tests/e2e/csp.spec.ts`
 - Reading list: engineering → react §6–§7, performance §4 · design → css-architecture §1–§2
 - Acceptance: `#/scores` shows GG Counter in Emerald with no shell style inside it and no CSP violation; scores chunk ≤ 125 KB gzip; Home ≤ 60 KB
 - Depends on: T-11, GG-03
-### T-13 · GG Counter e2e and behaviour parity inside Quizzard
+### T-13 · GG Counter e2e and behaviour parity inside Quizzard ✅ 2026-11-22
 - Goal: Playwright project `scores` runs `vendor/gg-counter/tests/e2e/miniapp`; F14 list checked one by one (tint, last-changes line, history sheet, medals, motion, field above the keyboard, choice dialogs, share text)
 - Files: `playwright.config.ts`, `tests/e2e/scores-host.spec.ts`, `tests/a11y/screens.json`
 - Reading list: engineering → testing §4–§6 · design → accessibility §4, §8 · pwa → pwa-ios §5
