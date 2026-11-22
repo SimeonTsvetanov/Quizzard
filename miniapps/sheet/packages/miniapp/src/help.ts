@@ -18,7 +18,7 @@ export const help: SheetHelp = {
       "Tap + next to the round numbers when the next round starts. Tap a number to go back to that round.",
     ],
     features: [
-      { name: "No set-up", text: "You never say how many questions a round has: a new empty line appears as soon as you write on the last one." },
+      { name: "No set-up", text: "You never say how many questions a round has: a new empty line appears as soon as you write on the last one. Marking answers with ✓ or ✗ adds no lines." },
       { name: "Points of a round", text: "Every right answer gives 1 point. If a whole round gives something else, change the number after “A right answer gives”, for example 2; every line of that round follows." },
       { name: "Different points for one question", text: "If only one question is worth more or less, change the number at the end of its line, for example 0.5. It gets a green edge and keeps its own points." },
       { name: "Bonus points", text: "“Bonus points” under a round adds extra points to it, or takes some away with a minus, for example −1." },
@@ -28,6 +28,7 @@ export const help: SheetHelp = {
     ],
     faq: [
       { q: "How do I remove a line I added by mistake?", a: "Delete its text and press Backspace once more on the empty line." },
+      { q: "We left a question unanswered. How do I go on to the next one?", a: "Press Enter on the empty line: the next line appears under it. You can mark the empty one ✗ later." },
       { q: "How do I start a new game?", a: "Tap the eraser at the top (“Clear game”) and confirm. “Undo” brings the game back for a few seconds." },
       { q: "Can the other teams see my sheet?", a: "No. It is stored only in this browser on your device and is not sent anywhere." },
     ],
@@ -40,7 +41,7 @@ export const help: SheetHelp = {
       "Докоснете + до номерата на рундовете, когато започне следващият рунд. Докоснете номер, за да се върнете към този рунд.",
     ],
     features: [
-      { name: "Без настройване", text: "Не казвате колко въпроса има в рунда: нов празен ред се появява, щом пишете на последния." },
+      { name: "Без настройване", text: "Не казвате колко въпроса има в рунда: нов празен ред се появява, щом пишете на последния. Отбелязването с ✓ или ✗ не добавя редове." },
       { name: "Точки на рунда", text: "Всеки верен отговор дава 1 точка. Ако цял рунд дава друго, сменете числото след „Верен отговор дава“, например 2; всички редове на рунда го следват." },
       { name: "Различни точки за един въпрос", text: "Ако само един въпрос носи повече или по-малко, сменете числото в края на реда му, например 0,5. То получава зелен кант и пази своите точки." },
       { name: "Бонус точки", text: "„Бонус точки“ под рунда добавя допълнителни точки към него или отнема с минус, например −1." },
@@ -50,6 +51,7 @@ export const help: SheetHelp = {
     ],
     faq: [
       { q: "Как да махна ред, добавен по грешка?", a: "Изтрийте текста му и натиснете Backspace още веднъж на празния ред." },
+      { q: "Оставихме въпрос без отговор. Как да продължа към следващия?", a: "Натиснете Enter на празния ред: следващият ред се появява под него. Празния може да отбележите с ✗ по-късно." },
       { q: "Как да започна нова игра?", a: "Докоснете гумичката най-горе („Изчисти играта“) и потвърдете. „Отмени“ връща играта за няколко секунди." },
       { q: "Виждат ли другите отбори моя лист?", a: "Не. Той се пази само в този браузър на Вашето устройство и не се изпраща никъде." },
     ],

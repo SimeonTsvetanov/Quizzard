@@ -137,14 +137,31 @@ export function gameTotal(game: Game): number {
 }
 
 /**
- * Makes sure a round ends with exactly one blank line to write on (none once it is full).
+ * Makes sure there is a line to write the next answer on: one blank line after the last written
+ * answer, never two blank lines in a row at the end, none once the round is full.
+ * @remarks Only a written answer asks for the next line. Marking the last line right or wrong (when
+ * the answers are read out) adds nothing — the round is over by then (Moni 2026-11-23).
  * @returns the same round, changed in place
  */
 export function keepBlankLine(round: Round): Round {
-  while (round.questions.length > 1 && isBlankQuestion(round.questions.at(-1) ?? blankQuestion()) && isBlankQuestion(round.questions.at(-2) ?? { ...blankQuestion(), text: "x" })) round.questions.pop();
-  const last = round.questions.at(-1);
-  if ((last === undefined || !isBlankQuestion(last)) && round.questions.length < LIMITS.questions) round.questions.push(blankQuestion());
+  const { questions } = round;
+  // Two untouched lines at the end are one too many.
+  while (questions.length > 1 && isBlankQuestion(questions.at(-1) ?? blankQuestion()) && isBlankQuestion(questions.at(-2) ?? { ...blankQuestion(), text: "x" })) questions.pop();
+  const last = questions.at(-1);
+  if (last?.text !== "" && questions.length < LIMITS.questions) questions.push(blankQuestion());
   return round;
+}
+
+/**
+ * Adds a line after the last one when a person asks for it (Enter on a last line without text, e.g.
+ * a question the team left unanswered and marked wrong).
+ * @returns whether a line was added
+ */
+export function addLine(round: Round): boolean {
+  const last = round.questions.at(-1);
+  if (last === undefined || isBlankQuestion(last) || round.questions.length >= LIMITS.questions) return false;
+  round.questions.push(blankQuestion());
+  return true;
 }
 
 /**

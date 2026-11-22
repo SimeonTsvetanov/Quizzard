@@ -50,7 +50,8 @@ test("it is one screen: on a phone the page itself does not scroll, a long round
   await expect(total(page)).toBeInViewport();
   await expect(tab(page, 1)).toBeInViewport();
   await expect(roundPoints(page)).toBeInViewport();
-  // No row is wider than the card: the last control of the line being written is fully on screen.
+  // No row is wider than the card: the last control of a line is fully on screen once the line is.
+  await rows(page).nth(13).scrollIntoViewIfNeeded();
   await expect(rows(page).nth(13).getByLabel("Points for question 14")).toBeInViewport({ ratio: 1 });
 });
 
@@ -71,6 +72,26 @@ test("writing adds the next line; Enter moves to it; right answers count 1 point
   await rows(page).nth(0).getByRole("button", { name: "Right" }).click();
   await expect(total(page)).toHaveText("0");
   await expect(round(page).locator("[data-round-meta]")).toHaveText("0 of 1 right");
+});
+
+test("marking never adds a line: after the answers are read out the round keeps its length", async ({ page }) => {
+  await open(page);
+  await write(page, 0, "Paris");
+  await write(page, 1, "1066");
+  await expect(rows(page)).toHaveCount(3);
+  // The team left question 3 unanswered: marking the empty line wrong adds nothing under it.
+  await rows(page).nth(0).getByRole("button", { name: "Right" }).click();
+  await rows(page).nth(1).getByRole("button", { name: "Wrong" }).click();
+  await rows(page).nth(2).getByRole("button", { name: "Wrong" }).click();
+  await expect(rows(page)).toHaveCount(3);
+  await expect(round(page).locator("[data-round-meta]")).toHaveText("1 of 3 right");
+  // Enter on that line gives the next one when there is a fourth question after all.
+  await answer(rows(page).nth(2)).press("Enter");
+  await expect(rows(page)).toHaveCount(4);
+  await expect(answer(rows(page).nth(3))).toBeFocused();
+  await page.reload();
+  await expect(rows(page)).toHaveCount(3); // an untouched line is not stored
+  await expect(round(page).locator("[data-round-meta]")).toHaveText("1 of 3 right");
 });
 
 test("a round can give other points per right answer; a question changed by hand keeps its own", async ({ page }) => {

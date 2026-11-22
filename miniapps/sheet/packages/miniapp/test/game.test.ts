@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import fc from "fast-check";
 import {
-  LIMITS, blankGame, blankQuestion, blankRound, formatPoints, gameTotal, isBlankGame, keepBlankLine, parseGame, parsePoints,
+  LIMITS, addLine, blankGame, blankQuestion, blankRound, formatPoints, gameTotal, isBlankGame, keepBlankLine, parseGame, parsePoints,
   roundCounts, roundPoints, setWorth, toSaved, worthOf, type Game, type Mark, type Round,
 } from "../src/core/game.ts";
 
@@ -95,9 +95,27 @@ describe("the blank line at the end of a round", () => {
     expect(keepBlankLine(one).questions).toHaveLength(2);
   });
 
+  it("is not added by marking the last line: only a written answer asks for the next one", () => {
+    const marked = round([question("Paris", "right"), question("", "wrong")]);
+    expect(keepBlankLine(marked).questions).toHaveLength(2);
+    const onlyMark = round([question("", "right")]);
+    expect(keepBlankLine(onlyMark).questions).toHaveLength(1);
+    const worth = round([question("", "none", 2)]);
+    expect(keepBlankLine(worth).questions).toHaveLength(1);
+  });
+
+  it("Enter adds a line under a marked line without text, once; it stays until used", () => {
+    const marked = round([question("Paris", "right"), question("", "wrong")]);
+    expect(addLine(marked)).toBe(true);
+    expect(addLine(marked)).toBe(false); // the new line is untouched
+    expect(keepBlankLine(marked).questions).toHaveLength(3);
+    expect(addLine(round([blankQuestion()]))).toBe(false);
+  });
+
   it("is not added to a full round", () => {
     const full = round(Array.from({ length: LIMITS.questions }, () => question("a", "right")));
     expect(keepBlankLine(full).questions).toHaveLength(LIMITS.questions);
+    expect(addLine(full)).toBe(false);
   });
 });
 

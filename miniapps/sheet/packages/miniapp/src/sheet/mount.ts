@@ -4,7 +4,7 @@
 // never rebuilds the screen, so the caret and the keyboard stay where they are.
 // Parts: state.ts (model + saving), view.ts (drawing).
 import type { MiniAppContext, Unmount } from "../contract.ts";
-import { LIMITS, blankGame, blankRound, isBlankGame, keepBlankLine, parseGame, parsePoints, setWorth, type Game, type Question, type Round } from "../core/game.ts";
+import { LIMITS, addLine, blankGame, blankRound, isBlankGame, keepBlankLine, parseGame, parsePoints, setWorth, type Game, type Question, type Round } from "../core/game.ts";
 import { icon } from "../dom/icons.ts";
 import { h } from "../dom/h.ts";
 import { createTranslator } from "../i18n/translate.ts";
@@ -104,6 +104,12 @@ function onAnswerKey(sheet: Sheet, field: HTMLInputElement, event: KeyboardEvent
   if (target === null || event.isComposing) return;
   if (event.key === "Enter") {
     event.preventDefault();
+    // The last line has no text but a mark (an unanswered question): Enter still gives the next line.
+    if (target.row.nextElementSibling === null && addLine(target.round)) {
+      const added = target.round.questions.at(-1);
+      if (added) target.list.append(rowElement(sheet, target.round, added, target.round.questions.length - 1));
+      saveSoon(sheet);
+    }
     const next = answerOf(target.row.nextElementSibling);
     next?.focus();
     next?.scrollIntoView({ block: "nearest" });

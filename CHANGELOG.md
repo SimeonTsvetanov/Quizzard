@@ -10,6 +10,8 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
   example 2 for a double round). Every line of the round follows; a question you change by hand keeps
   its own points and gets a green edge.
 ### Changed
+- Answer sheet: tapping ✓ or ✗ no longer adds an empty line under the last one; a new line appears only
+  when you write an answer (or press Enter on an empty line you left unanswered).
 - Answer sheet is now one app screen instead of a long page: the total stays at the top, the rounds are
   numbers with their points (tap one to open it, + for the next round), and only the questions of the
   open round scroll. "Clear game" moved to the eraser at the top.
