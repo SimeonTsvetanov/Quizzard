@@ -102,7 +102,10 @@ test("a deep link renders Home's cards too: the list is never left busy (footer 
   await expect(page.locator('[data-miniapp="alpha"] [data-probe]')).toBeVisible();
   await expect(page.locator("[data-launcher]")).not.toHaveAttribute("aria-busy", "true");
   expect(await page.evaluate(() => localStorage.getItem("quizzard:v1:last-app"))).toBe('"alpha"');
+  // Temporary CI diagnostic (Firefox cannot run locally): what Back does to the address and the history.
+  console.warn("[diag back]", test.info().project.name, await page.evaluate(() => ({ length: history.length, hash: location.hash, state: history.state as unknown })));
   await page.goBack();
+  console.warn("[diag back after]", test.info().project.name, await page.evaluate(() => ({ length: history.length, hash: location.hash, state: history.state as unknown })));
   // Web-first: goBack() can return before the hashchange that re-renders Home (Firefox does), and
   // the cards rendered at load still have the registry order.
   await expect(page.locator("[data-view=home]")).toBeVisible();

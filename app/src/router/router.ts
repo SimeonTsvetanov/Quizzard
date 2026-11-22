@@ -72,6 +72,11 @@ function start(state: RouterState): void {
     show(state, HOME); // a dialog link (#help) on load opens over Home
   }
   window.addEventListener("hashchange", (event) => { onHashChange(state, event); });
+  // Back/Forward between two entries of this document always fires popstate; a browser that then
+  // fires no hashchange for entries written with pushState/replaceState (seen with Firefox in CI:
+  // Back from a deep link left Home hidden) would leave the old screen up. Showing the screen the
+  // address names is idempotent, so the hashchange that normally follows changes nothing.
+  window.addEventListener("popstate", () => { onPopState(state); });
 }
 
 function createNavigation(state: RouterState): Navigation {
@@ -120,6 +125,15 @@ function onHashChange(state: RouterState, event: HashChangeEvent): void {
     default:
       assertNever(route);
   }
+}
+
+/** Shows the screen the address names after a history traversal (see `start`). */
+function onPopState(state: RouterState): void {
+  const route = parseRoute(location.hash, state.ids);
+  if (route.kind !== "home" && route.kind !== "miniapp") return; // dialogs and unknown: hashchange path
+  if (state.current !== null && isSameScreen(state.current, route)) return;
+  state.isGoingBack = false;
+  show(state, route);
 }
 
 function goHomeByReplace(state: RouterState): void {

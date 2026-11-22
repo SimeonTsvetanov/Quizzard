@@ -204,7 +204,10 @@ test("a chunk that cannot load (offline, not cached) shows the error view; Try a
     test.info().annotations.push({ type: "harness", description: "reload added a history entry: Back after the reload not checked" });
     return;
   }
+  // Temporary CI diagnostic (Firefox cannot run locally): what Back does to the address and the history.
+  console.warn("[diag back]", test.info().project.name, await page.evaluate(() => ({ length: history.length, hash: location.hash, state: history.state as unknown })));
   await page.goBack();
+  console.warn("[diag back after]", test.info().project.name, await page.evaluate(() => ({ length: history.length, hash: location.hash, state: history.state as unknown })));
   await expectHome(page);
 });
 
