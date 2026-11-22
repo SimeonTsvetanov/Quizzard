@@ -1,0 +1,3 @@
+[submodule "vendor/teamsync"]
+	path = vendor/teamsync
+	url = https://github.com/SimeonTsvetanov/teamsync-random-team-generator
