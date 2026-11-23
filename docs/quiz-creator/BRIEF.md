@@ -111,7 +111,7 @@ state (teams, scores, position) is saved in the browser, so a reload continues t
   answer reveal, score entry + leaderboard + podium + tiebreak, keyboard control, saved game state. Its themed looks,
   the special rounds (wheel, cipher, vault, envelopes …) are later kinds in the registry.
 
-## 4. Open questions for Moni
+## 4. Open questions for Moni — answered 2026-11-23, see SPEC.md §9
 
 - **O-1** ~~How is it played?~~ Answered by the reference (§5): projector + host, answers after each round.
 - **O-2** ~~Answer text for open questions?~~ Yes — every question has an answer and an optional explanation (§5).
