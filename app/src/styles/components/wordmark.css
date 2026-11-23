@@ -26,7 +26,7 @@
     }
 
     @media (prefers-reduced-motion: no-preference) {
-      &[data-play] span {
+      :root:not([data-tool]) &[data-play] span {
         animation:
           wordmark-arrive 620ms var(--ease-out) backwards,
           wordmark-glint 900ms var(--ease-standard) 520ms backwards;
@@ -72,7 +72,8 @@
        Finite on purpose: with any endless animation on Home, WebKit stalled on the screen change (four CI runs,
        2026-11-23), and nothing here should run for as long as the app is open. */
     @media (prefers-reduced-motion: no-preference) {
-      &[data-play] {
+      /* On Home only: with a tool open the footer's wordmark stays still. */
+      :root:not([data-tool]) &[data-play] {
         animation: wordmark-breathe 1.5s var(--ease-standard) 1.8s 4 alternate;
       }
     }

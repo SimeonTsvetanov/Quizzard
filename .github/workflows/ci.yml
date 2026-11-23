@@ -4,6 +4,8 @@ on:
   push:
     branches: [main]
   pull_request:
+  # Run on any branch by hand: a fix for a browser this repo cannot run locally is proven before it reaches main.
+  workflow_dispatch:
 permissions:
   contents: read
 concurrency:
