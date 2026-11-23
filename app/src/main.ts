@@ -17,6 +17,7 @@ import { flushReportQueue, openReport } from "./ui/report.ts";
 import { initInstall, openInstall, updateMenuLabel } from "./ui/install.ts";
 import { initPwa } from "./pwa.ts";
 import { relocateToasts } from "./ui/toast.ts";
+import { returnToMenuAfter } from "./ui/menu-return.ts";
 import { trackKeyboardInset } from "./ui/keyboard-inset.ts";
 import { miniApps, registryErrors } from "./miniapps/registry.ts";
 import { startScreens } from "./router/screen.ts";
@@ -53,13 +54,22 @@ const actions: Record<string, () => void> = {
   help: openHelp, settings: openSettings, about: openAbout, "whats-new": openWhatsNew, report: openReport,
   install: openInstall, share: () => { void shareApp(); },
 };
+/** Opens the menu. */
+function showMenu(): void {
+  if (menu === null || menu.open) return;
+  menu.showModal();
+  relocateToasts(); // a visible toast (e.g. the update offer) moves into the menu, not under it
+}
 document.addEventListener("click", (e) => {
   const target = e.target instanceof Element ? e.target.closest<HTMLElement>("[data-action]") : null;
   const name = target?.dataset["action"];
   if (!name || !Object.hasOwn(actions, name)) return;
   e.preventDefault();
+  const isFromMenu = menu?.contains(target) ?? false;
   menu?.close();
   actions[name]?.();
+  // Opened from the menu → closing it leads back to the menu, not two steps back to the screen.
+  if (isFromMenu && name !== "share") returnToMenuAfter(target, showMenu); // Share is an action, not a place
 });
 const openFromHash = (): void => {
   const name = location.hash.slice(1);
@@ -74,10 +84,7 @@ if (registryProblems.length > 0) showErrorScreen(new Error(registryProblems.map(
 else startScreens(miniApps);
 openFromHash(); // after the router: a #help launch opens over the Home it shows
 
-document.querySelector("[data-menu-open]")?.addEventListener("click", () => {
-  menu?.showModal();
-  relocateToasts(); // a visible toast (e.g. the update offer) moves into the menu, not under it
-});
+document.querySelector("[data-menu-open]")?.addEventListener("click", showMenu);
 document.querySelector("[data-menu-close]")?.addEventListener("click", () => { menu?.close(); });
 // Light dismiss: a tap outside the menu closes it.
 menu?.addEventListener("click", (e) => {

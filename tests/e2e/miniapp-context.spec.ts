@@ -40,6 +40,10 @@ async function pickSetting(page: Page, name: "lang" | "theme", value: string): P
   await expect(settings.locator(`#${name}-${value}`)).toBeChecked();
   await page.keyboard.press("Escape");
   await expect(settings).toHaveCount(0);
+  // Closing a dialog opened from the menu returns to the menu (DECISIONS 2026-11-23); leave it too.
+  await expect(page.locator("dialog[data-menu]")).toHaveAttribute("open", "");
+  await page.keyboard.press("Escape");
+  await expect(page.locator("dialog[data-menu]")).not.toHaveAttribute("open", "");
 }
 
 test("language and theme changes reach the mini-app; after unmount nothing fires and the slot is gone", async ({ page }) => {

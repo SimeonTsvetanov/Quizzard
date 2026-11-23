@@ -27,6 +27,7 @@ export const bg: Messages = {
     faq: "Често задавани въпроси",
     menu: {
       open: "Отвори менюто",
+      backToMenu: "Назад към менюто",
       title: "Меню",
       use: "Използване",
       app: "Приложение",

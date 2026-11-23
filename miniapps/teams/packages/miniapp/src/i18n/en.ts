@@ -26,7 +26,7 @@ export const en = {
   regenerate: "Shuffle again",
   startOver: "Clear and start over",
   startOverTitle: "Clear the names and teams?",
-  startOverMessage: "The list and the teams will be removed from this device. You will start with an empty list.",
+  startOverMessage: "The list of names will be removed from this device and the teams on screen will be gone. You will start with an empty list.",
   startOverConfirm: "Clear",
   copy: "Copy",
   share: "Share",

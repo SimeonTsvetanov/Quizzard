@@ -19,7 +19,7 @@ export const HOME_JS_BUDGET_KB = 60;
  * Lazy JS budget per mini-app in KB gzip: all its chunks together (body, lazy parts, Help). TeamSync
  * 1.0.3 is 35 KB, most of it zod (its core validates input); SPEC §7 caps GG Counter at 125 KB.
  */
-export const MINIAPP_JS_BUDGETS_KB: Readonly<Record<string, number>> = { teams: 40 };
+export const MINIAPP_JS_BUDGETS_KB: Readonly<Record<string, number>> = { teams: 40, sheet: 10 };
 
 /**
  * First-open JS budget per mini-app in KB gzip: its main chunk and every chunk that chunk imports

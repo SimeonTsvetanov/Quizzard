@@ -4,6 +4,15 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-11-23
+### Added
+- Help, Settings, About and the other windows opened from the menu have a Back arrow to the menu, and
+  closing them returns to the open menu instead of the screen under it.
+- A user guide: how to make teams, keep score, use the answer sheet, install the app and back up your
+  data, with pictures in the light and the dark theme.
+### Changed
+- Teams: its Help no longer describes things only the separate TeamSync site has.
+
 ## [0.8.0] - 2026-11-23
 ### Added
 - Long-press the installed app's icon to open Teams, Scores or Answer sheet directly.

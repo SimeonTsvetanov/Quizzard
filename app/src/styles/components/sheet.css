@@ -81,7 +81,17 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: var(--space-1);
     padding: var(--space-3) var(--space-3) var(--space-3) var(--space-5);
+
+    /* Opened from the menu: the Back arrow comes first, so the title needs less room before it. */
+    &:has(.sheet-back) {
+      padding-inline-start: var(--space-2);
+
+      & h2 {
+        flex: 1;
+      }
+    }
     background: var(--color-surface-raised);
     -webkit-user-select: none;
     user-select: none;

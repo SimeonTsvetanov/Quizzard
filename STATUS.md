@@ -1,6 +1,6 @@
 # STATUS — Quizzard
 
-**Updated:** 2026-11-23 · **Phase:** 3 Build — v0.8.0: Teams, Scores, Answer sheet; SEO layer (T-20), shortcuts (T-21), security + legal + PWA audits applied live in this repo with their own data; menus filled; next T-17…T-25
+**Updated:** 2026-11-23 · **Phase:** 3 Build — v0.9.0: Teams, Scores, Answer sheet; user docs + README (T-24), SEO (T-20), shortcuts (T-21), audits applied; back-to-menu live in this repo with their own data; menus filled; next T-17…T-25
 
 ## Done
 - Old code in branch `legacy-2025`. Spec and plan approved by Moni (2026-11-22). Brand in `brand/` (logo A, palette C Emerald).

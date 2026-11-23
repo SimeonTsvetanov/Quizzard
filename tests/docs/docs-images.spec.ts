@@ -49,7 +49,7 @@ for (const shot of DOCS_SHOTS) {
       await expect(page.getByRole("heading", { level: 1 })).toBeVisible(); // explicit ready signal, never networkidle
       await shot.setUp(page);
       await page.mouse.move(-1, -1); // no hover state in the picture
-      const options = { path: `docs/images/${shot.page}/${shot.name}-${colorScheme}.png`, animations: "disabled", mask: shot.mask?.(page) ?? [], maskColor: "#8E8E93", style: shot.showToasts ? "" : HIDE_TOASTS } as const;
+      const options = { path: `docs/images/${shot.page === "" ? "" : `${shot.page}/`}${shot.name}-${colorScheme}.png`, animations: "disabled", mask: shot.mask?.(page) ?? [], maskColor: "#8E8E93", style: shot.showToasts ? "" : HIDE_TOASTS } as const;
       await (shot.crop ? shot.crop(page).screenshot(options) : page.screenshot(options));
       await context.close();
     });

@@ -25,6 +25,7 @@ export const en = {
     faq: "FAQ",
     menu: {
       open: "Open menu",
+      backToMenu: "Back to menu",
       title: "Menu",
       use: "Use",
       app: "App",

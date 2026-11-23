@@ -118,3 +118,53 @@ test("Report a problem does not mention an email it never asks for", async ({ pa
   await expect(report).not.toContainText(/email/i);
   await expect(report.locator('input[type="email"]')).toHaveCount(0);
 });
+
+// Moni 2026-11-23: a dialog opened from the menu needs a way back to the menu, and closing it
+// must leave the menu open instead of dropping two steps back to the screen.
+test("a dialog opened from the menu has Back to menu; Back, ✕ and Escape all return to the open menu", async ({ page }) => {
+  await page.goto("./#/teams");
+  const menu = page.locator("dialog[data-menu]");
+  await page.locator("[data-menu-open]").click();
+  await page.locator('[data-menu] [data-action="help"]').click();
+  const help = page.locator('dialog[data-dialog="help"][open]');
+  await expect(help).toBeVisible();
+  await expect(menu).not.toHaveAttribute("open", "");
+  await help.getByRole("button", { name: "Back to menu" }).click();
+  await expect(help).toHaveCount(0);
+  await expect(menu).toHaveAttribute("open", "");
+  await expect(page.locator('[data-menu] [data-action="help"]')).toBeFocused();
+
+  await page.locator('[data-menu] [data-action="about"]').click();
+  const about = page.locator('dialog[data-dialog="about"][open]');
+  await about.getByRole("button", { name: "Close" }).click();
+  await expect(menu).toHaveAttribute("open", "");
+
+  await page.locator('[data-menu] [data-action="whats-new"]').click();
+  await expect(page.locator('dialog[data-dialog="whats-new"][open]')).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.locator('dialog[data-dialog="whats-new"]')).toHaveCount(0);
+  await expect(menu).toHaveAttribute("open", "");
+  // Leaving the menu itself goes back to the tool (Escape: the desktop menu has no Close button).
+  await page.keyboard.press("Escape");
+  await expect(menu).not.toHaveAttribute("open", "");
+  await expect(page.locator('[data-miniapp="teams"]')).toBeVisible();
+});
+
+test("Settings opened from the menu keeps its way back after it redraws itself (language change)", async ({ page }) => {
+  await page.goto("./");
+  await page.locator("[data-menu-open]").click();
+  await page.locator('[data-menu] [data-action="settings"]').click();
+  await settings(page).locator('label[for="lang-bg"]').click();
+  await expect(settings(page).locator("h2")).toHaveText("Настройки");
+  await settings(page).getByRole("button", { name: "Назад към менюто" }).click();
+  await expect(page.locator("dialog[data-menu]")).toHaveAttribute("open", "");
+});
+
+test("a dialog opened by a link (not from the menu) has no Back and closes to the screen", async ({ page }) => {
+  await page.goto("./#help");
+  const help = page.locator('dialog[data-dialog="help"][open]');
+  await expect(help).toBeVisible();
+  await expect(help.getByRole("button", { name: "Back to menu" })).toHaveCount(0);
+  await help.getByRole("button", { name: "Close" }).click();
+  await expect(page.locator("dialog[data-menu]")).not.toHaveAttribute("open", "");
+});

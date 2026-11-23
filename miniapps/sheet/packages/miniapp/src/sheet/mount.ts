@@ -69,6 +69,8 @@ function onInput(sheet: Sheet, field: HTMLInputElement): void {
     const target = questionOf(sheet, field);
     if (target === null) return;
     target.question.text = field.value.slice(0, LIMITS.answer);
+    changed(sheet); // typing an answer changes no other row: nothing to relabel (performance audit 2026-11-23)
+    return;
   } else if (field.matches("[data-round-name]")) round.name = field.value.trim().slice(0, LIMITS.name);
   else if (field.matches("[data-bonus]")) {
     const value = field.value.trim() === "" ? 0 : parsePoints(field.value);
