@@ -152,6 +152,14 @@
     }
   }
 
+  /* Phones and the installed app: the menu button sits at the top right beside the greeting (layout.css), so the
+     greeting keeps clear of it. */
+  @media (width <= 600px), (display-mode: standalone) {
+    .launcher-hero {
+      padding-inline-end: calc(var(--tap-target) + var(--space-1));
+    }
+  }
+
   @media (width < 400px) {
     .launcher-hero {
       gap: var(--space-3);
@@ -484,7 +492,6 @@
       transform: translateY(calc(-1 * var(--space-2))) rotate(-3deg);
     }
   }
-
 }
 
 /* || Screen change: a Home tile grows into its tool, the tool shrinks back into its tile

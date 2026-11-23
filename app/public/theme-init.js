@@ -23,4 +23,8 @@
   } catch (e) {
     /* storage blocked: no splash */
   }
+  // A deep link into a tool (#/teams…): mark it before the first paint, so Home's header layout (no bar on phones)
+  // and the tool's colour are right from the start; router/screen.ts keeps data-tool up to date afterwards.
+  var tool = /^#\/([a-z0-9-]+)/.exec(location.hash);
+  if (tool) document.documentElement.setAttribute("data-tool", tool[1]);
 })();

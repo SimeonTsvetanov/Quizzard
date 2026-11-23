@@ -4,6 +4,16 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.15.1] - 2026-11-23
+### Changed
+- On phones and in the installed app the home screen has no top bar: just the menu button, beside the wizard and
+  the greeting. Inside a tool the bar with Back stays.
+- The name QUIZZARD sits at the bottom of the home screen there.
+### Fixed
+- The opening animation: the name no longer grows past its size and then snaps small — it flies to its place
+  at the size it keeps.
+- Switching screens very quickly no longer shows "Something went wrong".
+
 ## [0.15.0] - 2026-11-23
 ### Added
 - A new opening: the wizard and the name QUIZZARD appear, then the wizard flies into the header and the name

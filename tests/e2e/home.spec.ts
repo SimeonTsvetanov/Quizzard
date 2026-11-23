@@ -321,7 +321,9 @@ test("opening a tool and going back works the same with reduced motion (no scree
   expect(await page.evaluate(() => document.getAnimations().length)).toBe(0); // also the endless ones (lights, stars, wizard) are off
 });
 
-test("the wordmark arrives again each time Home comes back on screen; it is decoration, not content", async ({ page }) => {
+test("the wordmark arrives again each time Home comes back on screen; it is decoration, not content", async ({
+  page,
+}) => {
   await page.goto("./");
   const mark = page.locator("[data-wordmark]").filter({ visible: true });
   await expect(mark).toHaveCount(1);
@@ -334,4 +336,26 @@ test("the wordmark arrives again each time Home comes back on screen; it is deco
   await expect(page.locator('[data-miniapp="alpha"] [data-probe]')).toBeVisible();
   await back(page).click();
   await expect(mark).toHaveAttribute("data-play", "");
+});
+
+test("phones: Home has no header bar — only the menu button, beside the greeting and clear of it; a tool keeps its bar", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 360, height: 740 });
+  await page.goto("./");
+  await expect(cards(page)).toHaveCount(12);
+  await expect(page.locator(".brand")).toBeHidden();
+  const menu = page.locator("[data-menu-open]");
+  await expect(menu).toBeVisible();
+  const header = await page
+    .locator(".app-header")
+    .evaluate((element) => getComputedStyle(element).backgroundColor);
+  expect(header).toBe("rgba(0, 0, 0, 0)");
+  const menuBox = await menu.boundingBox();
+  const titleBox = await page.locator(".launcher-title").boundingBox();
+  expect((titleBox?.x ?? 0) + (titleBox?.width ?? 0)).toBeLessThanOrEqual(menuBox?.x ?? 0);
+  await card(page, "alpha").click();
+  await expect(page.locator('[data-miniapp="alpha"] [data-probe]')).toBeVisible();
+  await expect(page.locator(".brand")).toBeVisible();
+  await expect(back(page)).toBeVisible();
 });

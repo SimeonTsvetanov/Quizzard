@@ -24,7 +24,9 @@ export function playWordmark(): void {
 
 /** Stops the wordmark's animations where they are (before the screen changes: nothing runs under the morph). */
 export function restWordmark(): void {
-  for (const mark of document.querySelectorAll<HTMLElement>("[data-wordmark]")) mark.removeAttribute("data-play");
+  for (const mark of document.querySelectorAll<HTMLElement>("[data-wordmark]")) {
+    mark.removeAttribute("data-play");
+  }
 }
 
 /** The transform that moves and scales `from` onto `to` (both in viewport coordinates). */
@@ -35,11 +37,12 @@ function onto(from: DOMRect, to: DOMRect): string {
   return `translate(${String(x)}px, ${String(y)}px) scale(${String(scale)})`;
 }
 
-/** The wordmark on the page that is displayed and on screen, if any. */
-function visibleWordmark(): HTMLElement | null {
-  for (const mark of document.querySelectorAll<HTMLElement>("[data-wordmark]")) {
-    const box = mark.getBoundingClientRect();
-    if (box.width > 0 && box.top < window.innerHeight && box.bottom > 0) return mark;
+/** The first of these elements that is displayed (it has a box), if any. */
+function displayed(selectors: readonly string[]): HTMLElement | null {
+  for (const selector of selectors) {
+    for (const element of document.querySelectorAll<HTMLElement>(selector)) {
+      if (element.getBoundingClientRect().width > 0) return element;
+    }
   }
   return null;
 }
@@ -65,8 +68,10 @@ function leave(splash: HTMLElement, end: () => void): void {
   const logo = splash.querySelector<HTMLElement>("img");
   const word = splash.querySelector<HTMLElement>("[data-splash-word]");
   const tagline = splash.querySelector<HTMLElement>(".splash-tagline");
-  const headerLogo = document.querySelector<HTMLElement>(".brand img");
-  const mark = visibleWordmark();
+  // The header's logo; on Home on phones there is no bar, so the big wizard beside the greeting.
+  const headerLogo = displayed([".brand img", ".launcher-wizard"]);
+  // Under the tiles or in the footer — also below the fold: then it falls out of view towards it.
+  const mark = displayed(["[data-wordmark]"]);
   splash.style.animation = "none"; // the stylesheet's fade would take the pieces with it
   // The places stay empty until the pieces land, so nothing is seen twice.
   const places = [headerLogo, mark].filter((place) => place !== null);
@@ -114,11 +119,12 @@ export function startSplash(): void {
     !matchMedia("(prefers-reduced-motion: reduce)").matches &&
     performance.now() < TOO_LATE_MS &&
     document.visibilityState === "visible";
-  if (canFly)
-    {setTimeout(
+  if (canFly) {
+    setTimeout(
       () => {
         if (!hasEnded) leave(splash, end);
       },
       Math.max(0, HOLD_MS - performance.now()),
-    );}
+    );
+  }
 }

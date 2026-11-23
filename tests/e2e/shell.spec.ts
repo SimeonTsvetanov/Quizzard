@@ -152,8 +152,9 @@ test.describe("toasts and sheets", () => {
     await page.addInitScript(() => {
       delete (Navigator.prototype as Partial<Navigator>).share;
     }); // the fallback sheet
-    if (browserName === "chromium")
-      {await context.grantPermissions(["clipboard-read", "clipboard-write"]);}
+    if (browserName === "chromium") {
+      await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+    }
     await page.goto("./");
     await page.click("[data-menu-open]");
     await page.locator('dialog[data-menu] [data-action="share"]').click();
@@ -353,7 +354,9 @@ test("custom 404 page shows the requested path", async ({ page }) => {
   await expect(page.locator("[data-ep-path]")).toContainText("/");
 });
 
-test("launch splash shows once per session, then hands the wizard and the wordmark to the page", async ({ page }) => {
+test("launch splash shows once per session, then hands the wizard and the wordmark to the page", async ({
+  page,
+}) => {
   await page.addInitScript(() => {
     Object.defineProperty(navigator, "webdriver", { get: () => false });
   });
@@ -361,7 +364,10 @@ test("launch splash shows once per session, then hands the wizard and the wordma
   await expect(page.locator(".splash")).toBeVisible();
   await expect(page.locator(".splash")).toBeHidden({ timeout: 4000 });
   // The splash hands its wizard to the header and its wordmark to the page: both are back on show when it ends.
-  await expect(page.locator(".brand img")).toBeVisible();
+  // The wizard lands in the header, or beside the greeting where Home has no bar (phones, the installed app).
+  await expect(
+    page.locator(".brand img, .launcher-wizard").filter({ visible: true }).first(),
+  ).toBeVisible();
   await expect(page.locator("[data-wordmark]").filter({ visible: true })).toHaveCount(1);
   await page.reload();
   await expect(page.locator("html")).not.toHaveAttribute("data-splash", "");
@@ -376,8 +382,9 @@ test("a note goes away on a tap anywhere else, and by itself within a few second
   await page.addInitScript(() => {
     delete (Navigator.prototype as Partial<Navigator>).share;
   });
-  if (browserName === "chromium")
-    {await context.grantPermissions(["clipboard-read", "clipboard-write"]);}
+  if (browserName === "chromium") {
+    await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  }
   await page.goto("./");
   const copyFromMenu = async (): Promise<void> => {
     await page.click("[data-menu-open]");

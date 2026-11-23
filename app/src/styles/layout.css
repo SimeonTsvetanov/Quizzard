@@ -27,7 +27,8 @@
     align-items: center;
     justify-content: space-between;
     gap: var(--space-3);
-    padding: calc(var(--space-2) + var(--safe-top)) calc(var(--space-4) + var(--safe-right)) var(--space-2) calc(var(--space-4) + var(--safe-left));
+    padding: calc(var(--space-2) + var(--safe-top)) calc(var(--space-4) + var(--safe-right))
+      var(--space-2) calc(var(--space-4) + var(--safe-left));
     min-height: calc(var(--header-height) + var(--safe-top));
     background: var(--header-bg);
     -webkit-backdrop-filter: var(--header-blur);
@@ -42,6 +43,37 @@
 
     @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
       background: var(--color-bg);
+    }
+  }
+
+  /* Home on phones and in the installed app (Moni 2026-11-23): no bar. The menu button sits on its own at the top
+     right, beside the big wizard and greeting, and scrolls away with the page; the small logo and name are not
+     shown (the greeting is the brand there). Inside a tool the bar stays: it carries Back and the tool's buttons. */
+  @media (width <= 600px), (display-mode: standalone) {
+    :root:not([data-tool]) .app-header {
+      position: absolute;
+      inset-inline: 0;
+      top: 0;
+      background: none;
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+      box-shadow: none;
+      /* The empty band must not catch taps meant for the page under it; the buttons take them again. */
+      pointer-events: none;
+
+      & .brand {
+        display: none;
+      }
+
+      & .header-actions {
+        margin-inline-start: auto;
+        pointer-events: auto;
+      }
+    }
+
+    :root:not([data-tool]) .main {
+      /* The header no longer pushes the page down: the safe area is kept here instead. */
+      padding-block-start: calc(var(--space-4) + var(--safe-top));
     }
   }
 
