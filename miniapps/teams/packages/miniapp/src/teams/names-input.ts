@@ -25,7 +25,7 @@ export function flushPendingSave(screen: TeamsScreen): void {
 }
 
 /**
- * Shows `message` with Undo for ≥ 10 s (the host's action toasts last that long); Undo restores
+ * Shows `message` with Undo for a few seconds (as long as the host's action toasts last); Undo restores
  * and confirms (forge-design ui-patterns §4: reversible → Undo, not a confirmation).
  */
 function offerUndo(screen: TeamsScreen, message: string, undo: () => void): void {

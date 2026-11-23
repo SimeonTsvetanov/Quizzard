@@ -52,7 +52,7 @@ export function maybeOfferInstall(): void {
   if (isInstalled() || Date.now() - offered < 30 * DAY || window.self !== window.top) return;
   if (!deferred && !isIOS()) return; // nothing the user could do right now
   prefs.set("install-dismissed-at", Date.now());
-  showToast({ message: t("shell.install.offer", { name: app.name }), duration: 10_000, action: { label: t("shell.install.action"), run: openInstall } });
+  showToast({ message: t("shell.install.offer", { name: app.name }), action: { label: t("shell.install.action"), run: openInstall } });
 }
 
 let hasSavedSomething = false;

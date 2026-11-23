@@ -24,7 +24,7 @@ export interface ToastOptions {
    * arrived): while a toast with an action is showing, this one waits for it to end.
    */
   readonly background?: boolean;
-  /** ms; default 5000 — toasts with an action last at least ACTION_MIN_MS (WCAG 2.2.1, HIG). */
+  /** ms; default PLAIN_MS — toasts with an action last at least ACTION_MIN_MS. */
   readonly duration?: number;
 }
 
@@ -37,9 +37,20 @@ interface LiveToast {
   readonly holdsAction: boolean;
   /** A pinned toast (the update offer): it moves into an opening dialog, it is not dismissed by it. */
   readonly isPinned: boolean;
+  /** When it appeared (ms, `performance.now()`), for the tap grace. */
+  readonly shownAt: number;
 }
 
-const ACTION_MIN_MS = 10_000;
+/**
+ * How long a note stays (Moni 2026-11-23: "it stays a long time and is in the way"): long enough to
+ * read a few words, and it also goes at the next tap anywhere else. While hovered or focused it
+ * waits (WCAG 2.2.1), so nobody loses it while reaching for it.
+ */
+const PLAIN_MS = 2500;
+/** A note with an action (Undo) stays a little longer: there is something to reach for. */
+const ACTION_MIN_MS = 5000;
+/** A tap this soon after a note appeared does not dismiss it: it is usually the end of the gesture that caused it. */
+const TAP_GRACE_MS = 500;
 let pinnedToast: ToastOptions | null = null;
 /** The last `background` toast that arrived while an action toast was showing; shown when that one ends. */
 let waitingToast: ToastOptions | null = null;
@@ -70,6 +81,14 @@ function watchDialogs(): void {
   // A closing dialog (sheet, alert, menu) takes its region with it: bring the toast back.
   // `close` does not bubble, so listen in the capture phase.
   document.addEventListener("close", () => { relocateToasts(); }, true);
+  // A tap anywhere but on the note sends it away, as in other apps; a note that waits for an answer
+  // (the update offer, an error that stays) is not time-boxed and stays.
+  document.addEventListener("pointerdown", (event) => {
+    if (!live?.timer || performance.now() - live.shownAt < TAP_GRACE_MS) return;
+    if (event.composedPath().includes(live.toast)) return; // on the note itself: its button, or to hold it
+    dismissLive();
+    showNext();
+  }, true);
   const outlet = document.querySelector("[data-outlet]");
   if (outlet) watchMiniAppModals(outlet, relocateToasts);
 }
@@ -123,7 +142,7 @@ function dismissLive(): void {
 
 function render(region: HTMLElement, options: ToastOptions): void {
   const { message, action, persistent = false, pinned = false } = options;
-  const duration = action ? Math.max(options.duration ?? ACTION_MIN_MS, ACTION_MIN_MS) : (options.duration ?? 5000);
+  const duration = action ? Math.max(options.duration ?? ACTION_MIN_MS, ACTION_MIN_MS) : (options.duration ?? PLAIN_MS);
   dismissLive(); // one at a time: the old toast's timer stops, and its focus goes home first
   watchDialogs();
   const trigger = document.activeElement; // focus returns here if the toast goes while focused
@@ -143,7 +162,7 @@ function render(region: HTMLElement, options: ToastOptions): void {
   region.append(toast);
   syncIslandFocus(region);
   const timer = persistent || pinned ? null : pausableTimer(duration, () => { dismissLive(); showNext(); });
-  live = { toast, trigger, timer, holdsAction: action !== undefined && !pinned, isPinned: pinned };
+  live = { toast, trigger, timer, holdsAction: action !== undefined && !pinned, isPinned: pinned, shownAt: performance.now() };
   if (!timer) return;
   // Time-boxed content waits while the person is on it (WCAG 2.2.1, HIG): hover or focus pauses.
   let isHovered = false;
@@ -207,7 +226,7 @@ export function showToast(options: ToastOptions): void {
 
 /**
  * Undo instead of "Are you sure?" for small, reversible actions (remove one item, clear a field):
- * do the action at once, then offer Undo for ≥ 10 s, paused while hovered/focused (design →
+ * do the action at once, then offer Undo for a few seconds (until the next tap elsewhere), paused while hovered/focused (design →
  * ui-patterns §4, §6). Bulk or irreversible actions still use confirmAction().
  */
 export function showUndo(message: string, undo: () => void, duration = ACTION_MIN_MS): void {

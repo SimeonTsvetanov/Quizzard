@@ -61,7 +61,8 @@ const QUIZZARD: HostUi = {
   copyWithoutShareSheet: async (page) => {
     const sheet = page.locator('dialog[data-dialog="share"]');
     await sheet.getByRole("button", { name: "Copy" }).click();
-    await sheet.getByRole("button", { name: "Close" }).click();
+    // Closed with the keyboard: a tap anywhere else dismisses the note the test goes on to read (Quizzard 0.11.0).
+    await page.keyboard.press("Escape");
     await expect(sheet).toBeHidden();
   },
   savedLanguage: (lang) => ({ "quizzard:v1:lang": JSON.stringify(lang) }),

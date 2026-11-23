@@ -118,8 +118,9 @@ test.describe("toasts and sheets", () => {
       const r = el.getBoundingClientRect();
       return el.closest('[role="status"]')?.contains(document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2)) ?? false;
     })).toBe(true);
-    // Closing the sheet must not take the toast with it: it moves back to the page region.
-    await sheet.getByRole("button", { name: "Close", exact: true }).click();
+    // Closing the sheet must not take the toast with it: it moves back to the page region. Closed with
+    // the keyboard — a tap anywhere else dismisses the note (0.11.0).
+    await page.keyboard.press("Escape");
     await expect(page.locator("body > [data-toasts]").getByText("Copied ✓")).toBeVisible();
   });
 });
@@ -246,4 +247,27 @@ test("launch splash shows the tagline once per session, then the tool", async ({
   await expect(page.locator(".splash")).toBeHidden({ timeout: 4000 });
   await page.reload();
   await expect(page.locator("html")).not.toHaveAttribute("data-splash", "");
+});
+
+// Moni 2026-11-23: a note stayed long and was in the way.
+test("a note goes away on a tap anywhere else, and by itself within a few seconds", async ({ page, context, browserName }) => {
+  await page.addInitScript(() => { delete (Navigator.prototype as Partial<Navigator>).share; });
+  if (browserName === "chromium") await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  await page.goto("./");
+  const copyFromMenu = async (): Promise<void> => {
+    await page.click("[data-menu-open]");
+    await page.locator('dialog[data-menu] [data-action="share"]').click();
+    await page.locator('dialog[data-dialog="share"][open]').getByRole("button", { name: "Copy" }).click();
+    await page.keyboard.press("Escape"); // the keyboard does not count as a tap elsewhere
+  };
+  const note = page.locator("body > [data-toasts]").getByText("Copied ✓");
+  await copyFromMenu();
+  await expect(note).toBeVisible();
+  await page.waitForTimeout(600); // past the short grace that ignores the end of the gesture that caused it
+  await page.locator("h1, [data-home-heading]").first().click({ force: true });
+  await expect(note).toHaveCount(0);
+  // Left alone, it is gone well before the old five seconds.
+  await copyFromMenu();
+  await expect(note).toBeVisible();
+  await expect(note).toHaveCount(0, { timeout: 4000 });
 });

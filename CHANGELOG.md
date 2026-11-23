@@ -4,6 +4,12 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-11-23
+### Changed
+- The small notes ("Copied ✓", "Round 2 deleted · Undo") no longer linger: a plain note goes after about
+  2.5 seconds, one with Undo after 5, and either goes at once when you tap anywhere else.
+- Updated the libraries the tools are built with (React, Radix, i18next, Lucide icons).
+
 ## [0.10.0] - 2026-11-23
 ### Added
 - Answer sheet: remove a line you added — tap the red minus next to "Add an answer", then the minus on
