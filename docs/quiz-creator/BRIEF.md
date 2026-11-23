@@ -1,8 +1,8 @@
 # Quiz creator — brief (intake)
 
-**Status:** intake, 2026-11-23. Moni's requirements as he described them, the first technical direction and the open
-questions. Next: Moni sends the HTML quiz a friend made (the reference for the played quiz) → I read it in full →
-`SPEC.md` for this mini-app → Moni approves → `PLAN.md` → build. Nothing is built before the SPEC is approved.
+**Status:** intake, 2026-11-23. Moni's requirements as he described them, what the reference quiz does (§5), the first
+technical direction and the open questions. Next: Moni answers §4 → `SPEC.md` for this mini-app → Moni approves →
+`PLAN.md` → build. Nothing is built before the SPEC is approved.
 
 ## 1. What Moni asked for (his words, structured)
 
@@ -76,15 +76,52 @@ questions. Next: Moni sends the HTML quiz a friend made (the reference for the p
 - **Rights.** The author adds their own pictures and clips; Terms/Privacy get a line that the files stay on the
   device and are the author's responsibility (legal review in the SPEC).
 
+## 5. The reference quiz — "Quiz – Part 15" (read in full, 2026-11-23)
+
+The last quiz Moni's group played (8.5 MB, one HTML file; kept outside the repo: it is a friend's work with photos of
+unknown licence — only this summary is committed).
+
+**How it is built.** One page: ~900 lines of CSS (a themed look, here "vault"), a fixed stage, and one script with the
+quiz as data — `const DATA = { title, subtitle, tagline, theme, autoplay, farewell, tiebreak[], rounds: { r1…r9 } }`
+— plus `const IMG = { "file.jpg": "data:image/jpeg;base64,…" }` (30 JPEGs, 6 MB) and four fonts embedded (100 KB).
+No audio or video is embedded; nothing is loaded from the internet.
+
+**The data.** A round: `title`, `seconds`, `points` (a sentence, e.g. "+2 for right, −1 for wrong"), optional `rules[]`,
+`subtitle`, `theme`, `score_hint`. A question (`items[]`): `q`, `a` (the answer shown at the reveal), and by `kind`:
+none = open answer, `tf` true/false, `mc` with `options[]` (A–D), `xy` either/or; `image`; `expl`/`sub` (a line under
+the answer); `hints[]` for the audio-video round; `parts[]` for the golden pyramid (1 + 2 + 3 + 4 answers).
+
+**How it plays** (a host at a laptop, the page on a TV or projector):
+title → team names (4 by default) → for each round: rules → the questions one by one with the timer (a dial in the
+header; it runs by itself and moves to the next question when time is up, with a short "next" cue; the host can pause,
+go back, open the menu) → "answers" title → the answers revealed one by one ("Покажи") → **score entry** per team →
+**leaderboard** with bars → … → final **podium** → **tiebreak** (closest number) when teams are level. Keyboard:
+Space next, ← back, T timer, M menu, S board, F full screen. Sounds are generated in the page (no files). The game
+state (teams, scores, position) is saved in the browser, so a reload continues the game.
+
+**What it means for us.**
+- It answers O-1, O-2 and O-5: projector + host; every question has an answer text (also open ones) and an optional
+  explanation; the timer runs per question and the round plays itself.
+- Its rounds are wired by name in the code (`r1`/`r3` = text, `r2` = pictures, `r4` = audio-video …) — a new round
+  means editing the engine. Ours is driven by the data: each question kind and each round's answer screen come from the
+  registry (§2), so the order and kinds are free.
+- The export is the same idea — one page with the data and the files inside — so the player is our own template in
+  this repo, built and tested like the tools; the creator fills it in.
+- To carry over from it: the stage layout that scales with the projector, the timer dial, the auto-advance cue, the
+  answer reveal, score entry + leaderboard + podium + tiebreak, keyboard control, saved game state. Its themed looks,
+  the special rounds (wheel, cipher, vault, envelopes …) are later kinds in the registry.
+
 ## 4. Open questions for Moni
 
-- **O-1** The friend's HTML quiz: how is it played — one screen on a TV/projector, the host clicking through? Does
-  it show answers at the end of a round? (Answer by sending the file; I will read it fully.)
-- **O-2** Open answers: should the author type the correct answer (shown when answers are revealed), or is it only
-  for the teams to write?
+- **O-1** ~~How is it played?~~ Answered by the reference (§5): projector + host, answers after each round.
+- **O-2** ~~Answer text for open questions?~~ Yes — every question has an answer and an optional explanation (§5).
 - **O-3** Besides the playable HTML, do you want a file to **move or back up a quiz** and keep editing it on
   another device? (My recommendation: yes.)
 - **O-4** Multiple choice: one correct option, or can several be correct?
-- **O-5** Time: does the timer run per question automatically, or does the host start it?
+- **O-5** ~~Timer?~~ Per question, runs by itself, the round plays on its own; the host can pause (§5).
+- **O-7** The game part: should our player also do teams, score entry, leaderboard, podium and tiebreak like the
+  reference — or only questions and answers, with scores kept in Scores?
+- **O-8** Real audio and video files: the reference plays music outside the page (hints + pictures only). Do you
+  want the files inside the quiz, as you described — yes is my reading.
 - **O-6** Media limits you are happy with, e.g. pictures up to 10 MB each (compressed on import), audio/video up to
   50 MB each, the whole quiz up to 300 MB?
