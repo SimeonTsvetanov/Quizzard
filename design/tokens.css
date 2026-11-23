@@ -57,12 +57,10 @@
     --backdrop: oklch(0% 0 0 / 0.28); /* behind every modal (sheet, menu on phones, alert) */
     --backdrop-blur: blur(8px) saturate(120%); /* the page behind a modal is softly blurred (Moni 2026-11-06) */
     /* Glass (Quizzard 0.15.0, Moni 2026-11-23): see-through panels over the coloured glow of a screen. Always paired:
-       background var(--glass-surface) + box-shadow var(--glass-edge). --glass-blur (backdrop-filter) is for ONE floating surface with
-       nothing blurred behind it yet (the desktop menu) — never on repeated cards or panels and never stacked: it is costly. Text on glass
-       keeps the normal text colours: the surface is opaque enough for AA contrast over any glow. */
+       background var(--glass-surface) + box-shadow var(--glass-edge). No backdrop-filter of its own: the only blur on a screen is the modal backdrop
+       (modal.css), and a surface that covers the whole screen is solid, not glass. */
     --glass-surface: light-dark(oklch(100% 0 0 / 0.72), oklch(26% 0.004 286 / 0.66));
     --glass-surface-strong: light-dark(oklch(100% 0 0 / 0.86), oklch(26% 0.004 286 / 0.82)); /* dialogs, menus */
-    --glass-blur: blur(18px) saturate(160%);
     --glass-edge: inset 0 1px 0 light-dark(oklch(100% 0 0 / 0.7), oklch(100% 0 0 / 0.1)), inset 0 0 0 1px light-dark(oklch(100% 0 0 / 0.35), oklch(100% 0 0 / 0.06));
 
     /* ---------- Elevation (shadows, no borders) ---------- */

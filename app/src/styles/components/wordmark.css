@@ -92,17 +92,16 @@
     margin-block-end: var(--space-5);
   }
 
-  /* Molten letters: tall, low and blurred, they pull themselves into shape. */
+  /* Molten letters: tall, low and leaning, they pull themselves into shape. Opacity and transform only — an
+     animated blur filter took seconds per frame where there is no GPU (WebKit on CI, 2026-11-23). */
   @keyframes wordmark-arrive {
     from {
       opacity: 0;
-      filter: blur(10px);
-      transform: translateY(0.5em) scaleY(1.9);
+      transform: translateY(0.55em) scaleY(2.2) skewX(-8deg);
     }
 
     60% {
       opacity: 1;
-      filter: blur(0);
     }
   }
 

@@ -27,8 +27,9 @@
     max-height: var(--sheet-max-height);
     margin: 0;
     border-radius: var(--sheet-radius);
-    /* Glass: the page shows through; the modal backdrop behind does the blurring (modal.css). */
-    background: var(--glass-surface-strong);
+    /* Solid on phones: the sheet covers the whole screen, and a see-through one would put the blurred page behind
+       every pixel of it (one frame a second without a GPU, measured on CI). Glass is for the desktop card below. */
+    background: var(--color-surface-raised);
     color: var(--color-text);
     box-shadow: var(--glass-edge), var(--shadow-3);
     overscroll-behavior: contain;
@@ -50,6 +51,8 @@
       --sheet-enter-opacity: 0;
       --sheet-enter-transform: translateY(var(--sheet-desktop-enter-y)) scale(0.97);
 
+      /* Glass: the page shows through; the modal backdrop behind does the blurring (modal.css). */
+      background: var(--glass-surface-strong);
       padding: 0;
       top: revert-layer;
       bottom: revert-layer;
