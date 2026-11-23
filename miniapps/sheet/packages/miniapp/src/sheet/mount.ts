@@ -9,7 +9,7 @@ import { icon } from "../dom/icons.ts";
 import { h } from "../dom/h.ts";
 import { createTranslator } from "../i18n/translate.ts";
 import { SAVE_KEY, saveNow, saveSoon, type Sheet } from "./state.ts";
-import { currentRound, labelRow, points, refresh, render, rowElement, showMark, showWorth } from "./view.ts";
+import { currentRound, labelRow, points, refresh, render, rowElement, showMark, showTabArrows, showWorth } from "./view.ts";
 
 /** A question an event is about. */
 interface QuestionTarget {
@@ -142,6 +142,7 @@ function focusTab(sheet: Sheet): void {
 /** Shows another round. */
 function openRound(sheet: Sheet, index: number, focusAnswer: boolean): void {
   if (sheet.saveTimer !== undefined) saveNow(sheet);
+  sheet.isRemoving = false; // removing is a short errand in one round, not a mode that follows you
   sheet.open = Math.max(0, Math.min(index, sheet.game.rounds.length - 1));
   render(sheet);
   if (focusAnswer) answerOf(sheet.host.querySelector(".sheet-row"))?.focus({ preventScroll: true });
@@ -190,10 +191,40 @@ async function clearGame(sheet: Sheet): Promise<void> {
   undoable(sheet, sheet.t("cleared"), before, openBefore);
 }
 
+/** Removes one line ("Remove answers" is on); the last line of a round is emptied instead. Undo brings it back. */
+function removeLine(sheet: Sheet, button: Element): void {
+  const target = questionOf(sheet, button);
+  if (target === null) return;
+  const before = structuredClone(sheet.game);
+  target.round.questions.splice(target.index, 1);
+  if (target.round.questions.length === 0) addLine(target.round);
+  render(sheet);
+  saveNow(sheet);
+  // The focus stays in the list: the line that moved up, else the switch that ends removing.
+  const next = sheet.host.querySelectorAll<HTMLElement>("[data-remove-line]")[Math.min(target.index, target.round.questions.length - 1)];
+  (next ?? sheet.host.querySelector<HTMLElement>("[data-remove-toggle]"))?.focus({ preventScroll: true });
+  undoable(sheet, sheet.t("lineRemoved", { n: target.index + 1 }), before, sheet.open);
+}
+
+/** Scrolls the round tabs by most of what is visible, towards the hidden ones. */
+function scrollTabs(sheet: Sheet, direction: string | undefined): void {
+  const strip = sheet.host.querySelector<HTMLElement>("[data-tabs]");
+  if (strip === null) return;
+  const step = strip.clientWidth * 0.8 * (direction === "prev" ? -1 : 1);
+  strip.scrollBy({ left: step, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+}
+
 function onClick(sheet: Sheet, element: Element): void {
   const mark = element.closest<HTMLElement>("[data-mark-button]");
   const tab = element.closest<HTMLElement>("[data-tab]");
-  if (mark) onMark(sheet, mark);
+  const arrow = element.closest<HTMLElement>("[data-tabs-arrow]");
+  const removal = element.closest("[data-remove-line]");
+  if (arrow) scrollTabs(sheet, arrow.dataset["tabsArrow"]);
+  else if (removal) removeLine(sheet, removal);
+  else if (element.closest("[data-remove-toggle]")) {
+    sheet.isRemoving = !sheet.isRemoving;
+    refresh(sheet);
+  } else if (mark) onMark(sheet, mark);
   else if (tab) openRound(sheet, Number(tab.dataset["tab"]), false);
   else if (element.closest("[data-new-round]")) newRound(sheet);
   else if (element.closest("[data-add-line]")) {
@@ -222,6 +253,11 @@ function wire(sheet: Sheet): void {
     if (field instanceof HTMLInputElement && field.matches(".sheet-points")) onPointsDone(sheet, field);
   }, { signal });
   sheet.clearButton?.addEventListener("click", () => { void clearGame(sheet); }, { signal });
+  // The tab strip is redrawn with the screen, so its scrolling is caught here (scroll does not bubble).
+  host.addEventListener("scroll", (event) => {
+    if (event.target instanceof Element && event.target.matches("[data-tabs]")) showTabArrows(sheet);
+  }, { signal, capture: true, passive: true });
+  window.addEventListener("resize", () => { showTabArrows(sheet); }, { signal });
   // The last typing survives closing the tab or switching apps.
   const flush = (): void => { if (sheet.saveTimer !== undefined) saveNow(sheet); };
   window.addEventListener("pagehide", flush, { signal });
@@ -244,7 +280,7 @@ export function mountSheet(element: HTMLElement, context: MiniAppContext): Unmou
   context.slots.headerActions.append(clearButton);
   const sheet: Sheet = {
     host: element, context, signal: controller.signal, lang, t: createTranslator(lang),
-    game, open: game.rounds.length - 1, clearButton, saveTimer: undefined, hasWarned: false,
+    game, open: game.rounds.length - 1, isRemoving: false, clearButton, saveTimer: undefined, hasWarned: false,
   };
   render(sheet);
   wire(sheet);

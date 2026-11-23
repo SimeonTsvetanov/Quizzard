@@ -300,3 +300,61 @@ test("with the keyboard open (a short screen) “Add an answer” still adds a l
   await expect(rows(page)).toHaveCount(6);
   await expect(answer(rows(page).nth(5))).toBeInViewport({ ratio: 1 });
 });
+
+// Moni 2026-11-23: more rounds than fit must stay reachable — arrows at the ends of the strip, "+" always there.
+test("many rounds: the tabs scroll between two arrows and “+” is always on screen", async ({ page }) => {
+  await open(page);
+  const add = root(page).getByRole("button", { name: "New round" });
+  const previous = root(page).locator('[data-tabs-arrow="prev"]');
+  const next = root(page).locator('[data-tabs-arrow="next"]');
+  await expect(previous).toBeHidden();
+  await expect(next).toBeHidden(); // one round fits: no arrows
+  for (let count = 0; count < 24; count += 1) await add.click();
+  await expect(root(page).locator("[data-tab]")).toHaveCount(25);
+  await expect(add).toBeInViewport({ ratio: 1 });
+  await expect(tab(page, 25)).toBeInViewport({ ratio: 1 }); // the open round's tab is brought into view
+  await expect(previous).toBeVisible();
+  await expect(next).toBeHidden(); // at the end: nothing hidden after it
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
+  // Back to the start, a strip at a time.
+  for (let step = 0; step < 12 && (await previous.isVisible()); step += 1) {
+    await previous.click();
+    await page.waitForTimeout(350);
+  }
+  await expect(previous).toBeHidden();
+  await expect(next).toBeVisible();
+  await expect(tab(page, 1)).toBeInViewport({ ratio: 1 });
+  await next.click();
+  await expect(previous).toBeVisible();
+  await expect(add).toBeInViewport({ ratio: 1 });
+});
+
+// Moni 2026-11-23: a line that was added must be removable.
+test("“Remove answers” turns every line's marks into a remove button; a removed line comes back with Undo", async ({ page }) => {
+  await open(page);
+  await write(page, 0, "Paris", "right");
+  await write(page, 1, "1066", "wrong");
+  await write(page, 2, "The Nile", "right");
+  await expect(total(page)).toHaveText("2");
+  await round(page).getByRole("button", { name: "Remove answers" }).click();
+  await expect(rows(page).nth(0).getByRole("button", { name: "Right" })).toBeHidden();
+  await expect(addLine(page)).toBeHidden();
+  await round(page).getByRole("button", { name: "Remove answer 1", exact: true }).click();
+  await expect(rows(page)).toHaveCount(2);
+  await expect(answer(rows(page).nth(0))).toHaveValue("1066");
+  await expect(answer(rows(page).nth(0))).toHaveAccessibleName("Answer 1");
+  await expect(total(page)).toHaveText("1");
+  await expect.poll(async () => (await saved(page))?.rounds[0]?.questions.length).toBe(2);
+  await page.getByRole("button", { name: "Undo" }).click();
+  await expect(rows(page)).toHaveCount(3);
+  await expect(answer(rows(page).nth(0))).toHaveValue("Paris");
+  await expect(total(page)).toHaveText("2");
+  // Removing every line leaves one empty line to write on; "Done" brings the marks back.
+  for (let left = 3; left > 0; left -= 1) await round(page).getByRole("button", { name: "Remove answer 1", exact: true }).click();
+  await expect(rows(page)).toHaveCount(1);
+  await expect(answer(rows(page).nth(0))).toHaveValue("");
+  await round(page).getByRole("button", { name: "Done" }).click();
+  await expect(rows(page).nth(0).getByRole("button", { name: "Right" })).toBeVisible();
+  await expect(addLine(page)).toBeVisible();
+  await expect(total(page)).toHaveText("0");
+});

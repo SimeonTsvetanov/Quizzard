@@ -4,6 +4,16 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-11-23
+### Added
+- Answer sheet: remove a line you added — tap the red minus next to "Add an answer", then the minus on
+  the line. Undo brings it back.
+- Answer sheet: a game can have up to 1,000 rounds. When the round numbers no longer fit, swipe them
+  sideways or use the arrows at the ends; the plus for the next round is always in view.
+### Changed
+- Answer sheet: tidier layout — the round's result, "A right answer gives", every line's points and the
+  bonus sit under one another in one column, with the same spacing throughout.
+
 ## [0.9.0] - 2026-11-23
 ### Added
 - Help, Settings, About and the other windows opened from the menu have a Back arrow to the menu, and

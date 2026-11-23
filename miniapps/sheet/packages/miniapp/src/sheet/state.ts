@@ -19,6 +19,8 @@ export interface Sheet {
   game: Game;
   /** Index of the round on screen. */
   open: number;
+  /** "Remove answers" is on: every line shows a remove button instead of its marks and points. */
+  isRemoving: boolean;
   /** "Clear game" in the host's header; null until it is built. */
   clearButton: HTMLButtonElement | null;
   saveTimer: ReturnType<typeof setTimeout> | undefined;

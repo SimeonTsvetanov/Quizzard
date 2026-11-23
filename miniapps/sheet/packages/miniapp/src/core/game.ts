@@ -3,7 +3,7 @@
 
 /** Hard limits of one sheet; more than a quiz night ever needs, small enough to store and draw. */
 export const LIMITS = {
-  rounds: 40,
+  rounds: 1000,
   questions: 60,
   /** Characters of one answer. */
   answer: 120,

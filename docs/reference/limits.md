@@ -40,7 +40,7 @@ Other rules:
 
 | Limit | Value |
 |---|---|
-| Rounds in one game | 40 |
+| Rounds in one game | 1,000 |
 | Answers in one round | 60 |
 | Characters in an answer | 120 |
 | Characters in a round name | 40 |
@@ -51,7 +51,7 @@ Other rules:
 - A round starts at 1 point for each right answer. Change it in the **A right answer gives** field.
 - A line that has its own points shows a green edge. A line you enter `0` for is marked wrong.
 - A round always has at least one line, and a game always has at least one round.
-- At 40 rounds, Quizzard shows "A game can have up to 40 rounds."
+- At 1,000 rounds, Quizzard shows "A game can have up to 1000 rounds."
 - If your browser can't save the game, Quizzard says "This browser did not save the game. It stays on screen until you close the page."
 
 ## Import

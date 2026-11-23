@@ -24,6 +24,7 @@ export function labelRow(sheet: Sheet, row: HTMLElement, index: number): void {
   set(".sheet-answer", "aria-label", sheet.t("answerLabel", { n }));
   set(".sheet-marks", "aria-label", sheet.t("markGroup", { n }));
   set(".sheet-points", "aria-label", sheet.t("pointsLabel", { n }));
+  set(".sheet-remove", "aria-label", sheet.t("removeLine", { n }));
 }
 
 /** Shows a question's mark on its row. */
@@ -50,6 +51,13 @@ function markButton(sheet: Sheet, mark: "right" | "wrong"): HTMLButtonElement {
   return button;
 }
 
+/** The red "remove this line" button; shown only while "Remove answers" is on (sheet.css). */
+function removeButton(): HTMLButtonElement {
+  const button = h("button", { type: "button", class: "sheet-remove", "data-remove-line": "" });
+  button.append(icon("minus"));
+  return button;
+}
+
 /** Builds the row of one question. */
 export function rowElement(sheet: Sheet, round: Round, question: Question, index: number): HTMLLIElement {
   const answer = h("input", {
@@ -62,14 +70,15 @@ export function rowElement(sheet: Sheet, round: Round, question: Question, index
     h("span", { class: "sheet-number", "aria-hidden": "true" }),
     answer,
     h("div", { class: "sheet-marks", role: "group" }, markButton(sheet, "right"), markButton(sheet, "wrong")),
-    worth);
+    worth,
+    removeButton());
   labelRow(sheet, row, index);
   showMark(row, question.mark);
   showWorth(sheet, row, round, question);
   return row;
 }
 
-/** One tab per round (its number and its points) and "+" for a new round. */
+/** One tab per round (its number and its points); they scroll sideways between two arrows when they do not fit. */
 function tabs(sheet: Sheet): HTMLElement {
   const { t } = sheet;
   const strip = h("nav", { class: "sheet-tabs", "aria-label": t("roundsNav"), "data-tabs": "" });
@@ -79,10 +88,24 @@ function tabs(sheet: Sheet): HTMLElement {
       h("span", { class: "sheet-tab-number" }, h("span", { class: "visually-hidden" }, `${t("tabRound")} `), String(index + 1)),
       h("span", { class: "sheet-tab-points" }, h("span", { "data-tab-points": "" }), h("span", { class: "visually-hidden" }, ` ${t("tabPoints")}`))));
   });
-  const add = h("button", { type: "button", class: "sheet-tab sheet-tab--add", "data-new-round": "", "aria-label": t("newRound"), title: t("newRound") });
-  add.append(icon("plus"));
-  strip.append(add);
-  return strip;
+  // Pointer shortcuts only: every tab is reachable with Tab and by swiping, so the arrows stay out of the tab order.
+  const arrow = (direction: "prev" | "next"): HTMLButtonElement => {
+    const label = t(direction === "prev" ? "tabsPrev" : "tabsNext");
+    const button = h("button", { type: "button", class: `sheet-tabs-arrow sheet-tabs-arrow--${direction}`, "data-tabs-arrow": direction, tabindex: "-1", "aria-label": label, title: label, hidden: "" });
+    button.append(icon(direction === "prev" ? "left" : "right"));
+    return button;
+  };
+  return h("div", { class: "sheet-tabs-box" }, arrow("prev"), strip, arrow("next"));
+}
+
+/** Shows an arrow on each side where more tabs are hidden; none when all of them fit. */
+export function showTabArrows(sheet: Sheet): void {
+  const strip = sheet.host.querySelector<HTMLElement>("[data-tabs]");
+  if (strip === null) return;
+  const hiddenBefore = strip.scrollLeft > 1;
+  const hiddenAfter = strip.scrollLeft + strip.clientWidth < strip.scrollWidth - 1;
+  sheet.host.querySelector<HTMLElement>('[data-tabs-arrow="prev"]')?.toggleAttribute("hidden", !hiddenBefore);
+  sheet.host.querySelector<HTMLElement>('[data-tabs-arrow="next"]')?.toggleAttribute("hidden", !hiddenAfter);
 }
 
 /** The open round: head, what a right answer gives, the lines, "+", bonus, delete. */
@@ -102,6 +125,8 @@ function roundPanel(sheet: Sheet, round: Round, index: number): HTMLElement {
   bonus.value = round.bonus === 0 ? "" : points(sheet, round.bonus);
 
   const add = h("button", { type: "button", class: "sheet-add", "data-add-line": "" }, icon("plus"), h("span", {}, t("addLine")));
+  // iOS list editing: one switch turns every line's marks into a red remove button, "Done" turns it back.
+  const editing = h("button", { type: "button", class: "sheet-edit", "data-remove-toggle": "", "aria-pressed": "false" });
   const remove = h("button", { type: "button", class: "sheet-link sheet-link--danger", "data-round-delete": "" }, icon("trash"), h("span", {}, t("deleteRound")));
 
   return h("section", { class: "sheet-round", "data-round": String(index), "aria-labelledby": "sheet-round-title" },
@@ -115,7 +140,7 @@ function roundPanel(sheet: Sheet, round: Round, index: number): HTMLElement {
       each),
     h("div", { class: "sheet-scroll", "data-scroll": "" },
       h("ol", { class: "sheet-questions", "data-questions": "" }, ...round.questions.map((question, at) => rowElement(sheet, round, question, at))),
-      add,
+      h("div", { class: "sheet-line-actions" }, add, editing),
       h("div", { class: "sheet-bonus" },
         h("label", { for: "sheet-bonus", class: "sheet-bonus-label" }, t("bonus")),
         bonus,
@@ -152,9 +177,17 @@ export function refresh(sheet: Sheet): void {
   }
   const { right, judged } = roundCounts(round);
   const meta = host.querySelector("[data-round-meta]");
-  if (meta) meta.textContent = judged === 0 ? "" : t("roundRight", { right, judged });
+  if (meta) meta.textContent = judged === 0 ? t("answers") : t("roundRight", { right, judged });
   const add = host.querySelector<HTMLButtonElement>("[data-add-line]");
-  if (add) add.hidden = round.questions.length >= LIMITS.questions;
+  if (add) add.hidden = round.questions.length >= LIMITS.questions || sheet.isRemoving;
+  // "Remove answers" ↔ "Done": the same switch, named after what the next tap does.
+  host.querySelector("[data-questions]")?.toggleAttribute("data-removing", sheet.isRemoving);
+  const editing = host.querySelector<HTMLButtonElement>("[data-remove-toggle]");
+  if (editing) {
+    editing.setAttribute("aria-pressed", String(sheet.isRemoving));
+    editing.replaceChildren(...(sheet.isRemoving ? [t("removeDone")] : [icon("minus"), h("span", { class: "visually-hidden" }, t("removeLines"))]));
+    editing.title = sheet.isRemoving ? t("removeDone") : t("removeLines");
+  }
   if (sheet.clearButton) sheet.clearButton.hidden = isBlankGame(game);
 }
 
@@ -162,9 +195,13 @@ export function refresh(sheet: Sheet): void {
 export function render(sheet: Sheet): void {
   const { t } = sheet;
   const round = currentRound(sheet);
+  // "+" stays beside the strip, never inside it: it is always on screen, however many rounds there are.
+  const add = h("button", { type: "button", class: "sheet-tab sheet-tab--add", "data-new-round": "", "aria-label": t("newRound"), title: t("newRound") });
+  add.append(icon("plus"));
   sheet.host.replaceChildren(h("div", { class: "sheet-screen", "data-sheet": "" },
     h("div", { class: "sheet-top" },
       tabs(sheet),
+      add,
       h("div", { class: "sheet-total", "data-total-box": "", role: "group" },
         h("span", { class: "sheet-total-label" }, t("total")),
         h("output", { class: "sheet-total-value", "data-total": "" }))),
@@ -174,5 +211,6 @@ export function render(sheet: Sheet): void {
     sheet.clearButton.title = t("clearGame");
   }
   refresh(sheet);
-  sheet.host.querySelector('[data-tab][aria-current="true"]')?.scrollIntoView({ block: "nearest", inline: "nearest" });
+  sheet.host.querySelector('[data-tab][aria-current="true"]')?.scrollIntoView({ block: "nearest", inline: "center" });
+  showTabArrows(sheet);
 }

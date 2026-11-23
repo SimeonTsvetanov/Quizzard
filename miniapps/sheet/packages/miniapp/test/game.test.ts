@@ -164,10 +164,11 @@ describe("saving and loading", () => {
   });
 
   it("never returns more rounds or questions than the limits, whatever is stored", () => {
-    const many = { rounds: Array.from({ length: 80 }, () => ({ questions: Array.from({ length: 90 }, () => ({ text: "a", mark: "right", points: 1 })) })) };
-    const game = parseGame(many);
-    expect(game.rounds).toHaveLength(LIMITS.rounds);
-    for (const round of game.rounds) expect(round.questions).toHaveLength(LIMITS.questions);
+    const manyRounds = { rounds: Array.from({ length: LIMITS.rounds + 100 }, () => ({ questions: [{ text: "a", mark: "right", points: 1 }] })) };
+    expect(parseGame(manyRounds).rounds).toHaveLength(LIMITS.rounds);
+    expect(LIMITS.rounds).toBe(1000);
+    const manyLines = { rounds: [{ questions: Array.from({ length: 90 }, () => ({ text: "a", mark: "right", points: 1 })) }] };
+    expect(parseGame(manyLines).rounds[0]?.questions).toHaveLength(LIMITS.questions);
   });
 
   it("parseGame never throws and always gives at least one round", () => {

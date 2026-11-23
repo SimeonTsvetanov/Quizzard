@@ -16,7 +16,13 @@ The top bar shows one tab for each round, with its number and its points, and th
 3. Enter your team's answer on the first line.
 4. To add a line for the next question, select **Add an answer**. With a keyboard, you can use the Enter key on the last line instead.
 
-To remove a line you added by mistake, delete its text and use the Backspace key once more on the empty line. A round always keeps one line.
+To remove a line you added by mistake:
+
+1. Select the red minus button next to **Add an answer** (**Remove answers**). Every line shows a red minus button.
+2. Select the red minus button on the line. A message with **Undo** shows for a few seconds.
+3. Select **Done**.
+
+A round always keeps one line. With a keyboard, the Backspace key on an empty line removes it too.
 
 ## Mark the answers
 
@@ -39,6 +45,8 @@ You can write a decimal with a point or a comma.
 2. Write and mark the answers as before.
 
 To go back to an earlier round and fix an answer, a mark or the points, select its tab. The total follows at once.
+
+When a game has more rounds than fit in the top bar, swipe the tabs sideways or select the arrow at the end of the row. The plus button stays in view.
 
 ## Delete a round or clear the game
 
