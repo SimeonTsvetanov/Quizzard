@@ -6,11 +6,27 @@ import { restWordmark } from "./splash.ts";
  * Page-to-page navigation (app ↔ policy pages) uses CSS `@view-transition` in app.css/page.css.
  */
 export function withTransition(update: () => void): void {
-  if (matchMedia("(prefers-reduced-motion: reduce)").matches || !("startViewTransition" in document)) {
+  if (
+    matchMedia("(prefers-reduced-motion: reduce)").matches ||
+    !("startViewTransition" in document)
+  ) {
     update();
     return;
   }
-  document.startViewTransition(update);
+  settle(document.startViewTransition(update));
+}
+
+/**
+ * A transition the browser skips — a newer one started, the tab was hidden, the device was too slow to take the
+ * pictures in time — rejects its `ready` promise. That is how the API reports "no animation", not a failure: the
+ * screen has changed all the same. Left unhandled it reached the global handler and put the full-screen error
+ * over a working app (WebKit on CI, and any quick Home → tool → Home; DECISIONS 2026-11-23).
+ * `updateCallbackDone` is left alone on purpose: it rejects only when the update itself threw, a real error.
+ */
+function settle(transition: ViewTransition): ViewTransition {
+  transition.ready.catch(() => undefined);
+  transition.finished.catch(() => undefined);
+  return transition;
 }
 
 /** The one shared element of a screen change: a Home card and the tool it opens (styles/components/home.css). */
@@ -39,7 +55,10 @@ export interface MorphOptions {
  * @param options - the two elements and the change
  */
 export function morphScreens({ from, update, to }: MorphOptions): void {
-  const isAnimated = "startViewTransition" in document && !matchMedia("(prefers-reduced-motion: reduce)").matches && document.visibilityState === "visible";
+  const isAnimated =
+    "startViewTransition" in document &&
+    !matchMedia("(prefers-reduced-motion: reduce)").matches &&
+    document.visibilityState === "visible";
   if (!isAnimated) {
     void update();
     return;
@@ -61,18 +80,29 @@ export function morphScreens({ from, update, to }: MorphOptions): void {
     void change();
   };
   try {
-    const transition = document.startViewTransition(async () => {
-      // One element per name in each picture: the old one gives the name up before the new one takes it.
-      if (from) from.style.viewTransitionName = "";
-      await Promise.race([Promise.resolve(change()), new Promise((resolve) => { setTimeout(resolve, MOUNT_WAIT_MS); })]);
-      target = to();
-      if (target) target.style.viewTransitionName = MORPH_NAME;
-    });
+    const transition = settle(
+      document.startViewTransition(async () => {
+        // One element per name in each picture: the old one gives the name up before the new one takes it.
+        if (from) from.style.viewTransitionName = "";
+        await Promise.race([
+          Promise.resolve(change()),
+          new Promise((resolve) => {
+            setTimeout(resolve, MOUNT_WAIT_MS);
+          }),
+        ]);
+        target = to();
+        if (target) target.style.viewTransitionName = MORPH_NAME;
+      }),
+    );
     // A skipped transition (a second one started, the tab was hidden) rejects `finished`: nothing to report.
     transition.finished.then(clear, clear);
-    setTimeout(() => { if (!hasChanged) clear(); }, CALLBACK_WAIT_MS);
+    setTimeout(() => {
+      if (!hasChanged) clear();
+    }, CALLBACK_WAIT_MS);
     // A transition holds the page's rendering while it runs: one that has not ended by now is cut short.
-    setTimeout(() => { transition.skipTransition(); }, STUCK_MS);
+    setTimeout(() => {
+      transition.skipTransition();
+    }, STUCK_MS);
   } catch {
     clear(); // the API refused to start (an unsupported state): change the screen without the animation
   }

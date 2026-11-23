@@ -208,8 +208,9 @@ test("the mount element carries data-miniapp and has no transform, filter, conta
         other:
           style.perspective !== "none" || /transform|filter|perspective/.test(style.willChange),
       };
-      for (const [name, isSet] of Object.entries(checks))
-        {if (isSet) found.push(`${node.tagName.toLowerCase()}.${node.className}: ${name}`);}
+      for (const [name, isSet] of Object.entries(checks)) {
+        if (isSet) found.push(`${node.tagName.toLowerCase()}.${node.className}: ${name}`);
+      }
     }
     return found;
   });
@@ -327,4 +328,28 @@ test("the production build (app/dist) contains no probe; the e2e build (app/test
     );
   expect(withProbe("dist")).toEqual([]);
   expect(withProbe("test/dist").length).toBeGreaterThan(0);
+});
+
+test("screen changes that overtake each other never raise the error screen (a skipped transition is not an error)", async ({
+  page,
+}) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(String(error)));
+  await page.goto("./");
+  await expect(page.locator("[data-card]").first()).toBeVisible();
+  // Three changes within 60 ms: the browser skips the first two transitions and rejects their `ready` promises.
+  await page.evaluate(() => {
+    location.hash = "#/alpha";
+    setTimeout(() => {
+      location.hash = "#/gamma";
+    }, 30);
+    setTimeout(() => {
+      location.hash = "";
+    }, 60);
+  });
+  await expect(page.locator("[data-view=home]")).toBeVisible();
+  await expect(page.locator("[data-miniapp]")).toHaveCount(0);
+  await page.waitForTimeout(800); // a rejection would have reached the global handler by now
+  await expect(page.locator(".es--screen")).toHaveCount(0);
+  expect(errors).toEqual([]);
 });

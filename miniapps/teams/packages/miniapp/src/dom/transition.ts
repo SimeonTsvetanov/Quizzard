@@ -10,5 +10,6 @@ export function withTransition(update: () => void): void {
     update();
     return;
   }
-  document.startViewTransition(update);
+  // A skipped transition (a newer one started, a slow device) rejects `ready`: that is "no animation", not an error.
+  document.startViewTransition(update).ready.catch(() => undefined);
 }
