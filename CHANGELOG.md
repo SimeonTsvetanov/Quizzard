@@ -4,6 +4,14 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.13.0] - 2026-11-23
+### Changed
+- A new home screen: a greeting, the tools as tiles that rise in one after another, the tool you used last
+  on top as a wide card, and a soft glow in the app's colours behind them.
+- Opening a tool grows out of its tile, and going back shrinks into it again.
+### Fixed
+- "Ready to work offline ✓" no longer cuts another note short when it arrives at the same moment.
+
 ## [0.12.0] - 2026-11-23
 ### Added
 - A small icon for the browser tab — the wizard's hat with a star — that stays readable at tab size.

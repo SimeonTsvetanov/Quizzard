@@ -6,12 +6,13 @@ import { t } from "../i18n/index.ts";
 import { miniAppName, miniAppTagline } from "../miniapps/registry.ts";
 import { prefs } from "../storage/index.ts";
 import { h } from "../ui/dom.ts";
+import { icon } from "../ui/icons.ts";
 import { orderForHome } from "./order.ts";
 
 /** Shell pref (`quizzard:v1:last-app`) with the id of the mini-app opened last. */
 const LAST_USED_KEY = "last-app";
 /** Drawn size of a mark in CSS px; the `<img>` carries it so nothing moves while it loads. */
-const MARK_ICON_SIZE = "28";
+const MARK_ICON_SIZE = "32";
 
 /** The launcher as screen.ts uses it. */
 export interface Home {
@@ -22,6 +23,8 @@ export interface Home {
    * to on return (accessibility §3, "the trigger"); `null` when the mini-app was not opened from Home.
    */
   takeReturnFocus(): HTMLElement | null;
+  /** The card of a mini-app, if it is in the list (the screen change grows out of it and shrinks back into it). */
+  cardOf(id: string): HTMLElement | null;
 }
 
 /**
@@ -47,7 +50,18 @@ export function createHome(list: HTMLElement, entries: readonly MiniAppEntry[]):
   return {
     render() {
       const focused = document.activeElement instanceof HTMLElement && list.contains(document.activeElement) ? document.activeElement.dataset["card"] : undefined;
-      list.replaceChildren(...orderForHome(entries, lastUsedId()).map((entry) => h("li", { class: "launcher-item" }, card(entry))));
+      const last = lastUsedId();
+      // The tool used last leads the list as a wide card: one tap back into the game.
+      const ordered = orderForHome(entries, last);
+      const hasFeatured = ordered[0]?.meta.id === last && ordered[0].meta.status === "ready";
+      // In two columns the featured card takes a row; the tiles after it pair up, and one left over is wide.
+      const isLastAlone = (ordered.length - (hasFeatured ? 1 : 0)) % 2 === 1;
+      list.replaceChildren(...ordered.map((entry, index) => {
+        const isFeatured = hasFeatured && index === 0;
+        const isWide = !isFeatured && isLastAlone && index === ordered.length - 1;
+        const classes = ["launcher-item", ...(isFeatured ? ["launcher-item--featured"] : []), ...(isWide ? ["launcher-item--wide"] : [])];
+        return h("li", { class: classes.join(" ") }, card(entry, isFeatured));
+      }));
       list.removeAttribute("aria-busy");
       if (focused !== undefined) cardOf(focused)?.focus();
     },
@@ -56,6 +70,7 @@ export function createHome(list: HTMLElement, entries: readonly MiniAppEntry[]):
       openedId = null;
       return id === null ? null : cardOf(id);
     },
+    cardOf,
   };
 }
 
@@ -65,22 +80,22 @@ function lastUsedId(): string | null {
   return typeof value === "string" ? value : null;
 }
 
-function card(entry: MiniAppEntry): HTMLElement {
-  return entry.meta.status === "ready" ? readyCard(entry) : comingCard(entry);
+function card(entry: MiniAppEntry, isFeatured: boolean): HTMLElement {
+  return entry.meta.status === "ready" ? readyCard(entry, isFeatured) : comingCard(entry);
 }
 
 /**
  * The whole card is one link (one tap target). Its name is its visible text — name, then tagline —
  * so the label people see is in the name (WCAG 2.5.3); the visual "Open" is left out.
  */
-function readyCard(entry: MiniAppEntry): HTMLElement {
+function readyCard(entry: MiniAppEntry, isFeatured: boolean): HTMLElement {
   const { id } = entry.meta;
   return h(
     "a",
     { class: "launcher-card", "data-card": id, href: routeHref({ kind: "miniapp", id, query: new URLSearchParams() }) },
     mark(entry),
-    texts(entry),
-    h("span", { class: "launcher-action", "aria-hidden": "true" }, t("app.home.open")),
+    texts(entry, isFeatured),
+    h("span", { class: "launcher-action", "aria-hidden": "true" }, h("span", {}, t("app.home.open")), icon("arrow", 16)),
   );
 }
 
@@ -93,7 +108,7 @@ function comingCard(entry: MiniAppEntry): HTMLElement {
     "div",
     { class: "launcher-card", "data-card": entry.meta.id, "data-state": "coming" },
     mark(entry),
-    texts(entry),
+    texts(entry, false),
     h("span", { class: "launcher-soon", "aria-hidden": "true" }, t("app.home.soon")),
     h("span", { class: "visually-hidden" }, t("app.home.comingSoon")),
   );
@@ -107,10 +122,12 @@ function mark(entry: MiniAppEntry): HTMLElement {
   );
 }
 
-function texts(entry: MiniAppEntry): HTMLElement {
+function texts(entry: MiniAppEntry, isFeatured: boolean): HTMLElement {
   return h(
     "span",
     { class: "launcher-text" },
+    // Decoration: the card's name stays "name, tagline" for screen readers and voice control.
+    ...(isFeatured ? [h("span", { class: "launcher-badge", "aria-hidden": "true" }, t("app.home.lastUsed"))] : []),
     h("span", { class: "launcher-name" }, miniAppName(entry)),
     h("span", { class: "launcher-tagline" }, miniAppTagline(entry)),
   );

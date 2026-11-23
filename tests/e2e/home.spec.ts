@@ -25,6 +25,8 @@ for (const viewport of [{ width: 320, height: 640 }, { width: 1280, height: 800 
     test("12 cards fit: no horizontal scroll, every card inside the viewport width, none overlapping", async ({ page }) => {
       await page.goto("./");
       await expect(cards(page)).toHaveCount(12);
+      // The tiles rise in one after another: measure them where they come to rest.
+      await page.evaluate(() => Promise.all(document.getAnimations().map((animation) => animation.finished.catch(() => undefined))));
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
       const boxes = await cards(page).evaluateAll((all) => all.map((el) => {
         const r = el.getBoundingClientRect();
@@ -43,7 +45,8 @@ for (const viewport of [{ width: 320, height: 640 }, { width: 1280, height: 800 
         }
       }
       const columns = new Set(boxes.map(({ x }) => Math.round(x))).size;
-      expect(columns).toBe(viewport.width < 600 ? 1 : 3);
+      // One column on the narrowest phones (two from 340 px), four tiles across on a wide screen.
+      expect(columns).toBe(viewport.width < 600 ? 1 : 4);
       // Cards in one row share its height.
       const rows = Map.groupBy(boxes, ({ y }) => Math.round(y));
       for (const row of rows.values()) expect(new Set(row.map(({ height }) => Math.round(height))).size).toBe(1);
@@ -176,4 +179,33 @@ test("the production build (app/dist) shows Teams, Scores and Answer sheet ready
     await expect(card(page, id)).toContainText("Open");
   }
   await expect(card(page, "quiz")).toHaveAttribute("data-state", "coming");
+});
+
+// Moni 2026-11-23: Home must look and move like an app — the tool used last leads, tiles pair up.
+test("the tool used last leads Home as a wide card marked “Last used”; a tile left alone takes the whole row", async ({ page }) => {
+  await page.setViewportSize({ width: 412, height: 840 });
+  await page.goto("./");
+  await expect(page.locator(".launcher-item--featured")).toHaveCount(0); // nothing used yet
+  await card(page, "alpha").click();
+  await expect(page.locator('[data-miniapp="alpha"] [data-probe]')).toBeVisible();
+  await back(page).click();
+  const featured = page.locator(".launcher-item--featured");
+  await expect(featured.locator("[data-card]")).toHaveAttribute("data-card", "alpha");
+  await expect(featured).toContainText("Last used");
+  await expect(card(page, "alpha")).toHaveAccessibleName("Alpha First ready fixture"); // the badge is decoration
+  await page.evaluate(() => Promise.all(document.getAnimations().map((animation) => animation.finished.catch(() => undefined))));
+  const width = (id: string) => card(page, id).evaluate((element) => Math.round(element.getBoundingClientRect().width));
+  // 12 cards: the featured one, then 11 — five pairs and one left over, as wide as the featured card.
+  expect(await width("eta")).toBe(await width("alpha"));
+  expect(await width("teams")).toBeLessThan((await width("alpha")) / 2 + 1);
+});
+
+test("opening a tool and going back works the same with reduced motion (no screen animation)", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("./");
+  await card(page, "beta").click();
+  await expect(page.locator('[data-miniapp="beta"] [data-probe]')).toBeVisible();
+  await back(page).click();
+  await expect(card(page, "beta")).toBeFocused();
+  expect(await page.evaluate(() => document.getAnimations().length)).toBe(0);
 });

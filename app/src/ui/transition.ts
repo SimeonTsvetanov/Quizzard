@@ -10,3 +10,44 @@ export function withTransition(update: () => void): void {
   }
   document.startViewTransition(update);
 }
+
+/** The one shared element of a screen change: a Home card and the tool it opens (styles/components/home.css). */
+const MORPH_NAME = "tool-screen";
+/** A tool not on screen by then (its code is still loading) no longer holds the animation back. */
+const MOUNT_WAIT_MS = 350;
+
+/** Options of {@link morphScreens}. */
+export interface MorphOptions {
+  /** What the new screen grows out of, on the old screen (a Home card, or the tool's own region). */
+  readonly from: HTMLElement | null;
+  /** Changes the screen; a returned promise (a tool mounting) is awaited briefly so it is part of the picture. */
+  readonly update: () => Promise<void> | void;
+  /** What the old screen turns into, on the new screen; read after `update`. */
+  readonly to: () => HTMLElement | null;
+}
+
+/**
+ * Changes the screen with a shared-element morph (View Transitions API): the Home card grows into the
+ * tool and the tool shrinks back into its card. Instant where the API is missing, when the user asks
+ * for reduced motion, and while the page is hidden.
+ * @param options - the two elements and the change
+ */
+export function morphScreens({ from, update, to }: MorphOptions): void {
+  const isAnimated = "startViewTransition" in document && !matchMedia("(prefers-reduced-motion: reduce)").matches && document.visibilityState === "visible";
+  if (!isAnimated) {
+    void update();
+    return;
+  }
+  let target: HTMLElement | null = null;
+  if (from) from.style.viewTransitionName = MORPH_NAME;
+  const transition = document.startViewTransition(async () => {
+    // One element per name in each picture: the old one gives the name up before the new one takes it.
+    if (from) from.style.viewTransitionName = "";
+    await Promise.race([Promise.resolve(update()), new Promise((resolve) => { setTimeout(resolve, MOUNT_WAIT_MS); })]);
+    target = to();
+    if (target) target.style.viewTransitionName = MORPH_NAME;
+  });
+  const clear = (): void => { if (target) target.style.viewTransitionName = ""; };
+  // A skipped transition (a second one started, the tab was hidden) rejects `finished`: nothing to report.
+  transition.finished.then(clear, clear);
+}

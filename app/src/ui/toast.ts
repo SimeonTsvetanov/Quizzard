@@ -211,13 +211,15 @@ export function relocateToasts(): void {
 
 /**
  * Shows one toast at a time (inside the open modal, if any); a `pinned` toast returns after later
- * ones, a `background` toast waits while a toast with an action is showing.
+ * ones, a `background` toast waits while any time-boxed toast is showing.
  */
 export function showToast(options: ToastOptions): void {
   const region = currentRegion();
   if (!region) return;
   if (options.pinned) pinnedToast = options;
-  if (options.background && live?.holdsAction) {
+  // A background note never cuts another note short: it waits for any note that is on its timer
+  // ("Leaderboard copied ✓" was sometimes replaced the moment the app finished saving itself for offline use).
+  if (options.background && live?.timer) {
     if (!options.pinned) waitingToast = options; // a pinned one is shown by showNext() anyway
     return;
   }

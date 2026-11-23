@@ -204,7 +204,8 @@ export const bg: Messages = {
   },
   app: {
     home: {
-      title: "Инструменти",
+      title: "Готови ли сте за куиз вечерта?",
+      lastUsed: "Последно ползван",
       open: "Отвори",
       soon: "Скоро",
       comingSoon: "Очаквайте скоро, още не е налично",

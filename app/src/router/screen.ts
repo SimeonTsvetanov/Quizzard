@@ -2,11 +2,12 @@
 // Back button, the title and — after a route change — focus on the card that opened the mini-app,
 // else the new screen's heading or region (accessibility §3). main.ts calls startScreens() once.
 import type { MiniAppEntry } from "@simeonts/quizzard-core";
-import { createHome, rememberLastUsed } from "../home/home.ts";
+import { createHome, rememberLastUsed, type Home } from "../home/home.ts";
 import { createMiniAppContext } from "../miniapps/context.ts";
-import { createOutlet } from "../miniapps/outlet.ts";
+import { createOutlet, type Outlet } from "../miniapps/outlet.ts";
 import { launchQuery, miniAppName, openableIds } from "../miniapps/registry.ts";
 import { offerInstallAtHome } from "../ui/install.ts";
+import { morphScreens } from "../ui/transition.ts";
 import { setScreenTitle } from "../ui/title.ts";
 import { createRouter, type ScreenRoute } from "./router.ts";
 
@@ -53,23 +54,24 @@ export function startScreens(entries: readonly MiniAppEntry[]): void {
 
   const show = (route: ScreenRoute, isFirst: boolean): void => {
     const entry = route.kind === "miniapp" ? entries.find((candidate) => candidate.meta.id === route.id) : undefined;
+    const previous = active;
     active = entry === undefined || route.kind !== "miniapp" ? null : { entry, query: route.query, titlePart: null };
-    if (route.kind === "home" || entry === undefined) {
-      outlet.clear();
-      if (!isFirst) backOnHome(home);
-    } else {
-      rememberLastUsed(entry.meta.id);
-      void outlet.show(entry, launchQuery(entry, route.query));
+    const next = active;
+    const update = (): Promise<void> | undefined => {
+      const mounted = changeScreen({ elements, home, outlet, next, isFirst });
+      showTitle();
+      return mounted;
+    };
+    if (isFirst) {
+      void update(); // a page load: nothing to animate from
+      return;
     }
-    elements.homeView.hidden = active !== null;
-    elements.outlet.hidden = active === null;
-    elements.back.hidden = active === null;
-    labelOutlet(elements.outlet, active?.entry);
-    showTitle();
-    if (isFirst) return; // a page load keeps the browser's focus start (skip link first)
-    window.scrollTo({ top: 0 });
-    const target = active === null ? (home.takeReturnFocus() ?? elements.homeHeading) : elements.outlet;
-    target.focus({ preventScroll: true });
+    // The tool grows out of its Home card and shrinks back into it (ui/transition.ts).
+    morphScreens({
+      from: next === null ? elements.outlet : home.cardOf(next.entry.meta.id),
+      update,
+      to: () => (next === null ? home.cardOf(previous?.entry.meta.id ?? "") : elements.outlet),
+    });
   };
 
   elements.back.addEventListener("click", () => { router.navigation.home(); });
@@ -93,6 +95,41 @@ export function startScreens(entries: readonly MiniAppEntry[]): void {
   // cards exist (home.css), so a deep link must not leave the list busy.
   home.render();
   router.start();
+}
+
+/** What {@link changeScreen} works on. */
+interface ScreenChange {
+  readonly elements: ScreenElements;
+  readonly home: Home;
+  readonly outlet: Outlet;
+  /** The mini-app to show, or null for Home. */
+  readonly next: { readonly entry: MiniAppEntry; readonly query: URLSearchParams } | null;
+  readonly isFirst: boolean;
+}
+
+/**
+ * Puts Home or a mini-app on screen: mounts or unmounts, shows the right view and the Back button,
+ * and moves the focus (not on a page load, which keeps the browser's focus start — skip link first).
+ * @returns the mini-app's mount, when one was started
+ */
+function changeScreen({ elements, home, outlet, next, isFirst }: ScreenChange): Promise<void> | undefined {
+  let mounted: Promise<void> | undefined;
+  if (next === null) {
+    outlet.clear();
+    if (!isFirst) backOnHome(home);
+  } else {
+    rememberLastUsed(next.entry.meta.id);
+    mounted = outlet.show(next.entry, launchQuery(next.entry, next.query));
+  }
+  elements.homeView.hidden = next !== null;
+  elements.outlet.hidden = next === null;
+  elements.back.hidden = next === null;
+  labelOutlet(elements.outlet, next?.entry);
+  if (isFirst) return mounted;
+  window.scrollTo({ top: 0 });
+  const target = next === null ? (home.takeReturnFocus() ?? elements.homeHeading) : elements.outlet;
+  target.focus({ preventScroll: true });
+  return mounted;
 }
 
 /** Back on Home from a tool: the cards are drawn again and, after a first save, install is offered. */
