@@ -9,8 +9,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@fontsource-variable/manrope": "5.3.0",
-    "@fontsource-variable/unbounded": "5.3.0",
+    "@fontsource/manrope": "5.3.0",
+    "@fontsource/unbounded": "5.3.0",
     "@simeonts/quizzard-core": "workspace:^",
     "@simeonts/quizzard-sheet-miniapp": "workspace:^",
     "@simeonts/teamsync-random-team-generator-miniapp": "workspace:^",

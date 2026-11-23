@@ -220,10 +220,10 @@ importers:
 
   app:
     dependencies:
-      '@fontsource-variable/manrope':
+      '@fontsource/manrope':
         specifier: 5.3.0
         version: 5.3.0
-      '@fontsource-variable/unbounded':
+      '@fontsource/unbounded':
         specifier: 5.3.0
         version: 5.3.0
       '@simeonts/quizzard-core':
@@ -936,11 +936,11 @@ packages:
       '@noble/hashes':
         optional: true
 
-  '@fontsource-variable/manrope@5.3.0':
-    resolution: {integrity: sha512-6D5dgokHsWDDMtmXHznKa0hK229NN+1a4BLPmUCLqcO1Pw5EEhWY5RFt0AcXnVRAljFFPfRtLkJePQj6LSsV6g==}
+  '@fontsource/manrope@5.3.0':
+    resolution: {integrity: sha512-obJ1Dv3+uCA6HlHgW8u4BGYxJR9In2HW7gjJhlflEvkrj1X1iSEwu0fToL+JYGC/FEKFfIz1sBuPduvcL2gIAA==}
 
-  '@fontsource-variable/unbounded@5.3.0':
-    resolution: {integrity: sha512-ea565Ncn4r7gPdBEHcmaF31V11hDfkL7b/JCklLobQbMfbu2ZZQrVWNgdeEFWFLqNh36yhieZWOgxdAnMTzrLg==}
+  '@fontsource/unbounded@5.3.0':
+    resolution: {integrity: sha512-pPD6hsTnjoQRr6pCsqMHbHBfauB4LZygCNQEUJHu+CO2wzDFHqELEFSG7sTwo5Z5Gr4q3OK0fIILOXBJDv6lcw==}
 
   '@humanfs/core@0.19.2':
     resolution: {integrity: sha512-UhXNm+CFMWcbChXywFwkmhqjs3PRCmcSa/hfBgLIb7oQ5HNb1wS0icWsGtSAUNgefHeI+eBrA8I1fxmbHsGdvA==}
@@ -4358,9 +4358,9 @@ snapshots:
 
   '@exodus/bytes@1.16.0': {}
 
-  '@fontsource-variable/manrope@5.3.0': {}
+  '@fontsource/manrope@5.3.0': {}
 
-  '@fontsource-variable/unbounded@5.3.0': {}
+  '@fontsource/unbounded@5.3.0': {}
 
   '@humanfs/core@0.19.2':
     dependencies:

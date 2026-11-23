@@ -120,8 +120,8 @@ for (const pj of creditPackages) {
 // Credits in words people understand (About → "Made with"): a known name + what it does (i18n key
 // shell.credit.<kind>); unknown packages fall back to their own description.
 const KNOWN: Record<string, { title: string; kind: string }> = {
-  "@fontsource-variable/manrope": { title: "Manrope", kind: "font" },
-  "@fontsource-variable/unbounded": { title: "Unbounded", kind: "font" },
+  "@fontsource/manrope": { title: "Manrope", kind: "font" },
+  "@fontsource/unbounded": { title: "Unbounded", kind: "font" },
   lucide: { title: "Lucide", kind: "icons" },
   i18next: { title: "i18next", kind: "translations" },
   zod: { title: "Zod", kind: "validation" },

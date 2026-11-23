@@ -1,6 +1,12 @@
 import "./zod-setup.ts"; // first: before any module creates a Zod schema (CSP; frontend-level1 §5)
-import "@fontsource-variable/manrope"; // text
-import "@fontsource-variable/unbounded"; // headings and the big numbers
+// Static font files, one per weight in use — not the variable builds: WebKit on Linux drew variable-font text so
+// slowly that Home fell to a few frames a second (measured on CI, DECISIONS 2026-11-23).
+import "@fontsource/manrope/400.css"; // text
+import "@fontsource/manrope/500.css";
+import "@fontsource/manrope/600.css";
+import "@fontsource/manrope/700.css";
+import "@fontsource/unbounded/600.css"; // headings and the big numbers
+import "@fontsource/unbounded/700.css";
 import "./styles/app.css"; // layer order, tokens, accent and every app style (design → css-architecture)
 import { app } from "./config.ts";
 import { hydrateIcons } from "./ui/icons.ts";
