@@ -4,6 +4,16 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.16.1] - 2026-11-23
+### Changed
+- Opening and closing a tool is smoother: nothing else moves while the tile grows into the tool, and the tool
+  appears sooner.
+- Answer sheet: the button that removes answers shows a bin instead of a bare line.
+- The Terms, Privacy, Contact and other pages use the app's fonts, with the text on a see-through card over the
+  app's glow.
+- A new "page not found": the wizard stands in for the zero of 404 — "This page vanished in a puff of smoke".
+  It follows the app's language.
+
 ## [0.16.0] - 2026-11-23
 ### Added
 - A new animated background: a starry night sky that drifts slowly in the dark theme, soft mountains under a

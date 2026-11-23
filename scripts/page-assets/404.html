@@ -28,23 +28,25 @@
       </a>
     </header>
     <main class="ep" aria-labelledby="ep-title">
-      <p class="ep-code" aria-hidden="true" data-ep-offline-text="Offline">404</p>
-      <h1 id="ep-title" class="ep-title" data-ep-offline-text="You’re offline">This page doesn’t exist</h1>
-      <p class="ep-text" data-ep-offline hidden>
-        This page isn’t saved on this device yet. APP_NAME itself works offline — open it and
-        keep working; this page will load when you’re back online.
-      </p>
-      <p class="ep-text" data-ep-online>
-        The address <code class="ep-path" data-ep-path>you opened</code> isn’t part of APP_NAME.
-        It may be an old or mistyped link.
-      </p>
-      <div class="ep-actions">
-        <a class="ep-button ep-button--primary" href="/APP_BASE/">Open APP_NAME</a>
-        <a class="ep-button" data-ep-report data-ep-online href="https://github.com/SimeonTsvetanov/APP_REPO/issues/new?template=bug_report.yml&title=%5BProblem%5D%20Broken%20link">Report a broken link</a>
+      <div class="ep-card">
+        <!-- "4 🧙 4": the wizard stands in for the zero. Decoration: the title says what happened. -->
+        <p class="ep-code" aria-hidden="true" data-ep-online><span>4</span><img class="ep-wizard" src="/APP_BASE/logo.svg" alt="" width="120" height="120" /><span>4</span></p>
+        <img class="ep-wizard ep-wizard--offline" src="/APP_BASE/logo.svg" alt="" width="120" height="120" data-ep-offline hidden />
+        <h1 id="ep-title" class="ep-title" data-ep-offline-text="You’re offline" data-bg="Тази страница изчезна в облак дим" data-bg-offline="Няма връзка">This page vanished in a puff of smoke</h1>
+        <p class="ep-text" data-ep-offline hidden data-bg="Тази страница още не е запазена на устройството. Самият APP_NAME работи без интернет — отворете го и продължете; страницата ще се зареди, когато връзката се върне.">
+          This page isn’t saved on this device yet. APP_NAME itself works offline — open it and
+          keep working; this page will load when you’re back online.
+        </p>
+        <p class="ep-text" data-ep-online><span data-bg="Дори магьосникът не може да я намери. Адресът">Even the wizard can’t find it. The address</span>
+          <code class="ep-path" data-ep-path>you opened</code> <span data-bg="не е част от APP_NAME — може би е стара или сгрешена връзка.">isn’t part of APP_NAME — maybe an old or mistyped link.</span></p>
+        <div class="ep-actions">
+          <a class="ep-button ep-button--primary" href="/APP_BASE/" data-bg="Към APP_NAME">Back to APP_NAME</a>
+          <a class="ep-button" data-ep-report data-ep-online href="https://github.com/SimeonTsvetanov/APP_REPO/issues/new?template=bug_report.yml&title=%5BProblem%5D%20Broken%20link" data-bg="Съобщи за счупена връзка">Report a broken link</a>
+        </div>
       </div>
-      <p class="ep-support">While you’re here, you can support my work —
-        <a href="https://buymeacoffee.com/simeontsvetanov" target="_blank" rel="noopener">Buy me a coffee ☕</a></p>
-      <p class="ep-meta">Error 404 · <a href="APP_MORE_TOOLS">More free tools</a></p>
+      <p class="ep-support"><span data-bg="Докато сте тук, може да подкрепите работата ми —">While you’re here, you can support my work —</span>
+        <a href="https://buymeacoffee.com/simeontsvetanov" target="_blank" rel="noopener" data-bg="Купи ми кафе ☕">Buy me a coffee ☕</a></p>
+      <p class="ep-meta"><span data-bg="Грешка 404">Error 404</span> · <a href="APP_MORE_TOOLS" data-bg="Още безплатни инструменти">More free tools</a></p>
     </main>
     <!-- Same help/contact links in the same order as the app footer (WCAG 3.2.6 Consistent Help). -->
     <footer class="ep-footer">

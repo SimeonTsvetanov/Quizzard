@@ -253,8 +253,11 @@ export default defineConfig({
         cacheId: app.id,
         globPatterns: ["**/*.{js,css,html,svg,png,ico,woff2,wasm,txt,json}"],
         globIgnores: [
-          // Inter: precache only latin + cyrillic; other subsets still load on demand (unicode-range).
-          "**/inter-{latin-ext,cyrillic-ext,greek,greek-ext,vietnamese}-*.woff2",
+          // Manrope and Unbounded: precache only latin + cyrillic; other subsets still load on demand (unicode-range).
+          "**/{manrope,unbounded}-{latin-ext,cyrillic-ext,greek,greek-ext,vietnamese}-*",
+          // The static pages' copies (scripts/generate.ts): those pages use the system font offline.
+          "fonts/**",
+          "fonts.css",
           // Install-dialog screenshots and the social image are never needed offline (pwa §3).
           "screenshots/**",
           "og-image.png",

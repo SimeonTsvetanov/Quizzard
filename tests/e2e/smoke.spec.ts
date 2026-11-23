@@ -44,7 +44,7 @@ test("is served at the Pages path from app.config, and the 404 page links back t
   await page.goto("./");
   expect(new URL(page.url()).pathname).toBe(app.basePath);
   await page.goto("./no-such-page");
-  await expect(page.getByRole("link", { name: `Open ${app.name}` })).toHaveAttribute(
+  await expect(page.getByRole("link", { name: `Back to ${app.name}` })).toHaveAttribute(
     "href",
     app.basePath,
   );

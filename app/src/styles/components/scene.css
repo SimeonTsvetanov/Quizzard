@@ -21,8 +21,10 @@
       }
     }
 
-    /* A tool is open: the sky keeps its place, nothing spends battery behind the work. */
-    :root[data-tool] & * {
+    /* A tool is open, or the screen is changing (the new picture of a screen change is live: a moving sky would
+       be redrawn into it on every frame): the sky keeps its place. */
+    :root[data-tool] & *,
+    :root:active-view-transition & * {
       animation-play-state: paused;
     }
   }

@@ -239,6 +239,11 @@
     }
   }
 
+  /* Redrawn tiles (home.ts sets data-settled after the first drawing) do not rise in again. */
+  .launcher-list[data-settled] > .launcher-item {
+    animation: none;
+  }
+
   /* The tool used last: across the whole row, laid out sideways. */
   .launcher-item--featured {
     grid-column: 1 / -1;

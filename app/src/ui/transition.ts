@@ -32,7 +32,7 @@ function settle(transition: ViewTransition): ViewTransition {
 /** The one shared element of a screen change: a Home card and the tool it opens (styles/components/home.css). */
 const MORPH_NAME = "tool-screen";
 /** A tool not on screen by then (its code is still loading) no longer holds the animation back. */
-const MOUNT_WAIT_MS = 350;
+const MOUNT_WAIT_MS = 150;
 /** The transition's callback normally runs within a frame or two; after this long the screen changes without it. */
 const CALLBACK_WAIT_MS = 400;
 /** Far longer than the morph itself (about half a second): by then a transition still running is stuck. */
@@ -46,6 +46,8 @@ export interface MorphOptions {
   readonly update: () => Promise<void> | void;
   /** What the old screen turns into, on the new screen; read after `update`. */
   readonly to: () => HTMLElement | null;
+  /** Runs once the change is over (animated or not): motion that would only weigh on the morph starts here. */
+  readonly after?: () => void;
 }
 
 /**
@@ -54,13 +56,14 @@ export interface MorphOptions {
  * for reduced motion, and while the page is hidden.
  * @param options - the two elements and the change
  */
-export function morphScreens({ from, update, to }: MorphOptions): void {
+export function morphScreens({ from, update, to, after }: MorphOptions): void {
   const isAnimated =
     "startViewTransition" in document &&
     !matchMedia("(prefers-reduced-motion: reduce)").matches &&
     document.visibilityState === "visible";
   if (!isAnimated) {
     void update();
+    after?.();
     return;
   }
   restWordmark(); // nothing else is animating while the morph runs
@@ -74,10 +77,15 @@ export function morphScreens({ from, update, to }: MorphOptions): void {
     return update();
   };
   if (from) from.style.viewTransitionName = MORPH_NAME;
+  let hasEnded = false;
   const clear = (): void => {
     if (from) from.style.viewTransitionName = "";
     if (target) target.style.viewTransitionName = "";
     void change();
+    if (!hasEnded) {
+      hasEnded = true;
+      after?.();
+    }
   };
   try {
     const transition = settle(

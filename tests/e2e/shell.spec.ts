@@ -350,7 +350,7 @@ test("policy pages render and keep the email out of the HTML source", async ({ p
 
 test("custom 404 page shows the requested path", async ({ page }) => {
   await page.goto("./404.html?from=/missing-page");
-  await expect(page.locator("h1")).toHaveText(/doesn.t exist/);
+  await expect(page.locator("h1")).toHaveText(/vanished in a puff of smoke/);
   await expect(page.locator("[data-ep-path]")).toContainText("/");
 });
 

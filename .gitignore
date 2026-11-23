@@ -20,6 +20,8 @@ app/public/llms-full.txt
 app/public/404.html
 app/public/error-page.*
 app/public/page.css
+app/public/fonts.css
+app/public/fonts/
 app/public/year.js
 app/public/tokens.css
 app/public/og-image.png

@@ -68,10 +68,9 @@ export function startScreens(entries: readonly MiniAppEntry[]): void {
       void update(); // a page load: nothing to animate from
       return;
     }
-    // The tool grows out of its Home card and shrinks back into it (ui/transition.ts).
-    morphScreens({
+    morphScreens({ // the tool grows out of its Home card and shrinks back into it (ui/transition.ts)
       from: next === null ? elements.outlet : home.cardOf(next.entry.meta.id),
-      update,
+      update, ...(next === null ? { after: playWordmark } : {}), // Home: the name arrives again once it is over
       to: () => (next === null ? home.cardOf(previous?.entry.meta.id ?? "") : elements.outlet),
     });
   };
@@ -140,7 +139,6 @@ function changeScreen({ elements, home, outlet, next, isFirst }: ScreenChange): 
 /** Back on Home from a tool: the cards are drawn again and, after a first save, install is offered. */
 function backOnHome(home: { render(): void }): void {
   home.render(); // the last used mini-app may have changed while Home was hidden
-  playWordmark(); // the name arrives again, letter by letter
   offerInstallAtHome(); // the quiet moment to offer install, never on top of a tool
 }
 

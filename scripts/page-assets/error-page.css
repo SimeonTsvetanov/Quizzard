@@ -1,11 +1,21 @@
-/* public/error-page.css — shared by 404.html and the in-app error screen. Tokens only. */
+/* public/error-page.css — 404.html and (through page.css) the policy pages. Tokens only.
+   The look of the app (0.15): its fonts (fonts.css, generated), a soft glow behind, glass cards. */
+@import url("./fonts.css");
 *, *::before, *::after { box-sizing: border-box; }
 html { background: var(--color-bg); color: var(--color-text); font-family: var(--font-sans); -webkit-text-size-adjust: 100%; }
 body { margin: 0; min-height: 100dvh; display: flex; flex-direction: column; }
+/* The glow of the app's Home: the accent from the top left, the hat's gold from the top right. */
+body::before {
+  content: ""; position: fixed; inset: -20vmax; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(60vmax 45vmax at 22% 18%, color-mix(in oklch, var(--color-accent) 22%, transparent), transparent 70%),
+    radial-gradient(50vmax 40vmax at 82% 24%, color-mix(in oklch, var(--color-highlight) 18%, transparent), transparent 70%);
+}
+h1, h2, .ep-brand, .ep-code { font-family: var(--font-display); }
 
 .ep-header {
   position: sticky; top: 0; padding: calc(var(--space-3) + var(--safe-top)) var(--space-5) var(--space-3);
-  background: var(--header-bg); -webkit-backdrop-filter: var(--header-blur); backdrop-filter: var(--header-blur);
+  background: transparent;
 }
 .ep-brand { display: inline-flex; align-items: center; gap: var(--space-2); color: var(--color-text); text-decoration: none; font-weight: var(--weight-semibold); font-size: var(--text-md); }
 
@@ -14,12 +24,37 @@ body { margin: 0; min-height: 100dvh; display: flex; flex-direction: column; }
   gap: var(--space-4); padding: var(--space-12) var(--space-5) calc(var(--space-12) + var(--safe-bottom));
   max-width: var(--content-narrow); margin-inline: auto;
 }
-/* The one memorable element: a big, soft, accent-tinted code. */
+/* The one memorable element: "4 🧙 4" — big display-font fours in the accent, the wizard as the zero. */
 .ep-code {
-  margin: 0; font-size: clamp(5rem, 3rem + 12vw, 9rem); font-weight: var(--weight-bold); line-height: 1;
-  letter-spacing: -0.05em; font-variant-numeric: tabular-nums;
-  background: linear-gradient(180deg, var(--color-accent-text), color-mix(in oklch, var(--color-accent-text) 35%, transparent));
+  margin: 0; display: flex; align-items: center; justify-content: center; gap: 0.04em;
+  font-size: clamp(5rem, 3rem + 12vw, 8.5rem); font-weight: var(--weight-bold); line-height: 1; letter-spacing: -0.04em;
+}
+.ep-code span {
+  background: linear-gradient(160deg, var(--color-accent-text), color-mix(in oklch, var(--color-accent-text) 45%, var(--color-highlight)));
   -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.ep-wizard { inline-size: 0.95em; block-size: 0.95em; }
+.ep-wizard--offline { inline-size: 7rem; block-size: 7rem; font-size: 1rem; }
+@media (prefers-reduced-motion: no-preference) {
+  /* The wizard pops in, looks around twice and rests. */
+  .ep-wizard { animation: ep-wizard 4.2s var(--ease-out) both; transform-origin: 50% 90%; }
+  .ep-card { animation: ep-rise 600ms var(--ease-out) both; }
+}
+@keyframes ep-rise { from { opacity: 0; transform: translateY(var(--space-4)); } }
+@keyframes ep-wizard {
+  0% { opacity: 0; transform: scale(0.4) rotate(-20deg); }
+  14% { opacity: 1; transform: scale(1.08) rotate(6deg); }
+  22% { transform: scale(1) rotate(0); }
+  40% { transform: rotate(-8deg); } 55% { transform: rotate(6deg); }
+  70% { transform: rotate(-4deg); } 85%, 100% { transform: rotate(0); }
+}
+/* A glass card: the glow shows through, softly blurred. One card, nothing moving behind it. */
+.ep-card {
+  display: grid; justify-items: center; gap: var(--space-4);
+  padding: clamp(var(--space-6), 5vw, var(--space-10)) clamp(var(--space-5), 4vw, var(--space-10));
+  border-radius: var(--radius-xl); background: var(--glass-surface);
+  -webkit-backdrop-filter: blur(18px) saturate(160%); backdrop-filter: blur(18px) saturate(160%);
+  box-shadow: var(--glass-edge), var(--shadow-2);
 }
 @media (forced-colors: active) { .ep-code { color: CanvasText; background: none; } }
 .ep-title, .es-title { margin: 0; font-size: var(--text-2xl); font-weight: var(--weight-bold); letter-spacing: var(--tracking-tight); text-wrap: balance; }
@@ -33,12 +68,12 @@ body { margin: 0; min-height: 100dvh; display: flex; flex-direction: column; }
   text-decoration: none; cursor: pointer; background: var(--color-fill); color: var(--color-text);
   transition: box-shadow var(--duration-fast) var(--ease-standard), transform var(--duration-fast) var(--ease-standard);
 }
-.ep-button--primary { background: var(--color-accent); color: var(--color-on-accent); }
+.ep-button--primary { background: linear-gradient(150deg, var(--color-accent), var(--color-accent-pressed)); color: var(--color-on-accent); box-shadow: 0 6px 18px color-mix(in oklch, var(--color-accent) 35%, transparent); }
 .ep-button--primary:active { background: var(--color-accent-pressed); }
 .ep-button:active { transform: scale(0.98); }
 @media (hover: hover) { .ep-button:hover { box-shadow: var(--shadow-2); transform: var(--lift); } }
 :focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
-.ep-support { margin: var(--space-8) 0 0; padding: var(--space-3) var(--space-5); border-radius: var(--radius-lg); text-wrap: balance; background: var(--color-surface); box-shadow: var(--shadow-1); font-size: var(--text-md); color: var(--color-text-secondary); }
+.ep-support { margin: var(--space-6) 0 0; padding: var(--space-3) var(--space-5); border-radius: var(--radius-lg); text-wrap: balance; background: var(--glass-surface); box-shadow: var(--glass-edge), var(--shadow-1); font-size: var(--text-md); color: var(--color-text-secondary); }
 .ep-support a { color: var(--color-accent-text); font-weight: var(--weight-semibold); text-decoration: none; }
 .ep-meta { margin: var(--space-4) 0 0; font-size: var(--text-sm); color: var(--color-text-secondary); } /* tertiary is 3.33:1 on the light background */
 /* Footer: the app footer's help/contact links, same order (WCAG 3.2.6). */
@@ -66,3 +101,4 @@ body { margin: 0; min-height: 100dvh; display: flex; flex-direction: column; }
 /* Smooth navigation to/from the app (the app opts in too). */
 @view-transition { navigation: auto; }
 @media (prefers-reduced-motion: reduce) { @view-transition { navigation: none; } }
+[hidden] { display: none !important; }

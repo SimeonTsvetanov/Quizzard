@@ -185,7 +185,7 @@ export function refresh(sheet: Sheet): void {
   const editing = host.querySelector<HTMLButtonElement>("[data-remove-toggle]");
   if (editing) {
     editing.setAttribute("aria-pressed", String(sheet.isRemoving));
-    editing.replaceChildren(...(sheet.isRemoving ? [t("removeDone")] : [icon("minus"), h("span", { class: "visually-hidden" }, t("removeLines"))]));
+    editing.replaceChildren(...(sheet.isRemoving ? [t("removeDone")] : [icon("trash"), h("span", { class: "visually-hidden" }, t("removeLines"))]));
     editing.title = sheet.isRemoving ? t("removeDone") : t("removeLines");
   }
   if (sheet.clearButton) sheet.clearButton.hidden = isBlankGame(game);

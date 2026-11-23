@@ -71,6 +71,8 @@ export function createHome(list: HTMLElement, entries: readonly MiniAppEntry[]):
         return h("li", { class: classes.join(" ") }, card(entry, isFeatured));
       }));
       list.removeAttribute("aria-busy");
+      // Tiles rise in on the first drawing only (home.css): a redraw keeps them still under a screen change.
+      requestAnimationFrame(() => { list.setAttribute("data-settled", ""); });
       if (focused !== undefined) cardOf(focused)?.focus();
     },
     takeReturnFocus() {
