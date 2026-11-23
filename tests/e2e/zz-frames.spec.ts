@@ -63,7 +63,7 @@ async function step(label: string, action: () => Promise<unknown>): Promise<void
   const outcome = await Promise.race([
     action().then(
       () => "ok",
-      (error: unknown) => `error: ${String(error).slice(0, 160)}`,
+      (error: unknown) => `error: ${String(error).replaceAll("\n", " / ").slice(0, 700)}`,
     ),
     new Promise<string>((resolve) => {
       setTimeout(() => {
@@ -187,3 +187,74 @@ test("frames: which part of Home is slow", async ({ page }) => {
     await measure(page, `Home ${label}`);
   }
 });
+
+/** What the page looks like to a click on the menu button: the element hit there and every running animation. */
+async function probe(page: Page, label: string): Promise<void> {
+  const state = await Promise.race([
+    page.evaluate(() => {
+      const button = document.querySelector("[data-menu-open]");
+      const box = button?.getBoundingClientRect();
+      const hit = box
+        ? document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2)
+        : null;
+      const animations = document.documentElement.getAnimations({ subtree: true }).map((one) => {
+        const effect = one.effect instanceof KeyframeEffect ? one.effect : null;
+        const name = one instanceof CSSAnimation ? one.animationName : "other";
+        return `${name}@${effect?.pseudoElement ?? effect?.target?.nodeName ?? "?"}:${one.playState}`;
+      });
+      return {
+        hit: hit ? `${hit.nodeName}.${hit.className}` : "none",
+        hitIsButton: hit !== null && button !== null && (hit === button || button.contains(hit)),
+        animations,
+        tool: document.documentElement.dataset["tool"] ?? "",
+        mounted: document.querySelector("[data-miniapp]") !== null,
+      };
+    }),
+    new Promise<"STALLED">((resolve) => {
+      setTimeout(() => {
+        resolve("STALLED");
+      }, 12_000);
+    }),
+  ]);
+  console.warn(`PROBE ${test.info().project.name} | ${label} | ${JSON.stringify(state)}`);
+}
+
+const FLOWS: readonly (readonly [string, readonly string[], boolean])[] = [
+  ["as shipped", [], false],
+  ["reduced motion (no morph)", [], true],
+  ["no glow behind the tool", [".outlet::before { display: none !important; }"], false],
+  ["no web fonts", ["* { font-family: sans-serif !important; }"], false],
+  [
+    "no Home lights, stars, tile layers",
+    [
+      ".home::before, .home::after, .launcher-item > *::before, .launcher-item > *::after { display: none !important; }",
+    ],
+    false,
+  ],
+];
+
+for (const [label, rules, isReduced] of FLOWS) {
+  test(`click after the morph: ${label}`, async ({ page }) => {
+    test.setTimeout(120_000);
+    if (isReduced) await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("./");
+    await page.waitForTimeout(1500);
+    if (rules.length > 0) {
+      await page.evaluate((list) => {
+        const sheet = new CSSStyleSheet();
+        document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
+        for (const rule of list) sheet.insertRule(rule, sheet.cssRules.length);
+      }, rules);
+    }
+    await step(`${label}: open Scores`, () =>
+      page.locator('[data-card="scores"]').click({ timeout: 10_000 }),
+    );
+    await probe(page, `${label}: right after`);
+    await page.waitForTimeout(4000);
+    await probe(page, `${label}: 4 s later`);
+    await step(`${label}: menu click`, () =>
+      page.locator("[data-menu-open]").click({ timeout: 8000 }),
+    );
+    await probe(page, `${label}: after the menu click`);
+  });
+}
