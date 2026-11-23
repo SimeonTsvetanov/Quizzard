@@ -4,6 +4,14 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-11-23
+### Added
+- A small icon for the browser tab — the wizard's hat with a star — that stays readable at tab size.
+- Each long-press shortcut (Teams, Scores, Answer sheet) has its own icon.
+- The install window in Chrome and Edge shows pictures of the app.
+### Changed
+- The icon of the installed app sits on the wizard's cream background.
+
 ## [0.11.0] - 2026-11-23
 ### Changed
 - The small notes ("Copied ✓", "Round 2 deleted · Undo") no longer linger: a plain note goes after about

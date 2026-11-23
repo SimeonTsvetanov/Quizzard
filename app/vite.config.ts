@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { defineConfig, type Plugin } from "vite";
@@ -36,6 +36,35 @@ export const SHELL_STYLES: ShellStyles = {
 };
 
 const miniApps = mergeMiniAppPresets(MINIAPP_PACKAGES, SHELL_STYLES);
+
+/** A shortcut's own 96 px icon (scripts/generate.ts makes one per mini-app), else the app's. */
+const shortcutIcon = (url: string): string => {
+  const file = `shortcut-${url.split("#/")[1] ?? ""}-96x96.png`;
+  return existsSync(new URL(`./public/${file}`, import.meta.url)) ? file : "pwa-96x96.png";
+};
+
+/**
+ * Points the tab icon at the small mark (public/favicon.svg, favicon-48x48.png): the assets generator
+ * links the full wizard (favicon.ico, logo.svg), which is a blur at 16 px. Runs after it.
+ */
+function smallMarkIcon(): Plugin {
+  const swap = (html: string): string => html
+    .replace(/<link rel="icon" href="[^"]*favicon\.ico"[^>]*>/, `<link rel="icon" href="${BASE}favicon-48x48.png" sizes="48x48" type="image/png">`)
+    .replace(/<link rel="icon" href="[^"]*logo\.svg"[^>]*>/, `<link rel="icon" href="${BASE}favicon.svg" sizes="any" type="image/svg+xml">`);
+  let outDirectory = "";
+  return {
+    name: "quizzard-small-mark-icon",
+    apply: "build",
+    enforce: "post",
+    configResolved(resolved) { outDirectory = resolve(resolved.root, resolved.build.outDir); },
+    // The generator writes its links when the bundle is written, after every HTML transform: the built
+    // page is patched once it is on disk (before the service worker hashes it — this plugin is listed first).
+    writeBundle() {
+      const file = join(outDirectory, "index.html");
+      if (existsSync(file)) writeFileSync(file, swap(readFileSync(file, "utf8")));
+    },
+  };
+}
 
 // Manifest screenshots for the richer install dialog (Chrome/Edge) — made by `pnpm screenshots`
 // (tests/screenshots) before a release and committed; skipped until they exist.
@@ -216,7 +245,7 @@ export default defineConfig({
         // Long-press the app icon → jump straight to a task (app.config.shortcuts). Each shortcut
         // needs a 96 px icon (pwa §2); pwa-96x96.png comes from pwa-assets.config.ts.
         ...(app.shortcuts?.length
-          ? { shortcuts: app.shortcuts.map((s) => ({ name: s.name, url: s.url, icons: [{ src: "pwa-96x96.png", sizes: "96x96", type: "image/png" }] })) }
+          ? { shortcuts: app.shortcuts.map((s) => ({ name: s.name, url: s.url, icons: [{ src: shortcutIcon(s.url), sizes: "96x96", type: "image/png" }] })) }
           : {}),
       },
       workbox: {
@@ -256,5 +285,6 @@ export default defineConfig({
       },
       devOptions: { enabled: false },
     }),
+    smallMarkIcon(), // after VitePWA: its icon links exist by then
   ],
 });

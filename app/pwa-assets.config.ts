@@ -7,8 +7,9 @@ export default defineConfig({
     ...preset,
     // + 96 px: the icon of every manifest shortcut (pwa → pwa §2).
     transparent: { ...preset.transparent, sizes: [64, 96, 192, 512] },
-    apple: { ...preset.apple, resizeOptions: { background: "#F5F5F7", fit: "contain" } },
-    maskable: { ...preset.maskable, resizeOptions: { background: "#F5F5F7", fit: "contain" } },
+    // Cream, the wizard's own background (Moni 2026-11-22: "Кремав" for the install icon; brand/README.md).
+    apple: { ...preset.apple, resizeOptions: { background: "#F3E9CF", fit: "contain" } },
+    maskable: { ...preset.maskable, resizeOptions: { background: "#F3E9CF", fit: "contain" } },
   },
   images: ["public/logo.svg"],
 });

@@ -165,6 +165,21 @@ writeFileSync(join(gen, "credits.json"), `${JSON.stringify(credits, null, 2)}\n`
   write("third-party-licenses.txt", thirdPartyLicensesTxt(app.name, packages));
 }
 
+// Small mark (PLAN T-18): app/public/favicon.svg — the wizard's hat with a star, readable at 16–48 px where
+// the full wizard is not (source copy: brand/quizzard-mark.svg). A PNG of it for browsers without SVG favicons.
+if (existsSync(join(pub, "favicon.svg"))) await sharp(join(pub, "favicon.svg"), { density: 300 }).resize(48, 48).png().toFile(join(pub, "favicon-48x48.png"));
+
+// Shortcut icons (PLAN T-21): one 96 px PNG per mini-app from its Home icon, on the cream tile — Android
+// needs raster icons for the long-press menu, and the full wizard on every entry told them apart badly.
+for (const shortcut of app.shortcuts ?? []) {
+  const id = shortcut.url.split("#/")[1] ?? "";
+  const source = join(pub, "miniapps", `${id}.svg`);
+  if (!/^[a-z0-9-]+$/.test(id) || !existsSync(source)) continue;
+  const glyph = readFileSync(source, "utf8").replace(/<svg/, '<svg x="22" y="22" width="52" height="52"');
+  const tile = `<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96"><rect width="96" height="96" rx="24" fill="#F3E9CF"/>${glyph}</svg>`;
+  await sharp(Buffer.from(tile), { density: 300 }).resize(96, 96).png().toFile(join(pub, `shortcut-${id}-96x96.png`));
+}
+
 // og-image.png 1200×630 (logo + name + tagline on the light background).
 const esc = (t: string): string => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 const logoSvg = readFileSync(join(pub, "logo.svg"), "utf8");

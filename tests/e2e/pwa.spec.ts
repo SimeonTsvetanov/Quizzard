@@ -141,3 +141,24 @@ test("the update offer waits for a toast with an action, then stays", async ({ p
   await probeToast(page).getByRole("button", { name: "Act" }).click();
   await expect(updateOffer(page)).toBeVisible();
 });
+
+// PLAN T-18 / T-21 (Moni 2026-11-23: "did you cover the icons?").
+test("icons: the tab shows the small mark, each shortcut has its own icon, the manifest has install screenshots", async ({ page, request }) => {
+  await page.goto("./");
+  const tabIcons = await page.locator('link[rel="icon"]').evaluateAll((links) => links.map((link) => link.getAttribute("href") ?? ""));
+  expect(tabIcons.some((href) => href.endsWith("favicon.svg"))).toBe(true);
+  expect(tabIcons.some((href) => href.endsWith("favicon-48x48.png"))).toBe(true);
+  expect(tabIcons.some((href) => href.endsWith("logo.svg"))).toBe(false); // the full wizard is a blur at 16 px
+  const manifest = (await (await request.get("./manifest.json")).json()) as {
+    icons: { src: string; purpose?: string }[];
+    shortcuts?: { url: string; icons?: { src: string }[] }[];
+    screenshots?: { src: string; form_factor?: string; sizes: string }[];
+  };
+  const shortcutIcons = (manifest.shortcuts ?? []).map((shortcut) => shortcut.icons?.[0]?.src ?? "");
+  expect(shortcutIcons).toEqual(["shortcut-teams-96x96.png", "shortcut-scores-96x96.png", "shortcut-sheet-96x96.png"]);
+  expect(manifest.icons.some((icon) => icon.purpose === "maskable")).toBe(true);
+  expect((manifest.screenshots ?? []).map((shot) => [shot.form_factor, shot.sizes])).toEqual([["narrow", "780x1688"], ["wide", "1280x800"]]);
+  for (const file of ["favicon.svg", "favicon-48x48.png", ...shortcutIcons, ...(manifest.screenshots ?? []).map((shot) => shot.src), "maskable-icon-512x512.png"]) {
+    expect((await request.get(`./${file}`)).status(), file).toBe(200);
+  }
+});

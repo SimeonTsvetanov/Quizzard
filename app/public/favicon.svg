@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+<!-- Quizzard small mark (16–48 px): the wizard's hat with a star. The full wizard is not readable at tab size. -->
+<rect width="64" height="64" rx="14" fill="#F3E9CF"/>
+<path d="M36 7c-1 9 4 20 13 33H15C23 28 30 17 36 7Z" fill="#275373"/>
+<path d="M36 7c-1 9 4 20 13 33H36Z" fill="#183A4E"/>
+<path d="M8 45c0-4 11-7 24-7s24 3 24 7-11 8-24 8S8 49 8 45Z" fill="#275373"/>
+<path d="M14 44c0-2 8-4 18-4s18 2 18 4" fill="none" stroke="#183A4E" stroke-width="2.5" stroke-linecap="round"/>
+<path d="M31.0 19.5 L33.1 25.1 L39.1 25.4 L34.4 29.1 L36.0 34.9 L31.0 31.6 L26.0 34.9 L27.6 29.1 L22.9 25.4 L28.9 25.1Z" fill="#F9D45C"/>
+</svg>

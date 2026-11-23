@@ -249,6 +249,9 @@ export interface MiniAppEntry {             // one registry line
 - Files: `src/core/game.ts` (model, points arithmetic, parse/limits), `src/sheet/{state,view,mount}.ts`, `src/i18n/{en,bg}.ts`, `src/help.ts`, `src/styles/sheet.css`, `test/game.test.ts`; shell: `app/src/miniapps/registry.ts`, `app/vite.config.ts`, `app/public/miniapps/sheet.svg`, `tests/e2e/sheet-host.spec.ts`
 - Acceptance: AC10 (e2e); unit + property tests of the arithmetic and of reading untrusted storage; axe clean
 - Later (ideas, not scheduled): share the sheet as text, a name for the team/quiz, several saved games, per-round question count preset, link to Scores
+### T-18 / T-21 status (2026-11-23)
+- Done in 0.8.0–0.12.0: shortcuts with per-tool icons, cream maskable + Apple icons, small tab mark, manifest screenshots.
+
 ### T-17 · `pnpm new:miniapp <id>` and the quiz creator card
 - Goal: generator writes `miniapps/<id>/` (package, `meta.ts`, `src/index.ts`, test) and one registry line; `quiz` entry as "coming" with the reserved route
 - Files: `scripts/new-miniapp.ts` (+ test), `scripts/miniapp-template/**`, `app/src/miniapps/registry.ts`, `docs/ARCHITECTURE.md`
