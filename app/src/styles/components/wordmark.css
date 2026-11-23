@@ -111,11 +111,12 @@
     }
   }
 
-  /* One pass of gold over the letters, in order. */
+  /* One pass of light over the letters, in order: the app's colour with a gold glow. The gold is a glow only —
+     as a text colour it has no contrast on the light page (scripts/tokens.test.ts). */
   @keyframes wordmark-glint {
     40% {
-      color: var(--color-highlight);
-      text-shadow: 0 0 0.6em var(--color-highlight);
+      color: var(--color-accent-text);
+      text-shadow: 0 0 0.5em var(--color-highlight);
     }
   }
 }
