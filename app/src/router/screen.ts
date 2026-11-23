@@ -63,6 +63,7 @@ export function startScreens(entries: readonly MiniAppEntry[]): void {
       return mounted;
     };
     if (isFirst) {
+      if (next !== null) home.releaseOrder(); // straight into a tool: Home has not been seen in this order
       void update(); // a page load: nothing to animate from
       return;
     }

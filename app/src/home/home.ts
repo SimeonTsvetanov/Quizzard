@@ -23,6 +23,11 @@ export interface Home {
   takeReturnFocus(): HTMLElement | null;
   /** The card of a mini-app, if it is in the list (the screen change grows out of it and shrinks back into it). */
   cardOf(id: string): HTMLElement | null;
+  /**
+   * Lets the next `render()` read the order afresh. For a page that opened straight into a tool: Home was drawn but
+   * never seen, so the tool in use may lead the list when the user first comes to it.
+   */
+  releaseOrder(): void;
 }
 
 /**
@@ -51,7 +56,8 @@ export function createHome(list: HTMLElement, entries: readonly MiniAppEntry[]):
   return {
     render() {
       const focused = document.activeElement instanceof HTMLElement && list.contains(document.activeElement) ? document.activeElement.dataset["card"] : undefined;
-      leading ??= lastUsedId();
+      // `undefined` = not read yet; `null` = nothing was used before this visit, and that also stays.
+      if (leading === undefined) leading = lastUsedId();
       const last = leading;
       // The tool used last leads the list as a wide card: one tap back into the game.
       const ordered = orderForHome(entries, last);
@@ -73,6 +79,9 @@ export function createHome(list: HTMLElement, entries: readonly MiniAppEntry[]):
       return id === null ? null : cardOf(id);
     },
     cardOf,
+    releaseOrder() {
+      leading = undefined;
+    },
   };
 }
 
