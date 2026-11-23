@@ -8,14 +8,17 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 ### Changed
 - Answer sheet: **Delete round** asks first when the round has answers or points. An empty round still goes at
   once, and Undo is offered either way.
+### Fixed
+- Home no longer keeps the processor busy: the lights and stars behind the tiles stand still, and the wizard
+  greets you with a short bob and then rests. Better for the battery on a long quiz night.
 
 ## [0.14.0] - 2026-11-23
 ### Changed
 - A bolder look everywhere. Each tool has its own colour — Teams emerald, Scores gold, Answer sheet blue —
   on its home tile and through its whole screen.
 - New fonts: Unbounded for headings and the big numbers, Manrope for text, both with Cyrillic.
-- Home: the wizard greets you, the tiles carry their tool's colour and icon, the lights behind them drift
-  slowly and a few stars twinkle.
+- Home: the wizard greets you, the tiles carry their tool's colour and icon, over soft lights
+  and a few stars.
 - Answer sheet: its top bar is a banner in the tool's colour.
 ### Fixed
 - Going back from a tool closes into the tile you opened, not into the top one: the tiles keep their order

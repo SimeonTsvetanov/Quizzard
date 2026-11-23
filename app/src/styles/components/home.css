@@ -20,12 +20,12 @@
     }
 
     /* The lights: the accent from the top left, the hat's gold from the top right — fixed behind
-       everything, drifting slowly. They belong to Home only: the element is hidden while a tool is open. */
+       everything. They belong to Home only: the element is hidden while a tool is open. */
     &::before {
       /* How strong each light is at its centre; both fade to nothing. */
       --home-glow-accent: 26%;
       --home-glow-gold: 20%;
-      /* Larger than the screen, so its edges never show while it drifts. */
+      /* Larger than the screen, so its edges never show. */
       --home-glow-bleed: -20vmax;
 
       content: "";
@@ -45,12 +45,11 @@
           transparent 70%
         );
 
-      @media (prefers-reduced-motion: no-preference) {
-        animation: home-drift 22s var(--ease-standard) infinite alternate;
-      }
+      /* Still on purpose: animating a layer this large kept a whole CPU core busy for as long as Home was open
+         (measured 2026-11-23) — battery on a phone, and starved slow machines. Nothing on Home moves for ever. */
     }
 
-    /* The stars: a handful of small gold dots that breathe — the sky over the wizard's hat. */
+    /* The stars: a handful of small gold dots — the sky over the wizard's hat. */
     &::after {
       --home-star: var(--color-highlight);
       --home-star-size: 1.5px;
@@ -102,10 +101,6 @@
           var(--home-star) var(--home-star-size),
           transparent calc(var(--home-star-size) + 1px)
         );
-
-      @media (prefers-reduced-motion: no-preference) {
-        animation: home-twinkle 5s var(--ease-standard) infinite alternate;
-      }
     }
   }
 
@@ -125,7 +120,8 @@
     block-size: var(--launcher-wizard-size);
 
     @media (prefers-reduced-motion: no-preference) {
-      animation: launcher-float 5s var(--ease-standard) infinite alternate;
+      /* A greeting, then rest: four swings (up, down, up, down) end where they began. */
+      animation: launcher-float 1.6s var(--ease-standard) 4 alternate;
     }
   }
 
@@ -469,17 +465,6 @@
     }
   }
 
-  @keyframes home-drift {
-    to {
-      transform: translate(6vmax, 4vmax) scale(1.08);
-    }
-  }
-
-  @keyframes home-twinkle {
-    to {
-      opacity: 0.25;
-    }
-  }
 }
 
 /* || Screen change: a Home tile grows into its tool, the tool shrinks back into its tile
