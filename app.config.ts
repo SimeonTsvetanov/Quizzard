@@ -43,6 +43,8 @@ export interface AppConfig {
    * bg/surface/raised surface, both themes, WCAG 2.2 AA) — `pnpm generate` fails when one misses.
    */
   readonly accent?: string | { readonly light: string; readonly dark: string };
+  /** A colour of its own per mini-app id (Home tile + the tool's screen); a tool without one keeps `accent`. */
+  readonly toolAccents?: Readonly<Record<string, { readonly light: string; readonly dark: string }>>;
   readonly categories: readonly string[]; // manifest categories, e.g. ["utilities"]
   readonly contact: { readonly email: string };
   readonly support: { readonly buyMeACoffee: string; readonly githubSponsors?: string; readonly kofi?: string };
@@ -83,10 +85,17 @@ export const app = {
   description: "Free toolkit for pub quizzes and game nights: random team generator, score keeper and answer sheet. Works offline, no account, data stays on your device.",
   url: "https://simeontsvetanov.github.io/Quizzard/",
   repo: "https://github.com/SimeonTsvetanov/Quizzard",
-  version: "0.13.0",
+  version: "0.14.0",
   languages: ["en", "bg"],
   // Palette C · Emerald (DECISIONS 2026-11-22): white text on the light one (5.00:1), dark text on the dark one.
   accent: { light: "#00804F", dark: "#34D399" },
+  // Bold identity per tool (Moni 2026-11-23): Teams keeps the emerald, Scores is the gold of the wizard's
+  // stars, Answer sheet the blue of his hat, the quiz creator violet.
+  toolAccents: {
+    scores: { light: "#A85507", dark: "#FBBF24" },
+    sheet: { light: "#1D5FD1", dark: "#6CA8FF" },
+    quiz: { light: "#7C3AED", dark: "#B79CFF" },
+  },
   categories: ["utilities", "entertainment"],
   // Long-press the installed app's icon → open a tool directly (PLAN T-21). Absolute paths: a manifest
   // resolves URLs against its own address, so a bare "#/teams" would point at manifest.json.

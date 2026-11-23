@@ -53,6 +53,7 @@
     min-block-size: var(--tap-target);
     color: var(--color-text);
     text-decoration: none;
+    font-family: var(--font-display);
     font-weight: var(--weight-semibold);
   }
 

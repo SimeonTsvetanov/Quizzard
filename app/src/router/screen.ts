@@ -121,6 +121,9 @@ function changeScreen({ elements, home, outlet, next, isFirst }: ScreenChange): 
     rememberLastUsed(next.entry.meta.id);
     mounted = outlet.show(next.entry, launchQuery(next.entry, next.query));
   }
+  // The open tool's colour themes the whole page (generated/accent.css, `:root[data-tool]`).
+  if (next === null) delete document.documentElement.dataset["tool"];
+  else document.documentElement.dataset["tool"] = next.entry.meta.id;
   elements.homeView.hidden = next !== null;
   elements.outlet.hidden = next === null;
   elements.back.hidden = next === null;

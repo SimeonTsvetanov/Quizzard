@@ -13,7 +13,8 @@ const LAYER_ORDER = ["tokens", "base", "layout", "components", "utilities", "ove
 async function layerOrder(page: Page): Promise<string[]> {
   return page.evaluate(() => {
     const layerNames = (rule: CSSRule, prefix: string): string[] => {
-      if (rule instanceof CSSLayerStatementRule) return rule.nameList.map((name) => `${prefix}${name}`);
+      if (rule instanceof CSSLayerStatementRule)
+        return rule.nameList.map((name) => `${prefix}${name}`);
       if (!(rule instanceof CSSLayerBlockRule)) return [];
       const name = `${prefix}${rule.name}`;
       return [name, ...Array.from(rule.cssRules).flatMap((child) => layerNames(child, `${name}.`))];
@@ -32,24 +33,35 @@ test("built CSS declares the cascade layers in the forge order, miniapp last", a
 // app/build/miniapp-css.ts under [data-miniapp="probe"] in "isolated" mode (reset sub-layer first).
 test.describe("isolated mini-app CSS", () => {
   const scope = (page: Page): Locator => page.locator('[data-miniapp="probe"]');
-  const part = (page: Page, name: string): Locator => scope(page).locator(`[data-css-probe="${name}"]`);
+  const part = (page: Page, name: string): Locator =>
+    scope(page).locator(`[data-css-probe="${name}"]`);
 
   /** One computed value of the element `locator` points to. */
   async function computed(locator: Locator, property: string): Promise<string> {
-    return locator.evaluate((element, name) => getComputedStyle(element).getPropertyValue(name), property);
+    return locator.evaluate(
+      (element, name) => getComputedStyle(element).getPropertyValue(name),
+      property,
+    );
   }
 
   /** What `var(<token>)` resolves to for `property` on a fresh element outside any mini-app. */
-  async function resolved(page: Page, property: "color" | "background-color", token: string): Promise<string> {
-    return page.evaluate(([name, value]) => {
-      const reference = document.createElement("p");
-      // CSSOM, not a style attribute: allowed by style-src 'self'.
-      reference.style.setProperty(name, value);
-      document.body.append(reference);
-      const result = getComputedStyle(reference).getPropertyValue(name);
-      reference.remove();
-      return result;
-    }, [property, `var(${token})`] as const);
+  async function resolved(
+    page: Page,
+    property: "color" | "background-color",
+    token: string,
+  ): Promise<string> {
+    return page.evaluate(
+      ([name, value]) => {
+        const reference = document.createElement("p");
+        // CSSOM, not a style attribute: allowed by style-src 'self'.
+        reference.style.setProperty(name, value);
+        document.body.append(reference);
+        const result = getComputedStyle(reference).getPropertyValue(name);
+        reference.remove();
+        return result;
+      },
+      [property, `var(${token})`] as const,
+    );
   }
 
   test.beforeEach(async ({ page }) => {
@@ -57,17 +69,36 @@ test.describe("isolated mini-app CSS", () => {
     await expect(part(page, "card")).toBeVisible();
   });
 
-  test("the stylesheet arrives as a file in miniapp.probe, reset first, after the shell's layers", async ({ page }) => {
-    expect(await layerOrder(page)).toEqual([...LAYER_ORDER, "miniapp.probe", "miniapp.probe.reset", "miniapp.probe.base", "miniapp.probe.components"]);
+  test("the stylesheet arrives as a file in miniapp.probe, reset first, after the shell's layers", async ({
+    page,
+  }) => {
+    expect(await layerOrder(page)).toEqual([
+      ...LAYER_ORDER,
+      "miniapp.probe",
+      "miniapp.probe.reset",
+      "miniapp.probe.base",
+      "miniapp.probe.components",
+    ]);
     // Strict CSP (style-src 'self'): a <link> to a same-origin file, never an inline <style>.
     expect(await page.locator("style").count()).toBe(0);
     await expect(page.locator('link[rel="stylesheet"][href*="css-probe"]')).toHaveCount(1);
   });
 
   test("a shell component class gets no shell styling inside the scope", async ({ page }) => {
-    const properties = ["min-height", "padding-top", "border-top-left-radius", "background-color", "color", "font-weight", "box-shadow", "cursor"];
+    const properties = [
+      "min-height",
+      "padding-top",
+      "border-top-left-radius",
+      "background-color",
+      "color",
+      "font-weight",
+      "box-shadow",
+      "cursor",
+    ];
     for (const property of properties) {
-      expect(await computed(part(page, "shell-class"), property), property).toBe(await computed(part(page, "plain"), property));
+      expect(await computed(part(page, "shell-class"), property), property).toBe(
+        await computed(part(page, "plain"), property),
+      );
     }
     // Control: the same class outside the scope does get the shell's button (44 px target).
     const outside = await page.evaluate(() => {
@@ -81,18 +112,24 @@ test.describe("isolated mini-app CSS", () => {
     expect(outside).not.toBe(await computed(part(page, "shell-class"), "min-height"));
   });
 
-  test("an attribute-styled icon keeps its attributes but loses the shell's .toast > svg colour", async ({ page }) => {
+  test("an attribute-styled icon keeps its attributes but loses the shell's .toast > svg colour", async ({
+    page,
+  }) => {
     const icon = part(page, "icon");
     expect(await computed(icon, "width")).toBe("24px");
     expect(await computed(part(page, "circle"), "stroke-width")).toBe("3px");
     expect(await computed(part(page, "circle"), "fill")).toBe("none");
     expect(await computed(icon, "color")).toBe(await computed(part(page, "toast"), "color"));
-    expect(await computed(icon, "color")).not.toBe(await resolved(page, "color", "--color-danger-text"));
+    expect(await computed(icon, "color")).not.toBe(
+      await resolved(page, "color", "--color-danger-text"),
+    );
     // The toast paragraph itself is reset: no shell pill.
     expect(await computed(part(page, "toast"), "display")).toBe("block");
   });
 
-  test("tokens resolve inside the scope; the mini-app's own token stays on the scope element", async ({ page }) => {
+  test("tokens resolve inside the scope; the mini-app's own token stays on the scope element", async ({
+    page,
+  }) => {
     const accent = await resolved(page, "background-color", "--color-accent");
     expect(accent).not.toBe("rgba(0, 0, 0, 0)");
     expect(await computed(part(page, "card"), "background-color")).toBe(accent);
@@ -100,8 +137,12 @@ test.describe("isolated mini-app CSS", () => {
     expect(await computed(page.locator("html"), "--css-probe-gap")).toBe("");
   });
 
-  test("an unlayered mini-app rule beats a more specific one in its own sub-layer", async ({ page }) => {
-    expect(await computed(part(page, "order"), "color")).toBe(await resolved(page, "color", "--color-success-text"));
+  test("an unlayered mini-app rule beats a more specific one in its own sub-layer", async ({
+    page,
+  }) => {
+    expect(await computed(part(page, "order"), "color")).toBe(
+      await resolved(page, "color", "--color-success-text"),
+    );
   });
 
   test("universal rules reach only the mini-app's elements", async ({ page }) => {
@@ -115,6 +156,8 @@ test.describe("isolated mini-app CSS", () => {
     await input.focus();
     await expect(input).toBeFocused();
     expect(await computed(input, "outline-style")).toBe("solid");
-    expect(await computed(input, "outline-color")).toBe(await resolved(page, "color", "--color-highlight"));
+    expect(await computed(input, "outline-color")).toBe(
+      await resolved(page, "color", "--color-highlight"),
+    );
   });
 });

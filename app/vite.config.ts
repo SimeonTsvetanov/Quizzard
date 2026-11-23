@@ -213,7 +213,8 @@ const outDir = process.env["QUIZZARD_E2E"] === "1" ? "test/dist" : "dist";
 
 export default defineConfig({
   base: BASE,
-  build: { target: "es2024", outDir },
+  // Fonts are never inlined: a small subset file as a `data:` URL is blocked by `font-src 'self'` (CSP).
+  build: { target: "es2024", outDir, assetsInlineLimit: (file) => (file.endsWith(".woff2") ? false : undefined) },
   resolve: { alias: miniApps.alias },
   plugins: [
     ...miniApps.plugins,

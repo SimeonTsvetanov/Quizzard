@@ -11,7 +11,8 @@ const PREFIX = "quizzard-teams:v1:";
 const teamsCard = (page: Page) => page.locator('[data-card="teams"]');
 const screenRoot = (page: Page) => page.locator('[data-miniapp="teams"] [data-workspace]');
 const namesBox = (page: Page) => screenRoot(page).locator("#names");
-const backButton = (page: Page) => page.getByRole("banner").getByRole("button", { name: "Back to Home" });
+const backButton = (page: Page) =>
+  page.getByRole("banner").getByRole("button", { name: "Back to Home" });
 const homeView = (page: Page) => page.locator("[data-view=home]");
 
 /** Picks a Settings option (radio `<name>-<value>`) the way a person does: menu → Settings. */
@@ -32,28 +33,47 @@ async function pickSetting(page: Page, name: "lang" | "theme", value: string): P
 /** Records CSP violations (events of every document + console errors), as csp.spec.ts does. */
 async function watchCsp(page: Page): Promise<string[]> {
   const violations: string[] = [];
-  await page.exposeFunction("reportCspViolation", (text: string) => { violations.push(text); });
+  await page.exposeFunction("reportCspViolation", (text: string) => {
+    violations.push(text);
+  });
   await page.addInitScript(() => {
-    const report = (window as unknown as { reportCspViolation: (text: string) => void }).reportCspViolation;
-    document.addEventListener("securitypolicyviolation", (e) => { report(`${e.effectiveDirective} blocked ${e.blockedURI || "inline"}`); });
+    const report = (window as unknown as { reportCspViolation: (text: string) => void })
+      .reportCspViolation;
+    document.addEventListener("securitypolicyviolation", (e) => {
+      report(`${e.effectiveDirective} blocked ${e.blockedURI || "inline"}`);
+    });
   });
   page.on("console", (message) => {
-    if (message.type() === "error" && /Content Security Policy/i.test(message.text())) violations.push(message.text());
+    if (message.type() === "error" && /Content Security Policy/i.test(message.text()))
+      violations.push(message.text());
   });
   return violations;
 }
 
 /** axe ids of serious and critical violations, after every animation has finished. */
 async function seriousViolations(page: Page): Promise<string[]> {
-  await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished.catch(() => undefined))));
-  const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"]).analyze();
-  return results.violations.filter((v) => v.impact === "serious" || v.impact === "critical").map((v) => v.id);
+  await page.evaluate(() =>
+    Promise.all(
+      document
+        .getAnimations()
+        .filter((one) => one.effect?.getComputedTiming().iterations !== Infinity)
+        .map((a) => a.finished.catch(() => undefined)),
+    ),
+  );
+  const results = await new AxeBuilder({ page })
+    .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
+    .analyze();
+  return results.violations
+    .filter((v) => v.impact === "serious" || v.impact === "critical")
+    .map((v) => v.id);
 }
 
 test.describe("without a service worker", () => {
   test.use({ serviceWorkers: "block" });
 
-  test("the Teams card opens the screen in the outlet; title, empty header slot, Back returns focus to the card", async ({ page }) => {
+  test("the Teams card opens the screen in the outlet; title, empty header slot, Back returns focus to the card", async ({
+    page,
+  }) => {
     await page.goto("./");
     await expect(teamsCard(page)).toHaveRole("link");
     await teamsCard(page).click();
@@ -68,7 +88,9 @@ test.describe("without a service worker", () => {
     await expect(page.locator('[data-miniapp="teams"]')).toHaveCount(0);
   });
 
-  test("a deep link #/teams?teams=4 starts with 4 teams, a share-target text is not passed on; browser Back shows Home", async ({ page }) => {
+  test("a deep link #/teams?teams=4 starts with 4 teams, a share-target text is not passed on; browser Back shows Home", async ({
+    page,
+  }) => {
     // A neutral page first: Firefox's Back ignores the Home entry the app seeds on a first load (DECISIONS).
     await page.goto("about:blank");
     await page.goto("./#/teams?teams=4&shared=Eve%0AFrank");
@@ -80,7 +102,9 @@ test.describe("without a service worker", () => {
     await expect(page.locator('[data-miniapp="teams"]')).toHaveCount(0);
   });
 
-  test("switching the language re-renders the screen's texts and the title, and back", async ({ page }) => {
+  test("switching the language re-renders the screen's texts and the title, and back", async ({
+    page,
+  }) => {
     await page.goto("./#/teams");
     await expect(screenRoot(page).getByRole("button", { name: "Generate teams" })).toBeVisible();
     await pickSetting(page, "lang", "bg");
@@ -92,7 +116,9 @@ test.describe("without a service worker", () => {
     await expect(page).toHaveTitle(`Teams — ${app.name}`);
   });
 
-  test("names saved by the standalone site appear in #/teams (same keys, same JSON)", async ({ page }) => {
+  test("names saved by the standalone site appear in #/teams (same keys, same JSON)", async ({
+    page,
+  }) => {
     await page.goto("./");
     // Exactly what the standalone site's storage module writes: JSON under its prefix.
     await page.evaluate((prefix) => {
@@ -104,21 +130,39 @@ test.describe("without a service worker", () => {
     await expect(screenRoot(page).locator("[data-teams-value]")).toHaveText("3");
   });
 
-  test("names typed in #/teams are saved where the standalone site reads them, never under quizzard:", async ({ page }) => {
+  test("names typed in #/teams are saved where the standalone site reads them, never under quizzard:", async ({
+    page,
+  }) => {
     await page.goto("./#/teams");
     await namesBox(page).fill("Gergana\nDimitar");
     await screenRoot(page).getByRole("button", { name: "More teams" }).click();
-    const saved = () => page.evaluate((prefix) => [localStorage.getItem(`${prefix}names`), localStorage.getItem(`${prefix}teams`)], PREFIX);
+    const saved = () =>
+      page.evaluate(
+        (prefix) => [
+          localStorage.getItem(`${prefix}names`),
+          localStorage.getItem(`${prefix}teams`),
+        ],
+        PREFIX,
+      );
     await expect.poll(saved).toEqual([JSON.stringify("Gergana\nDimitar"), JSON.stringify(3)]);
     // The shell keeps its own prefs (last-app …), never the mini-app's data.
-    const shellValues = await page.evaluate(() => Object.keys(localStorage).filter((key) => key.startsWith("quizzard:")).map((key) => localStorage.getItem(key) ?? ""));
+    const shellValues = await page.evaluate(() =>
+      Object.keys(localStorage)
+        .filter((key) => key.startsWith("quizzard:"))
+        .map((key) => localStorage.getItem(key) ?? ""),
+    );
     expect(shellValues.filter((value) => value.includes("Gergana"))).toEqual([]);
   });
 
   // Moni 2026-11-22: "Teams copied ✓" stayed on top of the menu he opened right after copying.
-  test("a plain note is gone when the menu opens over it; a note with Undo moves into the menu", async ({ page }) => {
+  test("a plain note is gone when the menu opens over it; a note with Undo moves into the menu", async ({
+    page,
+  }) => {
     await page.addInitScript(() => {
-      Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: () => Promise.resolve() } });
+      Object.defineProperty(navigator, "clipboard", {
+        configurable: true,
+        value: { writeText: () => Promise.resolve() },
+      });
     });
     await page.goto("./#/teams");
     await screenRoot(page).locator("#names").fill("Ana\nBoris\nChen\nDana");
@@ -131,13 +175,17 @@ test.describe("without a service worker", () => {
     await expect(note).toHaveCount(0);
   });
 
-  test("using the screen raises no CSP violation: teams, share sheet, toast with Undo, confirm, language", async ({ page }) => {
+  test("using the screen raises no CSP violation: teams, share sheet, toast with Undo, confirm, language", async ({
+    page,
+  }) => {
     const violations = await watchCsp(page);
     await page.goto("./#/teams");
     await namesBox(page).fill("Ana\nBoris\nVesko\nGergana");
     await screenRoot(page).getByRole("button", { name: "Generate teams" }).click();
     await expect(screenRoot(page).getByRole("article")).toHaveCount(2);
-    await page.evaluate(() => { Object.defineProperty(navigator, "share", { value: undefined, configurable: true }); });
+    await page.evaluate(() => {
+      Object.defineProperty(navigator, "share", { value: undefined, configurable: true });
+    });
     await screenRoot(page).getByRole("button", { name: "Share", exact: true }).click();
     const sheet = page.locator('dialog[data-dialog="share"][open]');
     await expect(sheet).toBeVisible();
@@ -158,7 +206,9 @@ test.describe("without a service worker", () => {
   });
 
   for (const colorScheme of ["light", "dark"] as const) {
-    test(`axe: no serious violation on #/teams with teams on screen (${colorScheme})`, async ({ page }) => {
+    test(`axe: no serious violation on #/teams with teams on screen (${colorScheme})`, async ({
+      page,
+    }) => {
       await page.emulateMedia({ colorScheme });
       await page.goto("./#/teams?teams=3");
       expect(await seriousViolations(page)).toEqual([]);
@@ -174,16 +224,28 @@ test("the service worker precaches every Teams chunk (PLAN §1.1 item 7)", async
   const worker = await (await request.get("./service-worker.js")).text();
   const chunks = [...new Set(worker.match(/assets\/miniapp-teams-[\w-]+\.js/g))];
   // The body, its lazily rendered screen and its Help (app/build/miniapp-chunks.ts names them).
-  for (const part of ["main", "render", "help"]) expect(chunks.filter((file) => file.startsWith(`assets/miniapp-teams-${part}-`)), part).toHaveLength(1);
+  for (const part of ["main", "render", "help"])
+    expect(
+      chunks.filter((file) => file.startsWith(`assets/miniapp-teams-${part}-`)),
+      part,
+    ).toHaveLength(1);
 });
 
-test("after one visit #/teams reloads offline (its chunks are precached)", async ({ page, context, browserName }) => {
+test("after one visit #/teams reloads offline (its chunks are precached)", async ({
+  page,
+  context,
+  browserName,
+}) => {
   test.skip(browserName !== "chromium", "Service workers are Chromium-only in Playwright");
   await page.goto("./#/teams");
   await expect(screenRoot(page)).toBeVisible();
-  await page.evaluate(async () => { await navigator.serviceWorker.ready; });
+  await page.evaluate(async () => {
+    await navigator.serviceWorker.ready;
+  });
   await page.reload();
-  await expect.poll(() => page.evaluate(() => navigator.serviceWorker.controller !== null)).toBe(true);
+  await expect
+    .poll(() => page.evaluate(() => navigator.serviceWorker.controller !== null))
+    .toBe(true);
   await context.setOffline(true);
   await page.reload();
   await expect(screenRoot(page)).toBeVisible();

@@ -13,25 +13,63 @@ test.use({ serviceWorkers: "block" });
 
 const cards = (page: Page) => page.locator("[data-launcher] [data-card]");
 const card = (page: Page, id: string) => page.locator(`[data-card="${id}"]`);
-const ids = (page: Page): Promise<string[]> => cards(page).evaluateAll((all) => all.map((el) => el.getAttribute("data-card") ?? ""));
+const ids = (page: Page): Promise<string[]> =>
+  cards(page).evaluateAll((all) => all.map((el) => el.getAttribute("data-card") ?? ""));
 const back = (page: Page) => page.getByRole("banner").getByRole("button", { name: "Back to Home" });
 /** Registry order of the e2e build's ready cards, then its coming ones (shipped first). */
-const E2E_ORDER = ["teams", "scores", "sheet", "probe", "alpha", "beta", "gamma", "quiz", "delta", "epsilon", "zeta", "eta"];
+const E2E_ORDER = [
+  "teams",
+  "scores",
+  "sheet",
+  "probe",
+  "alpha",
+  "beta",
+  "gamma",
+  "quiz",
+  "delta",
+  "epsilon",
+  "zeta",
+  "eta",
+];
 
-for (const viewport of [{ width: 320, height: 640 }, { width: 1280, height: 800 }]) {
+for (const viewport of [
+  { width: 320, height: 640 },
+  { width: 1280, height: 800 },
+]) {
   test.describe(`at ${String(viewport.width)}×${String(viewport.height)}`, () => {
     test.use({ viewport });
 
-    test("12 cards fit: no horizontal scroll, every card inside the viewport width, none overlapping", async ({ page }) => {
+    test("12 cards fit: no horizontal scroll, every card inside the viewport width, none overlapping", async ({
+      page,
+    }) => {
       await page.goto("./");
       await expect(cards(page)).toHaveCount(12);
       // The tiles rise in one after another: measure them where they come to rest.
-      await page.evaluate(() => Promise.all(document.getAnimations().map((animation) => animation.finished.catch(() => undefined))));
-      expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
-      const boxes = await cards(page).evaluateAll((all) => all.map((el) => {
-        const r = el.getBoundingClientRect();
-        return { x: r.x, y: r.y, width: r.width, height: r.height, overflows: el.scrollWidth > el.clientWidth };
-      }));
+      await page.evaluate(() =>
+        Promise.all(
+          document
+            .getAnimations()
+            .filter((one) => one.effect?.getComputedTiming().iterations !== Infinity)
+            .map((animation) => animation.finished.catch(() => undefined)),
+        ),
+      );
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+        ),
+      ).toBe(true);
+      const boxes = await cards(page).evaluateAll((all) =>
+        all.map((el) => {
+          const r = el.getBoundingClientRect();
+          return {
+            x: r.x,
+            y: r.y,
+            width: r.width,
+            height: r.height,
+            overflows: el.scrollWidth > el.clientWidth,
+          };
+        }),
+      );
       for (const box of boxes) {
         expect(box.x).toBeGreaterThanOrEqual(0);
         expect(box.x + box.width).toBeLessThanOrEqual(viewport.width);
@@ -40,7 +78,11 @@ for (const viewport of [{ width: 320, height: 640 }, { width: 1280, height: 800 
       }
       for (const [i, a] of boxes.entries()) {
         for (const b of boxes.slice(i + 1)) {
-          const isApart = a.x + a.width <= b.x || b.x + b.width <= a.x || a.y + a.height <= b.y || b.y + b.height <= a.y;
+          const isApart =
+            a.x + a.width <= b.x ||
+            b.x + b.width <= a.x ||
+            a.y + a.height <= b.y ||
+            b.y + b.height <= a.y;
           expect(isApart).toBe(true);
         }
       }
@@ -49,10 +91,13 @@ for (const viewport of [{ width: 320, height: 640 }, { width: 1280, height: 800 
       expect(columns).toBe(viewport.width < 600 ? 1 : 4);
       // Cards in one row share its height.
       const rows = Map.groupBy(boxes, ({ y }) => Math.round(y));
-      for (const row of rows.values()) expect(new Set(row.map(({ height }) => Math.round(height))).size).toBe(1);
+      for (const row of rows.values())
+        expect(new Set(row.map(({ height }) => Math.round(height))).size).toBe(1);
     });
 
-    test("ready cards first in registry order, coming ones after; a ready card opens, Back returns to it", async ({ page }) => {
+    test("ready cards first in registry order, coming ones after; a ready card opens, Back returns to it", async ({
+      page,
+    }) => {
       await page.goto("./");
       expect(await ids(page)).toEqual(E2E_ORDER);
       await card(page, "gamma").click();
@@ -65,13 +110,16 @@ for (const viewport of [{ width: 320, height: 640 }, { width: 1280, height: 800 
       expect((await ids(page))[0]).toBe("gamma");
     });
 
-    test("CLS is 0 while Home loads, also when the app script arrives after the first paint", async ({ page }) => {
+    test("CLS is 0 while Home loads, also when the app script arrives after the first paint", async ({
+      page,
+    }) => {
       await page.addInitScript(() => {
         const shifts: number[] = [];
         Object.assign(window, { homeLayoutShifts: shifts });
         new PerformanceObserver((list) => {
           for (const entry of list.getEntries()) {
-            if (Reflect.get(entry, "hadRecentInput") !== true) shifts.push(Number(Reflect.get(entry, "value")));
+            if (Reflect.get(entry, "hadRecentInput") !== true)
+              shifts.push(Number(Reflect.get(entry, "value")));
           }
         }).observe({ type: "layout-shift", buffered: true });
       });
@@ -90,7 +138,9 @@ for (const viewport of [{ width: 320, height: 640 }, { width: 1280, height: 800 
   });
 }
 
-test("the last used mini-app comes first, also after a reload and after browser Back", async ({ page }) => {
+test("the last used mini-app comes first, also after a reload and after browser Back", async ({
+  page,
+}) => {
   await page.goto("./");
   await card(page, "beta").click();
   await expect(page.locator('[data-miniapp="beta"] [data-probe]')).toBeVisible();
@@ -98,10 +148,21 @@ test("the last used mini-app comes first, also after a reload and after browser 
   await expect(card(page, "beta")).toBeFocused();
   expect(await page.evaluate(() => localStorage.getItem("quizzard:v1:last-app"))).toBe('"beta"');
   await page.reload();
-  expect(await ids(page)).toEqual(["beta", "teams", "scores", "sheet", "probe", "alpha", "gamma", ...E2E_ORDER.slice(7)]);
+  expect(await ids(page)).toEqual([
+    "beta",
+    "teams",
+    "scores",
+    "sheet",
+    "probe",
+    "alpha",
+    "gamma",
+    ...E2E_ORDER.slice(7),
+  ]);
 });
 
-test("a deep link renders Home's cards too: the list is never left busy (footer and Home text stay hidden while busy)", async ({ page }) => {
+test("a deep link renders Home's cards too: the list is never left busy (footer and Home text stay hidden while busy)", async ({
+  page,
+}) => {
   // A neutral page first, as in routing.spec.ts: with the deep link as the only load of the page,
   // page.goBack() is a no-op in Playwright's Firefox (see the note above "deep link mounts the probe" there).
   await page.goto("about:blank");
@@ -116,12 +177,20 @@ test("a deep link renders Home's cards too: the list is never left busy (footer 
   await expect(cards(page).first()).toHaveAttribute("data-card", "alpha");
 });
 
-test("a coming card is not a control: no link, not focusable, announced as coming soon, a tap does nothing", async ({ page }) => {
+test("a coming card is not a control: no link, not focusable, announced as coming soon, a tap does nothing", async ({
+  page,
+}) => {
   await page.goto("./");
   const quiz = card(page, "quiz");
   await expect(quiz).toContainText("Soon");
   await expect(quiz).toContainText("Coming soon");
-  expect(await quiz.evaluate((el) => ({ isLink: el.matches(":any-link"), tabIndex: el.tabIndex, role: el.getAttribute("role") }))).toEqual({ isLink: false, tabIndex: -1, role: null });
+  expect(
+    await quiz.evaluate((el) => ({
+      isLink: el.matches(":any-link"),
+      tabIndex: el.tabIndex,
+      role: el.getAttribute("role"),
+    })),
+  ).toEqual({ isLink: false, tabIndex: -1, role: null });
   const url = page.url();
   await quiz.click();
   expect(page.url()).toBe(url);
@@ -136,7 +205,9 @@ test("a ready card is one link whose name is its visible name and tagline", asyn
   await expect(card(page, "alpha")).toHaveAttribute("href", "#/alpha");
 });
 
-test("switching the language to Bulgarian translates names and taglines (English where none)", async ({ page }) => {
+test("switching the language to Bulgarian translates names and taglines (English where none)", async ({
+  page,
+}) => {
   await page.goto("./#settings");
   await page.locator('label[for="lang-bg"]').click();
   await page.keyboard.press("Escape");
@@ -154,17 +225,36 @@ test("switching the language to Bulgarian translates names and taglines (English
 test("no serious accessibility violations on Home", async ({ page }) => {
   await page.goto("./");
   await expect(cards(page)).toHaveCount(12);
-  await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished.catch(() => undefined))));
-  const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"]).analyze();
-  expect(results.violations.filter((v) => v.impact === "serious" || v.impact === "critical").map((v) => v.id)).toEqual([]);
+  await page.evaluate(() =>
+    Promise.all(
+      document
+        .getAnimations()
+        .filter((one) => one.effect?.getComputedTiming().iterations !== Infinity)
+        .map((a) => a.finished.catch(() => undefined)),
+    ),
+  );
+  const results = await new AxeBuilder({ page })
+    .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
+    .analyze();
+  expect(
+    results.violations
+      .filter((v) => v.impact === "serious" || v.impact === "critical")
+      .map((v) => v.id),
+  ).toEqual([]);
 });
 
-test("the production build (app/dist) shows Teams, Scores and Answer sheet ready and the Quiz creator coming", async ({ page, baseURL }) => {
+test("the production build (app/dist) shows Teams, Scores and Answer sheet ready and the Quiz creator coming", async ({
+  page,
+  baseURL,
+}) => {
   const dist = fileURLToPath(new URL("../../app/dist/", import.meta.url));
   await page.route(`${baseURL ?? ""}**`, async (route) => {
-    const path = decodeURIComponent(new URL(route.request().url()).pathname).slice(app.basePath.length);
+    const path = decodeURIComponent(new URL(route.request().url()).pathname).slice(
+      app.basePath.length,
+    );
     const file = join(dist, path);
-    const target = existsSync(file) && statSync(file).isDirectory() ? join(file, "index.html") : file;
+    const target =
+      existsSync(file) && statSync(file).isDirectory() ? join(file, "index.html") : file;
     if (existsSync(target)) await route.fulfill({ path: target });
     else await route.fulfill({ status: 404 });
   });
@@ -182,7 +272,9 @@ test("the production build (app/dist) shows Teams, Scores and Answer sheet ready
 });
 
 // Moni 2026-11-23: Home must look and move like an app — the tool used last leads, tiles pair up.
-test("the tool used last leads Home as a wide card marked “Last used”; a tile left alone takes the whole row", async ({ page }) => {
+test("the tool used last leads Home as a wide card marked “Last used”; a tile left alone takes the whole row", async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 412, height: 840 });
   await page.goto("./");
   await expect(page.locator(".launcher-item--featured")).toHaveCount(0); // nothing used yet
@@ -193,19 +285,29 @@ test("the tool used last leads Home as a wide card marked “Last used”; a til
   await expect(featured.locator("[data-card]")).toHaveAttribute("data-card", "alpha");
   await expect(featured).toContainText("Last used");
   await expect(card(page, "alpha")).toHaveAccessibleName("Alpha First ready fixture"); // the badge is decoration
-  await page.evaluate(() => Promise.all(document.getAnimations().map((animation) => animation.finished.catch(() => undefined))));
-  const width = (id: string) => card(page, id).evaluate((element) => Math.round(element.getBoundingClientRect().width));
+  await page.evaluate(() =>
+    Promise.all(
+      document
+        .getAnimations()
+        .filter((one) => one.effect?.getComputedTiming().iterations !== Infinity)
+        .map((animation) => animation.finished.catch(() => undefined)),
+    ),
+  );
+  const width = (id: string) =>
+    card(page, id).evaluate((element) => Math.round(element.getBoundingClientRect().width));
   // 12 cards: the featured one, then 11 — five pairs and one left over, as wide as the featured card.
   expect(await width("eta")).toBe(await width("alpha"));
   expect(await width("teams")).toBeLessThan((await width("alpha")) / 2 + 1);
 });
 
-test("opening a tool and going back works the same with reduced motion (no screen animation)", async ({ page }) => {
+test("opening a tool and going back works the same with reduced motion (no screen animation)", async ({
+  page,
+}) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("./");
   await card(page, "beta").click();
   await expect(page.locator('[data-miniapp="beta"] [data-probe]')).toBeVisible();
   await back(page).click();
   await expect(card(page, "beta")).toBeFocused();
-  expect(await page.evaluate(() => document.getAnimations().length)).toBe(0);
+  expect(await page.evaluate(() => document.getAnimations().length)).toBe(0); // also the endless ones (lights, stars, wizard) are off
 });

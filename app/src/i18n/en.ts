@@ -203,6 +203,7 @@ export const en = {
   app: {
     home: {
       title: "Ready for quiz night?",
+      sub: "Pick a tool and play.",
       lastUsed: "Last used",
       open: "Open",
       soon: "Soon",

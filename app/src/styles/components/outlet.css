@@ -9,6 +9,20 @@
     &:focus {
       outline: none;
     }
+
+    /* A soft light in the open tool's colour behind its screen (the page carries the tool's accent
+       while it is open — generated/accent.css). On the pseudo-element only: the outlet itself must
+       not get transform, filter or clipping. */
+    &::before {
+      --outlet-glow: 14%;
+
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      background: radial-gradient(70vmax 45vmax at 50% 0%, color-mix(in oklch, var(--color-accent) var(--outlet-glow), transparent), transparent 70%);
+    }
   }
 
   /* || Components: outlet skeleton */

@@ -2,14 +2,15 @@
   "name": "app",
   "private": true,
   "type": "module",
-  "version": "0.13.0",
+  "version": "0.14.0",
   "scripts": {
     "dev": "vite",
     "build": "vite build && vite build --config test/vite.e2e.config.ts",
     "preview": "vite preview"
   },
   "dependencies": {
-    "@fontsource-variable/inter": "^5.3.0",
+    "@fontsource-variable/manrope": "5.3.0",
+    "@fontsource-variable/unbounded": "5.3.0",
     "@simeonts/quizzard-core": "workspace:^",
     "@simeonts/quizzard-sheet-miniapp": "workspace:^",
     "@simeonts/teamsync-random-team-generator-miniapp": "workspace:^",

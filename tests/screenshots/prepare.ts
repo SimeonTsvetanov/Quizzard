@@ -4,8 +4,29 @@ import { expect, type Page } from "@playwright/test";
 const SAMPLE_SHEET = {
   version: 1,
   rounds: [
-    { name: "History", points: 1, bonus: 0, questions: [{ text: "Paris", mark: "right", points: null }, { text: "1066", mark: "wrong", points: null }, { text: "The Nile", mark: "right", points: null }, { text: "Napoleon", mark: "right", points: null }] },
-    { name: "Music", points: 2, bonus: 1, questions: [{ text: "Queen", mark: "right", points: null }, { text: "Blur", mark: "right", points: null }, { text: "Abba", mark: "wrong", points: null }, { text: "Prince", mark: "right", points: 5 }, { text: "Adele", mark: "none", points: null }] },
+    {
+      name: "History",
+      points: 1,
+      bonus: 0,
+      questions: [
+        { text: "Paris", mark: "right", points: null },
+        { text: "1066", mark: "wrong", points: null },
+        { text: "The Nile", mark: "right", points: null },
+        { text: "Napoleon", mark: "right", points: null },
+      ],
+    },
+    {
+      name: "Music",
+      points: 2,
+      bonus: 1,
+      questions: [
+        { text: "Queen", mark: "right", points: null },
+        { text: "Blur", mark: "right", points: null },
+        { text: "Abba", mark: "wrong", points: null },
+        { text: "Prince", mark: "right", points: 5 },
+        { text: "Adele", mark: "none", points: null },
+      ],
+    },
   ],
 };
 
@@ -23,12 +44,22 @@ export async function prepare(page: Page, shot: keyof typeof SHOT_ROUTES): Promi
     // The "ready to work offline" and install notes are not part of the picture.
     const style = document.createElement("style");
     style.textContent = "[data-toasts]{display:none!important}";
-    document.addEventListener("DOMContentLoaded", () => { document.head.append(style); });
+    document.addEventListener("DOMContentLoaded", () => {
+      document.head.append(style);
+    });
   }, SAMPLE_SHEET);
   await page.goto(SHOT_ROUTES[shot]);
   // An explicit "ready" signal instead of networkidle (testing §6).
-  if (shot === "wide") await expect(page.locator('[data-miniapp="sheet"] [data-total]')).toHaveText("13");
+  if (shot === "wide")
+    await expect(page.locator('[data-miniapp="sheet"] [data-total]')).toHaveText("13");
   else await expect(page.locator('[data-card="sheet"]')).toBeVisible();
   await page.evaluate(() => document.fonts.ready.then(() => undefined));
-  await page.evaluate(() => Promise.all(document.getAnimations().map((animation) => animation.finished.catch(() => undefined))));
+  await page.evaluate(() =>
+    Promise.all(
+      document
+        .getAnimations()
+        .filter((one) => one.effect?.getComputedTiming().iterations !== Infinity)
+        .map((animation) => animation.finished.catch(() => undefined)),
+    ),
+  );
 }

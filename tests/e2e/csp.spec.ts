@@ -9,20 +9,28 @@ import { expect, test, type Page } from "@playwright/test";
 /** Starts recording CSP violations of every document the page loads; returns the live list. */
 async function watchCsp(page: Page): Promise<string[]> {
   const violations: string[] = [];
-  await page.exposeFunction("reportCspViolation", (text: string) => { violations.push(text); });
+  await page.exposeFunction("reportCspViolation", (text: string) => {
+    violations.push(text);
+  });
   await page.addInitScript(() => {
-    const report = (window as unknown as { reportCspViolation: (text: string) => void }).reportCspViolation;
+    const report = (window as unknown as { reportCspViolation: (text: string) => void })
+      .reportCspViolation;
     document.addEventListener("securitypolicyviolation", (e) => {
-      report(`${e.effectiveDirective} blocked ${e.blockedURI || "inline"} (${e.sourceFile}:${String(e.lineNumber)}) on ${document.location.pathname}`);
+      report(
+        `${e.effectiveDirective} blocked ${e.blockedURI || "inline"} (${e.sourceFile}:${String(e.lineNumber)}) on ${document.location.pathname}`,
+      );
     });
   });
   page.on("console", (message) => {
-    if (message.type() === "error" && /Content Security Policy/i.test(message.text())) violations.push(message.text());
+    if (message.type() === "error" && /Content Security Policy/i.test(message.text()))
+      violations.push(message.text());
   });
   return violations;
 }
 
-test("the menu, every shell dialog, a theme change and the confirm alert raise no CSP violation", async ({ page }) => {
+test("the menu, every shell dialog, a theme change and the confirm alert raise no CSP violation", async ({
+  page,
+}) => {
   const violations = await watchCsp(page);
   await page.goto("./");
   await page.click("[data-menu-open]");

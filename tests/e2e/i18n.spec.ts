@@ -24,11 +24,15 @@ test.describe("second language", () => {
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
   });
 
-  test("Settings → Language switches, is remembered, and back to English works", async ({ page }) => {
+  test("Settings → Language switches, is remembered, and back to English works", async ({
+    page,
+  }) => {
     await page.goto("./#settings");
     await page.locator(`label[for="lang-${lang}"]`).click();
     await expect(page.locator("html")).toHaveAttribute("lang", lang);
-    await expect(page.locator('dialog[data-dialog="settings"][open] h2')).not.toHaveText("Settings");
+    await expect(page.locator('dialog[data-dialog="settings"][open] h2')).not.toHaveText(
+      "Settings",
+    );
     await page.reload();
     await expect(page.locator("html")).toHaveAttribute("lang", lang);
     await page.goto("./#settings");

@@ -9,7 +9,7 @@ import { attribution, confirmDialog, shareSheet, toasts } from "../support/host.
 const FOLLOWERS = ["Moni", "Iliyana", "George", "Viki", "Eli", "Asen", "Lubomir", "Ralica", "Venci", "Slavi", "Joni", "Apapa", "Mitaka G", "Tonkata", "Dinkata", "Keti", "Raiko", "Tancheto"];
 const names = (n: number): string => Array.from({ length: n }, (_, i) => `Player ${String(i + 1)}`).join("\n");
 const serious = async (page: Page): Promise<string[]> => {
-  await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished.catch(() => undefined)))); // axe mis-measures contrast while anything fades in
+  await page.evaluate(() => Promise.all(document.getAnimations().filter((one) => one.effect?.getComputedTiming().iterations !== Infinity).map((a) => a.finished.catch(() => undefined)))); // axe mis-measures contrast while anything fades in
   return (await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag22aa"]).analyze()).violations
     .filter((v) => v.impact === "serious" || v.impact === "critical").map((v) => v.id);
 };

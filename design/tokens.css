@@ -66,8 +66,12 @@
     --lift: translateY(-1px);
 
     /* ---------- Typography ---------- */
-    /* SF on Apple devices (system font, never shipped), self-hosted Inter elsewhere, then OS UI font. */
-    --font-sans: -apple-system, BlinkMacSystemFont, "Inter Variable", "Inter", system-ui, "Segoe UI", Roboto, sans-serif;
+    /* Quizzard (Moni 2026-11-23, "a cooler font"): self-hosted Manrope for text, first in the list so
+       every browser really uses it (with -apple-system first, Chromium showed the system font
+       everywhere), then the OS UI font. Both fonts have Latin and Cyrillic. */
+    --font-sans: "Manrope Variable", "Manrope", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    /* Unbounded for headings, tile names and the numbers that matter (totals, round results). */
+    --font-display: "Unbounded Variable", "Unbounded", var(--font-sans);
     --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
     /* Scale modelled on Apple text styles; rem so user font settings scale it. */
     --text-xs: 0.75rem; /* 12 caption */

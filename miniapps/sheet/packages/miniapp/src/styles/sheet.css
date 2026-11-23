@@ -56,8 +56,10 @@
     gap: var(--space-1);
     padding: var(--space-2);
     border-radius: var(--radius-lg);
-    background: var(--color-surface);
-    box-shadow: var(--shadow-1);
+    /* The tool's colour, like its tile on Home: the bar is the sheet's banner. */
+    background: var(--color-accent);
+    color: var(--color-on-accent);
+    box-shadow: var(--shadow-2);
   }
 
   /* The strip between its two arrows; the arrows lie over its ends, so showing one moves nothing. */
@@ -96,9 +98,9 @@
     border: 0;
     border-radius: var(--radius-md);
     /* The bar's own colour, with a soft edge towards the tabs: they fade under the arrow. */
-    background: var(--color-surface);
-    box-shadow: 0 0 var(--space-3) var(--space-2) var(--color-surface);
-    color: var(--color-text);
+    background: var(--color-accent);
+    box-shadow: 0 0 var(--space-3) var(--space-2) var(--color-accent);
+    color: var(--color-on-accent);
     cursor: pointer;
 
     &[hidden] {
@@ -127,8 +129,9 @@
     padding: 0 var(--space-2);
     border: 0;
     border-radius: var(--radius-md);
-    background: var(--color-fill);
-    color: var(--color-text);
+    /* A shade of the bar for the other rounds; the open one is the bar's inverse. */
+    background: var(--color-accent-pressed);
+    color: var(--color-on-accent);
     font: inherit;
     line-height: var(--leading-tight);
     cursor: pointer;
@@ -136,35 +139,32 @@
     user-select: none;
     transition: background-color var(--duration-fast) var(--ease-standard), color var(--duration-fast) var(--ease-standard);
 
+    /* The ring in the bar's text colour: the accent itself would not show on the accent. */
     &:focus-visible {
-      outline: var(--focus-ring-width) solid var(--color-focus);
-      outline-offset: var(--focus-ring-offset);
+      outline: var(--focus-ring-width) solid var(--color-on-accent);
+      outline-offset: calc(-1 * var(--focus-ring-width));
     }
 
     &[aria-current="true"] {
-      background: var(--color-accent-tint);
-      color: var(--color-accent-text);
-      box-shadow: inset 0 0 0 var(--focus-ring-width) var(--color-accent);
+      background: var(--color-on-accent);
+      color: var(--color-accent-pressed);
     }
   }
 
   .sheet-tab-number {
-    font-weight: var(--weight-bold);
+    font-family: var(--font-display);
+    font-weight: var(--weight-semibold);
   }
 
   .sheet-tab-points {
     font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
     font-variant-numeric: tabular-nums;
-    color: var(--color-text-secondary);
-
-    .sheet-tab[aria-current="true"] & {
-      color: inherit;
-    }
   }
 
   /* "+": the same size as a tab, beside the strip — always on screen. */
   .sheet-tab--add {
-    color: var(--color-accent-text);
+    background: none;
   }
 
   .sheet-total {
@@ -181,16 +181,17 @@
 
   .sheet-total-label {
     font-size: var(--text-xs);
-    font-weight: var(--weight-semibold);
-    color: var(--color-text-secondary);
+    font-weight: var(--weight-bold);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
   }
 
   .sheet-total-value {
+    font-family: var(--font-display);
     font-size: var(--text-2xl);
     font-weight: var(--weight-bold);
     font-variant-numeric: tabular-nums;
     letter-spacing: var(--tracking-tight);
-    color: var(--color-accent-text);
   }
 
   /* || Components: the open round — fills what is left of the screen */
@@ -217,8 +218,9 @@
   .sheet-round-title {
     flex: none;
     margin: 0;
-    font-size: var(--text-xl);
-    font-weight: var(--weight-bold);
+    font-family: var(--font-display);
+    font-size: var(--text-lg);
+    font-weight: var(--weight-semibold);
     letter-spacing: var(--tracking-tight);
   }
 
@@ -226,7 +228,8 @@
   .sheet-round-points {
     flex: none;
     width: var(--sheet-points-width);
-    font-size: var(--text-2xl);
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
     font-weight: var(--weight-bold);
     font-variant-numeric: tabular-nums;
     letter-spacing: var(--tracking-tight);

@@ -15,7 +15,8 @@ interface ProbeCounters {
 
 const probe = (page: Page) => page.locator('[data-miniapp="probe"] [data-probe]');
 const out = (page: Page, name: string) => probe(page).locator(`[data-probe-${name}]`);
-const control = (page: Page, name: string) => probe(page).getByRole("button", { name, exact: true });
+const control = (page: Page, name: string) =>
+  probe(page).getByRole("button", { name, exact: true });
 const slot = (page: Page) => page.locator("[data-header-slot]");
 const back = (page: Page) => page.getByRole("banner").getByRole("button", { name: "Back to Home" });
 
@@ -46,7 +47,9 @@ async function pickSetting(page: Page, name: "lang" | "theme", value: string): P
   await expect(page.locator("dialog[data-menu]")).not.toHaveAttribute("open", "");
 }
 
-test("language and theme changes reach the mini-app; after unmount nothing fires and the slot is gone", async ({ page }) => {
+test("language and theme changes reach the mini-app; after unmount nothing fires and the slot is gone", async ({
+  page,
+}) => {
   await page.emulateMedia({ colorScheme: "light" });
   await openProbe(page);
   await expect(out(page, "lang")).toHaveText("en");
@@ -75,7 +78,9 @@ test("language and theme changes reach the mini-app; after unmount nothing fires
   expect((await counters(page)).signalFires).toBe(4);
 });
 
-test("toast: the mini-app's text is shown as text, its action runs, an error toast is an alert", async ({ page }) => {
+test("toast: the mini-app's text is shown as text, its action runs, an error toast is an alert", async ({
+  page,
+}) => {
   await openProbe(page);
   await control(page, "Toast").click();
   const toast = page.locator(".toast").filter({ hasText: "<b>Probe</b> toast" });
@@ -87,7 +92,9 @@ test("toast: the mini-app's text is shown as text, its action runs, an error toa
   await expect(page.getByRole("alert").filter({ hasText: "Probe failed" })).toBeVisible();
 });
 
-test("confirm: the shell's alert resolves true on the action, false on Cancel, Escape and the backdrop", async ({ page }) => {
+test("confirm: the shell's alert resolves true on the action, false on Cancel, Escape and the backdrop", async ({
+  page,
+}) => {
   await openProbe(page);
   const alert = page.getByRole("alertdialog", { name: "Reset the probe?" });
   const answer = async (act: () => Promise<void>, expected: string): Promise<void> => {
@@ -105,25 +112,36 @@ test("confirm: the shell's alert resolves true on the action, false on Cancel, E
   await answer(() => page.mouse.click(2, 2), "false"); // the dimmed backdrop
 });
 
-test("share: the device sheet → shared, its cancel → cancelled; the fallback sheet → copied or cancelled", async ({ page }) => {
+test("share: the device sheet → shared, its cancel → cancelled; the fallback sheet → copied or cancelled", async ({
+  page,
+}) => {
   await openProbe(page);
   const share = async (expected: string): Promise<void> => {
     await control(page, "Share").click();
     await expect(out(page, "share")).toHaveText(expected);
   };
   await page.evaluate(() => {
-    Object.defineProperty(navigator, "share", { configurable: true, value: () => Promise.resolve() });
+    Object.defineProperty(navigator, "share", {
+      configurable: true,
+      value: () => Promise.resolve(),
+    });
   });
   await share("shared");
   await page.evaluate(() => {
-    Object.defineProperty(navigator, "share", { configurable: true, value: () => Promise.reject(new DOMException("closed", "AbortError")) });
+    Object.defineProperty(navigator, "share", {
+      configurable: true,
+      value: () => Promise.reject(new DOMException("closed", "AbortError")),
+    });
   });
   await share("cancelled");
 
   // No device sheet: the shell's WhatsApp + Copy sheet.
   await page.evaluate(() => {
     Object.defineProperty(navigator, "share", { configurable: true, value: undefined });
-    Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: () => Promise.resolve() } });
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText: () => Promise.resolve() },
+    });
   });
   const sheet = page.locator('dialog[data-dialog="share"][open]');
   await control(page, "Share").click();
@@ -138,7 +156,9 @@ test("share: the device sheet → shared, its cancel → cancelled; the fallback
   await expect(out(page, "share")).toHaveText("cancelled");
 });
 
-test("prefs: a short key is stored under the mini-app's prefix; a key that could escape it is rejected", async ({ page }) => {
+test("prefs: a short key is stored under the mini-app's prefix; a key that could escape it is rejected", async ({
+  page,
+}) => {
   await openProbe(page);
   await control(page, "Save pref").click();
   await expect(out(page, "pref")).toHaveText("quizzard-probe:v1:color=green saved:true");
@@ -149,13 +169,17 @@ test("prefs: a short key is stored under the mini-app's prefix; a key that could
   expect(stored).toEqual({ raw: '"green"', shell: null });
   await control(page, "Bad key").click();
   await expect(out(page, "pref")).toHaveText("rejected");
-  expect(await page.evaluate(() => Object.keys(localStorage).filter((key) => key.includes("escape")))).toEqual([]);
+  expect(
+    await page.evaluate(() => Object.keys(localStorage).filter((key) => key.includes("escape"))),
+  ).toEqual([]);
 });
 
 test.describe("header slot at 320 px", () => {
   test.use({ viewport: { width: 320, height: 640 } });
 
-  test("four mini-app buttons scroll inside the slot: same header height, logo and menu stay on screen", async ({ page }) => {
+  test("four mini-app buttons scroll inside the slot: same header height, logo and menu stay on screen", async ({
+    page,
+  }) => {
     await page.goto("./");
     const header = page.locator("[data-header]");
     await expect(page.locator("[data-launcher]")).not.toHaveAttribute("aria-busy", "true");
@@ -164,12 +188,18 @@ test.describe("header slot at 320 px", () => {
     const buttons = slot(page).getByRole("button", { name: /^Probe action \d$/ });
     await expect(buttons).toHaveCount(4);
     // In the shell's header, before the menu button.
-    expect(await page.evaluate(() => {
-      const slotElement = document.querySelector("[data-header-slot]");
-      const menu = document.querySelector("[data-menu-open]");
-      return slotElement !== null && menu !== null && slotElement.parentElement === menu.parentElement
-        && (slotElement.compareDocumentPosition(menu) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0;
-    })).toBe(true);
+    expect(
+      await page.evaluate(() => {
+        const slotElement = document.querySelector("[data-header-slot]");
+        const menu = document.querySelector("[data-menu-open]");
+        return (
+          slotElement !== null &&
+          menu !== null &&
+          slotElement.parentElement === menu.parentElement &&
+          (slotElement.compareDocumentPosition(menu) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0
+        );
+      }),
+    ).toBe(true);
     expect((await header.boundingBox())?.height).toBe(homeHeight);
     for (const selector of ["[data-home-link] img", "[data-menu-open]", "[data-back]"]) {
       const box = await page.locator(selector).boundingBox();
@@ -177,7 +207,9 @@ test.describe("header slot at 320 px", () => {
       expect(box?.x ?? -1, selector).toBeGreaterThanOrEqual(0);
       expect((box?.x ?? 0) + (box?.width ?? 0), selector).toBeLessThanOrEqual(320);
     }
-    expect(await slot(page).evaluate((element) => element.scrollWidth > element.clientWidth)).toBe(true);
+    expect(await slot(page).evaluate((element) => element.scrollWidth > element.clientWidth)).toBe(
+      true,
+    );
     // Every button is reachable: keyboard focus scrolls it into the slot's view (never entirely
     // hidden, WCAG 2.4.11) and a tap reaches it; the page never scrolls sideways.
     for (const index of [1, 2, 3, 4]) {
@@ -187,7 +219,9 @@ test.describe("header slot at 320 px", () => {
       await expect(button).toBeInViewport();
       await button.click({ trial: true });
     }
-    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
+      320,
+    );
 
     await back(page).click();
     await expect(slot(page)).toHaveCount(0);

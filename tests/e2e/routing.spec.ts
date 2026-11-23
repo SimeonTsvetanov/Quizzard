@@ -36,7 +36,9 @@ const openProbeFromHome = async (page: Page, query = ""): Promise<void> => {
   await page.goto("about:blank");
   await page.goto("./");
   await expect(homeView(page)).toBeVisible();
-  await page.evaluate((hash) => { location.hash = hash; }, `#/probe${query}`);
+  await page.evaluate((hash) => {
+    location.hash = hash;
+  }, `#/probe${query}`);
   await expect(probe(page)).toBeVisible();
 };
 
@@ -59,7 +61,9 @@ const expectHome = async (page: Page): Promise<void> => {
 // page below, canGoBack is true and the traversal is one step, to the seeded Home, as on a phone.
 // In stock Firefox with the intervention on, the toolbar Back skips the seeded Home and leaves the
 // app (never a stale screen); the header Back uses history.back(), which is not affected.
-test("deep link mounts the probe with Home seeded below it; Android Back shows Home, a second Back leaves", async ({ page }) => {
+test("deep link mounts the probe with Home seeded below it; Android Back shows Home, a second Back leaves", async ({
+  page,
+}) => {
   await page.goto("about:blank");
   await page.goto("./#/probe");
   await expect(probe(page)).toBeVisible();
@@ -73,7 +77,9 @@ test("deep link mounts the probe with Home seeded below it; Android Back shows H
   expect(page.url()).toBe("about:blank");
 });
 
-test("header Back on a deep link uses history.back(): one more Back leaves the app", async ({ page }) => {
+test("header Back on a deep link uses history.back(): one more Back leaves the app", async ({
+  page,
+}) => {
   await page.goto("about:blank");
   await page.goto("./#/probe");
   await back(page).click();
@@ -83,7 +89,9 @@ test("header Back on a deep link uses history.back(): one more Back leaves the a
   expect(page.url()).toBe("about:blank");
 });
 
-test("Home → mini-app adds one entry; header Back returns to it without a new one", async ({ page }) => {
+test("Home → mini-app adds one entry; header Back returns to it without a new one", async ({
+  page,
+}) => {
   await openProbeFromHome(page);
   const length = await page.evaluate(() => history.length);
   await expect(page.locator("[data-outlet]")).toBeFocused();
@@ -135,10 +143,14 @@ for (const hash of ["#/nope", "#/Probe", "#/probe/extra", "#/%70robe", "#a b"]) 
   });
 }
 
-test("dialog links (#help) open over a mini-app, never unmount it and give its address back", async ({ page }) => {
+test("dialog links (#help) open over a mini-app, never unmount it and give its address back", async ({
+  page,
+}) => {
   await page.goto("./#/probe");
   await expect(probe(page)).toBeVisible();
-  await page.evaluate(() => { location.hash = "#help"; });
+  await page.evaluate(() => {
+    location.hash = "#help";
+  });
   await expect(page.locator('dialog[data-dialog="help"][open]')).toBeVisible();
   await page.keyboard.press("Escape");
   await expect.poll(() => hashOf(page)).toBe("#/probe");
@@ -159,7 +171,9 @@ test("the logo link goes Home from a mini-app", async ({ page }) => {
   await expectHome(page);
 });
 
-test("title names the mini-app in the UI language; setTitle replaces the name; Back is labelled", async ({ page }) => {
+test("title names the mini-app in the UI language; setTitle replaces the name; Back is labelled", async ({
+  page,
+}) => {
   await page.goto("./#/probe");
   await page.getByRole("button", { name: "Rename" }).click();
   await expect(page).toHaveTitle(`Probe step 1 — ${app.name}`);
@@ -169,7 +183,9 @@ test("title names the mini-app in the UI language; setTitle replaces the name; B
   await expect(page.locator("[data-outlet]")).toHaveAttribute("aria-label", "Проба");
 });
 
-test("the mount element carries data-miniapp and has no transform, filter, contain or clipping ancestor", async ({ page }) => {
+test("the mount element carries data-miniapp and has no transform, filter, contain or clipping ancestor", async ({
+  page,
+}) => {
   await page.goto("./#/probe");
   await expect(probe(page)).toBeVisible();
   const offenders = await page.evaluate(() => {
@@ -178,20 +194,31 @@ test("the mount element carries data-miniapp and has no transform, filter, conta
     for (let node = host?.parentElement ?? null; node !== null; node = node.parentElement) {
       const style = getComputedStyle(node);
       const checks: Record<string, boolean> = {
-        transform: style.transform !== "none" || style.translate !== "none" || style.rotate !== "none" || style.scale !== "none",
+        transform:
+          style.transform !== "none" ||
+          style.translate !== "none" ||
+          style.rotate !== "none" ||
+          style.scale !== "none",
         filter: style.filter !== "none" || style.backdropFilter !== "none",
         contain: style.contain !== "none" || style.containerType !== "normal",
-        clip: style.overflowX !== "visible" || style.overflowY !== "visible" || style.clipPath !== "none",
-        other: style.perspective !== "none" || /transform|filter|perspective/.test(style.willChange),
+        clip:
+          style.overflowX !== "visible" ||
+          style.overflowY !== "visible" ||
+          style.clipPath !== "none",
+        other:
+          style.perspective !== "none" || /transform|filter|perspective/.test(style.willChange),
       };
-      for (const [name, isSet] of Object.entries(checks)) if (isSet) found.push(`${node.tagName.toLowerCase()}.${node.className}: ${name}`);
+      for (const [name, isSet] of Object.entries(checks))
+        if (isSet) found.push(`${node.tagName.toLowerCase()}.${node.className}: ${name}`);
     }
     return found;
   });
   expect(offenders).toEqual([]);
 });
 
-test("a chunk that cannot load (offline, not cached) shows the error view; Try again reloads and recovers", async ({ page }) => {
+test("a chunk that cannot load (offline, not cached) shows the error view; Try again reloads and recovers", async ({
+  page,
+}) => {
   await page.route(PROBE_CHUNK, (route) => route.abort("internetdisconnected"));
   await page.goto("about:blank"); // see the note above "deep link mounts the probe"
   await page.goto("./#/probe");
@@ -204,12 +231,16 @@ test("a chunk that cannot load (offline, not cached) shows the error view; Try a
   await expect(probe(page)).toBeVisible();
   await expect(page.locator("[data-outlet] .es")).toHaveCount(0);
   // The reload kept the route's mark, so the router did not seed Home again.
-  expect(await page.evaluate((): unknown => history.state)).toEqual({ quizzardScreen: { homeBelow: true } });
+  expect(await page.evaluate((): unknown => history.state)).toEqual({
+    quizzardScreen: { homeBelow: true },
+  });
   await page.goBack();
   await expectHome(page);
 });
 
-test("a mount that throws shows the error view; Try again mounts again, Back to Home works", async ({ page }) => {
+test("a mount that throws shows the error view; Try again mounts again, Back to Home works", async ({
+  page,
+}) => {
   await page.goto("./#/probe?fail=mount");
   const error = page.locator("[data-outlet] .es");
   await expect(error.getByRole("heading", { name: "Couldn't open Probe" })).toBeVisible();
@@ -224,13 +255,28 @@ for (const hash of ["#/probe", "#/probe?fail=mount"]) {
     await page.goto(`./${hash}`);
     await expect(page.locator("[data-outlet] > *")).toHaveCount(1);
     await expect(page.locator("[data-outlet]")).not.toHaveAttribute("aria-busy", "true");
-    await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished.catch(() => undefined)))); // axe mis-measures contrast while anything fades in
-    const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"]).analyze();
-    expect(results.violations.filter((v) => v.impact === "serious" || v.impact === "critical").map((v) => v.id)).toEqual([]);
+    await page.evaluate(() =>
+      Promise.all(
+        document
+          .getAnimations()
+          .filter((one) => one.effect?.getComputedTiming().iterations !== Infinity)
+          .map((a) => a.finished.catch(() => undefined)),
+      ),
+    ); // axe mis-measures contrast while anything fades in
+    const results = await new AxeBuilder({ page })
+      .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
+      .analyze();
+    expect(
+      results.violations
+        .filter((v) => v.impact === "serious" || v.impact === "critical")
+        .map((v) => v.id),
+    ).toEqual([]);
   });
 }
 
-test("race: fast A → B → A with a slow chunk ends with exactly one mounted instance", async ({ page }) => {
+test("race: fast A → B → A with a slow chunk ends with exactly one mounted instance", async ({
+  page,
+}) => {
   await page.route(PROBE_CHUNK, async (route) => {
     await new Promise((resolve) => setTimeout(resolve, 400));
     await route.continue();
@@ -268,12 +314,17 @@ test("race: a late async mount of a replaced screen is unmounted at once", async
 
 test("the production build (app/dist) contains no probe; the e2e build (app/test/dist) does", () => {
   const appDir = fileURLToPath(new URL("../../app/", import.meta.url));
-  const files = (dir: string): string[] => readdirSync(dir).flatMap((name) => {
-    const path = join(dir, name);
-    return statSync(path).isDirectory() ? files(path) : [path];
-  });
-  const withProbe = (dist: string): string[] => files(join(appDir, dist))
-    .filter((path) => /\.(js|html|json|css)$/.test(path) && /probe-miniapp|quizzard-probe|data-probe/.test(readFileSync(path, "utf8")));
+  const files = (dir: string): string[] =>
+    readdirSync(dir).flatMap((name) => {
+      const path = join(dir, name);
+      return statSync(path).isDirectory() ? files(path) : [path];
+    });
+  const withProbe = (dist: string): string[] =>
+    files(join(appDir, dist)).filter(
+      (path) =>
+        /\.(js|html|json|css)$/.test(path) &&
+        /probe-miniapp|quizzard-probe|data-probe/.test(readFileSync(path, "utf8")),
+    );
   expect(withProbe("dist")).toEqual([]);
   expect(withProbe("test/dist").length).toBeGreaterThan(0);
 });

@@ -4,8 +4,19 @@ import { app } from "../../app.config.ts";
 
 // App-shell e2e (APP-STANDARD §14): dialogs, theme, storage namespacing, offline, policy + error pages.
 const serious = async (page: Page): Promise<string[]> => {
-  await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished.catch(() => undefined)))); // axe mis-measures contrast while anything fades in
-  return (await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"]).analyze()).violations
+  await page.evaluate(() =>
+    Promise.all(
+      document
+        .getAnimations()
+        .filter((one) => one.effect?.getComputedTiming().iterations !== Infinity)
+        .map((a) => a.finished.catch(() => undefined)),
+    ),
+  ); // axe mis-measures contrast while anything fades in
+  return (
+    await new AxeBuilder({ page })
+      .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
+      .analyze()
+  ).violations
     .filter((v) => v.impact === "serious" || v.impact === "critical")
     .map((v) => v.id);
 };
@@ -21,7 +32,9 @@ for (const dialog of ["help", "settings", "about", "whats-new", "report"]) {
 
 test("changing the deep link replaces the open dialog (no stacking)", async ({ page }) => {
   await page.goto("./#help");
-  await page.evaluate(() => { window.location.hash = "#settings"; });
+  await page.evaluate(() => {
+    window.location.hash = "#settings";
+  });
   await expect(page.locator('dialog[data-dialog="settings"][open]')).toBeVisible();
   await expect(page.locator("dialog.sheet[open]")).toHaveCount(1);
 });
@@ -33,7 +46,9 @@ test("menu opens and every item is reachable", async ({ page }) => {
   await expect(page.locator("dialog[data-menu] a, dialog[data-menu] nav button")).toHaveCount(15); // incl. LinkedIn
 });
 
-test("regression: saved dark theme is applied by theme-init.js before the app JS runs", async ({ browser }) => {
+test("regression: saved dark theme is applied by theme-init.js before the app JS runs", async ({
+  browser,
+}) => {
   const context = await browser.newContext({ colorScheme: "light", serviceWorkers: "block" });
   const page = await context.newPage();
   await page.goto("./#settings");
@@ -51,8 +66,12 @@ test("storage is namespaced and Clear my data keeps other apps' data", async ({ 
   const appId = app.id;
   const keys = await page.evaluate(() => Object.keys(localStorage));
   expect(keys.every((k) => k.startsWith(`${appId}:v1:`))).toBe(true);
-  await page.evaluate(() => { localStorage.setItem("other-app:v1:x", "1"); });
-  page.on("dialog", (d) => { throw new Error(`native ${d.type()} dialog used — use confirmAction()`); });
+  await page.evaluate(() => {
+    localStorage.setItem("other-app:v1:x", "1");
+  });
+  page.on("dialog", (d) => {
+    throw new Error(`native ${d.type()} dialog used — use confirmAction()`);
+  });
   // Destructive actions ask first in our own alert (design → ui-patterns §4); Cancel keeps data.
   await page.getByRole("button", { name: "Clear my data" }).click();
   const alert = page.getByRole("alertdialog");
@@ -61,14 +80,34 @@ test("storage is namespaced and Clear my data keeps other apps' data", async ({ 
   // Let the entry animation finish (axe mis-measures contrast while opacity < 1, seen in Firefox).
   await alert.evaluate((el) => Promise.all(el.getAnimations().map((a) => a.finished)));
   // Only the alert is perceivable now (the page behind a modal is inert and dimmed).
-  expect((await new AxeBuilder({ page }).include('[role="alertdialog"]').withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"]).analyze()).violations
-    .filter((v) => v.impact === "serious" || v.impact === "critical").map((v) => v.id)).toEqual([]);
+  expect(
+    (
+      await new AxeBuilder({ page })
+        .include('[role="alertdialog"]')
+        .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
+        .analyze()
+    ).violations
+      .filter((v) => v.impact === "serious" || v.impact === "critical")
+      .map((v) => v.id),
+  ).toEqual([]);
   await alert.getByRole("button", { name: "Cancel" }).click();
   await expect(alert).toHaveCount(0);
-  expect(await page.evaluate((id) => Object.keys(localStorage).filter((k) => k.startsWith(`${id}:`)).length, appId)).toBeGreaterThan(0);
+  expect(
+    await page.evaluate(
+      (id) => Object.keys(localStorage).filter((k) => k.startsWith(`${id}:`)).length,
+      appId,
+    ),
+  ).toBeGreaterThan(0);
   await page.getByRole("button", { name: "Clear my data" }).click();
   await page.getByRole("alertdialog").getByRole("button", { name: "Delete" }).click();
-  await expect.poll(() => page.evaluate((id) => Object.keys(localStorage).filter((k) => k.startsWith(`${id}:`)).length, appId)).toBe(0);
+  await expect
+    .poll(() =>
+      page.evaluate(
+        (id) => Object.keys(localStorage).filter((k) => k.startsWith(`${id}:`)).length,
+        appId,
+      ),
+    )
+    .toBe(0);
   expect(await page.evaluate(() => localStorage.getItem("other-app:v1:x"))).toBe("1");
 });
 
@@ -86,7 +125,9 @@ test("closing Report a problem with typed text asks before discarding it", async
   await expect(report).toHaveCount(0);
 });
 
-test("Report with typed text survives Escape ×4 (close-watcher rule, accessibility §4)", async ({ page }) => {
+test("Report with typed text survives Escape ×4 (close-watcher rule, accessibility §4)", async ({
+  page,
+}) => {
   await page.goto("./#report");
   const text = page.getByLabel("What happened / your idea");
   await text.fill("Typed before the Escapes");
@@ -103,9 +144,16 @@ test.describe("toasts and sheets", () => {
   // No service worker: its "Ready to work offline" toast would replace the one under test.
   test.use({ serviceWorkers: "block" });
 
-  test("a toast shown while a sheet is open renders inside it, on top (accessibility §5)", async ({ page, context, browserName }) => {
-    await page.addInitScript(() => { delete (Navigator.prototype as Partial<Navigator>).share; }); // the fallback sheet
-    if (browserName === "chromium") await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  test("a toast shown while a sheet is open renders inside it, on top (accessibility §5)", async ({
+    page,
+    context,
+    browserName,
+  }) => {
+    await page.addInitScript(() => {
+      delete (Navigator.prototype as Partial<Navigator>).share;
+    }); // the fallback sheet
+    if (browserName === "chromium")
+      await context.grantPermissions(["clipboard-read", "clipboard-write"]);
     await page.goto("./");
     await page.click("[data-menu-open]");
     await page.locator('dialog[data-menu] [data-action="share"]').click();
@@ -113,11 +161,19 @@ test.describe("toasts and sheets", () => {
     await sheet.getByRole("button", { name: "Copy" }).click();
     const toast = sheet.getByRole("status").getByText("Copied ✓");
     await expect(toast).toBeVisible();
-    await sheet.getByRole("status").evaluate((el) => Promise.all(el.getAnimations({ subtree: true }).map((a) => a.finished)));
-    expect(await toast.evaluate((el) => {
-      const r = el.getBoundingClientRect();
-      return el.closest('[role="status"]')?.contains(document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2)) ?? false;
-    })).toBe(true);
+    await sheet
+      .getByRole("status")
+      .evaluate((el) => Promise.all(el.getAnimations({ subtree: true }).map((a) => a.finished)));
+    expect(
+      await toast.evaluate((el) => {
+        const r = el.getBoundingClientRect();
+        return (
+          el
+            .closest('[role="status"]')
+            ?.contains(document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2)) ?? false
+        );
+      }),
+    ).toBe(true);
     // Closing the sheet must not take the toast with it: it moves back to the page region. Closed with
     // the keyboard — a tap anywhere else dismisses the note (0.11.0).
     await page.keyboard.press("Escape");
@@ -125,13 +181,27 @@ test.describe("toasts and sheets", () => {
   });
 });
 
-test("reduced motion: menu, sheet and alert fade without moving (accessibility §8)", async ({ page }) => {
+test("reduced motion: menu, sheet and alert fade without moving (accessibility §8)", async ({
+  page,
+}) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.addInitScript(() => {
     const moving: string[] = [];
     Object.assign(window, { moving });
-    document.addEventListener("transitionrun", (e) => { if (/transform|translate|scale|filter/.test(e.propertyName)) moving.push(e.propertyName); }, true);
-    document.addEventListener("animationstart", (e) => { if (e.animationName !== "toast-fade") moving.push(e.animationName); }, true);
+    document.addEventListener(
+      "transitionrun",
+      (e) => {
+        if (/transform|translate|scale|filter/.test(e.propertyName)) moving.push(e.propertyName);
+      },
+      true,
+    );
+    document.addEventListener(
+      "animationstart",
+      (e) => {
+        if (e.animationName !== "toast-fade") moving.push(e.animationName);
+      },
+      true,
+    );
   });
   await page.goto("./");
   await page.click("[data-menu-open]");
@@ -146,7 +216,16 @@ test("a draft in Report a problem survives a reload", async ({ page }) => {
   await page.goto("./#report");
   await page.getByLabel("Short title").fill("Draft title");
   // The draft is saved after a debounce: wait for it to land in storage, then reload.
-  await expect.poll(() => page.evaluate(() => Object.keys(localStorage).some((k) => k.endsWith("draft:report") && (localStorage.getItem(k) ?? "").includes("Draft title")))).toBe(true);
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        Object.keys(localStorage).some(
+          (k) =>
+            k.endsWith("draft:report") && (localStorage.getItem(k) ?? "").includes("Draft title"),
+        ),
+      ),
+    )
+    .toBe(true);
   await page.reload();
   await expect(page.getByLabel("Short title")).toHaveValue("Draft title");
 });
@@ -159,10 +238,16 @@ test("a tap outside a sheet closes it (light dismiss)", async ({ page }) => {
   await expect(page.locator('dialog[data-dialog="about"]')).toHaveCount(0);
 });
 
-test("offline: an address that isn't saved shows our offline page, not the browser's", async ({ page, context, browserName }) => {
+test("offline: an address that isn't saved shows our offline page, not the browser's", async ({
+  page,
+  context,
+  browserName,
+}) => {
   test.skip(browserName !== "chromium", "Service workers are Chromium-only in Playwright");
   await page.goto("./");
-  await page.evaluate(async () => { await window.navigator.serviceWorker.ready; });
+  await page.evaluate(async () => {
+    await window.navigator.serviceWorker.ready;
+  });
   await page.reload();
   await context.setOffline(true);
   await page.goto("./no-such-page");
@@ -183,7 +268,9 @@ test("print shows content only", async ({ page }) => {
 test("works offline after the first visit", async ({ page, context, browserName }) => {
   test.skip(browserName !== "chromium", "Service workers are Chromium-only in Playwright");
   await page.goto("./");
-  await page.evaluate(async () => { await window.navigator.serviceWorker.ready; });
+  await page.evaluate(async () => {
+    await window.navigator.serviceWorker.ready;
+  });
   await page.reload();
   await context.setOffline(true);
   await page.reload();
@@ -193,26 +280,50 @@ test("works offline after the first visit", async ({ page, context, browserName 
 });
 
 test("SEO, agent and licence files are real files", async ({ request }) => {
-  for (const [path, type] of [["robots.txt", "text/plain"], ["sitemap.xml", "xml"], ["llms.txt", "text/plain"], ["llms-full.txt", "text/plain"], ["third-party-licenses.txt", "text/plain"], ["og-image.png", "image/png"], ["pwa-192x192.png", "image/png"], ["pwa-512x512.png", "image/png"], ["apple-touch-icon-180x180.png", "image/png"]] as const) {
+  for (const [path, type] of [
+    ["robots.txt", "text/plain"],
+    ["sitemap.xml", "xml"],
+    ["llms.txt", "text/plain"],
+    ["llms-full.txt", "text/plain"],
+    ["third-party-licenses.txt", "text/plain"],
+    ["og-image.png", "image/png"],
+    ["pwa-192x192.png", "image/png"],
+    ["pwa-512x512.png", "image/png"],
+    ["apple-touch-icon-180x180.png", "image/png"],
+  ] as const) {
     const res = await request.get(`./${path}`);
     expect(res.ok(), path).toBe(true);
     expect(res.headers()["content-type"], path).toContain(type);
   }
 });
 
-test("static head: one English URL, describedby llms.txt, complete social tags (seo-geo §2–§3)", async ({ request }) => {
+test("static head: one English URL, describedby llms.txt, complete social tags (seo-geo §2–§3)", async ({
+  request,
+}) => {
   const html = await (await request.get("./")).text();
   expect(html).not.toMatch(/hreflang|\?lang=/);
   expect(html).toContain(`<link rel="canonical" href="${app.url}" />`);
   expect(html).toContain(`rel="describedby" type="text/plain" href="${app.url}llms.txt"`);
-  for (const tag of ["og:site_name", "og:locale", "og:image:alt", "og:image:width", "og:image:height", "og:image:type", "twitter:image:alt"]) {
+  for (const tag of [
+    "og:site_name",
+    "og:locale",
+    "og:image:alt",
+    "og:image:width",
+    "og:image:height",
+    "og:image:type",
+    "twitter:image:alt",
+  ]) {
     expect(html, tag).toMatch(new RegExp(`(property|name)="${tag}" content="[^"]+"`));
   }
 });
 
-test("FAQ is on the page on every screen size, answers collapsed (seo-geo §4)", async ({ page }) => {
+test("FAQ is on the page on every screen size, answers collapsed (seo-geo §4)", async ({
+  page,
+}) => {
   await page.goto("./");
-  const faq = page.locator("section", { has: page.getByRole("heading", { name: "FAQ", exact: true }) });
+  const faq = page.locator("section", {
+    has: page.getByRole("heading", { name: "FAQ", exact: true }),
+  });
   const items = faq.getByRole("group");
   await expect(faq).toBeVisible();
   await expect(items).toHaveCount(app.faq.length);
@@ -228,7 +339,9 @@ test("policy pages render and keep the email out of the HTML source", async ({ p
     await expect(page.locator(".page-body")).not.toContainText("PAGE_BODY");
     // A template placeholder ("Last updated: {date}") once went live (scripts/legal.test.ts too).
     await expect(page.locator(".page-body")).not.toContainText(/[{}]/);
-    await expect(page.locator(".page-body")).toContainText(/Last updated: \d{1,2} [A-Z][a-z]+ \d{4}/);
+    await expect(page.locator(".page-body")).toContainText(
+      /Last updated: \d{1,2} [A-Z][a-z]+ \d{4}/,
+    );
   }
   const html = await (await request.get("./support/")).text();
   expect(html).not.toMatch(/[\w.+-]+@[\w-]+\.[\w.]+/);
@@ -241,7 +354,9 @@ test("custom 404 page shows the requested path", async ({ page }) => {
 });
 
 test("launch splash shows the tagline once per session, then the tool", async ({ page }) => {
-  await page.addInitScript(() => { Object.defineProperty(navigator, "webdriver", { get: () => false }); });
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, "webdriver", { get: () => false });
+  });
   await page.goto("./");
   await expect(page.locator(".splash")).toBeVisible();
   await expect(page.locator(".splash")).toBeHidden({ timeout: 4000 });
@@ -250,14 +365,24 @@ test("launch splash shows the tagline once per session, then the tool", async ({
 });
 
 // Moni 2026-11-23: a note stayed long and was in the way.
-test("a note goes away on a tap anywhere else, and by itself within a few seconds", async ({ page, context, browserName }) => {
-  await page.addInitScript(() => { delete (Navigator.prototype as Partial<Navigator>).share; });
-  if (browserName === "chromium") await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+test("a note goes away on a tap anywhere else, and by itself within a few seconds", async ({
+  page,
+  context,
+  browserName,
+}) => {
+  await page.addInitScript(() => {
+    delete (Navigator.prototype as Partial<Navigator>).share;
+  });
+  if (browserName === "chromium")
+    await context.grantPermissions(["clipboard-read", "clipboard-write"]);
   await page.goto("./");
   const copyFromMenu = async (): Promise<void> => {
     await page.click("[data-menu-open]");
     await page.locator('dialog[data-menu] [data-action="share"]').click();
-    await page.locator('dialog[data-dialog="share"][open]').getByRole("button", { name: "Copy" }).click();
+    await page
+      .locator('dialog[data-dialog="share"][open]')
+      .getByRole("button", { name: "Copy" })
+      .click();
     await page.keyboard.press("Escape"); // the keyboard does not count as a tap elsewhere
   };
   const note = page.locator("body > [data-toasts]").getByText("Copied ✓");

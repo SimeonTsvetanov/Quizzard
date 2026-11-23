@@ -11,8 +11,6 @@ import { orderForHome } from "./order.ts";
 
 /** Shell pref (`quizzard:v1:last-app`) with the id of the mini-app opened last. */
 const LAST_USED_KEY = "last-app";
-/** Drawn size of a mark in CSS px; the `<img>` carries it so nothing moves while it loads. */
-const MARK_ICON_SIZE = "32";
 
 /** The launcher as screen.ts uses it. */
 export interface Home {
@@ -90,13 +88,13 @@ function card(entry: MiniAppEntry, isFeatured: boolean): HTMLElement {
  */
 function readyCard(entry: MiniAppEntry, isFeatured: boolean): HTMLElement {
   const { id } = entry.meta;
-  return h(
+  return withIcon(h(
     "a",
     { class: "launcher-card", "data-card": id, href: routeHref({ kind: "miniapp", id, query: new URLSearchParams() }) },
-    mark(entry),
+    mark(),
     texts(entry, isFeatured),
     h("span", { class: "launcher-action", "aria-hidden": "true" }, h("span", {}, t("app.home.open")), icon("arrow", 16)),
-  );
+  ), entry);
 }
 
 /**
@@ -104,22 +102,32 @@ function readyCard(entry: MiniAppEntry, isFeatured: boolean): HTMLElement {
  * soon" is what a screen reader says — never a disabled-looking control.
  */
 function comingCard(entry: MiniAppEntry): HTMLElement {
-  return h(
+  return withIcon(h(
     "div",
     { class: "launcher-card", "data-card": entry.meta.id, "data-state": "coming" },
-    mark(entry),
+    mark(),
     texts(entry, false),
     h("span", { class: "launcher-soon", "aria-hidden": "true" }, t("app.home.soon")),
     h("span", { class: "visually-hidden" }, t("app.home.comingSoon")),
-  );
+  ), entry);
 }
 
-function mark(entry: MiniAppEntry): HTMLElement {
-  return h(
-    "span",
-    { class: "launcher-mark" },
-    h("img", { src: entry.meta.icon, alt: "", width: MARK_ICON_SIZE, height: MARK_ICON_SIZE, decoding: "async" }),
-  );
+/**
+ * The tool's icon, drawn through a mask (styles/components/home.css) so it takes the colour of its
+ * tile — white on the tool's own colour, the accent on a quiet "Soon" tile — instead of the green
+ * baked into the file. The card carries the address: the mark and the big faint icon both use it.
+ */
+function mark(): HTMLElement {
+  return h("span", { class: "launcher-mark", "aria-hidden": "true" });
+}
+
+/** Gives a card its tool's icon address (`--launcher-icon`). */
+function withIcon<T extends HTMLElement>(card: T, entry: MiniAppEntry): T {
+  // Set through the CSSOM, which the Content Security Policy allows (a style attribute it does not).
+  // An absolute address: a relative one in a custom property is resolved against the stylesheet that
+  // uses it (assets/…), not against the page.
+  card.style.setProperty("--launcher-icon", `url("${new URL(entry.meta.icon, document.baseURI).href}")`);
+  return card;
 }
 
 function texts(entry: MiniAppEntry, isFeatured: boolean): HTMLElement {

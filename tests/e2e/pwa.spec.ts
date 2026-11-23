@@ -7,31 +7,46 @@ const app: AppConfig = config;
 /** Opens the app and reloads once so the service worker controls the page. */
 async function openControlled(page: Page): Promise<void> {
   await page.goto("./");
-  await page.evaluate(async () => { await window.navigator.serviceWorker.ready; });
+  await page.evaluate(async () => {
+    await window.navigator.serviceWorker.ready;
+  });
   await page.reload();
-  await expect.poll(() => page.evaluate(() => navigator.serviceWorker.controller !== null)).toBe(true);
+  await expect
+    .poll(() => page.evaluate(() => navigator.serviceWorker.controller !== null))
+    .toBe(true);
 }
 
-test("manifest carries shortcuts only when app.config has them, and no share target (PLAN §2)", async ({ request }) => {
+test("manifest carries shortcuts only when app.config has them, and no share target (PLAN §2)", async ({
+  request,
+}) => {
   const m = (await (await request.get("./manifest.json")).json()) as Record<string, unknown>;
   expect(m["shortcuts"] !== undefined).toBe(Boolean(app.shortcuts?.length));
   expect(m["share_target"]).toBeUndefined();
 });
 
 test("manifest scope and start URL are the Pages path from app.config", async ({ request }) => {
-  const m = (await (await request.get("./manifest.json")).json()) as { start_url?: string; scope?: string };
+  const m = (await (await request.get("./manifest.json")).json()) as {
+    start_url?: string;
+    scope?: string;
+  };
   expect(m.start_url).toBe(app.basePath);
   expect(m.scope).toBe(app.basePath);
 });
 
 test("shortcuts have a 96 px icon (pwa §2)", async ({ request }) => {
-  const m = (await (await request.get("./manifest.json")).json()) as { shortcuts?: { icons?: { src: string; sizes: string }[] }[] };
-  for (const shortcut of m.shortcuts ?? []) expect(shortcut.icons?.some((i) => i.sizes === "96x96")).toBe(true);
+  const m = (await (await request.get("./manifest.json")).json()) as {
+    shortcuts?: { icons?: { src: string; sizes: string }[] }[];
+  };
+  for (const shortcut of m.shortcuts ?? [])
+    expect(shortcut.icons?.some((i) => i.sizes === "96x96")).toBe(true);
   const icon = await request.get("./pwa-96x96.png");
   expect(icon.ok()).toBe(true);
 });
 
-test("online: a file the service worker didn't save comes from the network, not our 404 page", async ({ page, browserName }) => {
+test("online: a file the service worker didn't save comes from the network, not our 404 page", async ({
+  page,
+  browserName,
+}) => {
   test.skip(browserName !== "chromium", "Service workers are Chromium-only in Playwright");
   await openControlled(page);
   const response = await page.goto("./sitemap.xml");
@@ -44,14 +59,22 @@ test("online: a file the service worker didn't save comes from the network, not 
   await expect(page.locator("[data-ep-offline]").first()).toBeHidden();
 });
 
-test("offline: an unsaved address shows our offline page; saved pages reload with any query", async ({ page, context, browserName }) => {
+test("offline: an unsaved address shows our offline page; saved pages reload with any query", async ({
+  page,
+  context,
+  browserName,
+}) => {
   test.skip(browserName !== "chromium", "Service workers are Chromium-only in Playwright");
   await openControlled(page);
   await context.setOffline(true);
   await page.goto("./no-such-page");
   await expect(page.locator("[data-ep-offline]").first()).toBeVisible();
   // Each saved page with a selector only that page has (the 404 page has neither).
-  for (const [path, selector] of [["./", "[data-menu-open]"], ["./?teams=3&lang=en", "[data-menu-open]"], ["./terms/", ".page-body"]] as const) {
+  for (const [path, selector] of [
+    ["./", "[data-menu-open]"],
+    ["./?teams=3&lang=en", "[data-menu-open]"],
+    ["./terms/", ".page-body"],
+  ] as const) {
     await page.goto(path);
     await page.reload();
     await expect(page.locator(selector), path).toBeAttached();
@@ -63,22 +86,45 @@ test("offline: an unsaved address shows our offline page; saved pages reload wit
 /** Opens the probe mini-app (e2e build only) in a controlled page and makes it busy. */
 async function openBusyProbe(page: Page): Promise<void> {
   await openControlled(page);
-  await page.evaluate(() => { location.hash = "#/probe"; });
+  await page.evaluate(() => {
+    location.hash = "#/probe";
+  });
   await page.locator("[data-probe]").getByRole("button", { name: "Busy on", exact: true }).click();
 }
 
 /** Deploys a new worker (the preview seam in app/vite.config.ts) and waits until it is waiting. */
 async function deployNextVersion(page: Page): Promise<void> {
-  await page.context().addCookies([{ name: "e2e-next-deploy", value: String(Date.now()), url: page.url() }]);
-  await page.evaluate(async () => { await (await navigator.serviceWorker.ready).update(); });
-  await expect.poll(() => page.evaluate(async () => (await navigator.serviceWorker.getRegistration())?.waiting != null), { timeout: 15_000 }).toBe(true);
+  await page
+    .context()
+    .addCookies([{ name: "e2e-next-deploy", value: String(Date.now()), url: page.url() }]);
+  await page.evaluate(async () => {
+    await (await navigator.serviceWorker.ready).update();
+  });
+  await expect
+    .poll(
+      () =>
+        page.evaluate(
+          async () => (await navigator.serviceWorker.getRegistration())?.waiting != null,
+        ),
+      { timeout: 15_000 },
+    )
+    .toBe(true);
   // because the page hears of the waiting worker in its own task right after the registration does
-  await page.evaluate(() => new Promise((resolve) => { setTimeout(resolve, 500); }));
+  await page.evaluate(
+    () =>
+      new Promise((resolve) => {
+        setTimeout(resolve, 500);
+      }),
+  );
 }
 
-const updateOffer = (page: Page) => page.getByRole("status").filter({ hasText: "New version available" });
+const updateOffer = (page: Page) =>
+  page.getByRole("status").filter({ hasText: "New version available" });
 
-test("an update waits while a mini-app is busy and is offered when it is idle again (context.shell.setBusy)", async ({ page, browserName }) => {
+test("an update waits while a mini-app is busy and is offered when it is idle again (context.shell.setBusy)", async ({
+  page,
+  browserName,
+}) => {
   test.skip(browserName !== "chromium", "Service workers are Chromium-only in Playwright");
   await openBusyProbe(page);
   await deployNextVersion(page);
@@ -102,14 +148,26 @@ test("a busy mini-app that unmounts releases the update offer", async ({ page, b
 // the Undo toast before it could be pressed.
 const probeToast = (page: Page) => page.locator(".toast").filter({ hasText: "Probe" });
 
-test("\"Ready to work offline\" waits for a toast with an action instead of replacing it", async ({ page, browserName }) => {
+test('"Ready to work offline" waits for a toast with an action instead of replacing it', async ({
+  page,
+  browserName,
+}) => {
   test.skip(browserName !== "chromium", "Service workers are Chromium-only in Playwright");
   // The worker registers only when the test says so: the action toast is on screen first, in every run.
   await page.addInitScript(() => {
     const container = navigator.serviceWorker;
     const register = container.register.bind(container);
-    const gate = new Promise<void>((resolve) => { window.addEventListener("e2e:release-worker", () => { resolve(); }, { once: true }); });
-    container.register = (...args: Parameters<ServiceWorkerContainer["register"]>) => gate.then(() => register(...args));
+    const gate = new Promise<void>((resolve) => {
+      window.addEventListener(
+        "e2e:release-worker",
+        () => {
+          resolve();
+        },
+        { once: true },
+      );
+    });
+    container.register = (...args: Parameters<ServiceWorkerContainer["register"]>) =>
+      gate.then(() => register(...args));
   });
   await page.goto("./#/probe");
   await page.locator("[data-probe]").getByRole("button", { name: "Toast", exact: true }).click();
@@ -119,7 +177,9 @@ test("\"Ready to work offline\" waits for a toast with an action instead of repl
     window.dispatchEvent(new Event("e2e:release-worker"));
     await navigator.serviceWorker.ready;
     // because the page hears that the worker is installed in its own task right after the registration does
-    await new Promise((resolve) => { setTimeout(resolve, 500); });
+    await new Promise((resolve) => {
+      setTimeout(resolve, 500);
+    });
   });
   await expect(probeToast(page)).toBeVisible();
   await expect(page.locator(".toast")).toHaveCount(1);
@@ -128,10 +188,15 @@ test("\"Ready to work offline\" waits for a toast with an action instead of repl
   await expect(page.locator(".toast").filter({ hasText: "Ready to work offline" })).toBeVisible();
 });
 
-test("the update offer waits for a toast with an action, then stays", async ({ page, browserName }) => {
+test("the update offer waits for a toast with an action, then stays", async ({
+  page,
+  browserName,
+}) => {
   test.skip(browserName !== "chromium", "Service workers are Chromium-only in Playwright");
   await openControlled(page);
-  await page.evaluate(() => { location.hash = "#/probe"; });
+  await page.evaluate(() => {
+    location.hash = "#/probe";
+  });
   await page.locator("[data-probe]").getByRole("button", { name: "Toast", exact: true }).click();
   await expect(probeToast(page)).toBeVisible();
   await probeToast(page).hover(); // pauses its 10 s while the next version deploys
@@ -143,9 +208,14 @@ test("the update offer waits for a toast with an action, then stays", async ({ p
 });
 
 // PLAN T-18 / T-21 (Moni 2026-11-23: "did you cover the icons?").
-test("icons: the tab shows the small mark, each shortcut has its own icon, the manifest has install screenshots", async ({ page, request }) => {
+test("icons: the tab shows the small mark, each shortcut has its own icon, the manifest has install screenshots", async ({
+  page,
+  request,
+}) => {
   await page.goto("./");
-  const tabIcons = await page.locator('link[rel="icon"]').evaluateAll((links) => links.map((link) => link.getAttribute("href") ?? ""));
+  const tabIcons = await page
+    .locator('link[rel="icon"]')
+    .evaluateAll((links) => links.map((link) => link.getAttribute("href") ?? ""));
   expect(tabIcons.some((href) => href.endsWith("favicon.svg"))).toBe(true);
   expect(tabIcons.some((href) => href.endsWith("favicon-48x48.png"))).toBe(true);
   expect(tabIcons.some((href) => href.endsWith("logo.svg"))).toBe(false); // the full wizard is a blur at 16 px
@@ -154,11 +224,26 @@ test("icons: the tab shows the small mark, each shortcut has its own icon, the m
     shortcuts?: { url: string; icons?: { src: string }[] }[];
     screenshots?: { src: string; form_factor?: string; sizes: string }[];
   };
-  const shortcutIcons = (manifest.shortcuts ?? []).map((shortcut) => shortcut.icons?.[0]?.src ?? "");
-  expect(shortcutIcons).toEqual(["shortcut-teams-96x96.png", "shortcut-scores-96x96.png", "shortcut-sheet-96x96.png"]);
+  const shortcutIcons = (manifest.shortcuts ?? []).map(
+    (shortcut) => shortcut.icons?.[0]?.src ?? "",
+  );
+  expect(shortcutIcons).toEqual([
+    "shortcut-teams-96x96.png",
+    "shortcut-scores-96x96.png",
+    "shortcut-sheet-96x96.png",
+  ]);
   expect(manifest.icons.some((icon) => icon.purpose === "maskable")).toBe(true);
-  expect((manifest.screenshots ?? []).map((shot) => [shot.form_factor, shot.sizes])).toEqual([["narrow", "780x1688"], ["wide", "1280x800"]]);
-  for (const file of ["favicon.svg", "favicon-48x48.png", ...shortcutIcons, ...(manifest.screenshots ?? []).map((shot) => shot.src), "maskable-icon-512x512.png"]) {
+  expect((manifest.screenshots ?? []).map((shot) => [shot.form_factor, shot.sizes])).toEqual([
+    ["narrow", "780x1688"],
+    ["wide", "1280x800"],
+  ]);
+  for (const file of [
+    "favicon.svg",
+    "favicon-48x48.png",
+    ...shortcutIcons,
+    ...(manifest.screenshots ?? []).map((shot) => shot.src),
+    "maskable-icon-512x512.png",
+  ]) {
     expect((await request.get(`./${file}`)).status(), file).toBe(200);
   }
 });
