@@ -56,6 +56,7 @@ export const bg: Messages = {
       light: "Светла",
       dark: "Тъмна",
     },
+    backdrop: { label: "Фон", scene: "Анимиран", simple: "Изчистен" },
     language: { label: "Език" },
     settings: {
       title: "Настройки",

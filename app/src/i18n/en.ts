@@ -54,6 +54,7 @@ export const en = {
       light: "Light",
       dark: "Dark",
     },
+    backdrop: { label: "Background", scene: "Animated", simple: "Simple" },
     language: { label: "Language" },
     settings: {
       title: "Settings",

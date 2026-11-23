@@ -31,6 +31,7 @@ The following options are in **Settings**, in the order of the window.
 | Option | What it does | Values | Default |
 |---|---|---|---|
 | **Theme** | Sets the colours of Quizzard. | **System**, **Light**, **Dark** | **System** (follows your device) |
+| **Background** | Behind every screen: a starry night sky in the dark theme and soft mountains under the sun in the light theme, moving slowly; **Simple** is a quiet glow. Nothing moves when your device asks for reduced motion. | **Animated**, **Simple** | **Animated** |
 | **Language** | Sets the language of Quizzard, its tools and **Help**. | **English**, **Български** | **English** |
 | **Your data** | Lists the data each tool and Quizzard itself saved, with its size. **Clear** deletes the data of one tool, after you confirm. Shows **Nothing saved** for an empty tool. | **Teams**, **Scores**, **Answer sheet**, **Quizzard settings** | — |
 | **Space used** | The space the browser reports for this website, including the offline copy. It is not the size of your data. | — | — |

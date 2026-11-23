@@ -11,6 +11,7 @@ import "./styles/app.css"; // layer order, tokens, accent and every app style (d
 import { app } from "./config.ts";
 import { hydrateIcons } from "./ui/icons.ts";
 import { applyTheme, getTheme, initTheme } from "./ui/theme.ts";
+import { initBackdrop } from "./ui/scene.ts";
 import { initI18n } from "./i18n/index.ts";
 import { shareApp } from "./ui/share.ts";
 import { installErrorScreen, show as showErrorScreen } from "./ui/error-screen.ts";
@@ -34,6 +35,7 @@ initI18n(); // first: every later module (incl. the error screen) uses t()
 installErrorScreen();
 hydrateIcons();
 initTheme();
+initBackdrop();
 trackKeyboardInset(); // sheets stay above the on-screen keyboard (iOS Safari needs the measured inset)
 initOfflineIndicator();
 initTitle();

@@ -4,6 +4,11 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.16.0] - 2026-11-23
+### Added
+- A new animated background: a starry night sky that drifts slowly in the dark theme, soft mountains under a
+  turning sun in the light theme. Settings → Background → Simple brings back the quiet look with one tap.
+
 ## [0.15.1] - 2026-11-23
 ### Changed
 - On phones and in the installed app the home screen has no top bar: just the menu button, beside the wizard and

@@ -359,3 +359,24 @@ test("phones: Home has no header bar — only the menu button, beside the greeti
   await expect(page.locator(".brand")).toBeVisible();
   await expect(back(page)).toBeVisible();
 });
+
+test("Settings → Background: the animated scene by default, Simple turns it off and is remembered", async ({
+  page,
+}) => {
+  await page.goto("./");
+  await expect(cards(page)).toHaveCount(12);
+  const scene = page.locator(".scene");
+  await expect(scene).toBeVisible();
+  await expect(scene).toHaveAttribute("aria-hidden", "true");
+  await page.locator("[data-menu-open]").click();
+  await page.locator('[data-menu] [data-action="settings"]').click();
+  const settings = page.locator('dialog[data-dialog="settings"][open]');
+  await expect(settings.locator("#backdrop-scene")).toBeChecked();
+  await settings.locator('label[for="backdrop-simple"]').click();
+  await expect(page.locator("html")).toHaveAttribute("data-backdrop", "simple");
+  await expect(scene).toBeHidden();
+  await page.reload();
+  await expect(cards(page)).toHaveCount(12);
+  await expect(page.locator("html")).toHaveAttribute("data-backdrop", "simple");
+  await expect(page.locator(".scene")).toBeHidden();
+});

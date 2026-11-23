@@ -10,6 +10,7 @@
 @import "../generated/accent.css";
 @import "./base.css";
 @import "./layout.css";
+@import "./components/scene.css";
 @import "./components/wordmark.css";
 @import "./components/splash.css";
 @import "./components/header.css";

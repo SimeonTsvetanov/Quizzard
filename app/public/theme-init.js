@@ -23,6 +23,14 @@
   } catch (e) {
     /* storage blocked: no splash */
   }
+  // The background (Settings → Background): the animated scene unless "simple" was chosen; set before the first
+  // paint so the simple glow never flashes first. ui/scene.ts builds the scene itself.
+  try {
+    var backdrop = localStorage.getItem("quizzard:v1:backdrop");
+    document.documentElement.setAttribute("data-backdrop", backdrop === '"simple"' ? "simple" : "scene");
+  } catch (e) {
+    document.documentElement.setAttribute("data-backdrop", "scene");
+  }
   // A deep link into a tool (#/teams…): mark it before the first paint, so Home's header layout (no bar on phones)
   // and the tool's colour are right from the start; router/screen.ts keeps data-tool up to date afterwards.
   var tool = /^#\/([a-z0-9-]+)/.exec(location.hash);

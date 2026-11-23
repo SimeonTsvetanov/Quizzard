@@ -7,6 +7,7 @@ import { formatBytes, h } from "./dom.ts";
 import { openDialog } from "./dialog.ts";
 import { confirmAction } from "./confirm.ts";
 import { applyTheme, getTheme, type Theme } from "./theme.ts";
+import { applyBackdrop, getBackdrop, type Backdrop } from "./scene.ts";
 import { showToast } from "./toast.ts";
 
 /** iOS-style grouped section: small title above a card (design → ui-patterns §12). */
@@ -119,6 +120,9 @@ export function openSettings(): void {
   const theme = segmented("theme", t("shell.theme.label"),
     (["system", "light", "dark"] as const satisfies readonly Theme[]).map((v) => ({ value: v, label: t(`shell.theme.${v}`) })),
     getTheme(), (v) => { applyTheme(v as Theme, true); });
+  const backdrop = segmented("backdrop", t("shell.backdrop.label"),
+    (["scene", "simple"] as const satisfies readonly Backdrop[]).map((v) => ({ value: v, label: t(`shell.backdrop.${v}`) })),
+    getBackdrop(), (v) => { applyBackdrop(v as Backdrop, true); });
   // Language picker only when the app ships more than one language (app-shell rule 9).
   const language = segmented("lang", t("shell.language.label"),
     app.languages.map((l) => ({ value: l, label: LANG_NAMES[l], lang: l })),
@@ -148,6 +152,7 @@ export function openSettings(): void {
 
   openDialog("settings", t("shell.settings.title"), [
     group(t("shell.theme.label"), theme),
+    group(t("shell.backdrop.label"), backdrop),
     ...(app.languages.length > 1 ? [group(t("shell.language.label"), language)] : []),
     group(t("app.data.title"), ...dataRows()),
     h("p", { class: "group-note" }, t("app.data.note")),

@@ -1,0 +1,202 @@
+/* The animated background (ui/scene.ts), behind every screen while Settings → Background is "Animated":
+   the dark theme is a night sky whose stars drift slowly upwards in three layers (after the classic CSS
+   "parallax stars" pen Moni picked, rebuilt here), the light theme soft mountains under a slowly turning sun.
+   Only transform and opacity move (composited layers); nothing moves with reduced motion, and the scene stands
+   still while a tool is open. */
+@layer components {
+  /* || Components: scene */
+  .scene {
+    position: fixed;
+    inset: 0;
+    z-index: -3;
+    display: none;
+    overflow: hidden;
+    pointer-events: none;
+
+    :root[data-backdrop="scene"] & {
+      display: block;
+
+      @media (prefers-reduced-motion: no-preference) {
+        animation: scene-in 900ms var(--ease-out) both;
+      }
+    }
+
+    /* A tool is open: the sky keeps its place, nothing spends battery behind the work. */
+    :root[data-tool] & * {
+      animation-play-state: paused;
+    }
+  }
+
+  /* The simple look's glows step aside while the scene is on. */
+  :root[data-backdrop="scene"] {
+    & .home::before,
+    & .home::after,
+    & .outlet::before {
+      display: none;
+    }
+  }
+
+  .scene-night,
+  .scene-day {
+    position: absolute;
+    inset: 0;
+  }
+
+  /* Light by default; the night when the dark theme is chosen, or the device is dark and no theme is chosen. */
+  .scene-night {
+    display: none;
+    background: radial-gradient(ellipse at bottom, oklch(27% 0.035 250), oklch(13% 0.01 270));
+
+    :root[data-theme="dark"] & {
+      display: block;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) & {
+        display: block;
+      }
+    }
+  }
+
+  .scene-day {
+    background: linear-gradient(
+      180deg,
+      oklch(97.5% 0.018 85) 0%,
+      oklch(96% 0.028 80) 50%,
+      oklch(94% 0.03 150) 100%
+    );
+
+    :root[data-theme="dark"] & {
+      display: none;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) & {
+        display: none;
+      }
+    }
+  }
+
+  /* || Components: scene — night */
+  /* A 1px dot whose box-shadows are the stars (ui/scene.ts writes --scene-stars); its copy 2000px below keeps the
+     sky full while the layer rises 2000px and starts again. */
+  .scene-stars {
+    --scene-star: oklch(100% 0 0 / 0.85);
+    --scene-star-size: 1px;
+    --scene-speed: 60s;
+    --scene-field: 2000px;
+
+    position: absolute;
+    top: 0;
+    left: 0;
+    inline-size: var(--scene-star-size);
+    block-size: var(--scene-star-size);
+    border-radius: 50%;
+    color: var(--scene-star);
+    box-shadow: var(--scene-stars);
+    will-change: transform;
+
+    &::after {
+      content: "";
+      position: absolute;
+      top: var(--scene-field);
+      left: 0;
+      inline-size: var(--scene-star-size);
+      block-size: var(--scene-star-size);
+      border-radius: 50%;
+      box-shadow: var(--scene-stars);
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      animation: scene-rise var(--scene-speed) linear infinite;
+    }
+  }
+
+  .scene-stars--2 {
+    --scene-star-size: 2px;
+    --scene-speed: 110s;
+  }
+
+  .scene-stars--3 {
+    --scene-star-size: 3px;
+    --scene-speed: 160s;
+    --scene-star: oklch(92% 0.08 92 / 0.9);
+  }
+
+  /* || Components: scene — day */
+  /* Pale rays from the sun, turning very slowly; a radial mask fades them out long before the edges. */
+  .scene-rays {
+    --scene-sun-x: 78%;
+    --scene-sun-y: 14%;
+    --scene-rays-size: 170vmax;
+
+    position: absolute;
+    left: calc(var(--scene-sun-x) - var(--scene-rays-size) / 2);
+    top: calc(var(--scene-sun-y) - var(--scene-rays-size) / 2);
+    inline-size: var(--scene-rays-size);
+    block-size: var(--scene-rays-size);
+    background: repeating-conic-gradient(
+      oklch(93% 0.07 88 / 0.55) 0deg 5deg,
+      transparent 5deg 15deg
+    );
+    mask: radial-gradient(circle, black 0%, transparent 45%);
+    will-change: transform;
+
+    @media (prefers-reduced-motion: no-preference) {
+      animation: scene-turn 160s linear infinite;
+    }
+  }
+
+  .scene-sun {
+    position: absolute;
+    left: calc(78% - 16vmax);
+    top: calc(14% - 16vmax);
+    inline-size: 32vmax;
+    block-size: 32vmax;
+    border-radius: 50%;
+    background: radial-gradient(
+      circle,
+      oklch(97% 0.07 92) 0%,
+      oklch(94% 0.08 85 / 0.6) 30%,
+      transparent 68%
+    );
+  }
+
+  .scene-mountains {
+    position: absolute;
+    inset: auto 0 0;
+    inline-size: 100%;
+    block-size: 42vh;
+  }
+
+  /* Back to front: paler and cooler in the distance, a little deeper close by — never dark enough to fight text. */
+  .scene-range--1 {
+    fill: oklch(91% 0.025 200);
+  }
+
+  .scene-range--2 {
+    fill: oklch(89% 0.035 175);
+  }
+
+  .scene-range--3 {
+    fill: oklch(87% 0.045 160);
+  }
+
+  @keyframes scene-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes scene-rise {
+    to {
+      transform: translateY(calc(-1 * var(--scene-field)));
+    }
+  }
+
+  @keyframes scene-turn {
+    to {
+      transform: rotate(1turn);
+    }
+  }
+}
