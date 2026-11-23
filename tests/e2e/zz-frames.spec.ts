@@ -114,3 +114,76 @@ test("frames: Home, a tool, the menu, Settings, a language change", async ({ pag
   await page.waitForTimeout(2500);
   await measure(page, "Home again after 2.5 s");
 });
+
+/** Home's parts, switched off one after another (cumulative), then three of them alone. */
+const VARIANTS: readonly (readonly [string, readonly string[]])[] = [
+  ["baseline", []],
+  ["- lights", [".home::before { display: none !important; }"]],
+  ["- lights - stars", [".home::after { display: none !important; }"]],
+  [
+    "- … - tile ghost and sweep",
+    [".launcher-item > *::before, .launcher-item > *::after { display: none !important; }"],
+  ],
+  ["- … - icon masks", [".launcher-mark::before { display: none !important; }"]],
+  [
+    "- … - header blur",
+    [".app-header { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }"],
+  ],
+  ["- … - wordmark", ["[data-wordmark] { display: none !important; }"]],
+  [
+    "- … - tile gradients and shadows",
+    [".launcher-item > * { background: gray !important; box-shadow: none !important; }"],
+  ],
+  ["- … - web fonts", ["* { font-family: sans-serif !important; }"]],
+];
+const ALONE: readonly (readonly [string, string])[] = [
+  ["only lights off", ".home::before { display: none !important; }"],
+  ["only stars off", ".home::after { display: none !important; }"],
+  [
+    "only header blur off",
+    ".app-header { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }",
+  ],
+  [
+    "only tile pseudo-elements and masks off",
+    ".launcher-item > *::before, .launcher-item > *::after, .launcher-mark::before { display: none !important; }",
+  ],
+];
+
+/** Adds rules through the CSSOM (the page's CSP blocks inline style elements) and keeps something moving. */
+async function apply(page: Page, rules: readonly string[]): Promise<void> {
+  await page.evaluate((list) => {
+    let sheet = (window as unknown as { diagSheet?: CSSStyleSheet }).diagSheet;
+    if (!sheet) {
+      sheet = new CSSStyleSheet();
+      document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
+      (window as unknown as { diagSheet?: CSSStyleSheet }).diagSheet = sheet;
+    }
+    for (const rule of list) sheet.insertRule(rule, sheet.cssRules.length);
+    // A repaint on every frame: without one an idle page draws nothing and every variant looks fast.
+    const wizard = document.querySelector(".launcher-wizard");
+    if (wizard?.getAnimations().every((one) => one.id !== "diag") === true) {
+      wizard.animate([{ transform: "rotate(-4deg)" }, { transform: "rotate(4deg)" }], {
+        duration: 400,
+        iterations: Infinity,
+        direction: "alternate",
+        id: "diag",
+      });
+    }
+  }, rules);
+}
+
+test("frames: which part of Home is slow", async ({ page }) => {
+  test.setTimeout(240_000);
+  await page.goto("./");
+  await page.waitForTimeout(1500);
+  for (const [label, rules] of VARIANTS) {
+    await apply(page, rules);
+    await measure(page, `Home ${label}`);
+  }
+  for (const [label, rule] of ALONE) {
+    await page.goto("./");
+    await page.waitForTimeout(1500);
+    await apply(page, [rule]);
+    await measure(page, `Home ${label}`);
+  }
+});
