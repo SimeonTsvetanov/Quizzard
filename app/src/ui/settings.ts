@@ -1,6 +1,6 @@
 import { app } from "../config.ts";
 import { dataAreas, miniAppName, type DataArea } from "../miniapps/registry.ts";
-import { areaSize, clearArea, readArea, writeArea } from "../storage/areas.ts";
+import { areaSize, clearArea, planArea, readArea, type AreaImport } from "../storage/areas.ts";
 import { clearAll, estimate, exportAll, importAll, isPersisted, requestPersist } from "../storage/index.ts";
 import { getLanguage, LANG_NAMES, setLanguage, t } from "../i18n/index.ts";
 import { formatBytes, h } from "./dom.ts";
@@ -52,11 +52,11 @@ function importButton(): [HTMLButtonElement, HTMLInputElement] {
       const areas = dataAreas();
       // The open mini-app leaves first (it saves on its way out) and comes back with the imported data.
       document.dispatchEvent(new Event("app:data-clearing"));
-      const writeTool = (id: string, data: unknown): number => {
+      const planTool = (id: string, data: unknown): AreaImport | null => {
         const target = areas.find((candidate) => candidate.id === id && candidate.entry !== undefined);
-        return target === undefined ? 0 : writeArea(target.area, data);
+        return target === undefined ? null : planArea(target.area, data);
       };
-      importAll(picked, writeTool).then((count) => { showToast({ message: t("shell.settings.imported", { count }) }); }, (e: unknown) => {
+      importAll(picked, planTool).then((count) => { showToast({ message: t("shell.settings.imported", { count }) }); }, (e: unknown) => {
         showToast({ message: importErrorMessage(e instanceof Error ? e.message : "") });
       }).finally(() => { document.dispatchEvent(new Event("app:data-cleared")); });
     });

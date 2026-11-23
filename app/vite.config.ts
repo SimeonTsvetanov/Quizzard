@@ -80,6 +80,7 @@ function appHtml(): Plugin {
         .replaceAll("%BUILD_YEAR%", () => String(new Date().getFullYear()))
         .replace("%APP_JSONLD%", () => JSON.stringify(structuredData(app)).replace(/</g, "\\u003c")) // never "</script>" inside the block
         .replace("connect-src 'self'", () => `connect-src ${connect}`)
+        .replace("%APP_TOOLS_LIST%", () => app.help.features.map((f) => `<li><strong>${escapeHtml(f.name)}</strong>: ${escapeHtml(f.text)}</li>`).join(""))
         .replace("%APP_STEPS%", () => app.help.steps.map((t) => `<li>${escapeHtml(t)}</li>`).join(""))
         .replace("%APP_FAQ%", () => app.faq.map((f) => `<details><summary>${escapeHtml(f.q)}</summary><p>${escapeHtml(f.a)}</p></details>`).join(""));
     },

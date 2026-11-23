@@ -1,7 +1,8 @@
-// Draws the answer sheet from its model as one app screen: the running total, a strip of round tabs
-// (1, 2, 3 … +), and the open round filling the rest — its name and result, what a right answer gives,
-// the question rows (they scroll inside the card), bonus points. Plain DOM; text goes in as text.
-import { LIMITS, formatPoints, gameTotal, isBlankGame, roundCounts, roundPoints, worthOf, type Mark, type Question, type Round } from "../core/game.ts";
+// Draws the answer sheet from its model as one app screen: one top bar with the round tabs
+// (1, 2, 3 … +) and the running total, and the open round filling the rest — its name and result,
+// what a right answer gives, the answer lines (they scroll inside the card), "+" for another line,
+// bonus points, "Delete round". Plain DOM; text goes in as text.
+import { LIMITS, formatPoints, gameTotal, isBlankGame, roundCounts, roundPoints, shownPoints, type Mark, type Question, type Round } from "../core/game.ts";
 import { h } from "../dom/h.ts";
 import { icon } from "../dom/icons.ts";
 import type { Sheet } from "./state.ts";
@@ -32,12 +33,15 @@ export function showMark(row: HTMLElement, mark: Mark): void {
   row.querySelector('[data-mark-button="wrong"]')?.setAttribute("aria-pressed", String(mark === "wrong"));
 }
 
-/** Shows what a question is worth; a field being typed in is left alone. */
+/**
+ * Shows what a line brings at its end: 0 when it is wrong, else what a right answer gives there.
+ * A field being typed in is left alone.
+ */
 export function showWorth(sheet: Sheet, row: HTMLElement, round: Round, question: Question): void {
   const field = row.querySelector<HTMLInputElement>(".sheet-points");
   if (field === null) return;
-  row.toggleAttribute("data-own-points", question.points !== null);
-  if (field !== document.activeElement) field.value = points(sheet, worthOf(round, question));
+  row.toggleAttribute("data-own-points", question.points !== null && question.mark !== "wrong");
+  if (field !== document.activeElement) field.value = points(sheet, shownPoints(round, question));
 }
 
 function markButton(sheet: Sheet, mark: "right" | "wrong"): HTMLButtonElement {
@@ -81,7 +85,7 @@ function tabs(sheet: Sheet): HTMLElement {
   return strip;
 }
 
-/** The open round: head, what a right answer gives, the rows, bonus, delete. */
+/** The open round: head, what a right answer gives, the lines, "+", bonus, delete. */
 function roundPanel(sheet: Sheet, round: Round, index: number): HTMLElement {
   const { t } = sheet;
   const n = index + 1;
@@ -97,6 +101,7 @@ function roundPanel(sheet: Sheet, round: Round, index: number): HTMLElement {
   const bonus = h("input", { class: "sheet-points", id: "sheet-bonus", type: "text", inputmode: "text", autocomplete: "off", maxlength: "7", enterkeyhint: "done", "data-bonus": "", "aria-describedby": "sheet-bonus-hint", placeholder: "0" });
   bonus.value = round.bonus === 0 ? "" : points(sheet, round.bonus);
 
+  const add = h("button", { type: "button", class: "sheet-add", "data-add-line": "" }, icon("plus"), h("span", {}, t("addLine")));
   const remove = h("button", { type: "button", class: "sheet-link sheet-link--danger", "data-round-delete": "" }, icon("trash"), h("span", {}, t("deleteRound")));
 
   return h("section", { class: "sheet-round", "data-round": String(index), "aria-labelledby": "sheet-round-title" },
@@ -105,15 +110,17 @@ function roundPanel(sheet: Sheet, round: Round, index: number): HTMLElement {
       name,
       h("span", { class: "sheet-round-points", "data-round-points": "" })),
     h("div", { class: "sheet-each" },
+      h("span", { class: "sheet-each-meta", "data-round-meta": "" }),
       h("label", { for: "sheet-each", class: "sheet-each-label" }, t("eachRight")),
       each),
     h("div", { class: "sheet-scroll", "data-scroll": "" },
       h("ol", { class: "sheet-questions", "data-questions": "" }, ...round.questions.map((question, at) => rowElement(sheet, round, question, at))),
+      add,
       h("div", { class: "sheet-bonus" },
         h("label", { for: "sheet-bonus", class: "sheet-bonus-label" }, t("bonus")),
         bonus,
         h("p", { class: "sheet-hint", id: "sheet-bonus-hint" }, t("bonusHint"))),
-      h("div", { class: "sheet-round-foot" }, h("span", { class: "sheet-hint", "data-round-meta": "" }), remove)));
+      h("div", { class: "sheet-round-foot" }, remove)));
 }
 
 /** Updates every number and state that follows from the model, without touching the fields. */
@@ -123,8 +130,6 @@ export function refresh(sheet: Sheet): void {
   const total = host.querySelector("[data-total]");
   if (total) total.textContent = all;
   host.querySelector("[data-total-box]")?.setAttribute("aria-label", t("totalLabel", { points: all }));
-  const count = host.querySelector("[data-rounds-count]");
-  if (count) count.textContent = t("rounds", { count: game.rounds.length });
 
   host.querySelectorAll<HTMLElement>("[data-tab]").forEach((tab, index) => {
     const round = game.rounds[index];
@@ -148,8 +153,8 @@ export function refresh(sheet: Sheet): void {
   const { right, judged } = roundCounts(round);
   const meta = host.querySelector("[data-round-meta]");
   if (meta) meta.textContent = judged === 0 ? "" : t("roundRight", { right, judged });
-  const remove = host.querySelector<HTMLElement>("[data-round-delete]");
-  if (remove) remove.hidden = game.rounds.length < 2;
+  const add = host.querySelector<HTMLButtonElement>("[data-add-line]");
+  if (add) add.hidden = round.questions.length >= LIMITS.questions;
   if (sheet.clearButton) sheet.clearButton.hidden = isBlankGame(game);
 }
 
@@ -158,11 +163,11 @@ export function render(sheet: Sheet): void {
   const { t } = sheet;
   const round = currentRound(sheet);
   sheet.host.replaceChildren(h("div", { class: "sheet-screen", "data-sheet": "" },
-    h("div", { class: "sheet-total", "data-total-box": "", role: "group" },
-      h("span", { class: "sheet-total-label" }, t("total")),
-      h("span", { class: "sheet-total-rounds", "data-rounds-count": "" }),
-      h("output", { class: "sheet-total-value", "data-total": "" })),
-    tabs(sheet),
+    h("div", { class: "sheet-top" },
+      tabs(sheet),
+      h("div", { class: "sheet-total", "data-total-box": "", role: "group" },
+        h("span", { class: "sheet-total-label" }, t("total")),
+        h("output", { class: "sheet-total-value", "data-total": "" }))),
     ...(round === undefined ? [] : [roundPanel(sheet, round, sheet.open)])));
   if (sheet.clearButton) {
     sheet.clearButton.setAttribute("aria-label", t("clearGame"));

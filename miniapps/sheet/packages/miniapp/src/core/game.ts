@@ -52,7 +52,7 @@ export function blankQuestion(): Question {
   return { text: "", mark: "none", points: null };
 }
 
-/** Returns a new round with one blank line to write on. */
+/** Returns a new round with one line to write on. */
 export function blankRound(): Round {
   return { name: "", questions: [blankQuestion()], points: DEFAULT_POINTS, bonus: 0 };
 }
@@ -113,6 +113,27 @@ export function setWorth(round: Round, question: Question, value: number): void 
   question.points = value === round.points ? null : value;
 }
 
+/**
+ * Applies points a person typed at the end of a line. The number there is what the line brings, so
+ * typing one says "we got this": the line becomes right with these points; typing 0 marks it wrong.
+ * @param round - the question's round
+ * @param question - changed in place
+ * @param value - the points typed
+ */
+export function typePoints(round: Round, question: Question, value: number): void {
+  if (value === 0) {
+    question.mark = "wrong";
+    return;
+  }
+  setWorth(round, question, value);
+  question.mark = "right";
+}
+
+/** Returns the number shown at the end of a line: 0 for a wrong answer, else what a right one gives. */
+export function shownPoints(round: Round, question: Question): number {
+  return question.mark === "wrong" ? 0 : worthOf(round, question);
+}
+
 /** Returns the points of a round: every right answer's worth plus the bonus. */
 export function roundPoints(round: Round): number {
   let sum = round.bonus;
@@ -137,47 +158,24 @@ export function gameTotal(game: Game): number {
 }
 
 /**
- * Makes sure there is a line to write the next answer on: one blank line after the last written
- * answer, never two blank lines in a row at the end, none once the round is full.
- * @remarks Only a written answer asks for the next line. Marking the last line right or wrong (when
- * the answers are read out) adds nothing — the round is over by then (Moni 2026-11-23).
- * @returns the same round, changed in place
+ * Adds a line at the end of a round (the "+" under the answers, or Enter on the last line). Lines are
+ * never added on their own (Moni 2026-11-23: no empty line that is always there).
+ * @returns the new line, or null when the round is full
  */
-export function keepBlankLine(round: Round): Round {
-  const { questions } = round;
-  // Two untouched lines at the end are one too many.
-  while (questions.length > 1 && isBlankQuestion(questions.at(-1) ?? blankQuestion()) && isBlankQuestion(questions.at(-2) ?? { ...blankQuestion(), text: "x" })) questions.pop();
-  const last = questions.at(-1);
-  if (last?.text !== "" && questions.length < LIMITS.questions) questions.push(blankQuestion());
-  return round;
+export function addLine(round: Round): Question | null {
+  if (round.questions.length >= LIMITS.questions) return null;
+  const line = blankQuestion();
+  round.questions.push(line);
+  return line;
 }
 
 /**
- * Adds a line after the last one when a person asks for it (Enter on a last line without text, e.g.
- * a question the team left unanswered and marked wrong).
- * @returns whether a line was added
- */
-export function addLine(round: Round): boolean {
-  const last = round.questions.at(-1);
-  if (last === undefined || isBlankQuestion(last) || round.questions.length >= LIMITS.questions) return false;
-  round.questions.push(blankQuestion());
-  return true;
-}
-
-/**
- * Returns what is stored: the sheet without the blank lines at the end of each round.
+ * Returns what is stored: the sheet as it is on screen.
  * @returns null when there is nothing to keep
  */
 export function toSaved(game: Game): Game | null {
   if (isBlankGame(game)) return null;
-  return {
-    version: 1,
-    rounds: game.rounds.map((round) => {
-      const questions = round.questions.map((question) => ({ ...question }));
-      while (questions.length > 0 && isBlankQuestion(questions.at(-1) ?? blankQuestion())) questions.pop();
-      return { name: round.name, questions, points: round.points, bonus: round.bonus };
-    }),
-  };
+  return { version: 1, rounds: game.rounds.map((round) => ({ name: round.name, questions: round.questions.map((question) => ({ ...question })), points: round.points, bonus: round.bonus })) };
 }
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
@@ -202,14 +200,15 @@ function parseRound(value: unknown): Round | null {
   const { name, questions } = value;
   const worth = parseNumber(value["points"], DEFAULT_POINTS);
   const parsed = Array.isArray(questions) ? questions.map((question) => parseQuestion(question, worth)).filter((question) => question !== null).slice(0, LIMITS.questions) : [];
-  return keepBlankLine({ name: typeof name === "string" ? name.slice(0, LIMITS.name) : "", questions: parsed, points: worth, bonus: parseNumber(value["bonus"], 0) });
+  // A round always has a line to write on.
+  return { name: typeof name === "string" ? name.slice(0, LIMITS.name) : "", questions: parsed.length === 0 ? [blankQuestion()] : parsed, points: worth, bonus: parseNumber(value["bonus"], 0) };
 }
 
 /**
  * Reads a stored sheet. The value is untrusted (storage can be edited or imported): anything that is
  * not a round or a question is dropped, texts and numbers are cut to the limits.
  * @param value - what storage returned
- * @returns a sheet ready to draw: at least one round, every round ending with a blank line
+ * @returns a sheet ready to draw: at least one round, every round with at least one line
  */
 export function parseGame(value: unknown): Game {
   if (!isRecord(value) || !Array.isArray(value["rounds"])) return blankGame();

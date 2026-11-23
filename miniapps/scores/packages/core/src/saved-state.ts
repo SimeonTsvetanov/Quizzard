@@ -7,6 +7,11 @@ import { readHistory } from "./saved-history.ts";
 import { isObject } from "./unchecked.ts";
 import { fail, ok, type Result } from "./result.ts";
 
+/** Most players read from storage: ten times what a game allows, far below what would freeze the screen. */
+const STORED_PLAYERS_CAP = 500;
+/** Longest stored name still read (UTF-16 units): ten times the limit for a new name. */
+const STORED_NAME_CAP = 400;
+
 /** Why a saved value could not be read as a game. */
 export type SavedStateErrorCode = "SAVED_STATE_INVALID";
 
@@ -61,7 +66,18 @@ function readPlayers(players: unknown): readonly PlayerRead[] {
  */
 export function parseSavedState(raw: unknown, now: string): Result<GameState, SavedStateErrorCode> {
   if (!isObject(raw)) return fail("SAVED_STATE_INVALID", "The saved game is not an object.");
-  const players = readPlayers(raw.players).flatMap((read) => (read.player === null ? [] : [read.player]));
+  // Stored data is untrusted (it can be imported or edited). Games beyond today's limits still load
+  // (see the note at the top), but not without any bound: a file with tens of thousands of players or
+  // a megabyte-long name would freeze the screen on every open, and a repeated id would make one tap
+  // change two players (security review 2026-11-23).
+  const seen = new Set<string>();
+  const players = readPlayers(Array.isArray(raw.players) ? raw.players.slice(0, STORED_PLAYERS_CAP) : raw.players)
+    .flatMap((read) => (read.player === null ? [] : [read.player]))
+    .filter((player) => {
+      if (player.name.length > STORED_NAME_CAP || seen.has(player.id)) return false;
+      seen.add(player.id);
+      return true;
+    });
   const lastUpdated = typeof raw.lastUpdated === "string" ? raw.lastUpdated : now;
   return ok({ players, lastUpdated, version: GAME_VERSION });
 }

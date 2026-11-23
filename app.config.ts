@@ -56,7 +56,8 @@ export interface AppConfig {
   readonly modes: { readonly urlParams: readonly UrlParam[] };
   readonly help: {
     readonly steps: readonly string[]; // Quick start, 3–5 steps with the exact UI labels
-    readonly features: readonly { readonly name: string; readonly text: string }[]; // every option explained
+    /** Every option explained. `route` (language-independent, e.g. "#/teams") makes a tool's deep link in llms.txt. */
+    readonly features: readonly { readonly name: string; readonly text: string; readonly route?: string }[];
   };
   /** "More free tools" link (footer, 404). Until the hub site simeontsvetanov.github.io exists: the GitHub list. */
   readonly moreTools: string;
@@ -79,18 +80,29 @@ export const app = {
   basePath: "/Quizzard/",
   name: "Quizzard",
   tagline: "The Quiz Toolkit",
-  description: "A free toolkit for quiz and game nights, offline and private in your browser: fair random teams and score keeping first, then a quiz creator.",
+  description: "Free toolkit for pub quizzes and game nights: random team generator, score keeper and answer sheet. Works offline, no account, data stays on your device.",
   url: "https://simeontsvetanov.github.io/Quizzard/",
   repo: "https://github.com/SimeonTsvetanov/Quizzard",
-  version: "0.7.0",
+  version: "0.8.0",
   languages: ["en", "bg"],
   // Palette C · Emerald (DECISIONS 2026-11-22): white text on the light one (5.00:1), dark text on the dark one.
   accent: { light: "#00804F", dark: "#34D399" },
   categories: ["utilities", "entertainment"],
+  // Long-press the installed app's icon → open a tool directly (PLAN T-21). Absolute paths: a manifest
+  // resolves URLs against its own address, so a bare "#/teams" would point at manifest.json.
+  shortcuts: [
+    { name: "Teams", url: "/Quizzard/#/teams" },
+    { name: "Scores", url: "/Quizzard/#/scores" },
+    { name: "Answer sheet", url: "/Quizzard/#/sheet" },
+  ],
   contact: { email: "tsvetanov.simeon@gmail.com" },
   support: { buyMeACoffee: "https://buymeacoffee.com/simeontsvetanov" },
   ai: { builtWithAI: true, usesAIFeatures: false },
   ads: { enabled: false },
+  // Carried over from the 2025 site (branch legacy-2025, index.html, commit b68a5ff, 2025-06-25): the Google
+  // verification token that site served at this URL. Keeping it keeps that Google account's ownership of the
+  // property valid; no new token was made. Remove it only if Moni no longer wants that ownership.
+  seo: { googleVerification: "iV0XiTpnAw_U3AGR_IPF40DAbr0Et18Bjg3kLA0HTW8" },
   // Every name a 2025 worker (public/sw.js, then public/service-worker.js) ever used — read from the
   // whole history of branch `legacy-2025` (PLAN T-02, DECISIONS 2026-11-22).
   legacyCacheNames: [
@@ -110,22 +122,33 @@ export const app = {
       "The arrow at the top left takes you back to all tools; a card marked “Soon” is still on its way.",
       "Install Quizzard to use it offline at your quiz night.",
     ],
-    features: [],
+    // The three tools, one sentence each: Help → Features, llms.txt, llms-full.txt and the JSON-LD featureList.
+    features: [
+      { name: "Teams", route: "#/teams", text: "A random team generator: paste or type the names, choose 2 to 10 teams and get fair teams whose sizes differ by at most one, ready to copy or share." },
+      { name: "Scores", route: "#/scores", text: "A score keeper for game night: add up to 50 players, change a score with + and − or by any amount, follow the ranked leaderboard and each score's history, and share the leaderboard as text." },
+      { name: "Answer sheet", route: "#/sheet", text: "A team's own answer sheet for a pub quiz: write the answers round by round, mark each ✓ or ✗ and see the points per question and per round, bonus points and the running total." },
+    ],
   },
   moreTools: "https://github.com/SimeonTsvetanov?tab=repositories&q=simeonts-microapp",
   author: { name: "Simeon Tsvetanov", country: "Bulgaria", linkedin: "https://www.linkedin.com/in/simeon-tsvetanov-a00963159", github: "https://github.com/SimeonTsvetanov" },
   faq: [
+    { q: "What is Quizzard?", a: "Quizzard is a free toolkit for pub quizzes and game nights with three tools: Teams makes random teams, Scores keeps score for game night and Answer sheet records your team's answers and points. It runs in your browser and works offline." },
+    { q: "How do I split people into random teams?", a: "Open Teams, type or paste the names one per line, choose 2 to 10 teams and tap “Generate teams”. Every split is equally likely and team sizes differ by at most one." },
+    { q: "How do I keep score on game night?", a: "Open Scores, add each player by name and tap + or − on a card to change that score by one point, or tap the score to add or subtract any amount. The leaderboard ranks everyone, each score keeps its history and Share sends the leaderboard as text." },
+    { q: "Can I use Quizzard as a pub quiz answer and score sheet?", a: "Yes. Answer sheet is made for your team's scribe: write the answers round by round, mark each one ✓ or ✗ and it counts the points per question and per round, with bonus points and a running total. It replaces pen and paper for your own team's answers." },
     { q: "Is Quizzard free?", a: "Yes. It is free and open source (MIT) and runs in your browser." },
-    { q: "Does my data leave my device?", a: "No. Everything you enter stays in this browser on your device." },
+    { q: "Does my data leave my device?", a: "No. Teams, scores and answers stay in this browser on your device and are never uploaded. They leave it only when you share a result or send a problem report yourself." },
+    { q: "Can my data disappear on an iPhone?", a: "In a Safari tab, yes: Safari may delete the data of a site you have not opened for 7 days. Add Quizzard to the Home Screen and it is kept. To be safe, use Settings → Your data → Export my data." },
     { q: "Do I need an account?", a: "No. There is no account and no sign-in." },
     { q: "Does Quizzard work offline?", a: "Yes. After the first visit it works without a connection, also when installed." },
-    { q: "Can I make quizzes with Quizzard?", a: "Not yet. A quiz creator is planned after the tools for teams and scores." },
+    { q: "Is Quizzard available in Bulgarian?", a: "Yes. The app is in English and Bulgarian; choose the language in Settings." },
+    { q: "Can I make quizzes with Quizzard?", a: "Not yet. A quiz creator is planned; Teams, Scores and Answer sheet work today." },
   ],
   l10n: {
     bg: {
       // The Bulgarian tagline is Moni's call (PLAN T-19); the English one stands until then.
       tagline: "The Quiz Toolkit",
-      description: "Безплатни инструменти за куиз и игрални вечери, офлайн и само в браузъра Ви: първо честни случайни отбори и точки, после създател на куизове.",
+      description: "Безплатни инструменти за куиз и игрални вечери: случайни отбори, точки и лист с отговори. Работят офлайн, без акаунт, данните остават на Вашето устройство.",
       help: {
         steps: [
           "Докоснете „Отбори“, за да разделите хората на честни случайни отбори.",
@@ -134,14 +157,24 @@ export const app = {
           "Стрелката горе вляво връща към всички инструменти; карта с „Скоро“ още предстои.",
           "Инсталирайте Quizzard, за да го ползвате офлайн на куиз вечерта.",
         ],
-        features: [],
+        features: [
+          { name: "Отбори", text: "Генератор на случайни отбори: напишете или поставете имената, изберете от 2 до 10 отбора и получете честни отбори, чийто размер се различава най-много с един, готови за копиране или споделяне." },
+          { name: "Точки", text: "Водене на резултат за игрална вечер: добавете до 50 играчи, променяйте точките с + и − или с произволна стойност, следете класирането и историята на всеки резултат и споделете класирането като текст." },
+          { name: "Лист с отговори", text: "Собствен лист с отговори на отбора за куиз: записвайте отговорите рунд по рунд, отбелязвайте всеки с ✓ или ✗ и вижте точките за въпрос и за рунд, бонус точките и общия резултат." },
+        ],
       },
       faq: [
+        { q: "Какво е Quizzard?", a: "Quizzard е безплатен комплект от инструменти за куиз и игрални вечери с три части: „Отбори“ прави случайни отбори, „Точки“ води резултата на игралната вечер, а „Лист с отговори“ записва отговорите и точките на Вашия отбор. Работи в браузъра Ви и без интернет." },
+        { q: "Как да разделя хората на случайни отбори?", a: "Отворете „Отбори“, напишете или поставете имената по едно на ред, изберете от 2 до 10 отбора и натиснете „Направи отбори“. Всяко разпределение е еднакво вероятно, а размерът на отборите се различава най-много с един." },
+        { q: "Как да водя резултата на игрална вечер?", a: "Отворете „Точки“, добавете всеки играч с име и натиснете + или − на картата му, за да промените точките с една, или натиснете самия резултат, за да добавите или извадите произволна стойност. Класирането подрежда всички, всеки резултат пази историята си, а „Сподели“ изпраща класирането като текст." },
+        { q: "Може ли Quizzard да е лист за отговори и точки на куиз?", a: "Да. „Лист с отговори“ е направен за човека, който записва за отбора: пишете отговорите рунд по рунд, отбелязвате всеки с ✓ или ✗, а листът брои точките за въпрос и за рунд, с бонус точки и общ резултат. Заменя химикалката и листа за собствените отговори на отбора Ви." },
         { q: "Безплатен ли е Quizzard?", a: "Да. Безплатен е, с отворен код (MIT) и работи в браузъра Ви." },
-        { q: "Напускат ли данните ми устройството?", a: "Не. Всичко, което въведете, остава в този браузър на Вашето устройство." },
+        { q: "Напускат ли данните ми устройството?", a: "Не. Отборите, точките и отговорите остават в този браузър на Вашето устройство и никога не се качват. Напускат го само когато Вие споделите резултат или изпратите съобщение за проблем." },
+        { q: "Могат ли данните ми да изчезнат на iPhone?", a: "В раздел на Safari — да: Safari може да изтрие данните на сайт, който не сте отваряли 7 дни. Добавете Quizzard към началния екран и те се пазят. За сигурност ползвайте Настройки → Вашите данни → Експортирай данните ми." },
         { q: "Нужен ли е акаунт?", a: "Не. Няма акаунт и няма вход." },
         { q: "Работи ли Quizzard офлайн?", a: "Да. След първото посещение работи и без връзка, също и като инсталирано приложение." },
-        { q: "Мога ли да правя куизове с Quizzard?", a: "Още не. Създател на куизове предстои след инструментите за отбори и точки." },
+        { q: "Има ли Quizzard на български?", a: "Да. Приложението е на английски и български; изберете езика от „Настройки“." },
+        { q: "Мога ли да правя куизове с Quizzard?", a: "Още не. Създател на куизове предстои; „Отбори“, „Точки“ и „Лист с отговори“ работят още сега." },
       ],
     },
   },

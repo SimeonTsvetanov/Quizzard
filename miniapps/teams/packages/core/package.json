@@ -25,13 +25,8 @@
       "default": "./dist/index.js"
     }
   },
-  "files": [
-    "dist",
-    "LICENSE"
-  ],
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "prepack": "node -e \"require('node:fs').copyFileSync('../../LICENSE','LICENSE')\""
+    "build": "tsc -p tsconfig.json"
   },
   "dependencies": {
     "zod": "^4.6.0"
@@ -39,7 +34,5 @@
   "engines": {
     "node": ">=22"
   },
-  "publishConfig": {
-    "access": "public"
-  }
+  "private": true
 }

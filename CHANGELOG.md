@@ -4,6 +4,27 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-11-23
+### Added
+- Long-press the installed app's icon to open Teams, Scores or Answer sheet directly.
+- Quizzard offers to install itself when you are back on the home screen after a tool saved something —
+  never on top of a tool.
+- Help answers "Can my data disappear on an iPhone?" and how to keep it.
+### Changed
+- Answer sheet: the number at the end of a line is what the line brings. Type 6 and the line counts as
+  right with 6 points; a wrong line shows 0.
+- Answer sheet: a new line appears only when you tap "Add an answer" (or press Enter on the last line) —
+  no empty line that is always there.
+- Answer sheet: the rounds moved into the top bar next to the total, so more answers fit on the screen;
+  "Delete round" is always at the bottom of a round.
+- Search engines and AI assistants now get an accurate description of all three tools and ten questions
+  with answers.
+### Fixed
+- Terms said Export covers only Quizzard's settings; it covers the tools' data too. The privacy notice
+  now describes the last line of shared teams exactly.
+- Import refuses a file that is too large before writing anything, and never writes outside a tool's
+  own data.
+
 ## [0.7.0] - 2026-11-23
 ### Added
 - Answer sheet: each round can say what a right answer gives ("A right answer gives" — 1 by default, for

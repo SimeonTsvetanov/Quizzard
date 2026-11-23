@@ -101,7 +101,7 @@ export const en = {
       agents: "For AI agents",
       agentsText: "Agent docs: {{a}} and {{b}}",
       privacy: "Privacy & your data",
-      privacyText: "In the browser everything runs on your device. Settings are stored only in this browser — see Settings → Storage to export or clear them.",
+      privacyText: "Everything you enter stays in this browser on your device. See Settings → Your data to export or clear it.",
       privacyLink: "Read the full privacy notice",
       limits: "Limits & troubleshooting",
       maxFile: "Maximum file size: {{mb}} MB.",

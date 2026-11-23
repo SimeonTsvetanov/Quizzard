@@ -17,6 +17,7 @@ vi.mock("../ui/toast.ts", () => ({ showToast: vi.fn() }));
 vi.mock("../ui/confirm.ts", () => ({ confirmAction: vi.fn(() => Promise.resolve(true)) }));
 vi.mock("../ui/share.ts", () => ({ shareText: vi.fn(() => Promise.resolve("cancelled")) }));
 vi.mock("../storage/persist.ts", () => ({ noteDataSaved: vi.fn() }));
+vi.mock("../ui/install.ts", () => ({ noteSuccessForInstall: vi.fn() }));
 vi.mock("../ui/dom.ts", () => ({
   h: (tag: string, props: Record<string, string>) => {
     const children: unknown[] = [];

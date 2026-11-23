@@ -8,6 +8,7 @@ import { showToast, type ToastOptions } from "../ui/toast.ts";
 import { confirmAction, type ConfirmOptions } from "../ui/confirm.ts";
 import { shareText } from "../ui/share.ts";
 import { h } from "../ui/dom.ts";
+import { noteSuccessForInstall } from "../ui/install.ts";
 import { setBusy } from "../state.ts";
 import { createPrefs } from "../storage/index.ts";
 import { noteDataSaved } from "../storage/persist.ts";
@@ -66,7 +67,10 @@ export function createMiniAppContext(options: ContextOptions): MountedContext {
     storage: {
       area: entry.meta.storage,
       prefs: areaPrefs(entry.meta.storage),
-      notifySaved: () => { noteDataSaved(); },
+      notifySaved: () => {
+        noteDataSaved();
+        noteSuccessForInstall();
+      },
     },
   };
   const release = (): void => {

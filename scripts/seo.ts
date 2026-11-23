@@ -159,7 +159,7 @@ export function llmsFullTxt(app: AppConfig): string {
     ...(limits.length ? ["## Limits", ...limits, ""] : []),
     ...(app.languages.length > 1 ? ["## Languages", `- UI: ${app.languages.join(", ")} (English is the default).`, ""] : []),
     "## How to use (steps)", ...app.help.steps.map((t, i) => `${String(i + 1)}. ${t}`), "",
-    ...(app.help.features.length ? ["## Features", ...app.help.features.map((f) => `- ${f.name}: ${f.text}`), ""] : []),
+    ...(app.help.features.length ? ["## Tools and features", ...app.help.features.map((f) => `- ${f.name}${toolLink(app, f) ? ` (${toolLink(app, f) ?? ""})` : ""}: ${f.text}`), ""] : []),
     "## FAQ", ...app.faq.flatMap((f) => [`### ${f.q}`, f.a]), "",
     "## Privacy", `- ${privacySummary(app)}`, "",
     "## About", `- Licence: MIT · Source: ${app.repo} · Author: ${app.author.name} · Support: ${app.support.buyMeACoffee}`, "",
@@ -175,12 +175,27 @@ function limitsSentence(app: AppConfig): string {
   return parts.length ? `Limits: ${parts.join(", ")}.` : "";
 }
 
+/** Returns the deep link of a tool (`route` "#/teams" → "<app url>#/teams"), or undefined for a feature without a route. */
+function toolLink(app: AppConfig, feature: AppConfig["help"]["features"][number]): string | undefined {
+  return feature.route ? `${app.url}${feature.route}` : undefined;
+}
+
 /** Returns the "## Use it" link list: every way to use the app, as `- [name](url): note`. */
 function useItLinks(app: AppConfig): string[] {
+  const tools = app.help.features.flatMap((f) => {
+    const url = toolLink(app, f);
+    return url ? [`- [${f.name}](${url}): opens the ${f.name} tool directly`] : [];
+  });
   return [
     `- [Open ${app.name}](${app.url}): the app in the browser; installable, works offline after the first visit`,
+    ...tools,
     `- [Source code](${app.repo}): MIT licence`,
   ];
+}
+
+/** Returns the "Tools: …" paragraph of llms.txt — one sentence per tool, "" when the app lists none. */
+function toolsParagraph(app: AppConfig): string {
+  return app.help.features.length ? `Tools: ${app.help.features.map((f) => `${f.name} — ${f.text}`).join(" ")}` : "";
 }
 
 /**
@@ -191,7 +206,7 @@ function useItLinks(app: AppConfig): string[] {
 export function llmsTxt(app: AppConfig): string {
   return [
     `# ${app.name}`, "", `> ${app.description}`, "",
-    `How to use it: ${app.help.steps.join(" ")}`, "",
+    ...[toolsParagraph(app), `How to use it: ${app.help.steps.join(" ")}`].filter(Boolean).flatMap((p) => [p, ""]),
     ...[limitsSentence(app), `Privacy: ${privacySummary(app)}`].filter(Boolean).flatMap((p) => [p, ""]),
     ...app.faq.flatMap((f) => [`${f.q} ${f.a}`, ""]),
     "## Use it", ...useItLinks(app), "",

@@ -17,11 +17,13 @@
   - **Teams:** your last names list (so it is still there next time), the number of teams, and a
     short code made from the last list you made teams from (not the names themselves) with how
     many times in a row teams were made from it.
-  - **Scores:** your game — player names, scores and when they were last changed, and for each
+  - **Scores:** your game — player names, when each player was added, their scores and when the
+    game was last changed, and for each
     player a history of their most recent score changes (the points of each change and when it was
     made, up to 50 per player).
   - **Answer sheet:** your team's game — each round's name, the answers you wrote, whether you
-    marked each one right or wrong, the points of each question and the round's bonus points.
+    marked each one right or wrong, what a right answer is worth in each round (and for a single
+    question when it differs) and the round's bonus points.
   - **Separate from the author's other apps:** {App} keeps its data under its own names. The
     TeamSync and GG Counter sites are on the same web address (`simeontsvetanov.github.io`), but
     {App} does not read, change or delete what they saved, and they do not see {App}'s data.
@@ -40,8 +42,10 @@
   storage persistent (`navigator.storage.persist()`), so it is not cleared automatically when space
   runs low. Clearing this site's data removes both.
 - **Sharing and copying:** the text you share is made on your device and leaves it only when you
-  share it. **Share** and **Copy** in Teams send the teams (the names in each team and a link to
-  {App}); **Share** in Scores sends the leaderboard (player names, scores, the date and time, and
+  share it. **Share** and **Copy** in Teams send the teams (the names in each team and how many
+  people each has) and a last line "— Made with {App}N" with a link to {App}, where N is how many
+  times in a row teams were made from the same list of names on this device (for example
+  "{App}3"); it says nothing else about you; **Share** in Scores sends the leaderboard (player names, scores, the date and time, and
   a link to {App}); **Share app** sends the name and the link of {App}. The text goes to the app you
   choose in your device's share menu, to WhatsApp, or to the clipboard, and is then covered by that
   app's own privacy terms. Nothing is ever shared automatically.

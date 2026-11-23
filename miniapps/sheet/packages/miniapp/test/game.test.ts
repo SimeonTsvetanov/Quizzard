@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import fc from "fast-check";
 import {
-  LIMITS, addLine, blankGame, blankQuestion, blankRound, formatPoints, gameTotal, isBlankGame, keepBlankLine, parseGame, parsePoints,
-  roundCounts, roundPoints, setWorth, toSaved, worthOf, type Game, type Mark, type Round,
+  LIMITS, addLine, blankGame, blankQuestion, blankRound, formatPoints, gameTotal, isBlankGame, parseGame, parsePoints,
+  roundCounts, roundPoints, setWorth, shownPoints, toSaved, typePoints, worthOf, type Game, type Mark, type Round,
 } from "../src/core/game.ts";
 
 const question = (text: string, mark: Mark, points: number | null = null) => ({ text, mark, points });
@@ -86,36 +86,43 @@ describe("points of a round and of the sheet", () => {
   });
 });
 
-describe("the blank line at the end of a round", () => {
-  it("is added after a written line and never doubled", () => {
+describe("lines are added only on request", () => {
+  it("addLine appends one line each time, up to the limit", () => {
     const one = round([question("Paris", "none")]);
-    expect(keepBlankLine(one).questions).toHaveLength(2);
-    expect(keepBlankLine(one).questions).toHaveLength(2);
-    one.questions.push(blankQuestion(), blankQuestion());
-    expect(keepBlankLine(one).questions).toHaveLength(2);
-  });
-
-  it("is not added by marking the last line: only a written answer asks for the next one", () => {
-    const marked = round([question("Paris", "right"), question("", "wrong")]);
-    expect(keepBlankLine(marked).questions).toHaveLength(2);
-    const onlyMark = round([question("", "right")]);
-    expect(keepBlankLine(onlyMark).questions).toHaveLength(1);
-    const worth = round([question("", "none", 2)]);
-    expect(keepBlankLine(worth).questions).toHaveLength(1);
-  });
-
-  it("Enter adds a line under a marked line without text, once; it stays until used", () => {
-    const marked = round([question("Paris", "right"), question("", "wrong")]);
-    expect(addLine(marked)).toBe(true);
-    expect(addLine(marked)).toBe(false); // the new line is untouched
-    expect(keepBlankLine(marked).questions).toHaveLength(3);
-    expect(addLine(round([blankQuestion()]))).toBe(false);
-  });
-
-  it("is not added to a full round", () => {
+    expect(addLine(one)).toEqual(blankQuestion());
+    expect(addLine(one)).not.toBeNull();
+    expect(one.questions).toHaveLength(3);
     const full = round(Array.from({ length: LIMITS.questions }, () => question("a", "right")));
-    expect(keepBlankLine(full).questions).toHaveLength(LIMITS.questions);
-    expect(addLine(full)).toBe(false);
+    expect(addLine(full)).toBeNull();
+    expect(full.questions).toHaveLength(LIMITS.questions);
+  });
+});
+
+describe("the number at the end of a line is what the line brings", () => {
+  it("typing points makes the line right with those points — also a line that was marked wrong", () => {
+    const three = round([question("a", "right"), question("b", "wrong"), question("c", "right")], { points: 3 });
+    expect(roundPoints(three)).toBe(6);
+    const second = three.questions[1];
+    if (!second) throw new Error("no second question");
+    typePoints(three, second, 6);
+    expect(second).toEqual({ text: "b", mark: "right", points: 6 });
+    expect(roundPoints(three)).toBe(12);
+  });
+
+  it("typing 0 marks the line wrong and keeps what it was worth", () => {
+    const one = round([question("a", "right", 2)]);
+    const first = one.questions[0];
+    if (!first) throw new Error("no question");
+    typePoints(one, first, 0);
+    expect(first).toEqual({ text: "a", mark: "wrong", points: 2 });
+    expect(roundPoints(one)).toBe(0);
+  });
+
+  it("shows 0 for a wrong line, the worth for a right or an unmarked one; the shown numbers of the right lines add up to the round", () => {
+    const mixed = round([question("a", "right"), question("b", "wrong", 6), question("c", "none", 0.5), question("d", "right", 2)], { points: 3 });
+    expect(mixed.questions.map((one) => shownPoints(mixed, one))).toEqual([3, 0, 0.5, 2]);
+    const sum = mixed.questions.filter((one) => one.mark !== "none").reduce((total, one) => total + shownPoints(mixed, one), 0);
+    expect(roundPoints(mixed)).toBe(sum);
   });
 });
 
@@ -125,12 +132,15 @@ describe("saving and loading", () => {
     expect(toSaved(blankGame())).toBeNull();
   });
 
-  it("round-trips a sheet, without the blank lines in storage and with them on screen", () => {
-    const game: Game = { version: 1, rounds: [keepBlankLine(round([question("ABBA", "right"), question("", "wrong", 3)], { name: "Music", bonus: 1, points: 2 })), blankRound()] };
+  it("round-trips a sheet exactly as it is on screen, empty lines too", () => {
+    const game: Game = { version: 1, rounds: [round([question("ABBA", "right"), question("", "wrong", 3), blankQuestion()], { name: "Music", bonus: 1, points: 2 }), blankRound()] };
     const saved = toSaved(game);
-    expect(saved?.rounds[0]?.questions).toHaveLength(2);
-    expect(saved?.rounds[1]?.questions).toHaveLength(0);
+    expect(saved?.rounds[0]?.questions).toHaveLength(3);
     expect(parseGame(JSON.parse(JSON.stringify(saved)))).toEqual(game);
+  });
+
+  it("a stored round without lines gets one to write on", () => {
+    expect(parseGame({ rounds: [{ name: "x", questions: [] }] }).rounds[0]?.questions).toEqual([blankQuestion()]);
   });
 
   it("drops what is not a sheet and cuts texts and numbers to the limits", () => {
@@ -149,7 +159,7 @@ describe("saving and loading", () => {
     const old = { rounds: [{ name: "", bonus: 0, questions: [{ text: "a", mark: "right", points: 1 }, { text: "b", mark: "right", points: 0.5 }] }] };
     const game = parseGame(old);
     expect(game.rounds[0]?.points).toBe(1);
-    expect(game.rounds[0]?.questions.slice(0, 2).map((one) => one.points)).toEqual([null, 0.5]);
+    expect(game.rounds[0]?.questions.map((one) => one.points)).toEqual([null, 0.5]);
     expect(gameTotal(game)).toBe(1.5);
   });
 

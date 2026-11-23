@@ -93,6 +93,8 @@ export function exportAll(tools: Record<string, Record<string, string>> = {}): B
 /** Import limits (security review 2026-11-06): checked before anything is parsed or written. */
 const MAX_IMPORT_BYTES = 50 * 1024 * 1024;
 const MAX_PREF_BYTES = 1024 * 1024;
+/** UTF-16 code units all tools together may bring in one import (about 3 MB of the origin's ~5 MB). */
+const MAX_TOOLS_IMPORT_LENGTH = 1536 * 1024;
 
 /** Value checks per pref key; keys without a check are accepted if they are small JSON. Apps add
  *  their own with registerPrefCheck() so a hand-edited export can't break the app. */
@@ -111,12 +113,15 @@ const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === "obj
 /**
  * Import a JSON file made by exportAll().
  * @param file - the picked file
- * @param writeTool - writes one mini-app's exported entries and returns how many it kept
- * (storage/areas.ts `writeArea` behind the registry's areas); unknown ids write nothing
+ * @param planTool - checks one mini-app's exported entries without writing (storage/areas.ts
+ * `planArea` behind the registry's areas); null for an unknown id
  * @returns how many preferences and mini-app entries were restored
+ * @remarks All or nothing: every tool's entries are checked and added up first, and a file whose
+ * tools would take more than {@link MAX_TOOLS_IMPORT_LENGTH} is refused before anything is written —
+ * the origin's localStorage is shared with the author's other apps (security review 2026-11-23).
  * @throws {@link Error} with the code `IMPORT_TOO_BIG`, `IMPORT_INVALID` or `NOT_THIS_APP` (translated by the UI)
  */
-export async function importAll(file: File, writeTool: (id: string, data: unknown) => number = () => 0): Promise<number> {
+export async function importAll(file: File, planTool: (id: string, data: unknown) => { readonly size: number; write(): number } | null = () => null): Promise<number> {
   if (file.size > MAX_IMPORT_BYTES) throw new Error("IMPORT_TOO_BIG");
   let raw: unknown;
   try {
@@ -128,14 +133,16 @@ export async function importAll(file: File, writeTool: (id: string, data: unknow
   if (raw["app"] !== app.id) throw new Error("NOT_THIS_APP");
   const prefsIn = raw["prefs"] ?? {};
   if (!isRecord(prefsIn)) throw new Error("IMPORT_INVALID");
+  const toolsIn = raw["tools"] ?? {};
+  const plans = isRecord(toolsIn) ? Object.entries(toolsIn).flatMap(([id, data]) => planTool(id, data) ?? []) : [];
+  if (plans.reduce((sum, plan) => sum + plan.size, 0) > MAX_TOOLS_IMPORT_LENGTH) throw new Error("IMPORT_TOO_BIG");
   let n = 0;
   for (const [k, v] of Object.entries(prefsIn)) {
     const check = prefChecks.get(k) ?? (k.startsWith("draft:") ? isRecord : undefined);
     if (k.length > 100 || JSON.stringify(v).length > MAX_PREF_BYTES || (check && !check(v))) continue; // skip, never break the app
     prefs.set(k, v); n++;
   }
-  const toolsIn = raw["tools"] ?? {};
-  if (isRecord(toolsIn)) for (const [id, data] of Object.entries(toolsIn)) n += writeTool(id, data);
+  for (const plan of plans) n += plan.write();
   return n;
 }
 

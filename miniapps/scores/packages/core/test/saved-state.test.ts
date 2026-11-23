@@ -183,3 +183,17 @@ describe("checkSavedGame (properties)", () => {
     }));
   });
 });
+
+describe("bounds on stored games (security review 2026-11-23)", () => {
+  const player = (id: string, name: string) => ({ id, name, score: 1, createdAt: "2026-11-23T10:00:00.000Z" });
+
+  it("reads at most 500 players, drops a megabyte-long name and a repeated id", async () => {
+    const { parseSavedState } = await import("../src/index.ts");
+    const many = { players: Array.from({ length: 40_000 }, (_unused, index) => player(`p${String(index)}`, "A")) };
+    const read = parseSavedState(many, "2026-11-23T10:00:00.000Z");
+    expect(read.ok && read.value.players.length).toBe(500);
+    const odd = { players: [player("a", "Ana"), player("a", "Twin"), player("b", "x".repeat(1_000_000)), player("c", "Chen")] };
+    const kept = parseSavedState(odd, "2026-11-23T10:00:00.000Z");
+    expect(kept.ok && kept.value.players.map((one) => one.name)).toEqual(["Ana", "Chen"]);
+  });
+});

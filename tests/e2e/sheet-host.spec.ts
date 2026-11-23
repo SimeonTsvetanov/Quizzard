@@ -20,8 +20,11 @@ async function open(page: Page): Promise<void> {
   await expect(rows(page)).toHaveCount(1);
 }
 
-/** Writes an answer on line `index` (0-based) and marks it. */
+const addLine = (page: Page) => round(page).getByRole("button", { name: "Add an answer" });
+
+/** Writes an answer on line `index` (0-based), adding the line with "+" when it is not there yet, and marks it. */
 async function write(page: Page, index: number, text: string, mark?: "right" | "wrong"): Promise<void> {
+  if ((await rows(page).count()) <= index) await addLine(page).click();
   const row = rows(page).nth(index);
   await answer(row).fill(text);
   if (mark) await row.locator(`[data-mark-button="${mark}"]`).click();
@@ -55,13 +58,20 @@ test("it is one screen: on a phone the page itself does not scroll, a long round
   await expect(rows(page).nth(13).getByLabel("Points for question 14")).toBeInViewport({ ratio: 1 });
 });
 
-test("writing adds the next line; Enter moves to it; right answers count 1 point, wrong ones 0", async ({ page }) => {
+test("lines are added only with “+” or Enter on the last line; right answers count 1 point, wrong ones 0", async ({ page }) => {
   await open(page);
   await answer(rows(page).nth(0)).fill("Paris");
-  await expect(rows(page)).toHaveCount(2);
+  await expect(rows(page)).toHaveCount(1); // writing adds nothing by itself
   await answer(rows(page).nth(0)).press("Enter");
+  await expect(rows(page)).toHaveCount(2);
   await expect(answer(rows(page).nth(1))).toBeFocused();
   await page.keyboard.type("1066");
+  await addLine(page).click();
+  await expect(rows(page)).toHaveCount(3);
+  await expect(answer(rows(page).nth(2))).toBeFocused();
+  // Enter in the middle only moves on.
+  await answer(rows(page).nth(0)).press("Enter");
+  await expect(answer(rows(page).nth(1))).toBeFocused();
   await expect(rows(page)).toHaveCount(3);
   await rows(page).nth(0).getByRole("button", { name: "Right" }).click();
   await rows(page).nth(1).getByRole("button", { name: "Wrong" }).click();
@@ -74,24 +84,45 @@ test("writing adds the next line; Enter moves to it; right answers count 1 point
   await expect(round(page).locator("[data-round-meta]")).toHaveText("0 of 1 right");
 });
 
-test("marking never adds a line: after the answers are read out the round keeps its length", async ({ page }) => {
+test("marking never adds a line, and the lines are there again after a reload exactly as they were", async ({ page }) => {
   await open(page);
-  await write(page, 0, "Paris");
-  await write(page, 1, "1066");
-  await expect(rows(page)).toHaveCount(3);
-  // The team left question 3 unanswered: marking the empty line wrong adds nothing under it.
-  await rows(page).nth(0).getByRole("button", { name: "Right" }).click();
-  await rows(page).nth(1).getByRole("button", { name: "Wrong" }).click();
-  await rows(page).nth(2).getByRole("button", { name: "Wrong" }).click();
+  await write(page, 0, "Paris", "right");
+  await write(page, 1, "1066", "wrong");
+  await write(page, 2, "", "wrong"); // a question the team left unanswered
   await expect(rows(page)).toHaveCount(3);
   await expect(round(page).locator("[data-round-meta]")).toHaveText("1 of 3 right");
-  // Enter on that line gives the next one when there is a fourth question after all.
-  await answer(rows(page).nth(2)).press("Enter");
-  await expect(rows(page)).toHaveCount(4);
-  await expect(answer(rows(page).nth(3))).toBeFocused();
+  await expect.poll(async () => (await saved(page))?.rounds[0]?.questions.length).toBe(3);
   await page.reload();
-  await expect(rows(page)).toHaveCount(3); // an untouched line is not stored
+  await expect(rows(page)).toHaveCount(3);
   await expect(round(page).locator("[data-round-meta]")).toHaveText("1 of 3 right");
+});
+
+test("the number at the end of a line is what the line brings: typing one makes the line count, a wrong line shows 0", async ({ page }) => {
+  await open(page);
+  await round(page).getByLabel("A right answer gives").fill("3");
+  await write(page, 0, "Cow 1", "right");
+  await write(page, 1, "Cow 2", "wrong");
+  await write(page, 2, "Cow 3", "right");
+  const second = rows(page).nth(1).getByLabel("Points for question 2");
+  await expect(second).toHaveValue("0");
+  await expect(total(page)).toHaveText("6");
+  // Moni 2026-11-23: he typed 6 on a line marked wrong and expected it to count.
+  await second.fill("6");
+  await expect(rows(page).nth(1).getByRole("button", { name: "Right" })).toHaveAttribute("aria-pressed", "true");
+  await expect(rows(page).nth(1).getByRole("button", { name: "Wrong" })).toHaveAttribute("aria-pressed", "false");
+  await expect(total(page)).toHaveText("12");
+  // Marking it wrong again shows 0 and takes its points out; marking it right brings the 6 back.
+  await second.blur();
+  await rows(page).nth(1).getByRole("button", { name: "Wrong" }).click();
+  await expect(second).toHaveValue("0");
+  await expect(total(page)).toHaveText("6");
+  await rows(page).nth(1).getByRole("button", { name: "Right" }).click();
+  await expect(second).toHaveValue("6");
+  await expect(total(page)).toHaveText("12");
+  // Typing 0 is the same as marking the line wrong.
+  await rows(page).nth(0).getByLabel("Points for question 1").fill("0");
+  await expect(rows(page).nth(0).getByRole("button", { name: "Wrong" })).toHaveAttribute("aria-pressed", "true");
+  await expect(total(page)).toHaveText("9");
 });
 
 test("a round can give other points per right answer; a question changed by hand keeps its own", async ({ page }) => {
@@ -105,7 +136,8 @@ test("a round can give other points per right answer; a question changed by hand
   await expect(total(page)).toHaveText("4.5");
   await expect(rows(page).nth(0).getByLabel("Points for question 1")).toHaveValue("2");
   await expect(rows(page).nth(1).getByLabel("Points for question 2")).toHaveValue("0.5");
-  await expect(rows(page).nth(3).getByLabel("Points for question 4")).toHaveValue("2"); // the empty next line too
+  await addLine(page).click();
+  await expect(rows(page).nth(3).getByLabel("Points for question 4")).toHaveValue("2"); // a new line too
   // Typing the round's own value takes the exception away again.
   await rows(page).nth(1).getByLabel("Points for question 2").fill("2");
   await expect(total(page)).toHaveText("6");
@@ -140,12 +172,12 @@ test("“+” starts the next round ready to write; the tabs show each round's p
   await expect(round(page).getByLabel("A right answer gives")).toHaveValue("1");
   await write(page, 0, "ABBA", "right");
   await expect(total(page)).toHaveText("3");
-  await expect(root(page).locator("[data-rounds-count]")).toHaveText("2 rounds");
   await expect(tab(page, 1)).toHaveAccessibleName("Round 1 2 points");
   await expect(tab(page, 2)).toHaveAttribute("aria-current", "true");
   // Back to round 1 to fix an answer.
   await tab(page, 1).click();
   await expect(round(page).getByRole("heading")).toHaveText("Round 1");
+  await expect(tab(page, 1)).toBeFocused(); // the redraw must not drop the focus to <body>
   await expect(round(page).getByLabel("Name of round 1 (optional)")).toHaveValue("History");
   await rows(page).nth(1).getByRole("button", { name: "Wrong" }).click();
   await expect(total(page)).toHaveText("2");
@@ -161,7 +193,7 @@ test("the game is saved and is there after a reload and after going Home and bac
   await expect(answer(rows(page).nth(0))).toHaveValue("Paris");
   await expect(total(page)).toHaveText("2");
   // Typing is saved on the way out, without waiting for the timer.
-  await answer(rows(page).nth(1)).fill("Rome");
+  await write(page, 1, "Rome");
   await page.getByRole("banner").getByRole("button", { name: "Back to Home" }).click();
   await expect(clearGame(page)).toHaveCount(0); // the header button leaves with the screen
   await page.locator('[data-card="sheet"]').click();
@@ -175,16 +207,27 @@ test("Backspace on an empty line removes it; the numbers follow", async ({ page 
   await write(page, 2, "three");
   await answer(rows(page).nth(1)).fill("");
   await answer(rows(page).nth(1)).press("Backspace");
-  await expect(rows(page)).toHaveCount(3);
+  await expect(rows(page)).toHaveCount(2);
   await expect(answer(rows(page).nth(1))).toHaveValue("three");
   await expect(answer(rows(page).nth(1))).toHaveAccessibleName("Answer 2");
   await expect(answer(rows(page).nth(0))).toBeFocused();
+  // The last line of a round stays.
+  await answer(rows(page).nth(1)).fill("");
+  await answer(rows(page).nth(1)).press("Backspace");
+  await answer(rows(page).nth(0)).fill("");
+  await answer(rows(page).nth(0)).press("Backspace");
+  await expect(rows(page)).toHaveCount(1);
 });
 
 test("Delete round offers Undo; Clear game (in the header) asks first and offers Undo", async ({ page }) => {
   await open(page);
   await write(page, 0, "Paris", "right");
-  await expect(round(page).getByRole("button", { name: "Delete round" })).toBeHidden(); // the only round stays
+  // Deleting the only round empties it; Undo brings it back.
+  await round(page).getByRole("button", { name: "Delete round" }).click();
+  await expect(total(page)).toHaveText("0");
+  await expect(answer(rows(page).nth(0))).toHaveValue("");
+  await page.getByRole("button", { name: "Undo" }).click();
+  await expect(answer(rows(page).nth(0))).toHaveValue("Paris");
   await root(page).getByRole("button", { name: "New round" }).click();
   await write(page, 0, "ABBA", "right");
   await round(page).getByRole("button", { name: "Delete round" }).click();
@@ -199,7 +242,7 @@ test("Delete round offers Undo; Clear game (in the header) asks first and offers
   await alert.getByRole("button", { name: "Cancel" }).click();
   await expect(total(page)).toHaveText("2");
   await clearGame(page).click();
-  await alert.getByRole("button", { name: "Clear" }).click();
+  await alert.getByRole("button", { name: "Clear game" }).click();
   await expect(total(page)).toHaveText("0");
   await expect(root(page).locator("[data-tab]")).toHaveCount(1);
   await expect.poll(() => saved(page)).toBeNull();
@@ -248,4 +291,12 @@ test("the screen has no serious accessibility problem, with a game on it", async
   await page.evaluate(() => Promise.all(document.getAnimations().map((animation) => animation.finished.catch(() => undefined))));
   const result = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"]).analyze();
   expect(result.violations.filter((violation) => violation.impact === "serious" || violation.impact === "critical").map((violation) => `${violation.id}: ${violation.nodes[0]?.html ?? ""}`)).toEqual([]);
+});
+
+test("with the keyboard open (a short screen) “Add an answer” still adds a line on every tap", async ({ page }) => {
+  await page.setViewportSize({ width: 412, height: 500 });
+  await open(page);
+  for (let index = 0; index < 6; index += 1) await write(page, index, `Answer ${String(index + 1)}`);
+  await expect(rows(page)).toHaveCount(6);
+  await expect(answer(rows(page).nth(5))).toBeInViewport({ ratio: 1 });
 });

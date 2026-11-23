@@ -54,3 +54,21 @@ export function maybeOfferInstall(): void {
   prefs.set("install-dismissed-at", Date.now());
   showToast({ message: t("shell.install.offer", { name: app.name }), duration: 10_000, action: { label: t("shell.install.action"), run: openInstall } });
 }
+
+let hasSavedSomething = false;
+
+/** Notes that a mini-app saved something: the first success, after which install may be offered. */
+export function noteSuccessForInstall(): void {
+  hasSavedSomething = true;
+}
+
+/**
+ * Offers install when the person is back on Home after a tool saved something — never on top of a
+ * tool, where the offer would cover the tool's own messages ("Leaderboard copied ✓") or interrupt a
+ * game (PWA audit 2026-11-23: `maybeOfferInstall` had no caller, so the menu was the only way).
+ */
+export function offerInstallAtHome(): void {
+  if (!hasSavedSomething) return;
+  hasSavedSomething = false;
+  maybeOfferInstall();
+}

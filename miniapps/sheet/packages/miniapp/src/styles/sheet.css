@@ -11,8 +11,10 @@
     --sheet-points-width: 3.5rem;
     --sheet-number-width: 1.25rem;
 
-    @media (width < 360px) {
+    /* 360 px phones: every fixed part gives a little, so the answer field gets about 40 px more. */
+    @media (width < 380px) {
       --sheet-points-width: 3rem;
+      --sheet-number-width: 1rem;
     }
 
     /* Below this the screen stops shrinking and the page scrolls instead (a phone on its side). */
@@ -25,8 +27,8 @@
     display: grid;
     /* minmax(0, …): a field's or the tab strip's own width must never widen the screen. */
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto auto minmax(0, 1fr);
-    gap: var(--space-3);
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: var(--space-2);
     height: calc(100dvh - var(--sheet-frame));
     min-height: var(--sheet-min-height);
     max-width: var(--content-narrow);
@@ -37,26 +39,29 @@
     }
   }
 
-  /* || Components: running total */
-  .sheet-total {
+  /* || Components: top bar — the round tabs and, at its end, the running total */
+  .sheet-top {
     display: flex;
-    align-items: baseline;
-    gap: var(--space-3);
-    padding: var(--space-2) var(--space-5);
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-1);
     border-radius: var(--radius-lg);
-    background: var(--color-accent);
-    color: var(--color-on-accent);
+    background: var(--color-surface);
     box-shadow: var(--shadow-1);
   }
 
-  .sheet-total-label {
-    font-size: var(--text-lg);
-    font-weight: var(--weight-semibold);
+  .sheet-total {
+    display: grid;
+    flex: none;
+    justify-items: end;
+    padding: 0 var(--space-3) 0 var(--space-2);
+    line-height: var(--leading-tight);
   }
 
-  .sheet-total-rounds {
-    flex: 1;
-    font-size: var(--text-sm);
+  .sheet-total-label {
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
+    color: var(--color-text-secondary);
   }
 
   .sheet-total-value {
@@ -64,15 +69,16 @@
     font-weight: var(--weight-bold);
     font-variant-numeric: tabular-nums;
     letter-spacing: var(--tracking-tight);
-    line-height: var(--leading-tight);
+    color: var(--color-accent-text);
   }
 
   /* || Components: round tabs (1, 2, 3 … +) */
   .sheet-tabs {
     display: flex;
-    gap: var(--space-2);
-    /* Room for the focus ring and the shadow inside the scrolling strip. */
-    margin: calc(-1 * var(--space-1));
+    flex: 1;
+    gap: var(--space-1);
+    min-width: 0;
+    /* Room for the focus ring inside the scrolling strip. */
     padding: var(--space-1);
     overflow-x: auto;
     overscroll-behavior-x: contain;
@@ -81,17 +87,17 @@
 
   .sheet-tab {
     /* Wide enough for a two-digit round and "12.5" under it. */
-    --sheet-tab-width: 3.25rem;
+    --sheet-tab-width: 2.75rem;
 
     display: grid;
     flex: none;
     place-items: center;
     min-width: var(--sheet-tab-width);
-    min-height: calc(var(--tap-target) + var(--space-1));
-    padding: var(--space-1) var(--space-2);
+    min-height: var(--tap-target);
+    padding: 0 var(--space-1);
     border: 0;
     border-radius: var(--radius-md);
-    background: var(--color-surface);
+    background: var(--color-fill);
     color: var(--color-text);
     font: inherit;
     line-height: var(--leading-tight);
@@ -139,8 +145,8 @@
     min-height: 0;
     padding: var(--space-3) var(--space-4) 0;
 
-    /* The narrowest phones (320 px): less padding, so the answer field keeps a usable width. */
-    @media (width < 360px) {
+    /* Narrow phones: less padding, so the answer field keeps a usable width. */
+    @media (width < 380px) {
       padding-inline: var(--space-2);
     }
     border-radius: var(--radius-lg);
@@ -150,8 +156,10 @@
 
   .sheet-round-head {
     display: flex;
+    /* Large text sizes: the name moves under the title instead of pushing the points out of the card. */
+    flex-wrap: wrap;
     align-items: center;
-    gap: var(--space-3);
+    gap: var(--space-2) var(--space-3);
   }
 
   .sheet-round-title {
@@ -196,7 +204,10 @@
   }
 
   .sheet-name {
-    flex: 1;
+    /* Never narrower than a short word, so it wraps under the title at large text sizes. */
+    --sheet-name-min: 6rem;
+
+    flex: 1 1 var(--sheet-name-min);
   }
 
   .sheet-points {
@@ -216,6 +227,16 @@
   }
 
   .sheet-each-label {
+    font-size: var(--text-sm);
+    color: var(--color-text-secondary);
+  }
+
+  /* Nothing on this screen may appear or disappear when a field gets or loses the focus: the layout
+     would move under the finger and the tap on "Add an answer" would miss (found 2026-11-23). */
+
+  /* "3 of 5 right", at the start of the same line. */
+  .sheet-each-meta {
+    flex: 1;
     font-size: var(--text-sm);
     color: var(--color-text-secondary);
   }
@@ -261,9 +282,23 @@
       box-shadow: inset 0 0 0 var(--focus-ring-width) var(--color-accent);
     }
 
+    /* Struck through only: a fainter colour on the field fill fails contrast (UX review 2026-11-23). */
     &[data-mark="wrong"] .sheet-answer {
-      color: var(--color-text-secondary);
       text-decoration: line-through;
+    }
+
+    /* The narrowest phones (320 px): the answer gets its own line, marks and points go under it —
+       beside them it has room for only a few letters. Wider phones keep one line per answer, so more
+       answers fit on the screen. */
+    @media (width < 340px) {
+      grid-template-columns: var(--sheet-number-width) minmax(0, 1fr) auto var(--sheet-points-width);
+      grid-template-areas: "number answer answer answer" ". . marks points";
+      row-gap: var(--space-1);
+
+      & .sheet-number { grid-area: number; }
+      & .sheet-answer { grid-area: answer; }
+      & .sheet-marks { grid-area: marks; }
+      & .sheet-points { grid-area: points; }
     }
   }
 
@@ -312,6 +347,32 @@
     color: var(--color-on-danger);
   }
 
+  /* "+ Add an answer": as wide as the lines above it, quiet until needed. */
+  .sheet-add {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    min-height: var(--tap-target);
+    border: 0;
+    border-radius: var(--radius-md);
+    /* Text colour on the field fill: accent text on the accent tint fails contrast in the light theme. */
+    background: var(--color-fill);
+    color: var(--color-text);
+    font: inherit;
+    font-weight: var(--weight-semibold);
+    cursor: pointer;
+
+    &[hidden] {
+      display: none;
+    }
+
+    &:focus-visible {
+      outline: var(--focus-ring-width) solid var(--color-focus);
+      outline-offset: var(--focus-ring-offset);
+    }
+  }
+
   .sheet-bonus {
     display: grid;
     grid-template-columns: 1fr var(--sheet-points-width);
@@ -332,10 +393,7 @@
 
   .sheet-round-foot {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-3);
-    min-height: var(--tap-target);
+    justify-content: center;
   }
 
   /* "Clear game" in the shell's header: its icon-button display would show it while hidden. */

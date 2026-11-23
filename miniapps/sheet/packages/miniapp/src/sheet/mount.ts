@@ -4,7 +4,7 @@
 // never rebuilds the screen, so the caret and the keyboard stay where they are.
 // Parts: state.ts (model + saving), view.ts (drawing).
 import type { MiniAppContext, Unmount } from "../contract.ts";
-import { LIMITS, addLine, blankGame, blankRound, isBlankGame, keepBlankLine, parseGame, parsePoints, setWorth, type Game, type Question, type Round } from "../core/game.ts";
+import { LIMITS, addLine, blankGame, blankRound, isBlankGame, parseGame, parsePoints, typePoints, type Game, type Question, type Round } from "../core/game.ts";
 import { icon } from "../dom/icons.ts";
 import { h } from "../dom/h.ts";
 import { createTranslator } from "../i18n/translate.ts";
@@ -32,23 +32,29 @@ function questionOf(sheet: Sheet, element: Element): QuestionTarget | null {
 
 const answerOf = (row: Element | null | undefined): HTMLInputElement | null => row?.querySelector<HTMLInputElement>(".sheet-answer") ?? null;
 
-/** After a change to the round's questions: one blank line at the end, rows, numbers and points in step. */
+/** After a change to the round: every row's number, labels and points follow the model. */
 function syncRows(sheet: Sheet, round: Round): void {
   const list = sheet.host.querySelector<HTMLElement>("[data-questions]");
   if (list === null) return;
-  keepBlankLine(round);
-  const { questions } = round;
-  while (list.children.length > questions.length) list.lastElementChild?.remove();
-  for (let index = list.children.length; index < questions.length; index += 1) {
-    const question = questions[index];
-    if (question) list.append(rowElement(sheet, round, question, index));
-  }
   [...list.children].forEach((row, index) => {
-    const question = questions[index];
+    const question = round.questions[index];
     if (!(row instanceof HTMLElement) || question === undefined) return;
     labelRow(sheet, row, index);
+    showMark(row, question.mark);
     showWorth(sheet, row, round, question);
   });
+}
+
+/** Adds a line at the end of the round and puts the caret in it ("+" or Enter on the last line). */
+function appendLine(sheet: Sheet, round: Round): void {
+  const list = sheet.host.querySelector<HTMLElement>("[data-questions]");
+  const line = addLine(round);
+  if (list === null || line === null) return;
+  const row = rowElement(sheet, round, line, round.questions.length - 1);
+  list.append(row);
+  answerOf(row)?.focus({ preventScroll: true });
+  row.scrollIntoView({ block: "nearest" });
+  changed(sheet);
 }
 
 function changed(sheet: Sheet): void {
@@ -71,10 +77,11 @@ function onInput(sheet: Sheet, field: HTMLInputElement): void {
     const value = parsePoints(field.value);
     if (value !== null) round.points = value;
   } else if (field.matches("[data-worth]")) {
+    // The number at the end of a line is what the line brings: typing one makes the line count.
     const target = questionOf(sheet, field);
     const value = parsePoints(field.value);
     if (target === null || value === null) return;
-    setWorth(round, target.question, value);
+    typePoints(round, target.question, value);
   } else return;
   syncRows(sheet, round);
   changed(sheet);
@@ -104,20 +111,18 @@ function onAnswerKey(sheet: Sheet, field: HTMLInputElement, event: KeyboardEvent
   if (target === null || event.isComposing) return;
   if (event.key === "Enter") {
     event.preventDefault();
-    // The last line has no text but a mark (an unanswered question): Enter still gives the next line.
-    if (target.row.nextElementSibling === null && addLine(target.round)) {
-      const added = target.round.questions.at(-1);
-      if (added) target.list.append(rowElement(sheet, target.round, added, target.round.questions.length - 1));
-      saveSoon(sheet);
-    }
     const next = answerOf(target.row.nextElementSibling);
-    next?.focus();
-    next?.scrollIntoView({ block: "nearest" });
+    if (next === null) {
+      appendLine(sheet, target.round); // Enter on the last line = "+"
+      return;
+    }
+    next.focus();
+    next.scrollIntoView({ block: "nearest" });
     return;
   }
-  const isLast = target.index === target.round.questions.length - 1;
-  if (event.key !== "Backspace" || field.value !== "" || isLast || target.question.mark !== "none") return;
-  // Backspace on an empty line removes the line, like in a text editor.
+  // Backspace on an untouched line removes it, like in a text editor; one line always stays.
+  const isUntouched = field.value === "" && target.question.mark === "none";
+  if (event.key !== "Backspace" || !isUntouched || target.round.questions.length < 2) return;
   event.preventDefault();
   target.round.questions.splice(target.index, 1);
   const neighbour = target.row.previousElementSibling ?? target.row.nextElementSibling;
@@ -127,14 +132,18 @@ function onAnswerKey(sheet: Sheet, field: HTMLInputElement, event: KeyboardEvent
   changed(sheet);
 }
 
+/** Puts the focus on the open round's tab (after a redraw took the focused element away). */
+function focusTab(sheet: Sheet): void {
+  sheet.host.querySelector<HTMLElement>('[data-tab][aria-current="true"]')?.focus({ preventScroll: true });
+}
+
 /** Shows another round. */
 function openRound(sheet: Sheet, index: number, focusAnswer: boolean): void {
   if (sheet.saveTimer !== undefined) saveNow(sheet);
   sheet.open = Math.max(0, Math.min(index, sheet.game.rounds.length - 1));
   render(sheet);
-  if (!focusAnswer) return;
-  const rows = sheet.host.querySelectorAll(".sheet-row");
-  answerOf(rows[rows.length - 1])?.focus({ preventScroll: true });
+  if (focusAnswer) answerOf(sheet.host.querySelector(".sheet-row"))?.focus({ preventScroll: true });
+  else focusTab(sheet); // the screen was redrawn: focus stays on the round's tab, not on <body>
 }
 
 function newRound(sheet: Sheet): void {
@@ -152,6 +161,7 @@ function replaceGame(sheet: Sheet, game: Game, open: number): void {
   sheet.game = game;
   sheet.open = Math.max(0, Math.min(open, game.rounds.length - 1));
   render(sheet);
+  focusTab(sheet);
   saveNow(sheet);
 }
 
@@ -160,11 +170,11 @@ function undoable(sheet: Sheet, message: string, before: Game, openBefore: numbe
 }
 
 function deleteRound(sheet: Sheet): void {
-  if (sheet.game.rounds.length < 2) return;
   const before = structuredClone(sheet.game);
   const after = structuredClone(sheet.game);
   const index = sheet.open;
   after.rounds.splice(index, 1);
+  if (after.rounds.length === 0) after.rounds.push(blankRound()); // the only round: it starts again empty
   replaceGame(sheet, after, index);
   undoable(sheet, sheet.t("roundDeleted", { n: index + 1 }), before, index);
 }
@@ -184,6 +194,10 @@ function onClick(sheet: Sheet, element: Element): void {
   if (mark) onMark(sheet, mark);
   else if (tab) openRound(sheet, Number(tab.dataset["tab"]), false);
   else if (element.closest("[data-new-round]")) newRound(sheet);
+  else if (element.closest("[data-add-line]")) {
+    const round = currentRound(sheet);
+    if (round) appendLine(sheet, round);
+  }
   else if (element.closest("[data-round-delete]")) deleteRound(sheet);
 }
 

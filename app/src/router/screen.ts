@@ -6,6 +6,7 @@ import { createHome, rememberLastUsed } from "../home/home.ts";
 import { createMiniAppContext } from "../miniapps/context.ts";
 import { createOutlet } from "../miniapps/outlet.ts";
 import { launchQuery, miniAppName, openableIds } from "../miniapps/registry.ts";
+import { offerInstallAtHome } from "../ui/install.ts";
 import { setScreenTitle } from "../ui/title.ts";
 import { createRouter, type ScreenRoute } from "./router.ts";
 
@@ -55,7 +56,7 @@ export function startScreens(entries: readonly MiniAppEntry[]): void {
     active = entry === undefined || route.kind !== "miniapp" ? null : { entry, query: route.query, titlePart: null };
     if (route.kind === "home" || entry === undefined) {
       outlet.clear();
-      if (!isFirst) home.render(); // the last used mini-app may have changed while Home was hidden
+      if (!isFirst) backOnHome(home);
     } else {
       rememberLastUsed(entry.meta.id);
       void outlet.show(entry, launchQuery(entry, route.query));
@@ -92,6 +93,12 @@ export function startScreens(entries: readonly MiniAppEntry[]): void {
   // cards exist (home.css), so a deep link must not leave the list busy.
   home.render();
   router.start();
+}
+
+/** Back on Home from a tool: the cards are drawn again and, after a first save, install is offered. */
+function backOnHome(home: { render(): void }): void {
+  home.render(); // the last used mini-app may have changed while Home was hidden
+  offerInstallAtHome(); // the quiet moment to offer install, never on top of a tool
 }
 
 /** Names the outlet region after the mini-app (read when focus moves there). */

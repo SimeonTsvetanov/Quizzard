@@ -96,6 +96,48 @@ describe("siteVerificationTag", () => {
   });
 });
 
+describe("search texts (T-20)", () => {
+  const tools = app.help.features;
+
+  it("keeps the meta description within the 155-character style budget, in both languages", () => {
+    expect(app.description.length).toBeLessThanOrEqual(155);
+    expect((app.l10n?.bg?.description ?? "").length).toBeLessThanOrEqual(155);
+  });
+
+  it("names all three tools, in the same order and number in English and Bulgarian", () => {
+    expect(tools.map((f) => f.name)).toEqual(["Teams", "Scores", "Answer sheet"]);
+    expect(app.l10n?.bg?.help.features).toHaveLength(tools.length);
+    for (const f of tools) expect(f.route).toMatch(/^#\/[a-z]+$/);
+  });
+
+  it("says in the description and FAQ what the tools are for, not what is still to come", () => {
+    expect(app.description).toMatch(/team generator/i);
+    expect(app.description).toMatch(/score keeper/i);
+    expect(app.description).toMatch(/answer sheet/i);
+    expect(app.description).not.toMatch(/then a quiz creator|first/i);
+    expect(app.faq.map((f) => f.a).join(" ")).toMatch(/Answer sheet/);
+  });
+
+  it("carries the 2025 site's Google verification token (never invented; PLAN T-20)", () => {
+    expect(siteVerificationTag(app)).toBe('<meta name="google-site-verification" content="iV0XiTpnAw_U3AGR_IPF40DAbr0Et18Bjg3kLA0HTW8" />');
+  });
+
+  it("lists every tool as a feature of the WebApplication entity", () => {
+    const [webApplication] = structuredData(app) as [{ featureList?: string[] }];
+    expect(webApplication.featureList).toEqual(tools.map((f) => f.name));
+  });
+
+  it("gives llms.txt a deep link and a sentence per tool, and llms-full.txt the same", () => {
+    const text = llmsTxt(app);
+    const full = llmsFullTxt(app);
+    for (const f of tools) {
+      expect(text).toContain(`- [${f.name}](${app.url}${f.route ?? ""}): opens the ${f.name} tool directly`);
+      expect(text).toContain(`${f.name} — ${f.text}`);
+      expect(full).toContain(`- ${f.name} (${app.url}${f.route ?? ""}): ${f.text}`);
+    }
+  });
+});
+
 describe("llmsTxt", () => {
   const text = llmsTxt(app);
   const sections = text.split(/^## /m);
