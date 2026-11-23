@@ -31,6 +31,8 @@ export const bg: Messages = {
   bonusHint: "Допълнителни или отнети точки за рунда, напр. 2 или −1",
   newRound: "Нов рунд",
   deleteRound: "Изтрий рунда",
+  deleteRoundTitle: "Да се изтрие ли рунд {{n}}?",
+  deleteRoundText: "Отговорите и точките му ще бъдат изтрити.",
   roundDeleted: "Рунд {{n}} е изтрит",
   clearGame: "Изчисти играта",
   clearTitle: "Да се изчисти ли цялата игра?",

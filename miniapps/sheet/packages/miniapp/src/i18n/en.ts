@@ -29,6 +29,8 @@ export const en = {
   bonusHint: "Extra or lost points for this round, e.g. 2 or −1",
   newRound: "New round",
   deleteRound: "Delete round",
+  deleteRoundTitle: "Delete round {{n}}?",
+  deleteRoundText: "Its answers and points will be deleted.",
   roundDeleted: "Round {{n}} deleted",
   clearGame: "Clear game",
   clearTitle: "Clear the whole game?",

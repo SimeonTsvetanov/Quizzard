@@ -50,7 +50,7 @@ When a game has more rounds than fit in the top bar, swipe the tabs sideways or 
 
 ## Delete a round or clear the game
 
-- To delete the open round, select **Delete round** at the bottom of it. A message with **Undo** shows for a few seconds. If it was the only round, it starts again empty.
+- To delete the open round, select **Delete round** at the bottom of it. If the round has answers or points, confirm with **Delete round** in the window that opens; an empty round is deleted at once. A message with **Undo** shows for a few seconds. If it was the only round, it starts again empty.
 - To start a game from scratch, select the eraser (**Clear game**) in the header, then **Clear game** in the **Clear the whole game?** window. A message with **Undo** shows for a few seconds. The eraser is hidden while the sheet is empty.
 
 The game stays in this browser until you clear it, also when you close Quizzard or lose the connection. It is not sent anywhere, and the other teams can't see it. See [Limits](../reference/limits.md) for the number of rounds and answers.

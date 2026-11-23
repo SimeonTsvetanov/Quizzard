@@ -29,7 +29,7 @@ export const help: SheetHelp = {
     faq: [
       { q: "How do I remove a line I added by mistake?", a: "Tap the red − next to “Add an answer”, then the red − on the line, then “Done”. “Undo” brings a removed line back for a few seconds. On a keyboard, Backspace on an empty line removes it too." },
       { q: "I have more rounds than fit at the top. How do I reach them?", a: "Swipe the row of round numbers sideways, or tap the arrow at its end. The + for a new round is always there. A game can have up to 1,000 rounds." },
-      { q: "How do I delete a round?", a: "Open the round and tap “Delete round” at the bottom. “Undo” brings it back for a few seconds." },
+      { q: "How do I delete a round?", a: "Open the round and tap “Delete round” at the bottom, then confirm. “Undo” brings it back for a few seconds." },
       { q: "How do I start a new game?", a: "Tap the eraser at the top (“Clear game”) and confirm. “Undo” brings the game back for a few seconds." },
       { q: "Can the other teams see my sheet?", a: "No. It is stored only in this browser on your device and is not sent anywhere." },
     ],
@@ -53,7 +53,7 @@ export const help: SheetHelp = {
     faq: [
       { q: "Как да махна ред, добавен по грешка?", a: "Докоснете червеното − до „Добави отговор“, после червеното − на реда, после „Готово“. „Отмени“ връща махнатия ред за няколко секунди. С клавиатура Backspace на празен ред също го маха." },
       { q: "Имам повече рундове, отколкото се събират горе. Как да стигна до тях?", a: "Плъзнете реда с номерата на рундовете настрани или докоснете стрелката в края му. Знакът + за нов рунд е винаги там. Една игра може да има до 1000 рунда." },
-      { q: "Как да изтрия рунд?", a: "Отворете рунда и докоснете „Изтрий рунда“ най-долу. „Отмени“ го връща за няколко секунди." },
+      { q: "Как да изтрия рунд?", a: "Отворете рунда и докоснете „Изтрий рунда“ най-долу и потвърдете. „Отмени“ го връща за няколко секунди." },
       { q: "Как да започна нова игра?", a: "Докоснете гумичката най-горе („Изчисти играта“) и потвърдете. „Отмени“ връща играта за няколко секунди." },
       { q: "Виждат ли другите отбори моя лист?", a: "Не. Той се пази само в този браузър на Вашето устройство и не се изпраща никъде." },
     ],

@@ -4,6 +4,11 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.14.1] - 2026-11-23
+### Changed
+- Answer sheet: **Delete round** asks first when the round has answers or points. An empty round still goes at
+  once, and Undo is offered either way.
+
 ## [0.14.0] - 2026-11-23
 ### Changed
 - A bolder look everywhere. Each tool has its own colour — Teams emerald, Scores gold, Answer sheet blue —

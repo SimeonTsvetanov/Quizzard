@@ -4,7 +4,7 @@
 // never rebuilds the screen, so the caret and the keyboard stay where they are.
 // Parts: state.ts (model + saving), view.ts (drawing).
 import type { MiniAppContext, Unmount } from "../contract.ts";
-import { LIMITS, addLine, blankGame, blankRound, isBlankGame, parseGame, parsePoints, typePoints, type Game, type Question, type Round } from "../core/game.ts";
+import { LIMITS, addLine, blankGame, blankRound, isBlankGame, isBlankRound, parseGame, parsePoints, typePoints, type Game, type Question, type Round } from "../core/game.ts";
 import { icon } from "../dom/icons.ts";
 import { h } from "../dom/h.ts";
 import { createTranslator } from "../i18n/translate.ts";
@@ -172,10 +172,16 @@ function undoable(sheet: Sheet, message: string, before: Game, openBefore: numbe
   sheet.context.shell.toast(message, { action: { label: sheet.t("undo"), run: () => { replaceGame(sheet, before, openBefore); } } });
 }
 
-function deleteRound(sheet: Sheet): void {
+/** Deletes the open round. A round with something in it asks first (Moni, 2026-11-23); Undo follows either way. */
+async function deleteRound(sheet: Sheet): Promise<void> {
+  const index = sheet.open;
+  const round = currentRound(sheet);
+  if (round && !isBlankRound(round)) {
+    const isConfirmed = await sheet.context.shell.confirm({ title: sheet.t("deleteRoundTitle", { n: index + 1 }), text: sheet.t("deleteRoundText"), confirm: sheet.t("deleteRound"), cancel: sheet.t("cancel"), danger: true });
+    if (!isConfirmed || sheet.signal.aborted) return;
+  }
   const before = structuredClone(sheet.game);
   const after = structuredClone(sheet.game);
-  const index = sheet.open;
   after.rounds.splice(index, 1);
   if (after.rounds.length === 0) after.rounds.push(blankRound()); // the only round: it starts again empty
   replaceGame(sheet, after, index);
@@ -231,7 +237,7 @@ function onClick(sheet: Sheet, element: Element): void {
     const round = currentRound(sheet);
     if (round) appendLine(sheet, round);
   }
-  else if (element.closest("[data-round-delete]")) deleteRound(sheet);
+  else if (element.closest("[data-round-delete]")) void deleteRound(sheet);
 }
 
 function wire(sheet: Sheet): void {
