@@ -1,5 +1,6 @@
 /* TeamSync main action: the error line above it and the large Generate button, which stays in
-   the thumb zone on phones. */
+   the thumb zone on phones. The button is the tool's colour as a gradient (like its tile on Home),
+   with a glow in that colour under it; pressed, it sinks and loses the glow. */
 @layer components {
   /* || Components: form error */
   /* On the card surface: danger text passes 4.5:1. */
@@ -20,7 +21,32 @@
 
     width: 100%;
     min-height: var(--button-large-min-height);
-    font-size: var(--text-md);
+    border-radius: var(--radius-lg);
+    font-family: var(--font-display);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+  }
+
+  /* The screen's two main actions (Generate teams, Shuffle again): the accent as a gradient. The light
+     edge inside the top is the on-accent colour, so it shows in both themes. */
+  .cta-bar .button--primary,
+  .results-actions .button--primary {
+    --cta-glow: 0 var(--space-2) var(--space-5) color-mix(in oklch, var(--color-accent) 38%, transparent);
+    --cta-edge: inset 0 1px 0 color-mix(in oklch, var(--color-on-accent) 28%, transparent);
+
+    background: linear-gradient(150deg, var(--color-accent), var(--color-accent-pressed));
+    box-shadow: var(--cta-edge), var(--cta-glow);
+
+    @media (hover: hover) {
+      &:hover {
+        box-shadow: var(--cta-edge), var(--cta-glow), var(--shadow-2);
+      }
+    }
+
+    &:active {
+      background: var(--color-accent-pressed);
+      box-shadow: var(--cta-edge);
+    }
   }
 
   /* Phones: the main action sits in the thumb zone while the form is on screen. */
@@ -29,25 +55,10 @@
     bottom: calc(var(--space-3) + var(--safe-bottom));
     z-index: 1;
 
-    & .button {
-      box-shadow: var(--shadow-2);
-    }
-
     @media (width > 600px) {
       position: static;
       bottom: auto;
       z-index: auto;
-
-      & .button {
-        box-shadow: none;
-      }
-    }
-
-    /* Desktop keeps the usual button hover lift (the flat rest state above would hide it). */
-    @media (width > 600px) and (hover: hover) {
-      & .button:hover {
-        box-shadow: var(--shadow-2);
-      }
     }
   }
 }

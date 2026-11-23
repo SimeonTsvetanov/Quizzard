@@ -1,5 +1,6 @@
 /* TeamSync results (PLAN T-06/T-07): one card per team, then Shuffle again / Share / Copy and the
-   quiet "Clear and start over". */
+   quiet "Clear and start over". Cards are glass with a band in the tool's colour and are "dealt"
+   one after another when a result appears (finite, only with motion allowed). */
 @layer components {
   /* || Components: results */
   .results {
@@ -43,21 +44,69 @@
 
   /* || Components: teams grid */
   .teams-grid {
-    /* Two cards side by side from about 32rem of width. */
+    /* Phones: two cards side by side from about 32rem of width. */
     --team-card-min-width: 15rem;
 
     display: grid;
     gap: var(--space-3);
     grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--team-card-min-width)), 1fr));
+
+    /* Wider screens: always two equal columns; an odd last team takes the whole row and lists its
+       members in two columns, so no card is left alone at half width (Moni 2026-11-23: symmetric). */
+    @media (width > 600px) {
+      gap: var(--space-4);
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+
+      & > .team-card:last-child:nth-child(odd) {
+        grid-column: 1 / -1;
+
+        & .team-list {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          column-gap: var(--space-8);
+        }
+      }
+    }
   }
 
   /* || Components: team card */
+  /* A glass card under a band in the tool's colour with the team's name. */
   .team-card {
-    padding: var(--space-4);
-    background: var(--color-surface);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-1);
+    /* Each card is dealt a little after the one before it. */
+    --team-deal-stagger: 60ms;
+    --team-deal-rise: var(--space-5);
+    --team-deal-tilt: -2deg;
+    --team-deal-scale: 0.96;
+
+    /* The band follows the card's round corners. */
+    overflow: hidden;
+    border-radius: var(--radius-xl);
+    background: var(--glass-surface);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    box-shadow: var(--glass-edge), var(--shadow-2);
     view-transition-class: team;
+
+    /* The "deal": runs once per result and ends on the card's own place (2–10 teams). */
+    @media (prefers-reduced-motion: no-preference) {
+      animation: teams-deal var(--duration-sheet) var(--ease-spring) backwards;
+
+      &:nth-child(2) { animation-delay: calc(var(--team-deal-stagger) * 1); }
+      &:nth-child(3) { animation-delay: calc(var(--team-deal-stagger) * 2); }
+      &:nth-child(4) { animation-delay: calc(var(--team-deal-stagger) * 3); }
+      &:nth-child(5) { animation-delay: calc(var(--team-deal-stagger) * 4); }
+      &:nth-child(6) { animation-delay: calc(var(--team-deal-stagger) * 5); }
+      &:nth-child(7) { animation-delay: calc(var(--team-deal-stagger) * 6); }
+      &:nth-child(8) { animation-delay: calc(var(--team-deal-stagger) * 7); }
+      &:nth-child(9) { animation-delay: calc(var(--team-deal-stagger) * 8); }
+      &:nth-child(n + 10) { animation-delay: calc(var(--team-deal-stagger) * 9); }
+    }
+  }
+
+  @keyframes teams-deal {
+    from {
+      opacity: 0;
+      transform: translateY(var(--team-deal-rise)) rotate(var(--team-deal-tilt)) scale(var(--team-deal-scale));
+    }
   }
 
   .team-head {
@@ -65,13 +114,18 @@
     align-items: center;
     justify-content: space-between;
     gap: var(--space-2);
-    margin-bottom: var(--space-2);
+    min-height: var(--tap-target);
+    padding: var(--space-2) var(--space-4);
+    background: linear-gradient(150deg, var(--color-accent), var(--color-accent-pressed));
+    color: var(--color-on-accent);
 
     & h3 {
       margin: 0;
       font-family: var(--font-display);
       font-size: var(--text-md);
-      color: var(--color-accent-text);
+      font-weight: var(--weight-semibold);
+      /* On the band: the on-accent colour, never the accent text colour. */
+      color: inherit;
     }
   }
 
@@ -81,10 +135,13 @@
 
     padding: var(--chip-padding-block) var(--space-2);
     border-radius: var(--radius-full);
-    background: var(--color-fill);
-    /* Only --color-text on fill keeps the contrast. */
-    color: var(--color-text);
+    /* The darker accent under the on-accent text (more contrast than the band itself), ringed in a
+       faint on-accent line. */
+    background: var(--color-accent-pressed);
+    box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--color-on-accent) 40%, transparent);
+    color: var(--color-on-accent);
     font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
   }
@@ -96,9 +153,17 @@
     display: grid;
     gap: var(--space-1);
     margin: 0;
-    padding-inline-start: var(--team-list-indent);
+    padding: var(--space-3) var(--space-4) var(--space-4);
+    padding-inline-start: calc(var(--space-4) + var(--team-list-indent));
     font-variant-numeric: tabular-nums;
     overflow-wrap: anywhere;
+
+    & > li {
+      &::marker {
+        color: var(--color-accent-text);
+        font-weight: var(--weight-bold);
+      }
+    }
   }
 
   /* || Components: results actions */
@@ -107,7 +172,8 @@
     position: sticky;
     bottom: 0;
     z-index: 1;
-    grid-template-columns: 1fr 1fr;
+    /* Share | Copy stand under the two columns of team cards. */
+    column-gap: var(--space-3);
     margin-top: var(--space-4);
     margin-inline: calc(-1 * var(--space-2));
     padding: var(--space-6) var(--space-2) calc(var(--space-3) + var(--safe-bottom));
@@ -121,13 +187,14 @@
       margin-inline: 0;
       padding: 0;
       background-image: none;
+      column-gap: var(--space-4);
     }
 
-    /* The button stack's own :has() column rules are (0,2,0); this one must match them. */
+    /* Every width: Shuffle again on its own row, Share | Copy as two equal halves under it — the same
+       edges as the team cards above (three in a row did not fit the Bulgarian labels beside the
+       names card). The button stack's own :has() column rules are (0,2,0); this one must match them. */
     &.button-stack {
-      @media (width >= 900px) {
-        grid-template-columns: repeat(3, 1fr);
-      }
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     & .button {
@@ -135,13 +202,16 @@
       padding-inline: var(--space-3);
     }
 
-    /* Phones: Shuffle again on its own row, then Share | Copy. */
+    /* Share and Copy: glass, like the cards above them. */
+    & .button:not(.button--primary, .button--destructive) {
+      background: var(--glass-surface);
+      -webkit-backdrop-filter: var(--glass-blur);
+      backdrop-filter: var(--glass-blur);
+      box-shadow: var(--glass-edge), var(--shadow-1);
+    }
+
     & > :first-child {
       grid-column: 1 / -1;
-
-      @media (width > 600px) {
-        grid-column: auto;
-      }
     }
 
     /* "Clear and start over": always the last row, full width, quiet (red text, no fill). */

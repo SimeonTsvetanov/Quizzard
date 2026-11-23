@@ -7,7 +7,12 @@
 
    One grid runs through the round card: [number] [answer] [marks] [points]. The round's result, "A
    right answer gives", every line's points and the bonus all sit in the last column, so the numbers
-   that add up are under one another. */
+   that add up are under one another.
+
+   Look (Moni 2026-11-23): the banner in the tool's colour, the open round as a glass panel over the
+   glow the shell draws behind the screen, display font for titles and the numbers that matter, green
+   for right and red for wrong. Motion is short, finite and only with motion allowed: the round panel
+   fades up when it is drawn, a mark springs back after a press. Nothing moves the layout. */
 @layer components {
   /* || Components: screen */
   .sheet-screen {
@@ -55,11 +60,16 @@
     align-items: center;
     gap: var(--space-1);
     padding: var(--space-2);
-    border-radius: var(--radius-lg);
-    /* The tool's colour, like its tile on Home: the bar is the sheet's banner. */
+    border-radius: var(--radius-xl);
+    /* The tool's colour, like its tile on Home: the bar is the sheet's banner. One flat colour, not a
+       gradient: the arrows over the ends of the tab strip are filled with the same colour. A light
+       edge inside the top and a glow in the accent under it lift it off the page. */
     background: var(--color-accent);
     color: var(--color-on-accent);
-    box-shadow: var(--shadow-2);
+    box-shadow:
+      inset 0 1px 0 color-mix(in oklch, var(--color-on-accent) 28%, transparent),
+      0 var(--space-2) var(--space-6) color-mix(in oklch, var(--color-accent) 32%, transparent),
+      var(--shadow-1);
   }
 
   /* The strip between its two arrows; the arrows lie over its ends, so showing one moves nothing. */
@@ -128,7 +138,7 @@
     min-height: var(--tap-target);
     padding: 0 var(--space-2);
     border: 0;
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-lg);
     /* A shade of the bar for the other rounds; the open one is the bar's inverse. */
     background: var(--color-accent-pressed);
     color: var(--color-on-accent);
@@ -148,6 +158,7 @@
     &[aria-current="true"] {
       background: var(--color-on-accent);
       color: var(--color-accent-pressed);
+      box-shadow: var(--shadow-2);
     }
   }
 
@@ -202,9 +213,25 @@
     gap: var(--space-3);
     min-height: 0;
     padding: var(--sheet-card-padding) var(--sheet-card-padding) 0;
-    border-radius: var(--radius-lg);
-    background: var(--color-surface);
-    box-shadow: var(--shadow-1);
+    border-radius: var(--radius-xl);
+    background: var(--glass-surface);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    box-shadow: var(--glass-edge), var(--shadow-2);
+
+    /* Drawn again for another round: it fades up into its place, once. */
+    @media (prefers-reduced-motion: no-preference) {
+      --sheet-round-rise: var(--space-3);
+
+      animation: sheet-round-in var(--duration-slow) var(--ease-out) backwards;
+    }
+  }
+
+  @keyframes sheet-round-in {
+    from {
+      opacity: 0;
+      transform: translateY(var(--sheet-round-rise));
+    }
   }
 
   .sheet-round-head {
@@ -226,15 +253,21 @@
 
   /* The round's result: the head of the points column. */
   .sheet-round-points {
+    display: grid;
     flex: none;
+    place-items: center;
     width: var(--sheet-points-width);
+    min-height: var(--tap-target);
+    border-radius: var(--radius-md);
+    /* The banner's colours again: the round's result reads as a small copy of the total. */
+    background: var(--color-accent);
+    color: var(--color-on-accent);
     font-family: var(--font-display);
-    font-size: var(--text-xl);
+    font-size: var(--text-lg);
     font-weight: var(--weight-bold);
     font-variant-numeric: tabular-nums;
     letter-spacing: var(--tracking-tight);
     text-align: center;
-    color: var(--color-accent-text);
   }
 
   /* || Components: fields (round name, answer, points) */
@@ -247,6 +280,8 @@
     border: 0;
     border-radius: var(--radius-md);
     background: var(--color-fill);
+    /* A well in the glass: a soft shadow inside the top edge. */
+    box-shadow: inset 0 1px 2px var(--shadow-color);
     color: var(--color-text);
     font: inherit;
     font-size: max(var(--sheet-field-min-font), var(--text-base));
@@ -286,8 +321,10 @@
 
   .sheet-each-meta {
     flex: 1;
-    font-size: var(--text-sm);
-    font-weight: var(--weight-semibold);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-bold);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
     color: var(--color-text-secondary);
   }
 
@@ -345,6 +382,13 @@
       font-weight: var(--weight-regular);
     }
 
+    /* A right answer: its points count, so their box takes the tool's tint (the text keeps its own
+       colour — accent text on the tint is too close to the contrast limit). */
+    &[data-mark="right"] .sheet-points {
+      background: var(--color-accent-tint);
+      font-weight: var(--weight-bold);
+    }
+
     /* A question worth something else than the round says stands out. */
     &[data-own-points] .sheet-points {
       color: var(--color-accent-text);
@@ -370,7 +414,9 @@
   }
 
   .sheet-number {
-    font-size: var(--text-sm);
+    font-family: var(--font-display);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
     font-variant-numeric: tabular-nums;
     color: var(--color-text-secondary);
     text-align: end;
@@ -392,10 +438,12 @@
     background: var(--color-fill);
     color: var(--color-text-secondary);
     cursor: pointer;
-    transition: background-color var(--duration-fast) var(--ease-standard), color var(--duration-fast) var(--ease-standard), scale var(--duration-fast) var(--ease-standard);
+    /* Pressed it shrinks; let go, it springs back a little past its size and settles (--ease-spring). */
+    transition: background-color var(--duration-fast) var(--ease-standard), color var(--duration-fast) var(--ease-standard), box-shadow var(--duration-fast) var(--ease-standard), scale var(--duration-slow) var(--ease-spring);
 
     &:active {
-      scale: 0.92;
+      scale: 0.86;
+      transition-duration: var(--duration-fast);
     }
 
     &:focus-visible {
@@ -404,14 +452,19 @@
     }
   }
 
+  /* Right is green, wrong is red — in every tool colour. The success token is a dark green in the
+     light theme and a bright one in the dark theme, exactly as the accent is, so the on-accent colour
+     (white / near-black) is the icon colour that contrasts with it in both. Each has a glow of its own. */
   .sheet-mark--right[aria-pressed="true"] {
-    background: var(--color-accent);
+    background: var(--color-success-text);
     color: var(--color-on-accent);
+    box-shadow: 0 var(--space-1) var(--space-3) color-mix(in oklch, var(--color-success-text) 40%, transparent);
   }
 
   .sheet-mark--wrong[aria-pressed="true"] {
     background: var(--color-danger);
     color: var(--color-on-danger);
+    box-shadow: 0 var(--space-1) var(--space-3) color-mix(in oklch, var(--color-danger) 40%, transparent);
   }
 
   /* "Remove answers" is on: each line shows one red button where its marks and points were, and the
@@ -481,8 +534,24 @@
     }
   }
 
+  /* "Add an answer": an empty line waiting to be filled — a dashed outline, no fill. */
   .sheet-add {
     flex: 1;
+    /* The outline takes the room the padding had: the Bulgarian label still fits one line at 320 px. */
+    padding-inline: 0;
+    border: var(--focus-ring-width) dashed color-mix(in oklch, var(--color-text-secondary) 60%, transparent);
+    background: none;
+    transition: background-color var(--duration-fast) var(--ease-standard);
+
+    @media (hover: hover) {
+      &:hover {
+        background: var(--color-accent-tint);
+      }
+    }
+
+    &:active {
+      background: var(--color-accent-tint);
+    }
   }
 
   /* The switch: a quiet square while off; "Done" in the accent colour while lines can be removed. */
@@ -505,10 +574,15 @@
     align-items: center;
     gap: var(--space-1) var(--sheet-gap);
     padding-inline-start: calc(var(--sheet-number-width) + var(--sheet-gap));
-    margin-top: var(--space-2);
+    /* Set apart from the answers by a hairline over it. */
+    margin-top: var(--space-1);
+    padding-top: var(--space-3);
+    box-shadow: inset 0 1px 0 var(--color-separator);
   }
 
   .sheet-bonus-label {
+    font-family: var(--font-display);
+    font-size: var(--text-sm);
     font-weight: var(--weight-semibold);
   }
 

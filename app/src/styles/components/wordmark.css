@@ -71,7 +71,10 @@
     /* A slow breath while Home is open. Small and opacity-only on purpose: measured at about no CPU (the large
        drifting layers of 0.14.0 were the costly ones). */
     @media (prefers-reduced-motion: no-preference) {
-      animation: wordmark-breathe 3.6s var(--ease-standard) 1.6s infinite alternate;
+      /* On Home only: with a tool open the footer's wordmark rests. */
+      :root:not([data-tool]) & {
+        animation: wordmark-breathe 3.6s var(--ease-standard) 1.6s infinite alternate;
+      }
     }
   }
 

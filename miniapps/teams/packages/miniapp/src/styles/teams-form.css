@@ -1,5 +1,6 @@
 /* TeamSync names field (PLAN T-05): label row with count and Clear, the names box, the hint.
-   Tokens only, no borders (forge-design). */
+   Tokens only, no borders (forge-design). Labels are in the display font; the names box is a well
+   sunk into the glass card. */
 @layer components {
   /* || Components: field */
   .field {
@@ -27,14 +28,22 @@
       resize: none;
       padding: var(--space-3) var(--space-4);
       border: 0;
-      border-radius: var(--radius-md);
+      border-radius: var(--radius-lg);
       background: var(--color-fill);
+      /* A well: a soft shadow inside its top edge. */
+      box-shadow: inset 0 1px 2px var(--shadow-color);
       color: var(--color-text);
+      transition: box-shadow var(--duration-fast) var(--ease-standard);
 
       @media (width > 600px) {
         min-height: var(--names-min-height-desktop);
         height: auto;
         resize: vertical;
+      }
+
+      /* The secondary text colour: the shell's fainter placeholder is hard to read on the fill. */
+      &::placeholder {
+        color: var(--color-text-secondary);
       }
 
       &:focus-visible {
@@ -60,11 +69,15 @@
     gap: var(--space-3);
 
     & label {
+      font-family: var(--font-display);
+      font-size: var(--text-md);
       font-weight: var(--weight-semibold);
     }
   }
 
   .field-label {
+    font-family: var(--font-display);
+    font-size: var(--text-md);
     font-weight: var(--weight-semibold);
   }
 
