@@ -28,10 +28,10 @@
     }
   }
 
-  /* Single-column cards (Add player, Leaderboard, how it works). */
+  /* The panels under the player grid (Add player, Leaderboard, how it works): the whole column, so their
+     left and right edges are the grid's at every width (Moni 2026-11-23: one symmetric screen). The name
+     is from when they were a narrower, centred column. */
   .narrow-column {
     width: 100%;
-    max-width: var(--content-narrow);
-    margin-inline: auto;
   }
 }

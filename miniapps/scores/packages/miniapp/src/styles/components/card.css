@@ -1,12 +1,44 @@
-/* Cards (design → ui-patterns §7): surface, large radius, resting shadow — no borders. Set by
-   src/components/ui/card.tsx. */
+/* Cards (design → ui-patterns §7): a glass surface (see-through, blurred — the tool's glow shows behind
+   it), large radius, a light edge and the resting shadow — no borders. Set by src/components/ui/card.tsx.
+   The panels under the player grid (Add player, Leaderboard) carry a wash of the accent in their corner and
+   a small accent mark before the title; they rise in after the player cards when the screen opens. */
 @layer components {
   /* || Components: card */
   .card {
-    border-radius: var(--radius-lg);
-    background: var(--color-surface);
+    border-radius: var(--radius-xl);
+    background: var(--glass-surface);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
     color: var(--color-text);
-    box-shadow: var(--shadow-1);
+    box-shadow: var(--glass-edge), var(--shadow-1);
+  }
+
+  /* || Components: panel */
+  .narrow-column {
+    /* Each block of the screen starts a little after the one before it. */
+    --panel-stagger: 60ms;
+
+    & > .card {
+      background:
+        radial-gradient(120% 160% at 0% 0%, var(--color-accent-tint), transparent 55%),
+        var(--glass-surface);
+      box-shadow: var(--glass-edge), var(--shadow-2);
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      animation: screen-rise var(--duration-slow) var(--ease-out) calc(var(--panel-stagger) * 2) backwards;
+
+      & + & {
+        animation-delay: calc(var(--panel-stagger) * 3);
+      }
+    }
+  }
+
+  @keyframes screen-rise {
+    from {
+      opacity: 0;
+      transform: translateY(var(--space-4));
+    }
   }
 
   .card-header {
@@ -15,22 +47,56 @@
     justify-content: space-between;
     gap: var(--space-3);
     padding: var(--space-5) var(--space-5) var(--space-3);
+
+    @media (width > 600px) {
+      padding: var(--space-6) var(--space-6) var(--space-4);
+    }
   }
 
   .card-title {
+    /* The accent mark before the title: the title's own icon, or a drawn "+" when it has none. */
+    --title-mark: var(--space-8);
+    --title-mark-stroke: 2px;
+
     display: flex;
     align-items: center;
-    gap: var(--space-2);
+    gap: var(--space-3);
     font-family: var(--font-display);
     font-size: var(--text-lg);
     font-weight: var(--weight-semibold);
     line-height: var(--leading-tight);
     letter-spacing: var(--tracking-tight);
 
+    & svg,
+    &:not(:has(svg))::before {
+      flex-shrink: 0;
+      width: var(--title-mark);
+      height: var(--title-mark);
+      border-radius: var(--radius-md);
+      background: linear-gradient(150deg, var(--color-accent), var(--color-accent-pressed));
+      color: var(--color-on-accent);
+      box-shadow: var(--shadow-1);
+    }
+
     & svg {
-      width: 1em;
-      height: 1em;
-      color: var(--color-accent-text);
+      padding: calc(var(--title-mark) / 4);
+    }
+
+    /* The narrowest phones: a smaller mark and title, so the leader's name beside it keeps some room. */
+    @media (width < 380px) {
+      --title-mark: var(--space-6);
+
+      gap: var(--space-2);
+      font-size: var(--text-base);
+    }
+
+    /* Two bars in the text colour of the mark over its gradient: a plus, no glyph (nothing is read out). */
+    &:not(:has(svg))::before {
+      content: "";
+      background:
+        linear-gradient(currentColor, currentColor) center / 44% var(--title-mark-stroke) no-repeat,
+        linear-gradient(currentColor, currentColor) center / var(--title-mark-stroke) 44% no-repeat,
+        linear-gradient(150deg, var(--color-accent), var(--color-accent-pressed));
     }
   }
 
@@ -42,9 +108,17 @@
 
   .card-content {
     padding: 0 var(--space-5) var(--space-5);
+
+    @media (width > 600px) {
+      padding: 0 var(--space-6) var(--space-6);
+    }
   }
 
   .card-footer {
     padding: 0 var(--space-5) var(--space-5);
+
+    @media (width > 600px) {
+      padding: 0 var(--space-6) var(--space-6);
+    }
   }
 }

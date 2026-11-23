@@ -14,11 +14,25 @@
     gap: var(--space-2);
   }
 
+  /* − and +: "+" carries the accent (the usual way a score goes), "−" stays neutral. A press pushes the
+     button in and fills it with the accent for as long as the finger is down. */
+  .score-step {
+    &:active:not(:disabled) {
+      --button-bg: var(--color-accent);
+      --button-color: var(--color-on-accent);
+
+      transform: scale(0.92);
+    }
+  }
+
   .score-step--minus {
     grid-area: minus;
   }
 
   .score-step--plus {
+    --button-bg: var(--color-accent-tint);
+    --button-color: var(--color-accent-text);
+
     grid-area: plus;
   }
 
@@ -30,22 +44,22 @@
       gap: var(--space-1);
     }
 
-    /* Three tabular digits are ~1.9 em: the score size where it fits beside − and +, smaller on narrow phones. */
+    /* Three tabular digits are ~2.3 em in the display font: the score size where it fits beside − and +, smaller on narrow phones. */
     .player-grid[data-density="compact"] .player-card[data-short-score] .score {
       padding-inline: 0;
-      font-size: min(var(--text-score), (100cqi - 2 * var(--tap-target) - 2 * var(--space-1)) / 2);
+      font-size: min(var(--text-score), (100cqi - 2 * var(--tap-target) - 2 * var(--space-1)) / 2.4);
       text-align: start;
     }
   }
 
   /* || Components: score */
-  /* The largest score within the limits, "-999999", is ~4.2 em in tabular bold: the size is capped by the
-     card's width (cqi of the player-card container), so it fits even a 320 px phone. A short score (≤ 3
-     characters) needs only ~2 em, so it may grow up to the score size on any phone. The target is a notch
+  /* The largest score within the limits, "-999999", is ~4.9 em in the display font's tabular digits (measured
+     2026-11-23; 4.2 em in the text font before): the size is capped by the card's width (cqi of the
+     player-card container), so it fits even a 320 px phone. A short score (≤ 3 characters) needs only ~2.3 em, so it may grow up to the score size on any phone. The target is a notch
      taller than the other controls (Moni 2026-11-20: more room to press it); the history line gave up the
      same height (history.css), so cards keep their 1.1 height. */
   .score {
-    --score-fit: calc((100cqi - 2 * var(--space-1)) / 4.4);
+    --score-fit: calc((100cqi - 2 * var(--space-1)) / 5.1);
 
     display: block;
     grid-area: score;
@@ -55,6 +69,7 @@
     padding: var(--space-1);
     overflow: hidden;
     border-radius: var(--radius-md);
+    font-family: var(--font-display);
     font-size: min(var(--text-score), var(--score-fit));
     font-weight: var(--weight-bold);
     line-height: var(--leading-tight);
@@ -74,17 +89,22 @@
     }
 
     .player-card[data-short-score] & {
-      --score-fit: calc((100cqi - 2 * var(--space-1)) / 2.2);
+      --score-fit: calc((100cqi - 2 * var(--space-1)) / 2.6);
     }
 
     /* Saved games from before the limits may hold longer numbers: smaller, and wrapping as a last resort. */
+    /* The leader's score in the accent (large text: 3:1 is enough, and it has more). */
+    .player-card[data-place="1"] & {
+      color: var(--color-accent-text);
+    }
+
     &[data-long] {
       font-size: var(--text-xl);
       overflow-wrap: anywhere;
     }
   }
 
-  /* The digits roll in from the direction of the change (keyed by the score, so a quick tap restarts it and
+  /* The digits roll in from the direction of the change, a little smaller, and pop to size (keyed by the score, so a quick tap restarts it and
      nothing queues). Transform only: the digits keep full contrast in every frame. */
   .score-value {
     display: inline-block;
@@ -107,13 +127,13 @@
 
   @keyframes score-roll-up {
     from {
-      transform: translateY(0.35em);
+      transform: translateY(0.35em) scale(0.86);
     }
   }
 
   @keyframes score-roll-down {
     from {
-      transform: translateY(-0.35em);
+      transform: translateY(-0.35em) scale(0.86);
     }
   }
 }

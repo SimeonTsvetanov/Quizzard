@@ -125,6 +125,8 @@ export function PlayerCard({ player, medal, isLastScored, motion, onRename, onRe
       aria-hidden={motion === "leaving" ? true : undefined}
       data-last-scored={isLastScored ? "" : undefined}
       data-short-score={isShortScore(player.score) ? "" : undefined}
+      // The podium place, for the leader's look (player-card.css).
+      data-place={medal ?? undefined}
     >
       {/* Keyed by place: a medal that changes pops in again (medal-in, player-card.css). */}
       {medal !== null && <PlaceMedal key={medal} place={medal} />}

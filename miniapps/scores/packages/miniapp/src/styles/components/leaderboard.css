@@ -1,5 +1,6 @@
-/* Leaderboard (card and dialog, src/leaderboard/): ranked rows separated by hairlines inside one
-   card (ui-patterns §7), medals for the top three, points right-aligned in tabular numbers. */
+/* Leaderboard (card and dialog, src/leaderboard/): ranked rows inside one card (ui-patterns §7). The podium
+   rows are bars tinted in their metal (`data-place`) with the medal in a chip and the points in the display
+   font; the rows after them are quieter, separated by hairlines. Points right-aligned in tabular numbers. */
 @layer components {
   /* || Components: rank list */
   /* Positioned: a row that changes place slides against it (use-flip.ts, SPEC 1.2 F20). */
@@ -7,53 +8,105 @@
     position: relative;
     display: flex;
     flex-direction: column;
+    gap: var(--space-2);
   }
 
   .rank-row {
+    /* The metal of a podium bar (set per place below), how much of it the bar shows, and its edge mark. */
+    --rank-metal: transparent;
+    --rank-tint: 16%;
+    --rank-edge: 3px;
+
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: var(--space-3);
-    min-height: var(--tap-target);
-    padding-block: var(--space-2);
+    min-height: calc(var(--tap-target) + var(--space-1));
+    padding: var(--space-1) var(--space-4) var(--space-1) var(--space-2);
+    border-radius: var(--radius-md);
+    background: color-mix(in oklch, var(--rank-metal) var(--rank-tint), transparent);
+    /* The metal again as a mark on the leading edge: the place is not told by the tint alone. */
+    box-shadow: inset var(--rank-edge) 0 0 var(--rank-metal);
     font-size: var(--text-md);
 
-    & + & {
-      box-shadow: inset 0 1px 0 var(--color-separator);
+    &[data-place="1"] {
+      --rank-metal: var(--medal-gold);
+      --rank-tint: 24%;
+    }
+
+    &[data-place="2"] {
+      --rank-metal: var(--medal-silver);
+    }
+
+    &[data-place="3"] {
+      --rank-metal: var(--medal-bronze);
     }
   }
 
   /* Long names wrap inside their column instead of pushing the points out. */
   .rank-name {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     gap: var(--space-2);
     min-width: 0;
-    font-weight: var(--weight-medium);
+    font-weight: var(--weight-semibold);
     overflow-wrap: anywhere;
   }
 
+  /* The medal of a podium row, in a round chip. */
+  .rank-medal {
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    width: var(--space-8);
+    height: var(--space-8);
+    border-radius: var(--radius-full);
+    background: var(--glass-surface-strong);
+    box-shadow: var(--shadow-1);
+    font-size: var(--text-lg);
+    line-height: 1;
+  }
+
+  /* Full text colour on the tinted bars (the secondary grey would be under 4.5:1 there). */
   .rank-points {
     flex-shrink: 0;
-    color: var(--color-text-secondary);
+    font-family: var(--font-display);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
   }
 
-  /* Rows after the podium: quieter, the rank number instead of a medal. */
+  /* Rows after the podium: quieter, the rank number instead of a medal, hairlines instead of bars. */
   .rank-row--rest {
+    min-height: var(--tap-target);
+    padding-inline: var(--space-4);
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
     color: var(--color-text-secondary);
     font-size: var(--text-sm);
+
+    & .rank-name {
+      font-weight: var(--weight-medium);
+    }
+
+    & + & {
+      box-shadow: inset 0 1px 0 var(--color-separator);
+    }
   }
 
-  /* The current leader's name in the card header: one line, cut with "…" — the list below shows it in
-     full (ui-patterns §7). */
+  /* The current leader's name in the card header, as a pill in the accent: one line, cut with "…" — the
+     list below shows it in full (ui-patterns §7). */
   .leader-name {
     min-width: 0;
     overflow: hidden;
-    color: var(--color-accent-text);
-    font-size: var(--text-md);
-    font-weight: var(--weight-semibold);
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-full);
+    background: linear-gradient(150deg, var(--color-accent), var(--color-accent-pressed));
+    color: var(--color-on-accent);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-bold);
     text-overflow: ellipsis;
     white-space: nowrap;
   }

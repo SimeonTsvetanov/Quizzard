@@ -11,6 +11,10 @@
     --text-score: clamp(2rem, 1.4rem + 3.2vw, 2.5rem);
     /* Set from JS while the screen is mounted (lib/keyboard-inset.ts): how much of the layout viewport
        the iOS keyboard covers, and the visible height. These are the values with no keyboard. */
+    /* The podium metals of the leaderboard rows (tints and edge marks only, never text). */
+    --medal-gold: light-dark(oklch(78% 0.16 85), oklch(84% 0.16 88));
+    --medal-silver: light-dark(oklch(68% 0.025 260), oklch(80% 0.02 260));
+    --medal-bronze: light-dark(oklch(62% 0.12 52), oklch(70% 0.12 55));
     --keyboard-inset: 0px;
     --visual-height: 100dvh;
   }

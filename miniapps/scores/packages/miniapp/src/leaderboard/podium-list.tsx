@@ -35,8 +35,8 @@ export function PodiumList({ players, restRow, empty }: PodiumListProps): React.
             <span className="rank-points">{player.score}</span>
           </div>
         ) : (
-          <div key={player.id} className="rank-row" data-flip={`rank:${player.id}`}>
-            <span className="rank-name">{MEDALS[medal]} {player.name}</span>
+          <div key={player.id} className="rank-row" data-place={medal} data-flip={`rank:${player.id}`}>
+            <span className="rank-name"><span className="rank-medal">{MEDALS[medal]}</span> {player.name}</span>
             <span className="rank-points">{t("app.leaderboard.points", { count: player.score })}</span>
           </div>
         );

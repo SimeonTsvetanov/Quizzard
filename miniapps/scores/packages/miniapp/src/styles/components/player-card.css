@@ -5,6 +5,10 @@
    390 px phone (PLAN T-12). Compact: a short score sits beside − and + like an iOS stepper, one row less.
    One meaning per mark (DECISIONS 2026-11-20): the medal in the corner = place 1–3; the accent tint = the
    player scored last, with a raised shadow as its non-colour cue (1.2: no pill on the line, Moni 2026-11-20).
+   The leader (place 1, `data-place`) wears a ring in the accent with a soft glow and has the score in the accent —
+   an edge, never a fill, so it cannot be mistaken for the last-scored tint.
+   Look (Moni 2026-11-23): glass cards (card.css), the score in the display font; the cards on screen when the
+   page opens rise in one after another.
    Motion (SPEC 1.2 F20, DECISIONS 2026-11-20): a new card pops in, a removed one fades out in its slot
    (`data-motion`, use-leaving.ts), the tint fades from card to card, the score rolls in from its direction. */
 @layer components {
@@ -42,6 +46,11 @@
 
   /* || Components: player card */
   .player-card {
+    /* The resting shadow; raised while the card is the last-scored one, in the accent for the leader. */
+    --player-card-shadow: var(--shadow-1);
+    /* Each card present when the screen opens starts a little after the one before it. */
+    --player-card-stagger: 45ms;
+
     container: player-card / inline-size;
     position: relative;
     isolation: isolate;
@@ -49,10 +58,48 @@
     flex-direction: column;
     gap: var(--space-1);
     padding: var(--space-3);
+    /* Smaller than a panel's, so the corner medal and the controls keep their room. */
+    border-radius: var(--radius-lg);
+    box-shadow: var(--glass-edge), var(--player-card-shadow);
     transition: box-shadow var(--duration-base) var(--ease-standard);
 
     @media (width > 600px) {
       padding: var(--space-4);
+      border-radius: var(--radius-xl);
+    }
+
+    /* The leader's ring: a gradient edge drawn by a mask (the inside is cut out), over the content, never clickable. */
+    &::after {
+      --leader-ring: 2px;
+
+      content: "";
+      position: absolute;
+      inset: 0;
+      padding: var(--leader-ring);
+      border-radius: inherit;
+      background: linear-gradient(150deg, var(--color-accent), var(--color-highlight) 50%, var(--color-accent-pressed));
+      -webkit-mask:
+        linear-gradient(CanvasText, CanvasText) content-box,
+        linear-gradient(CanvasText, CanvasText);
+      mask:
+        linear-gradient(CanvasText, CanvasText) content-box exclude,
+        linear-gradient(CanvasText, CanvasText);
+      -webkit-mask-composite: xor;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity var(--duration-base) var(--ease-standard);
+
+      @media (prefers-reduced-motion: reduce) {
+        transition-duration: var(--duration-fade);
+      }
+    }
+
+    &[data-place="1"] {
+      --player-card-shadow: 0 var(--space-2) var(--space-6) color-mix(in oklch, var(--color-accent) 30%, transparent), var(--shadow-1);
+
+      &::after {
+        opacity: 1;
+      }
     }
 
     /* The last-scored tint is a layer under the content, so it can fade out here and in on the next card. */
@@ -75,10 +122,33 @@
 
     /* Scored last: the accent tint, and the card sits a little higher (shadow) — a quiet cue that is not colour. */
     &[data-last-scored] {
-      box-shadow: var(--shadow-2);
+      --player-card-shadow: var(--shadow-2);
+
+      &[data-place="1"] {
+        --player-card-shadow: 0 var(--space-2) var(--space-6) color-mix(in oklch, var(--color-accent) 30%, transparent), var(--shadow-2);
+      }
 
       &::before {
         opacity: 1;
+      }
+    }
+
+    /* On screen when the page opened (no `data-motion`): rises in once, a step after the card before it. */
+    @media (prefers-reduced-motion: no-preference) {
+      &:not([data-motion]) {
+        animation: screen-rise var(--duration-slow) var(--ease-out) backwards;
+
+        &:nth-child(2) {
+          animation-delay: var(--player-card-stagger);
+        }
+
+        &:nth-child(3) {
+          animation-delay: calc(var(--player-card-stagger) * 2);
+        }
+
+        &:nth-child(n + 4) {
+          animation-delay: calc(var(--player-card-stagger) * 3);
+        }
       }
     }
 
@@ -103,6 +173,7 @@
 
     .player-grid[data-density="compact"] & {
       padding: var(--space-2);
+      border-radius: var(--radius-lg);
     }
   }
 
@@ -117,6 +188,8 @@
     position: absolute;
     inset-block-start: calc(var(--space-3) * -1);
     inset-inline-start: calc(var(--space-2) * -1);
+    /* Over the leader's ring. */
+    z-index: 1;
     font-size: var(--text-2xl);
     line-height: var(--leading-tight);
     pointer-events: none;

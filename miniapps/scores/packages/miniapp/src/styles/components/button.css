@@ -20,7 +20,7 @@
     line-height: var(--leading-tight);
     text-align: center;
     text-decoration: none;
-    transition: transform var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-standard), background-color var(--duration-fast) var(--ease-standard);
+    transition: transform var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-standard), background-color var(--duration-fast) var(--ease-standard), color var(--duration-fast) var(--ease-standard);
 
     & svg {
       flex-shrink: 0;
@@ -46,12 +46,28 @@
     }
   }
 
+  /* The accent as a gradient with a glow of its own colour under it; pressed = the darker end, flat. */
   .button--primary {
-    --button-bg: var(--color-accent);
+    --button-bg: linear-gradient(150deg, var(--color-accent), var(--color-accent-pressed));
     --button-color: var(--color-on-accent);
+    --button-glow: 0 var(--space-1) var(--space-4) color-mix(in oklch, var(--color-accent) 32%, transparent);
+
+    box-shadow: var(--button-glow);
+
+    @media (hover: hover) {
+      &:hover:not(:disabled) {
+        box-shadow: var(--button-glow), var(--shadow-2);
+      }
+    }
 
     &:active:not(:disabled) {
       --button-bg: var(--color-accent-pressed);
+
+      box-shadow: none;
+    }
+
+    &:disabled {
+      box-shadow: none;
     }
   }
 
