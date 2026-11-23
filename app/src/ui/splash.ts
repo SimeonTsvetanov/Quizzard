@@ -22,6 +22,11 @@ export function playWordmark(): void {
   }
 }
 
+/** Stops the wordmark's animations where they are (before the screen changes: nothing runs under the morph). */
+export function restWordmark(): void {
+  for (const mark of document.querySelectorAll<HTMLElement>("[data-wordmark]")) mark.removeAttribute("data-play");
+}
+
 /** The transform that moves and scales `from` onto `to` (both in viewport coordinates). */
 function onto(from: DOMRect, to: DOMRect): string {
   const scale = to.width / from.width;

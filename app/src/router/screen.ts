@@ -7,7 +7,7 @@ import { createMiniAppContext } from "../miniapps/context.ts";
 import { createOutlet, type Outlet } from "../miniapps/outlet.ts";
 import { launchQuery, miniAppName, openableIds } from "../miniapps/registry.ts";
 import { offerInstallAtHome } from "../ui/install.ts";
-import { playWordmark } from "../ui/splash.ts";
+import { playWordmark, restWordmark } from "../ui/splash.ts";
 import { morphScreens } from "../ui/transition.ts";
 import { setScreenTitle } from "../ui/title.ts";
 import { createRouter, type ScreenRoute } from "./router.ts";
@@ -68,7 +68,7 @@ export function startScreens(entries: readonly MiniAppEntry[]): void {
       void update(); // a page load: nothing to animate from
       return;
     }
-    // The tool grows out of its Home card and shrinks back into it (ui/transition.ts).
+    restWordmark(); // then the tool grows out of its Home card and shrinks back into it (ui/transition.ts)
     morphScreens({
       from: next === null ? elements.outlet : home.cardOf(next.entry.meta.id),
       update,

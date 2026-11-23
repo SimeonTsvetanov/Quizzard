@@ -8,7 +8,7 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 ### Added
 - A new opening: the wizard and the name QUIZZARD appear, then the wizard flies into the header and the name
   to its place under the tools (in the footer on a computer). Each time you come back to the home screen the
-  letters of the name arrive again, and it breathes softly while you are there.
+  letters of the name arrive again and it breathes softly a few times.
 ### Changed
 - Glass: the menu, Settings, Help and the other windows are see-through panels over a softly blurred page, with the app's colour
   in their titles, icons and chosen options.

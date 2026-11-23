@@ -1,6 +1,6 @@
 /* The wordmark: "Quizzard" in the display face, letter by letter. It closes Home on phones and in the installed
    app, and opens the footer on desktop browsers. Decoration only (aria-hidden): the name is in the header and the h1.
-   The letters arrive each time Home opens (ui/splash.ts sets [data-play]); nothing here runs for ever. */
+   The letters arrive each time Home opens (ui/splash.ts sets [data-play]), breathe a few times and rest. */
 @layer components {
   /* || Components: wordmark */
   .wordmark {
@@ -68,14 +68,12 @@
   .wordmark--footer {
     opacity: var(--wordmark-rest);
 
-    /* A slow breath while Home is open. Small and opacity-only on purpose (the large drifting layers of 0.14.0 kept a
-       whole core busy). */
+    /* A few slow breaths after it arrives, then rest (ui/splash.ts sets [data-play] each time Home opens).
+       Finite on purpose: with any endless animation on Home, WebKit stalled on the screen change (four CI runs,
+       2026-11-23), and nothing here should run for as long as the app is open. */
     @media (prefers-reduced-motion: no-preference) {
-      /* On Home only: with a tool open the footer's wordmark rests. */
-      :root:not([data-tool]) & {
-        /* steps(): about seven small changes a second instead of sixty frames — the eye sees the same slow breath,
-           the processor half the work (measured 2026-11-23, software rendering: 6 % of a core → 3 %). */
-        animation: wordmark-breathe 3.6s steps(24) 1.6s infinite alternate;
+      &[data-play] {
+        animation: wordmark-breathe 1.5s var(--ease-standard) 1.8s 4 alternate;
       }
     }
   }
