@@ -34,6 +34,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     needs: verify
+    # While the app is being designed (Moni, 2026-11-23): a push to main runs only `verify` (about a minute), so a
+    # change is live in minutes instead of waiting 15 for 800 browser tests. The browser suite still runs here on a
+    # manual run (Actions → CI → Run workflow) and on pull requests, and locally in Chromium before every push.
+    # Before 1.0.0: remove this line, so every push is again tested on all five browsers before Deploy.
+    if: github.event_name != 'push'
     # 15 Playwright projects (the shell on five browsers + the vendored Teams and Scores suites on five
     # each) are about 800 tests: one runner needed 12.5 minutes. Four shards run side by side
     # (Playwright --shard splits by test file); every shard must be green for Deploy to start.
