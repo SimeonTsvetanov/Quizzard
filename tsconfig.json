@@ -8,6 +8,9 @@
       "path": "./miniapps/sheet/packages/miniapp"
     },
     {
+      "path": "./miniapps/quiz/packages/core"
+    },
+    {
       "path": "./app"
     },
     {

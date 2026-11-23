@@ -270,6 +270,12 @@ importers:
         specifier: ^7.4.1
         version: 7.4.1
 
+  miniapps/quiz/packages/core:
+    dependencies:
+      zod:
+        specifier: ^4.6.0
+        version: 4.6.7
+
   miniapps/scores/packages/core: {}
 
   miniapps/scores/packages/miniapp:

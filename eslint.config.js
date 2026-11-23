@@ -65,6 +65,8 @@ export default tseslint.config(
   { files: TEST_FILES, rules: { "max-lines-per-function": "off", "max-lines": "off" } },
   // Layers (engineering → structure §1–2): dependencies point one way, other packages by name only.
   { files: ["packages/core/src/**"], rules: { "no-restricted-imports": ["error", { patterns: [{ group: ["**/app/**", "**/service/**"], message: "core imports nothing of ours (structure §1)." }] }], "no-restricted-globals": ["error", "document", "window", "localStorage", "sessionStorage", "indexedDB", "navigator", "fetch"] } },
+  // The quiz creator's core (docs/quiz-creator/PLAN.md §2 rule 2): no DOM, no storage, never its UI or player.
+  { files: ["miniapps/quiz/packages/core/src/**"], rules: { "no-restricted-imports": ["error", { patterns: [{ group: ["**/app/**", "**/miniapp/**", "**/player/**"], message: "the quiz core never imports UI (quiz-creator PLAN §2 rule 2)." }] }], "no-restricted-globals": ["error", "document", "window", "localStorage", "sessionStorage", "indexedDB", "navigator", "fetch"] } },
   { files: ["app/src/**"], rules: { "no-restricted-imports": ["error", { patterns: [{ group: ["**/packages/**", "**/service/**", "../../../*"], message: "app imports core by its package name; no deep relative chains (structure §1–2)." }] }] } },
   { files: ["**/*.js", "**/*.mjs"], ...tseslint.configs.disableTypeChecked },
   { files: ["**/*.js", "**/*.mjs"], rules: { "@typescript-eslint/explicit-module-boundary-types": "off", "@typescript-eslint/naming-convention": "off" } },

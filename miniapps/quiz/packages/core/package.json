@@ -1,0 +1,14 @@
+{
+  "name": "@simeonts/quizzard-quiz-core",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Quiz creator: the quiz model, validation, registries, migrations, limits and pure edits. No DOM, no storage, no clock.",
+  "type": "module",
+  "license": "MIT",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "zod": "^4.6.0"
+  }
+}

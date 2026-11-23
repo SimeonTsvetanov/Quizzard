@@ -1,0 +1,311 @@
+{
+  "format": "quizzard-quiz",
+  "version": 1,
+  "quiz": {
+    "id": "quiz-sample-v1",
+    "name": "Куиз вечер / Quiz night — sample",
+    "createdAt": "2026-11-23T18:00:00.000Z",
+    "updatedAt": "2026-11-23T19:30:00.000Z",
+    "language": "bg",
+    "rounds": [
+      {
+        "id": "r1",
+        "kind": "standard",
+        "name": "Обща култура",
+        "rules": "По 30 секунди на въпрос. Без телефони!",
+        "defaults": {
+          "seconds": 30,
+          "points": {
+            "value": 1
+          },
+          "questionKind": "text",
+          "answerType": "open"
+        },
+        "questions": [
+          {
+            "id": "q1",
+            "kind": "text",
+            "prompt": "Коя е столицата на България?",
+            "answer": {
+              "type": "open",
+              "text": "София"
+            },
+            "explanation": "София е столица от 1879 г."
+          },
+          {
+            "id": "q2",
+            "kind": "text",
+            "prompt": "Which planets have rings?",
+            "answer": {
+              "type": "choice",
+              "options": [
+                {
+                  "id": "o1",
+                  "text": "Mars"
+                },
+                {
+                  "id": "o2",
+                  "text": "Saturn"
+                },
+                {
+                  "id": "o3",
+                  "text": "Uranus"
+                },
+                {
+                  "id": "o4",
+                  "text": "Venus"
+                }
+              ],
+              "correct": [
+                "o2",
+                "o3"
+              ]
+            },
+            "seconds": 45,
+            "points": {
+              "value": 2,
+              "note": "1 point per planet"
+            }
+          },
+          {
+            "id": "q3",
+            "kind": "text",
+            "prompt": "Дунав се влива в Черно море.",
+            "answer": {
+              "type": "trueFalse",
+              "correct": true
+            }
+          },
+          {
+            "id": "q4",
+            "kind": "picture",
+            "prompt": "Кой връх е на снимката?",
+            "media": {
+              "id": "m-image"
+            },
+            "answer": {
+              "type": "open",
+              "text": "Мусала"
+            }
+          },
+          {
+            "id": "q5",
+            "kind": "picture",
+            "prompt": "Which city is this?",
+            "media": {
+              "id": "m-image"
+            },
+            "answer": {
+              "type": "choice",
+              "options": [
+                {
+                  "id": "o1",
+                  "text": "Plovdiv"
+                },
+                {
+                  "id": "o2",
+                  "text": "Varna"
+                }
+              ],
+              "correct": [
+                "o1"
+              ]
+            }
+          },
+          {
+            "id": "q6",
+            "kind": "picture",
+            "prompt": "This photo was taken in winter.",
+            "media": {
+              "id": "m-image"
+            },
+            "answer": {
+              "type": "trueFalse",
+              "correct": false
+            }
+          },
+          {
+            "id": "q7",
+            "kind": "future-kind",
+            "prompt": "A question from a later Quizzard",
+            "answer": {
+              "type": "future-answer",
+              "pairs": [
+                [
+                  "a",
+                  1
+                ],
+                [
+                  "b",
+                  2
+                ]
+              ]
+            },
+            "data": {
+              "steps": 3,
+              "hints": [
+                "one",
+                "two"
+              ]
+            },
+            "extra": {
+              "kept": true
+            }
+          }
+        ]
+      },
+      {
+        "id": "r2",
+        "kind": "standard",
+        "name": "Music & film",
+        "defaults": {
+          "seconds": 60,
+          "points": {
+            "value": 0,
+            "note": "1 за изпълнителя, 2 с песента"
+          },
+          "questionKind": "audio",
+          "answerType": "open"
+        },
+        "questions": [
+          {
+            "id": "q8",
+            "kind": "audio",
+            "prompt": "Коя е песента?",
+            "media": {
+              "id": "m-audio"
+            },
+            "answer": {
+              "type": "open",
+              "text": "Облаче ле бяло"
+            }
+          },
+          {
+            "id": "q9",
+            "kind": "audio",
+            "prompt": "Who sings this?",
+            "media": {
+              "id": "m-audio"
+            },
+            "answer": {
+              "type": "choice",
+              "options": [
+                {
+                  "id": "o1",
+                  "text": "Queen"
+                },
+                {
+                  "id": "o2",
+                  "text": "ABBA"
+                },
+                {
+                  "id": "o3",
+                  "text": "The Beatles"
+                }
+              ],
+              "correct": [
+                "o1"
+              ]
+            }
+          },
+          {
+            "id": "q10",
+            "kind": "audio",
+            "prompt": "This song is from the 1980s.",
+            "media": {
+              "id": "m-audio"
+            },
+            "answer": {
+              "type": "trueFalse",
+              "correct": true
+            },
+            "points": {
+              "value": 1
+            }
+          },
+          {
+            "id": "q11",
+            "kind": "video",
+            "prompt": "От кой филм е сцената?",
+            "media": {
+              "id": "m-video"
+            },
+            "answer": {
+              "type": "open",
+              "text": "Козият рог"
+            }
+          },
+          {
+            "id": "q12",
+            "kind": "video",
+            "prompt": "Which film is this scene from?",
+            "media": {
+              "id": "m-video"
+            },
+            "answer": {
+              "type": "choice",
+              "options": [
+                {
+                  "id": "o1",
+                  "text": "Alien"
+                },
+                {
+                  "id": "o2",
+                  "text": "Blade Runner"
+                }
+              ],
+              "correct": [
+                "o2"
+              ]
+            },
+            "explanation": "Ridley Scott, 1982."
+          },
+          {
+            "id": "q13",
+            "kind": "video",
+            "prompt": "The scene was filmed in one take.",
+            "media": {
+              "id": "m-video"
+            },
+            "answer": {
+              "type": "trueFalse",
+              "correct": false
+            }
+          }
+        ]
+      }
+    ],
+    "settings": {
+      "teams": 4
+    }
+  },
+  "media": [
+    {
+      "id": "m-image",
+      "type": "image",
+      "mime": "image/jpeg",
+      "name": "musala.jpg",
+      "bytes": 482113,
+      "width": 1920,
+      "height": 1280
+    },
+    {
+      "id": "m-audio",
+      "type": "audio",
+      "mime": "audio/mpeg",
+      "name": "song.mp3",
+      "bytes": 1203455,
+      "seconds": 28.4
+    },
+    {
+      "id": "m-video",
+      "type": "video",
+      "mime": "video/mp4",
+      "name": "scene.mp4",
+      "bytes": 9812004,
+      "width": 1280,
+      "height": 720,
+      "seconds": 41
+    }
+  ]
+}
