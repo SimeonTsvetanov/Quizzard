@@ -181,11 +181,21 @@
       gap: var(--space-4);
     }
 
-    /* Wide screens: as many tiles as fit, each at least --launcher-tile-min, sharing the row evenly. */
+    /* Wide screens: a wrapping row. The tiles of a row share its whole width evenly, whatever their number —
+       with a featured card above, three tiles are three thirds, not three of four columns (Moni 2026-11-23). */
     @media (width >= 900px) {
       --launcher-tile-min: 13rem;
 
-      grid-template-columns: repeat(auto-fit, minmax(var(--launcher-tile-min), 1fr));
+      display: flex;
+      flex-wrap: wrap;
+
+      & > .launcher-item {
+        flex: 1 1 var(--launcher-tile-min);
+      }
+
+      & > .launcher-item--featured {
+        flex-basis: 100%;
+      }
     }
   }
 
@@ -359,13 +369,23 @@
     }
 
     /* A card across the whole row: mark, texts and "Open" in one line. */
-    .launcher-item--featured &,
-    .launcher-item--wide & {
+    .launcher-item--featured & {
       grid-template-columns: auto minmax(0, 1fr) auto;
       grid-template-rows: none;
       align-items: center;
       gap: var(--space-4);
       padding: var(--space-5);
+    }
+
+    /* The tile left alone in the two-column layout; on wide screens it is a tile like the others. */
+    @media (width < 900px) {
+      .launcher-item--wide & {
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        grid-template-rows: none;
+        align-items: center;
+        gap: var(--space-4);
+        padding: var(--space-5);
+      }
     }
   }
 

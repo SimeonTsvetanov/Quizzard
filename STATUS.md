@@ -1,6 +1,6 @@
 # STATUS — Quizzard
 
-**Updated:** 2026-11-23 · **Phase:** 3 Build — v0.14.0 (bold look: colour per tool, Unbounded + Manrope, new Home; icons T-18): Teams, Scores, Answer sheet (1,000 rounds, scroll arrows, remove answers, tidier layout); user docs + README, SEO, shortcuts, audits applied live in this repo with their own data; menus filled; next T-17…T-25
+**Updated:** 2026-11-23 · **Phase:** 3 Build — v0.15.0 (glass menus and dialogs, wordmark + hand-off splash, tools restyled, symmetric desktop; 0.14: colour per tool, Unbounded + Manrope): Teams, Scores, Answer sheet (1,000 rounds, scroll arrows, remove answers, tidier layout); user docs + README, SEO, shortcuts, audits applied live in this repo with their own data; menus filled; next T-17…T-25
 
 ## Done
 - Old code in branch `legacy-2025`. Spec and plan approved by Moni (2026-11-22). Brand in `brand/` (logo A, palette C Emerald).

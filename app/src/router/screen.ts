@@ -7,6 +7,7 @@ import { createMiniAppContext } from "../miniapps/context.ts";
 import { createOutlet, type Outlet } from "../miniapps/outlet.ts";
 import { launchQuery, miniAppName, openableIds } from "../miniapps/registry.ts";
 import { offerInstallAtHome } from "../ui/install.ts";
+import { playWordmark } from "../ui/splash.ts";
 import { morphScreens } from "../ui/transition.ts";
 import { setScreenTitle } from "../ui/title.ts";
 import { createRouter, type ScreenRoute } from "./router.ts";
@@ -139,6 +140,7 @@ function changeScreen({ elements, home, outlet, next, isFirst }: ScreenChange): 
 /** Back on Home from a tool: the cards are drawn again and, after a first save, install is offered. */
 function backOnHome(home: { render(): void }): void {
   home.render(); // the last used mini-app may have changed while Home was hidden
+  playWordmark(); // the name arrives again, letter by letter
   offerInstallAtHome(); // the quiet moment to offer install, never on top of a tool
 }
 

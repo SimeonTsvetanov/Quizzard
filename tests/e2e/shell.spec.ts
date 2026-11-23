@@ -353,13 +353,16 @@ test("custom 404 page shows the requested path", async ({ page }) => {
   await expect(page.locator("[data-ep-path]")).toContainText("/");
 });
 
-test("launch splash shows the tagline once per session, then the tool", async ({ page }) => {
+test("launch splash shows once per session, then hands the wizard and the wordmark to the page", async ({ page }) => {
   await page.addInitScript(() => {
     Object.defineProperty(navigator, "webdriver", { get: () => false });
   });
   await page.goto("./");
   await expect(page.locator(".splash")).toBeVisible();
   await expect(page.locator(".splash")).toBeHidden({ timeout: 4000 });
+  // The splash hands its wizard to the header and its wordmark to the page: both are back on show when it ends.
+  await expect(page.locator(".brand img")).toBeVisible();
+  await expect(page.locator("[data-wordmark]").filter({ visible: true })).toHaveCount(1);
   await page.reload();
   await expect(page.locator("html")).not.toHaveAttribute("data-splash", "");
 });

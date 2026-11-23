@@ -4,6 +4,19 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.15.0] - 2026-11-23
+### Added
+- A new opening: the wizard and the name QUIZZARD appear, then the wizard flies into the header and the name
+  to its place under the tools (in the footer on a computer). Each time you come back to the home screen the
+  letters of the name arrive again, and it breathes softly while you are there.
+### Changed
+- Glass everywhere: the menu, Settings, Help and the other windows are see-through panels with the app's colour
+  in their titles, icons and chosen options.
+- Teams, Scores and Answer sheet have a bolder look inside: glass panels, the display font, clearer buttons
+  and short animations.
+- On a computer the home tiles share each row evenly, and in Scores "Add Player" and "Leaderboard" are as wide
+  as the player cards.
+
 ## [0.14.1] - 2026-11-23
 ### Changed
 - Answer sheet: **Delete round** asks first when the round has answers or points. An empty round still goes at

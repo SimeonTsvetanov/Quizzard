@@ -22,6 +22,7 @@ import { returnToMenuAfter } from "./ui/menu-return.ts";
 import { trackKeyboardInset } from "./ui/keyboard-inset.ts";
 import { miniApps, registryErrors } from "./miniapps/registry.ts";
 import { startScreens } from "./router/screen.ts";
+import { startSplash } from "./ui/splash.ts";
 
 initI18n(); // first: every later module (incl. the error screen) uses t()
 installErrorScreen();
@@ -106,10 +107,4 @@ window.addEventListener("online", flushReportQueue);
 flushReportQueue();
 maybeShowWhatsNew();
 initPwa();
-// Launch splash: remove it once its fade-out ends (also after a timeout, belt and braces).
-const splash = document.querySelector<HTMLElement>(".splash");
-if (splash && document.documentElement.hasAttribute("data-splash")) {
-  const end = (): void => { document.documentElement.removeAttribute("data-splash"); };
-  splash.addEventListener("animationend", (e) => { if (e.animationName === "splash-out") end(); });
-  setTimeout(end, 2500);
-}
+startSplash();

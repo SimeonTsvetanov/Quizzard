@@ -27,9 +27,12 @@
     max-height: var(--sheet-max-height);
     margin: 0;
     border-radius: var(--sheet-radius);
-    background: var(--color-surface-raised);
+    /* Glass: the page shows through, softly blurred (tokens.css → Glass). */
+    background: var(--glass-surface-strong);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
     color: var(--color-text);
-    box-shadow: var(--shadow-3);
+    box-shadow: var(--glass-edge), var(--shadow-3);
     overscroll-behavior: contain;
 
     &:not([open]) {
@@ -92,9 +95,23 @@
         flex: 1;
       }
     }
-    background: var(--color-surface-raised);
+    /* Its own glass: the body scrolls under it. */
+    background: var(--glass-surface-strong);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
     -webkit-user-select: none;
     user-select: none;
+
+    /* A thin line of the app's colour running into gold closes the head. */
+    &::after {
+      content: "";
+      position: absolute;
+      inset: auto var(--space-5) 0;
+      block-size: 2px;
+      border-radius: var(--radius-full);
+      background: linear-gradient(90deg, var(--color-accent), var(--color-highlight) 60%, transparent);
+      pointer-events: none;
+    }
 
     & h2 {
       margin: 0;
@@ -110,6 +127,7 @@
     padding: 0 var(--space-5) var(--space-6);
 
     & h3 {
+      font-family: var(--font-display);
       font-size: var(--text-md);
       margin: var(--space-5) 0 var(--space-2);
     }

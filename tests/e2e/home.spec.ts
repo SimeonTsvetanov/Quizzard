@@ -320,3 +320,18 @@ test("opening a tool and going back works the same with reduced motion (no scree
   await expect(card(page, "beta")).toBeFocused();
   expect(await page.evaluate(() => document.getAnimations().length)).toBe(0); // also the endless ones (lights, stars, wizard) are off
 });
+
+test("the wordmark arrives again each time Home comes back on screen; it is decoration, not content", async ({ page }) => {
+  await page.goto("./");
+  const mark = page.locator("[data-wordmark]").filter({ visible: true });
+  await expect(mark).toHaveCount(1);
+  await expect(mark).toHaveAttribute("aria-hidden", "true");
+  await expect(mark).toHaveAttribute("data-play", "");
+  await mark.evaluate((element) => {
+    element.removeAttribute("data-play");
+  });
+  await card(page, "alpha").click();
+  await expect(page.locator('[data-miniapp="alpha"] [data-probe]')).toBeVisible();
+  await back(page).click();
+  await expect(mark).toHaveAttribute("data-play", "");
+});

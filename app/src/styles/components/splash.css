@@ -1,4 +1,6 @@
-/* Launch splash: logo + tagline over the page, once per session (theme-init.js sets [data-splash]). */
+/* Launch splash: the wizard, the wordmark and the tagline over the page, once per session (theme-init.js sets
+   [data-splash]). It ends by handing its pieces to the page: the wizard flies into the header, the wordmark to its
+   place under the tiles or in the footer (ui/splash.ts). Without that script, and with reduced motion, it fades. */
 @layer components {
   /* || Components: splash */
   .splash {
@@ -6,6 +8,8 @@
     --splash-z: 100;
     --splash-logo-size: 88px;
     --splash-text-enter-y: 8px;
+    /* The safety net: ui/splash.ts normally ends the splash before this. */
+    --splash-fade-delay: 2100ms;
 
     display: none;
 
@@ -21,10 +25,10 @@
       background: var(--color-bg);
       text-align: center;
       pointer-events: none;
-      animation: splash-out var(--duration-sheet) var(--ease-out) 1100ms forwards;
+      animation: splash-out var(--duration-sheet) var(--ease-out) var(--splash-fade-delay) forwards;
 
       @media (prefers-reduced-motion: reduce) {
-        animation: splash-out 1ms linear 700ms forwards;
+        animation: splash-out 1ms linear 900ms forwards;
       }
     }
 
@@ -38,18 +42,45 @@
       }
     }
 
-    & p {
-      margin: 0;
-      max-width: 22ch;
-      font-size: var(--text-2xl);
-      font-weight: var(--weight-semibold);
-      letter-spacing: var(--tracking-tight);
-      text-wrap: balance;
-      animation: splash-text 600ms var(--ease-out) 150ms both;
+    /* The letters arrive without waiting for the script. */
+    @media (prefers-reduced-motion: no-preference) {
+      & .wordmark span {
+        animation: wordmark-arrive 620ms var(--ease-out) 250ms backwards;
 
-      @media (prefers-reduced-motion: reduce) {
-        animation: none;
+        &:nth-child(2) {
+          animation-delay: calc(250ms + var(--wordmark-stagger) * 1);
+        }
+        &:nth-child(3) {
+          animation-delay: calc(250ms + var(--wordmark-stagger) * 2);
+        }
+        &:nth-child(4) {
+          animation-delay: calc(250ms + var(--wordmark-stagger) * 3);
+        }
+        &:nth-child(5) {
+          animation-delay: calc(250ms + var(--wordmark-stagger) * 4);
+        }
+        &:nth-child(6) {
+          animation-delay: calc(250ms + var(--wordmark-stagger) * 5);
+        }
+        &:nth-child(7) {
+          animation-delay: calc(250ms + var(--wordmark-stagger) * 6);
+        }
+        &:nth-child(8) {
+          animation-delay: calc(250ms + var(--wordmark-stagger) * 7);
+        }
       }
+    }
+  }
+
+  .splash-tagline {
+    margin: 0;
+    max-width: 26ch;
+    color: var(--color-text-secondary);
+    text-wrap: balance;
+    animation: splash-text 600ms var(--ease-out) 700ms both;
+
+    @media (prefers-reduced-motion: reduce) {
+      animation: none;
     }
   }
 

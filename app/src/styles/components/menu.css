@@ -14,9 +14,12 @@
     margin: 0 0 0 auto;
     padding: calc(var(--space-5) + var(--safe-top)) var(--space-5) calc(var(--space-5) + var(--safe-bottom));
     border-radius: var(--radius-xl) 0 0 var(--radius-xl);
-    background: var(--color-surface-raised);
+    /* Glass: the page shows through, softly blurred (tokens.css → Glass). */
+    background: var(--glass-surface-strong);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
     color: var(--color-text);
-    box-shadow: var(--shadow-3);
+    box-shadow: var(--glass-edge), var(--shadow-3);
     width: min(100% - 2 * var(--space-4), var(--menu-phone-width));
     height: 100dvh;
     max-height: 100dvh;
@@ -41,12 +44,14 @@
       flex-direction: column;
     }
 
+    /* Section labels: small capitals in the display face and the app's colour. */
     & h2 {
-      font-size: var(--text-sm);
-      text-transform: none;
-      color: var(--color-text-secondary);
-      margin: var(--space-4) 0 var(--space-1);
-      font-weight: var(--weight-semibold);
+      font-size: var(--text-xs);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-accent-text);
+      margin: var(--space-4) var(--space-2) var(--space-1);
+      font-weight: var(--weight-bold);
     }
 
     /* Links and buttons look identical. */
@@ -64,21 +69,54 @@
       text-decoration: none;
       text-align: start;
 
+      transition: background-color var(--duration-fast) var(--ease-standard);
+
       &:active {
-        background: var(--color-fill);
+        background: var(--color-accent-tint);
       }
     }
 
+    /* Each icon sits on a small tinted chip in the app's colour. */
     & a svg,
     & nav button svg {
+      --menu-chip-pad: 6px;
+
+      box-sizing: content-box;
+      flex: none;
       margin-inline-end: var(--space-3);
-      color: var(--color-text-secondary);
+      padding: var(--menu-chip-pad);
+      border-radius: var(--radius-md);
+      background: var(--color-accent-tint);
+      color: var(--color-accent-text);
+      transition: transform var(--duration-base) var(--ease-spring);
     }
 
     @media (hover: hover) {
       & a:hover,
       & nav button:hover {
-        background: var(--color-fill);
+        background: var(--color-accent-tint);
+
+        & svg {
+          transform: scale(1.12) rotate(-6deg);
+        }
+      }
+    }
+
+    /* The rows arrive one after another as the menu opens (finite; none with reduced motion). */
+    @media (prefers-reduced-motion: no-preference) {
+      &[open] nav > * {
+        --menu-row-stagger: 22ms;
+
+        animation: menu-row-in var(--duration-slow) var(--ease-out) backwards;
+
+        &:nth-child(2) { animation-delay: calc(var(--menu-row-stagger) * 1); }
+        &:nth-child(3) { animation-delay: calc(var(--menu-row-stagger) * 2); }
+        &:nth-child(4) { animation-delay: calc(var(--menu-row-stagger) * 3); }
+        &:nth-child(5) { animation-delay: calc(var(--menu-row-stagger) * 4); }
+        &:nth-child(6) { animation-delay: calc(var(--menu-row-stagger) * 5); }
+        &:nth-child(7) { animation-delay: calc(var(--menu-row-stagger) * 6); }
+        &:nth-child(8) { animation-delay: calc(var(--menu-row-stagger) * 7); }
+        &:nth-child(n + 9) { animation-delay: calc(var(--menu-row-stagger) * 8); }
       }
     }
 
@@ -123,6 +161,13 @@
     @media (prefers-reduced-motion: reduce) {
       --menu-enter-opacity: 0;
       --menu-enter-transform: none;
+    }
+  }
+
+  @keyframes menu-row-in {
+    from {
+      opacity: 0;
+      transform: translateX(var(--space-4));
     }
   }
 }

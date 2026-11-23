@@ -30,7 +30,7 @@
     <script src="./theme-init.js"></script>
   </head>
   <body>
-    <div class="splash" aria-hidden="true"><img src="./logo.svg" alt="" width="88" height="88" /><p data-text="tagline">%APP_TAGLINE%</p></div>
+    <div class="splash" aria-hidden="true"><img src="./logo.svg" alt="" width="88" height="88" /><p class="wordmark" data-splash-word><span>Q</span><span>u</span><span>i</span><span>z</span><span>z</span><span>a</span><span>r</span><span>d</span></p><p class="splash-tagline" data-text="tagline">%APP_TAGLINE%</p></div>
     <a class="skip-link" href="#main" data-i18n="shell.skip">Skip to content</a>
     <header class="app-header" data-header>
       <div class="header-start">
@@ -64,6 +64,8 @@
           </div>
           <ul class="launcher-list" data-launcher role="list" aria-busy="true"></ul>
         </section>
+        <!-- Decoration: the name in letters that arrive one by one each time Home opens (wordmark.css, ui/splash.ts). -->
+        <p class="wordmark wordmark--home" data-wordmark aria-hidden="true"><span>Q</span><span>u</span><span>i</span><span>z</span><span>z</span><span>a</span><span>r</span><span>d</span></p>
         <section class="steps">
           <h2 data-i18n="shell.howItWorks">How it works</h2>
           <ol data-text="steps">%APP_STEPS%</ol>
@@ -82,6 +84,7 @@
       <section class="outlet" data-outlet tabindex="-1" hidden></section>
     </main>
     <footer class="app-footer">
+      <p class="wordmark wordmark--footer" data-wordmark aria-hidden="true"><span>Q</span><span>u</span><span>i</span><span>z</span><span>z</span><span>a</span><span>r</span><span>d</span></p>
       <p>© <span data-year>%BUILD_YEAR%</span> Simeon Tsvetanov. <span data-i18n="shell.rights">All rights reserved.</span></p>
       <nav aria-label="Policies" data-i18n-aria-label="shell.policies">
         <a href="./terms/" data-i18n="shell.menu.terms">Terms</a> · <a href="./privacy/" data-i18n="shell.menu.privacy">Privacy</a> · <a href="./ai-notice/" data-i18n="shell.menu.aiNotice">AI notice</a> ·

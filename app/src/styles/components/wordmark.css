@@ -1,0 +1,118 @@
+/* The wordmark: "Quizzard" in the display face, letter by letter. It closes Home on phones and in the installed
+   app, and opens the footer on desktop browsers. Decoration only (aria-hidden): the name is in the header and the h1.
+   The letters arrive each time Home opens (ui/splash.ts sets [data-play]); nothing here runs for ever. */
+@layer components {
+  /* || Components: wordmark */
+  .wordmark {
+    /* Each letter starts a little after the one before it. */
+    --wordmark-stagger: 45ms;
+    --wordmark-rest: 0.55;
+
+    display: flex;
+    justify-content: center;
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(1.375rem, 7vw, 2.25rem);
+    font-weight: var(--weight-bold);
+    line-height: 1;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-text);
+    -webkit-user-select: none;
+    user-select: none;
+
+    & span {
+      display: inline-block;
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      &[data-play] span {
+        animation:
+          wordmark-arrive 620ms var(--ease-out) backwards,
+          wordmark-glint 900ms var(--ease-standard) 520ms backwards;
+
+        &:nth-child(2) {
+          animation-delay:
+            calc(var(--wordmark-stagger) * 1), calc(520ms + var(--wordmark-stagger) * 1);
+        }
+        &:nth-child(3) {
+          animation-delay:
+            calc(var(--wordmark-stagger) * 2), calc(520ms + var(--wordmark-stagger) * 2);
+        }
+        &:nth-child(4) {
+          animation-delay:
+            calc(var(--wordmark-stagger) * 3), calc(520ms + var(--wordmark-stagger) * 3);
+        }
+        &:nth-child(5) {
+          animation-delay:
+            calc(var(--wordmark-stagger) * 4), calc(520ms + var(--wordmark-stagger) * 4);
+        }
+        &:nth-child(6) {
+          animation-delay:
+            calc(var(--wordmark-stagger) * 5), calc(520ms + var(--wordmark-stagger) * 5);
+        }
+        &:nth-child(7) {
+          animation-delay:
+            calc(var(--wordmark-stagger) * 6), calc(520ms + var(--wordmark-stagger) * 6);
+        }
+        &:nth-child(8) {
+          animation-delay:
+            calc(var(--wordmark-stagger) * 7), calc(520ms + var(--wordmark-stagger) * 7);
+        }
+      }
+    }
+  }
+
+  /* On the page the wordmark rests quietly; in the splash it is the headline. */
+  .wordmark--home,
+  .wordmark--footer {
+    opacity: var(--wordmark-rest);
+
+    /* A slow breath while Home is open. Small and opacity-only on purpose: measured at about no CPU (the large
+       drifting layers of 0.14.0 were the costly ones). */
+    @media (prefers-reduced-motion: no-preference) {
+      animation: wordmark-breathe 3.6s var(--ease-standard) 1.6s infinite alternate;
+    }
+  }
+
+  .wordmark--home {
+    margin-block: var(--space-10) var(--space-2);
+
+    /* Desktop browsers carry it in the footer instead. */
+    @media (width > 600px) and (not (display-mode: standalone)) {
+      display: none;
+    }
+  }
+
+  .wordmark--footer {
+    margin-block-end: var(--space-5);
+  }
+
+  /* Molten letters: tall, low and blurred, they pull themselves into shape. */
+  @keyframes wordmark-arrive {
+    from {
+      opacity: 0;
+      filter: blur(10px);
+      transform: translateY(0.5em) scaleY(1.9);
+    }
+
+    60% {
+      opacity: 1;
+      filter: blur(0);
+    }
+  }
+
+  @keyframes wordmark-breathe {
+    to {
+      opacity: 0.9;
+    }
+  }
+
+  /* One pass of gold over the letters, in order. */
+  @keyframes wordmark-glint {
+    40% {
+      color: var(--color-highlight);
+      text-shadow: 0 0 0.6em var(--color-highlight);
+    }
+  }
+}
