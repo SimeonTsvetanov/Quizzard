@@ -4,6 +4,11 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.16.2] - 2026-11-23
+### Changed
+- Light theme: the sun is calmer and more grown-up — soft beams of uneven width that drift across each other
+  like light through haze, a bright core with a wide glow and a faint lens halo, instead of drawn stripes.
+
 ## [0.16.1] - 2026-11-23
 ### Changed
 - Opening and closing a tool is smoother: nothing else moves while the tile grows into the tool, and the tool

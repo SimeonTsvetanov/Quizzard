@@ -126,42 +126,144 @@
   }
 
   /* || Components: scene — day */
-  /* Pale rays from the sun, turning very slowly; a radial mask fades them out long before the edges. */
+  /* Light from the sun, like beams through haze rather than a drawn sun: two fans of soft beams of uneven width
+     and angle, turning very slowly in opposite directions, so where they cross the light shimmers. Every beam
+     fades in and out (no hard edge), and a radial mask lets them die out long before the edges of the screen. */
   .scene-rays {
     --scene-sun-x: 78%;
-    --scene-sun-y: 14%;
-    --scene-rays-size: 170vmax;
+    --scene-sun-y: 12%;
+    --scene-rays-size: 190vmax;
+    --scene-beam: oklch(96% 0.07 88 / 0.62);
+    --scene-beam-soft: oklch(96% 0.06 88 / 0.34);
 
     position: absolute;
     left: calc(var(--scene-sun-x) - var(--scene-rays-size) / 2);
     top: calc(var(--scene-sun-y) - var(--scene-rays-size) / 2);
     inline-size: var(--scene-rays-size);
     block-size: var(--scene-rays-size);
-    background: repeating-conic-gradient(
-      oklch(93% 0.07 88 / 0.55) 0deg 5deg,
-      transparent 5deg 15deg
+    mask: radial-gradient(
+      circle,
+      black 0%,
+      rgb(0 0 0 / 0.55) 16%,
+      rgb(0 0 0 / 0.18) 32%,
+      transparent 48%
     );
-    mask: radial-gradient(circle, black 0%, transparent 45%);
-    will-change: transform;
 
-    @media (prefers-reduced-motion: no-preference) {
-      animation: scene-turn 160s linear infinite;
+    &::before,
+    &::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      will-change: transform;
+    }
+
+    /* The main fan: a dozen beams, wide and narrow, never evenly spaced. */
+    &::before {
+      background: conic-gradient(
+        from 8deg,
+        transparent 0deg,
+        var(--scene-beam) 4deg,
+        transparent 10deg,
+        transparent 26deg,
+        var(--scene-beam-soft) 29deg,
+        transparent 33deg,
+        transparent 47deg,
+        var(--scene-beam) 53deg,
+        transparent 63deg,
+        transparent 81deg,
+        var(--scene-beam-soft) 83deg,
+        transparent 86deg,
+        transparent 104deg,
+        var(--scene-beam) 108deg,
+        transparent 115deg,
+        transparent 139deg,
+        var(--scene-beam-soft) 144deg,
+        transparent 151deg,
+        transparent 168deg,
+        var(--scene-beam) 171deg,
+        transparent 175deg,
+        transparent 197deg,
+        var(--scene-beam-soft) 203deg,
+        transparent 214deg,
+        transparent 236deg,
+        var(--scene-beam) 240deg,
+        transparent 246deg,
+        transparent 268deg,
+        var(--scene-beam-soft) 270deg,
+        transparent 273deg,
+        transparent 292deg,
+        var(--scene-beam) 299deg,
+        transparent 309deg,
+        transparent 331deg,
+        var(--scene-beam-soft) 335deg,
+        transparent 341deg,
+        transparent 360deg
+      );
+
+      @media (prefers-reduced-motion: no-preference) {
+        /* steps(): 30 small turns a second (under half a pixel at the screen's edge) instead of 60 — the same
+           motion to the eye, half the redrawing. */
+        animation: scene-turn 240s steps(7200) infinite;
+      }
+    }
+
+    /* A fainter fan the other way round: its beams drift across the first. */
+    &::after {
+      opacity: 0.7;
+      background: conic-gradient(
+        from 20deg,
+        transparent 0deg,
+        var(--scene-beam-soft) 6deg,
+        transparent 14deg,
+        transparent 58deg,
+        var(--scene-beam-soft) 62deg,
+        transparent 67deg,
+        transparent 121deg,
+        var(--scene-beam-soft) 128deg,
+        transparent 138deg,
+        transparent 182deg,
+        var(--scene-beam-soft) 185deg,
+        transparent 189deg,
+        transparent 247deg,
+        var(--scene-beam-soft) 254deg,
+        transparent 263deg,
+        transparent 305deg,
+        var(--scene-beam-soft) 309deg,
+        transparent 314deg,
+        transparent 360deg
+      );
+
+      @media (prefers-reduced-motion: no-preference) {
+        animation: scene-turn 360s steps(10800) infinite reverse;
+      }
     }
   }
 
+  /* The sun itself: a small bright core in a wide warm bloom, and a thin halo ring as in a camera lens. */
   .scene-sun {
+    --scene-sun-size: 46vmax;
+
     position: absolute;
-    left: calc(78% - 16vmax);
-    top: calc(14% - 16vmax);
-    inline-size: 32vmax;
-    block-size: 32vmax;
+    left: calc(78% - var(--scene-sun-size) / 2);
+    top: calc(12% - var(--scene-sun-size) / 2);
+    inline-size: var(--scene-sun-size);
+    block-size: var(--scene-sun-size);
     border-radius: 50%;
-    background: radial-gradient(
-      circle,
-      oklch(97% 0.07 92) 0%,
-      oklch(94% 0.08 85 / 0.6) 30%,
-      transparent 68%
-    );
+    background:
+      radial-gradient(
+        circle,
+        oklch(99.5% 0.015 95) 0%,
+        oklch(98% 0.05 92) 5%,
+        oklch(96% 0.08 88 / 0.85) 9%,
+        transparent 16%
+      ),
+      radial-gradient(circle, transparent 40%, oklch(96% 0.05 85 / 0.22) 42.5%, transparent 46%),
+      radial-gradient(
+        circle,
+        oklch(95% 0.07 82 / 0.55) 0%,
+        oklch(95% 0.06 80 / 0.2) 30%,
+        transparent 62%
+      );
   }
 
   .scene-mountains {
