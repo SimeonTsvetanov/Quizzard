@@ -1,3 +1,5 @@
+import { restWordmark } from "./splash.ts";
+
 /**
  * Smooth, app-like change of what is on screen (results appear, a step changes) with the View
  * Transitions API; instant where unsupported or when the user asks for reduced motion.
@@ -42,6 +44,7 @@ export function morphScreens({ from, update, to }: MorphOptions): void {
     void update();
     return;
   }
+  restWordmark(); // nothing else is animating while the morph runs
   let target: HTMLElement | null = null;
   // The screen change never depends on the animation: if the browser does not call the transition's callback
   // (seen in WebKit with a dialog closing under it), the change is made anyway, once.
