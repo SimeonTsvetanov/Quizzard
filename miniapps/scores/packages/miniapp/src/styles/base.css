@@ -5,7 +5,9 @@
    to the page and stays in the standalone shell's base.css. */
 @layer base {
   html {
-    background: var(--color-bg);
+    /* Transparent: inside Quizzard this is the screen's root, and the app's background (Settings → Background)
+       shows through, as behind every other tool. */
+    background: transparent;
     color: var(--color-text);
     font-family: var(--font-sans);
     /* No grey flash on tap — every control has its own visible pressed state instead. */

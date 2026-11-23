@@ -4,6 +4,12 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.16.3] - 2026-11-23
+### Changed
+- The animated background is everywhere now: behind Scores too, and on the Terms, Privacy, Contact and other
+  pages and the "page not found" page. Settings → Background → Simple still turns it off everywhere.
+- Light theme: the sun's beams are stronger and reach all the way down, over the mountains.
+
 ## [0.16.2] - 2026-11-23
 ### Changed
 - Light theme: the sun is calmer and more grown-up — soft beams of uneven width that drift across each other

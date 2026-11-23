@@ -21,6 +21,8 @@ app/public/404.html
 app/public/error-page.*
 app/public/page.css
 app/public/fonts.css
+app/public/scene.css
+app/public/scene.js
 app/public/fonts/
 app/public/year.js
 app/public/tokens.css

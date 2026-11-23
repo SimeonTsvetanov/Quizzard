@@ -258,6 +258,8 @@ export default defineConfig({
           // The static pages' copies (scripts/generate.ts): those pages use the system font offline.
           "fonts/**",
           "fonts.css",
+          "scene.css",
+          "scene.js",
           // Install-dialog screenshots and the social image are never needed offline (pwa §3).
           "screenshots/**",
           "og-image.png",
