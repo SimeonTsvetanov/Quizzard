@@ -64,8 +64,16 @@ jobs:
           key: playwright-${{ steps.pw.outputs.os }}-${{ runner.arch }}-${{ steps.pw.outputs.version }}
       - run: pnpm exec playwright install chromium webkit firefox
         timeout-minutes: 10
-      - run: pnpm exec playwright install-deps chromium webkit firefox
-        timeout-minutes: 10
+      # Up to three tries of four minutes each: a slow Ubuntu mirror used to time the single try out and
+      # turn the whole run red with nothing wrong in the code (2026-11-23).
+      - run: |
+          for attempt in 1 2 3; do
+            if timeout 240 pnpm exec playwright install-deps chromium webkit firefox; then exit 0; fi
+            echo "install-deps: attempt $attempt failed or timed out"
+            sleep 10
+          done
+          exit 1
+        timeout-minutes: 14
       - run: pnpm build
       # A test that passes on a retry is reported as flaky but does not block the deploy (DECISIONS
       # 2026-11-22): the vendored suites run on emulated mobile WebKit and Firefox, where two harness
