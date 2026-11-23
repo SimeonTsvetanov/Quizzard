@@ -1,0 +1,205 @@
+/* Quiz creator: the question editor. Phone: one column of steps, a bar that stays at the bottom with
+   the "Preview" switch and "Done"; the live slide appears under the header when the switch is on.
+   Wide: the form on the left, the live slide on the right, always in view. */
+@layer components {
+  /* || Components: editor */
+  .quiz-editor-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-4);
+
+    @media (width >= 700px) {
+      grid-template-columns: minmax(0, 1fr) minmax(16rem, 24rem);
+      align-items: start;
+      gap: var(--space-6);
+    }
+  }
+
+  .quiz-form {
+    display: grid;
+    gap: var(--space-5);
+    min-width: 0;
+  }
+
+  .quiz-timing {
+    display: grid;
+    gap: var(--space-4);
+
+    @media (width >= 1000px) {
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: var(--space-6);
+    }
+  }
+
+  .quiz-origin {
+    display: flex;
+    align-items: center;
+    min-height: var(--tap-target);
+  }
+
+  .quiz-from-round {
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-full);
+    background: var(--color-accent-tint);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+
+    &[hidden] {
+      display: none;
+    }
+  }
+
+  .quiz-reset {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: var(--tap-target);
+    padding: 0 var(--space-3);
+    border: 0;
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: var(--color-accent-text);
+    font: inherit;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    text-align: start;
+    cursor: pointer;
+
+    &[hidden] {
+      display: none;
+    }
+
+    & svg {
+      flex: none;
+    }
+  }
+
+  /* || Components: multiple-choice options */
+  .quiz-options {
+    display: grid;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .quiz-option {
+    display: grid;
+    grid-template-columns: auto auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--space-1);
+  }
+
+  .quiz-option-letter {
+    min-width: var(--space-5);
+    font-family: var(--font-display);
+    font-weight: var(--weight-bold);
+    text-align: center;
+  }
+
+  .quiz-option-tick {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: var(--tap-target);
+    height: var(--tap-target);
+    cursor: pointer;
+  }
+
+  .quiz-option-mark {
+    display: grid;
+    place-items: center;
+    width: var(--space-8);
+    height: var(--space-8);
+    border-radius: var(--radius-full);
+    background: var(--color-fill);
+    /* The tick is drawn only when the option is correct. */
+    color: transparent;
+
+    input:checked + & {
+      background: var(--color-success-text);
+      color: var(--color-surface);
+    }
+
+    input:focus-visible + & {
+      outline: var(--focus-ring-width) solid var(--color-focus);
+      outline-offset: var(--focus-ring-offset);
+    }
+  }
+
+  .quiz-option-add {
+    justify-self: start;
+
+    &[aria-disabled="true"] {
+      box-shadow: none;
+      color: var(--color-text);
+      cursor: default;
+      transform: none;
+
+      & svg {
+        display: none;
+      }
+    }
+  }
+
+  /* || Components: live preview */
+  .quiz-live {
+    display: grid;
+    gap: var(--space-2);
+    min-width: 0;
+
+    & .quiz-toggle {
+      justify-self: start;
+    }
+
+    @media (width >= 700px) {
+      position: sticky;
+      top: calc(var(--quiz-sticky-top) + var(--space-4));
+    }
+
+    /* Phone: shown by the bar's switch, pinned under the header while the form scrolls below it. */
+    @media (width < 700px) {
+      position: sticky;
+      top: var(--quiz-sticky-top);
+      z-index: 1;
+      order: -1;
+      padding: var(--space-2);
+      border-radius: var(--radius-xl);
+      background: var(--color-surface-raised);
+      box-shadow: var(--shadow-3);
+
+      &:not([data-open]) {
+        display: none;
+      }
+
+      & > .quiz-label {
+        display: none;
+      }
+    }
+  }
+
+  /* || Components: editor bar */
+  .quiz-editor-bar {
+    position: sticky;
+    bottom: calc(var(--space-3) + var(--safe-bottom));
+    z-index: 1;
+    display: flex;
+    gap: var(--space-2);
+    padding: var(--space-2);
+    border-radius: var(--radius-xl);
+    background: var(--color-surface-raised);
+    box-shadow: var(--glass-edge), var(--shadow-3);
+
+    & .quiz-button {
+      flex: 1;
+    }
+
+    @media (width >= 700px) {
+      justify-content: flex-end;
+
+      & .quiz-button {
+        flex: 0 1 12rem;
+      }
+    }
+  }
+}

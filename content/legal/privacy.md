@@ -10,7 +10,8 @@
   the number of teams can be, e.g. `#/teams?teams=4`). There is no server of our own, and the app
   loads nothing from other websites: no fonts, scripts, images or trackers from third parties.
 - **Stored on your device only:** everything below is kept in your browser's local storage on this
-  device. Nothing is kept in cookies, IndexedDB or the browser's private file storage.
+  device; the quizzes you make with the Quiz creator are kept in your browser's IndexedDB database
+  on this device. Nothing is kept in cookies or the browser's private file storage.
   - **{App} itself:** your settings (theme and language), the tool you opened last, the last
     version whose "What's new" you saw, dismissed prompts (when you last closed the offer to
     install the app) and an unsent problem report draft (its type, title and text).
@@ -24,6 +25,11 @@
   - **Answer sheet:** your team's game — each round's name, the answers you wrote, whether you
     marked each one right or wrong, what a right answer is worth in each round (and for a single
     question when it differs) and the round's bonus points.
+  - **Quiz creator:** the quizzes you make — each quiz's name, its rounds (name, rules, time and
+    points per question), the questions with their answers, options and explanations, and when the
+    quiz was made and last changed. If you close or reload the page right after a change, that
+    quiz is kept for a moment in local storage and moved into the database the next time you open
+    the Quiz creator.
   - **Separate from the author's other apps:** {App} keeps its data under its own names. The
     TeamSync and GG Counter sites are on the same web address (`simeontsvetanov.github.io`), but
     {App} does not read, change or delete what they saved, and they do not see {App}'s data.
@@ -33,8 +39,8 @@
 
   None of this leaves your device or is synced anywhere. **Settings → Your data** shows what
   each tool and {App} itself have saved, with a **Clear** for each tool; **Export my data** and
-  **Import data** cover {App}'s settings and the tools' data in one file, and **Clear my data**
-  deletes all of it. Clearing this site's data in your browser removes everything, including the
+  **Import data** cover {App}'s settings and the tools' data in one file (not the quizzes of the
+  Quiz creator), and **Clear my data** deletes all of it, the quizzes included. Clearing this site's data in your browser removes everything, including the
   data of the author's other apps on the same address.
 - **Offline copy:** so {App} works without internet, your browser keeps an offline copy of the
   app's own files (not your data) in its Cache Storage, managed by a service worker. If you tap

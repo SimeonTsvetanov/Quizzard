@@ -9,6 +9,7 @@ import { SW_HANDOVER_FILE, swHandoverScript } from "../scripts/sw-handover.ts";
 import { vitePreset as teamsPreset } from "@simeonts/teamsync-random-team-generator-miniapp/vite-preset";
 import { vitePreset as scoresPreset } from "gg-counter-miniapp/vite-preset";
 import { vitePreset as sheetPreset } from "@simeonts/quizzard-sheet-miniapp/vite-preset";
+import { vitePreset as quizPreset } from "@simeonts/quizzard-quiz-miniapp/vite-preset";
 import { mergeMiniAppPresets, type MiniAppPackage, type ShellStyles } from "./build/miniapp-presets.ts";
 
 const app: AppConfig = config;
@@ -26,6 +27,7 @@ const MINIAPP_PACKAGES: readonly MiniAppPackage[] = [
   { preset: teamsPreset, root: fromHere("../miniapps/teams/packages/miniapp") },
   { preset: scoresPreset, root: fromHere("../miniapps/scores/packages/miniapp") },
   { preset: sheetPreset, root: fromHere("../miniapps/sheet/packages/miniapp") },
+  { preset: quizPreset, root: fromHere("../miniapps/quiz/packages/miniapp") },
 ];
 
 /** The shell's stylesheets (global names) and token files (what mini-app CSS may use), for the mini-app CSS plugin. */

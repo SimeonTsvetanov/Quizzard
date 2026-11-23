@@ -67,6 +67,10 @@ export default tseslint.config(
   { files: ["packages/core/src/**"], rules: { "no-restricted-imports": ["error", { patterns: [{ group: ["**/app/**", "**/service/**"], message: "core imports nothing of ours (structure §1)." }] }], "no-restricted-globals": ["error", "document", "window", "localStorage", "sessionStorage", "indexedDB", "navigator", "fetch"] } },
   // The quiz creator's core (docs/quiz-creator/PLAN.md §2 rule 2): no DOM, no storage, never its UI or player.
   { files: ["miniapps/quiz/packages/core/src/**"], rules: { "no-restricted-imports": ["error", { patterns: [{ group: ["**/app/**", "**/miniapp/**", "**/player/**"], message: "the quiz core never imports UI (quiz-creator PLAN §2 rule 2)." }] }], "no-restricted-globals": ["error", "document", "window", "localStorage", "sessionStorage", "indexedDB", "navigator", "fetch"] } },
+  // The quiz creator's UI (quiz-creator PLAN §2 rule 2): browser storage only inside its storage module; the slide
+  // renderer and the per-kind / per-answer UI parts (later also the player's) never import the creator's screens, state or storage.
+  { files: ["miniapps/quiz/packages/miniapp/src/**"], ignores: ["miniapps/quiz/packages/miniapp/src/storage/**"], rules: { "no-restricted-globals": ["error", "localStorage", "sessionStorage", "indexedDB", "caches"] } },
+  { files: ["miniapps/quiz/packages/miniapp/src/{render,kinds-ui,answers-ui}/**"], rules: { "no-restricted-imports": ["error", { patterns: [{ group: ["**/screens/**", "**/app/**", "**/storage/**"], message: "the slide renderer and the UI parts stay free of creator-only code (quiz-creator PLAN §2)." }] }] } },
   { files: ["app/src/**"], rules: { "no-restricted-imports": ["error", { patterns: [{ group: ["**/packages/**", "**/service/**", "../../../*"], message: "app imports core by its package name; no deep relative chains (structure §1–2)." }] }] } },
   { files: ["**/*.js", "**/*.mjs"], ...tseslint.configs.disableTypeChecked },
   { files: ["**/*.js", "**/*.mjs"], rules: { "@typescript-eslint/explicit-module-boundary-types": "off", "@typescript-eslint/naming-convention": "off" } },

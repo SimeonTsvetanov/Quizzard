@@ -4,13 +4,13 @@
 import { parseRoute, routeHref, type HomeRoute, type MiniAppRoute } from "@simeonts/quizzard-core";
 import {
   HOME_HASH,
-  hasHomeBelow,
   isMarked,
   markCurrent,
   pushScreen,
   rememberScreen,
   replaceScreen,
   seedHomeBelow,
+  stepsToHome,
 } from "./history.ts";
 
 /** A route that is a screen of its own (dialog links are not). */
@@ -18,7 +18,10 @@ export type ScreenRoute = HomeRoute | MiniAppRoute;
 
 /** How the app moves between screens; also what a mini-app gets as `context.navigation`. */
 export interface Navigation {
-  /** Goes Home: `history.back()` when the entry below is our Home, otherwise replaces this entry. */
+  /**
+   * Goes Home: back through the history when our Home is below (over a mini-app's own sub-screen
+   * entries too, in one step), otherwise replaces this entry.
+   */
   home(): void;
   /** Opens a mini-app on a new history entry; an unknown id goes Home. */
   open(id: string, query?: URLSearchParams): void;
@@ -83,12 +86,13 @@ function createNavigation(state: RouterState): Navigation {
   const navigation: Navigation = {
     home() {
       if (state.current?.kind !== "miniapp" || state.isGoingBack) return;
-      if (!hasHomeBelow()) {
+      const steps = stepsToHome();
+      if (steps === null) {
         goHomeByReplace(state);
         return;
       }
       state.isGoingBack = true;
-      history.back(); // the hashchange that follows shows Home
+      history.go(-steps); // the hashchange that follows shows Home
     },
     open(id, query = new URLSearchParams()) {
       if (!state.ids.includes(id)) {
@@ -131,8 +135,10 @@ function onHashChange(state: RouterState, event: HashChangeEvent): void {
 function onPopState(state: RouterState): void {
   const route = parseRoute(location.hash, state.ids);
   if (route.kind !== "home" && route.kind !== "miniapp") return; // dialogs and unknown: hashchange path
-  if (state.current !== null && isSameScreen(state.current, route)) return;
+  // A traversal has landed, also one between a mini-app's own sub-screen entries (same address, so
+  // no hashchange follows): Back to Home works again.
   state.isGoingBack = false;
+  if (state.current !== null && isSameScreen(state.current, route)) return;
   show(state, route);
 }
 

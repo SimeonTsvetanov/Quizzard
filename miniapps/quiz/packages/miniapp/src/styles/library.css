@@ -1,0 +1,158 @@
+/* Quiz creator: the library. A quiz is a deck: its card shows the edges of more cards under it, the
+   more questions the thicker (data-stack 0–3). One column on a phone, a grid from 700 px. */
+@layer components {
+  /* || Components: library */
+  .quiz-library .quiz-head {
+    @media (width >= 700px) {
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: end;
+
+      & .quiz-button {
+        grid-row: 1 / span 2;
+        grid-column: 2;
+      }
+    }
+
+    @media (width < 700px) {
+      justify-items: stretch;
+    }
+  }
+
+  .quiz-cards {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-6);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    @media (width >= 700px) {
+      grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+    }
+  }
+
+  /* || Components: deck card (a quiz, a round) */
+  .quiz-card,
+  .quiz-round-card {
+    --quiz-card-lift: var(--shadow-1);
+
+    border-radius: var(--radius-xl);
+    background: var(--glass-surface);
+    box-shadow: var(--glass-edge), var(--quiz-card-lift);
+
+    /* The cards under the top one: slivers of their lower edges, each a step lower and narrower
+       (a shadow moved down two steps and shrunk by one shows one step under the card above it). */
+    &[data-stack="1"] {
+      box-shadow: var(--glass-edge), 0 var(--space-2) 0 calc(-1 * var(--space-1)) var(--quiz-stack-1), var(--quiz-card-lift);
+    }
+
+    &[data-stack="2"] {
+      box-shadow:
+        var(--glass-edge),
+        0 var(--space-2) 0 calc(-1 * var(--space-1)) var(--quiz-stack-1),
+        0 var(--space-4) 0 calc(-1 * var(--space-2)) var(--quiz-stack-2),
+        var(--quiz-card-lift);
+    }
+
+    &[data-stack="3"] {
+      box-shadow:
+        var(--glass-edge),
+        0 var(--space-2) 0 calc(-1 * var(--space-1)) var(--quiz-stack-1),
+        0 var(--space-4) 0 calc(-1 * var(--space-2)) var(--quiz-stack-2),
+        0 var(--space-6) 0 calc(-1 * var(--space-3)) var(--quiz-stack-3),
+        var(--quiz-card-lift);
+    }
+  }
+
+  .quiz-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-content: space-between;
+  }
+
+  .quiz-card-open {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    width: 100%;
+    padding: var(--space-4) var(--space-4) var(--space-2);
+    border: 0;
+    border-radius: var(--radius-xl);
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: start;
+
+    button& {
+      cursor: pointer;
+    }
+  }
+
+  .quiz-card-mark {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: var(--quiz-mark);
+    height: var(--quiz-mark);
+    border-radius: var(--radius-lg);
+    background: linear-gradient(140deg, var(--color-accent), var(--color-accent-pressed));
+    box-shadow: inset 0 1px 0 color-mix(in oklch, var(--color-on-accent) 30%, transparent);
+    color: var(--color-on-accent);
+  }
+
+  .quiz-card-body {
+    display: grid;
+    gap: var(--space-1);
+    min-width: 0;
+  }
+
+  .quiz-card-name,
+  .quiz-round-name {
+    font-family: var(--font-display);
+    font-size: var(--text-md);
+    font-weight: var(--weight-semibold);
+    line-height: var(--leading-tight);
+    overflow-wrap: anywhere;
+  }
+
+  .quiz-card-meta {
+    color: var(--color-text);
+    font-size: var(--text-sm);
+  }
+
+  .quiz-card-meta--quiet {
+    color: var(--color-text-secondary);
+  }
+
+  .quiz-card-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--space-1);
+    padding: 0 var(--space-2) var(--space-2);
+  }
+
+  .quiz-card-rename {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--space-2);
+    padding: var(--space-4);
+  }
+
+  /* While its name is edited the card is the form alone; the mark would only take room from it. */
+  .quiz-card:has(.quiz-card-rename) > .quiz-card-mark {
+    display: none;
+  }
+
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .quiz-card,
+    .quiz-round-card {
+      transition: transform var(--duration-fast) var(--ease-out);
+
+      &:has(button.quiz-card-open:hover, .quiz-round-open:hover) {
+        --quiz-card-lift: var(--shadow-2);
+
+        transform: var(--lift);
+      }
+    }
+  }
+}

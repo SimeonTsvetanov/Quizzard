@@ -1,0 +1,69 @@
+/* Quiz creator: Preview — the question on a 16:9 stage as it will be played, with the way to the
+   neighbours and the reveal under it. */
+@layer components {
+  /* || Components: preview */
+  .quiz-preview {
+    max-width: 100%;
+  }
+
+  .quiz-preview-head {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .quiz-preview-title {
+    margin: 0;
+    font-size: var(--text-md);
+    font-weight: var(--weight-semibold);
+    line-height: var(--leading-tight);
+    overflow-wrap: anywhere;
+
+    &:focus {
+      outline: none;
+    }
+  }
+
+  .quiz-preview-count {
+    font-family: var(--font-display);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    white-space: nowrap;
+  }
+
+  .quiz-preview .quiz-stage {
+    box-shadow: var(--shadow-3);
+    touch-action: pan-y;
+  }
+
+  .quiz-preview-bar {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-2);
+
+    /* Phone: the reveal on its own row, the two arrows under it. Wide: one row, the reveal in the middle. */
+    & .quiz-toggle {
+      grid-column: 1 / -1;
+      grid-row: 1;
+    }
+
+    @media (width >= 700px) {
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+
+      & .quiz-toggle {
+        grid-column: 2;
+        min-width: 12rem;
+      }
+
+      & [data-previous] {
+        justify-self: start;
+      }
+
+      & [data-next] {
+        grid-column: 3;
+        justify-self: end;
+      }
+    }
+  }
+}

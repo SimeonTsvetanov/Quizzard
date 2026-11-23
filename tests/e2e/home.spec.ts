@@ -8,7 +8,7 @@ import { app } from "../../app.config.ts";
 // Home launcher (PLAN T-07, SPEC F1). The e2e build (app/test/dist) registers the 4 shipped cards +
 // the routing probe + 7 Home fixtures (app/test/fixtures/home-entries.ts) = 12 cards; one test
 // serves the production build (app/dist) instead and expects exactly the 4 shipped cards: Teams,
-// Scores and Answer sheet ready, Quiz creator coming.
+// Scores, Answer sheet and Quiz creator, all ready (the "coming" cards are fixtures: delta … eta).
 test.use({ serviceWorkers: "block" });
 
 const cards = (page: Page) => page.locator("[data-launcher] [data-card]");
@@ -21,11 +21,11 @@ const E2E_ORDER = [
   "teams",
   "scores",
   "sheet",
+  "quiz",
   "probe",
   "alpha",
   "beta",
   "gamma",
-  "quiz",
   "delta",
   "epsilon",
   "zeta",
@@ -154,16 +154,7 @@ test("the last used mini-app comes first, also after a reload and after browser 
   await expect(card(page, "beta")).toBeFocused();
   expect(await page.evaluate(() => localStorage.getItem("quizzard:v1:last-app"))).toBe('"beta"');
   await page.reload();
-  expect(await ids(page)).toEqual([
-    "beta",
-    "teams",
-    "scores",
-    "sheet",
-    "probe",
-    "alpha",
-    "gamma",
-    ...E2E_ORDER.slice(7),
-  ]);
+  expect(await ids(page)).toEqual(["beta", ...E2E_ORDER.filter((id) => id !== "beta")]);
 });
 
 test("a deep link renders Home's cards too: the list is never left busy (footer and Home text stay hidden while busy)", async ({
@@ -187,18 +178,18 @@ test("a coming card is not a control: no link, not focusable, announced as comin
   page,
 }) => {
   await page.goto("./");
-  const quiz = card(page, "quiz");
-  await expect(quiz).toContainText("Soon");
-  await expect(quiz).toContainText("Coming soon");
+  const coming = card(page, "delta"); // a fixture: every shipped tool is ready since the quiz creator opened
+  await expect(coming).toContainText("Soon");
+  await expect(coming).toContainText("Coming soon");
   expect(
-    await quiz.evaluate((el) => ({
+    await coming.evaluate((el) => ({
       isLink: el.matches(":any-link"),
       tabIndex: el.tabIndex,
       role: el.getAttribute("role"),
     })),
   ).toEqual({ isLink: false, tabIndex: -1, role: null });
   const url = page.url();
-  await quiz.click();
+  await coming.click();
   expect(page.url()).toBe(url);
   await expect(page.locator("[data-view=home]")).toBeVisible();
   await expect(page.locator("[data-outlet]")).toBeHidden();
@@ -224,7 +215,8 @@ test("switching the language to Bulgarian translates names and taglines (English
   await expect(card(page, "scores")).toContainText("Точки");
   await expect(card(page, "scores")).toContainText("Резултатът на игралната вечер");
   await expect(card(page, "quiz")).toContainText("Създател на куизове");
-  await expect(card(page, "quiz")).toContainText("Скоро");
+  await expect(card(page, "quiz")).toContainText("Отвори");
+  await expect(card(page, "delta")).toContainText("Скоро");
   await expect(card(page, "teams")).toContainText("Отвори");
 });
 
@@ -249,7 +241,7 @@ test("no serious accessibility violations on Home", async ({ page }) => {
   ).toEqual([]);
 });
 
-test("the production build (app/dist) shows Teams, Scores and Answer sheet ready and the Quiz creator coming", async ({
+test("the production build (app/dist) shows Teams, Scores, Answer sheet and the Quiz creator, all ready", async ({
   page,
   baseURL,
 }) => {
@@ -268,13 +260,13 @@ test("the production build (app/dist) shows Teams, Scores and Answer sheet ready
   await expect(cards(page)).toHaveCount(4);
   expect(await ids(page)).toEqual(["teams", "scores", "sheet", "quiz"]);
   await expect(cards(page)).toHaveText([/Teams/, /Scores/, /Answer sheet/, /Quiz creator/]);
-  await expect(page.locator("[data-launcher] a")).toHaveCount(3);
-  for (const id of ["teams", "scores", "sheet"]) {
+  await expect(page.locator("[data-launcher] a")).toHaveCount(4);
+  for (const id of ["teams", "scores", "sheet", "quiz"]) {
     await expect(card(page, id)).toHaveRole("link");
     await expect(card(page, id)).toHaveAttribute("href", `#/${id}`);
     await expect(card(page, id)).toContainText("Open");
   }
-  await expect(card(page, "quiz")).toHaveAttribute("data-state", "coming");
+  await expect(page.locator('[data-launcher] [data-state="coming"]')).toHaveCount(0);
 });
 
 // Moni 2026-11-23: Home must look and move like an app — the tool used last leads, tiles pair up.

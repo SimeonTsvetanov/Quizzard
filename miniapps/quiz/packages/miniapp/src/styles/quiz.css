@@ -1,0 +1,161 @@
+/* Quiz creator: the quiz — a header card (name, totals, actions) and its rounds as stacked cards.
+   Phone: the rounds list and the open round are two screens (data-pane says which is on). From
+   700 px: two panes side by side, the list on the left. */
+@layer components {
+  /* || Components: deck layout */
+  .quiz-deck {
+    @media (width < 700px) {
+      &[data-pane="rounds"] .quiz-pane--round,
+      &[data-pane="round"] .quiz-pane--rounds {
+        display: none;
+      }
+    }
+
+    @media (width >= 700px) {
+      grid-template-columns: minmax(16rem, 20rem) minmax(0, 1fr);
+      align-items: start;
+      gap: var(--space-6);
+    }
+  }
+
+  .quiz-pane {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-4);
+    min-width: 0;
+  }
+
+  /* || Components: quiz header card */
+  .quiz-quiz-head {
+    display: grid;
+    gap: var(--space-3);
+    justify-items: start;
+
+    & > .quiz-title-input,
+    & > .quiz-stats,
+    & > .quiz-actions {
+      justify-self: stretch;
+    }
+  }
+
+  .quiz-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-2);
+  }
+
+  .quiz-stat {
+    display: grid;
+    gap: var(--space-1);
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-lg);
+    background: var(--color-accent-tint);
+  }
+
+  .quiz-stat-value {
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    font-weight: var(--weight-bold);
+    line-height: 1;
+  }
+
+  .quiz-stat-label {
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
+    overflow-wrap: anywhere;
+  }
+
+  .quiz-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+    gap: var(--space-2);
+  }
+
+  /* || Components: round card */
+  .quiz-rounds {
+    display: grid;
+    gap: var(--space-5);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .quiz-round-card {
+    display: flex;
+    align-items: center;
+
+    /* The round on show in the right pane. */
+    &:has([aria-current="true"]) {
+      @media (width >= 700px) {
+        background: var(--glass-surface-strong);
+        outline: var(--focus-ring-width) solid var(--color-accent);
+        outline-offset: calc(-1 * var(--focus-ring-width));
+      }
+    }
+  }
+
+  .quiz-round-open {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: var(--space-3);
+    min-width: 0;
+    min-height: calc(2 * var(--tap-target));
+    padding: var(--space-3) var(--space-1) var(--space-3) var(--space-3);
+    border: 0;
+    border-radius: var(--radius-xl);
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: start;
+    cursor: pointer;
+  }
+
+  .quiz-round-tile,
+  .quiz-round-number {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: var(--quiz-mark);
+    height: var(--quiz-mark);
+    border-radius: var(--radius-lg);
+    background: linear-gradient(140deg, var(--color-accent), var(--color-accent-pressed));
+    box-shadow: inset 0 1px 0 color-mix(in oklch, var(--color-on-accent) 30%, transparent);
+    color: var(--color-on-accent);
+    font-family: var(--font-display);
+    font-size: var(--text-lg);
+    font-weight: var(--weight-bold);
+  }
+
+  .quiz-round-body {
+    display: grid;
+    gap: var(--space-1);
+    min-width: 0;
+  }
+
+  .quiz-round-moves {
+    display: grid;
+    flex: none;
+    padding-inline-end: var(--space-1);
+  }
+
+  .quiz-dots {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-1);
+    min-height: var(--space-2);
+  }
+
+  .quiz-dot {
+    width: var(--space-2);
+    height: var(--space-2);
+    border-radius: var(--radius-full);
+    background: var(--quiz-tone);
+  }
+
+  .quiz-dots-more {
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
+  }
+}

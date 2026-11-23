@@ -4,6 +4,15 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.17.0] - 2026-11-23
+### Added
+- **Quiz creator** (first part): make your own quizzes. A library of quizzes, rounds with their own default
+  time and points, and text questions answered as an open answer, multiple choice (one or several correct
+  options) or true / false. Every question can have its own time and points — a number, a note such as
+  "1 for the band, 2 with the song", or both — and an explanation shown with the answer. Each question is a
+  small slide, and Preview shows the quiz as it will look. Everything is saved on your device as you type.
+- Coming next in the Quiz creator: playing the quiz on a big screen (export), pictures, audio and video.
+
 ## [0.16.3] - 2026-11-23
 ### Changed
 - The animated background is everywhere now: behind Scores too, and on the Terms, Privacy, Contact and other

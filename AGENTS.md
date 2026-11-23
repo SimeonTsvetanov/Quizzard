@@ -36,6 +36,9 @@ miniapps/teams  Teams (was TeamSync): packages/core + packages/miniapp are works
 miniapps/scores Scores (was GG Counter; React + Tailwind, isolated CSS): the same, projects `scores*` (per-project metadata)
 miniapps/sheet  Answer sheet (written here, Level 1): packages/miniapp only (src/core = pure logic); linted and type-checked
                 with the shell; e2e in tests/e2e/sheet-host.spec.ts
+miniapps/quiz   Quiz creator (written here, Level 1; docs/quiz-creator/SPEC.md + PLAN.md): packages/core (pure model, registries,
+                migrations) and packages/miniapp (storage/ = IndexedDB `quizzard-quiz`, the only code that touches storage;
+                kinds-ui/ + answers-ui/ = UI registry entries; render/slide.ts; screens/); e2e in tests/e2e/quiz-host.spec.ts
 ```
 
 ## Mini-apps (in this repo since 2026-11-23, DECISIONS)

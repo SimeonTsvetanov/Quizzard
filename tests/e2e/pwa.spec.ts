@@ -231,6 +231,7 @@ test("icons: the tab shows the small mark, each shortcut has its own icon, the m
     "shortcut-teams-96x96.png",
     "shortcut-scores-96x96.png",
     "shortcut-sheet-96x96.png",
+    "shortcut-quiz-96x96.png",
   ]);
   expect(manifest.icons.some((icon) => icon.purpose === "maskable")).toBe(true);
   expect((manifest.screenshots ?? []).map((shot) => [shot.form_factor, shot.sizes])).toEqual([

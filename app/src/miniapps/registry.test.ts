@@ -16,9 +16,18 @@ describe("mini-app registry", () => {
     expect(registryErrors(e2eRegistry)).toEqual([]);
     expect(e2eRegistry).toHaveLength(12);
   });
-  it("ships teams, scores and sheet ready and one coming card: quiz", () => {
-    expect(miniApps.map(({ meta }) => [meta.id, meta.status])).toEqual([["teams", "ready"], ["scores", "ready"], ["sheet", "ready"], ["quiz", "coming"]]);
-    expect(openableIds()).toEqual(["teams", "scores", "sheet"]);
+  it("ships teams, scores, sheet and quiz, all ready", () => {
+    expect(miniApps.map(({ meta }) => [meta.id, meta.status])).toEqual([["teams", "ready"], ["scores", "ready"], ["sheet", "ready"], ["quiz", "ready"]]);
+    expect(openableIds()).toEqual(["teams", "scores", "sheet", "quiz"]);
+  });
+  it("quiz is its package's own meta, loads its body and Help lazily and gets no launch parameter", async () => {
+    const quiz = miniApps.find(({ meta }) => meta.id === "quiz");
+    expect(quiz?.meta).toMatchObject({ name: { en: "Quiz creator", bg: "Създател на куизове" }, icon: "miniapps/quiz.svg", languages: ["en", "bg"] });
+    expect(quiz?.load).toBeTypeOf("function");
+    const help = await quiz?.help?.();
+    expect(help?.default.en.steps.length).toBeGreaterThan(0);
+    expect(help?.default.bg?.steps).toHaveLength(help?.default.en.steps.length ?? -1);
+    if (quiz) expect([...launchQuery(quiz, new URLSearchParams("quiz=x&lang=bg"))]).toEqual([]);
   });
   it("teams is the vendored package's own meta (one source) and loads its body and Help lazily", async () => {
     const teams = miniApps.find(({ meta }) => meta.id === "teams");
@@ -42,7 +51,7 @@ describe("mini-app registry", () => {
       teams: { prefix: "quizzard-teams:v1:" },
       scores: { prefix: "quizzard-scores:v1:" },
       sheet: { prefix: "quizzard-sheet:v1:" },
-      quiz: { prefix: "quizzard-quiz:v1:" },
+      quiz: { prefix: "quizzard-quiz:v1:", databases: ["quizzard-quiz"] },
     });
   });
   it("the probe is registered only in the e2e build", () => {

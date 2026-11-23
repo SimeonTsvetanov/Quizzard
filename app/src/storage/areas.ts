@@ -1,5 +1,8 @@
 // Saved data per storage area (PLAN T-15): size, clear, and the raw entries for Export / Import.
 // Mini-apps read and write their own keys; the shell only measures, copies and deletes whole areas.
+// An area may also name IndexedDB databases (`StorageArea.databases`, the quiz creator): they are
+// measured and deleted here, but are not part of Export / Import — that file carries localStorage
+// entries only (quiz-creator SPEC §3.5: quizzes travel as quiz files).
 import { areaBytes, isPrefKey, ownsKey, type StorageArea } from "@simeonts/quizzard-core";
 
 /** Largest value Import writes into one key of a mini-app (a saved game is a few hundred kB at most). */
@@ -78,4 +81,79 @@ export function planArea(area: StorageArea, data: unknown): AreaImport {
       return written;
     },
   };
+}
+
+/** Opens an existing database without creating it: a database that is not there yet stays not there. */
+function openExisting(name: string): Promise<IDBDatabase | null> {
+  return new Promise((resolve) => {
+    const request = indexedDB.open(name);
+    // "upgradeneeded" on an open without a version means the database did not exist: undo its creation.
+    request.addEventListener("upgradeneeded", () => { request.transaction?.abort(); });
+    request.addEventListener("success", () => { resolve(request.result); });
+    request.addEventListener("error", (event) => {
+      event.preventDefault(); // the aborted creation is expected, not an error to report
+      resolve(null);
+    });
+    request.addEventListener("blocked", () => { resolve(null); });
+  });
+}
+
+/** Bytes of one stored value: files (Blobs) by their size, everything else as JSON text. */
+function valueBytes(value: unknown): number {
+  let files = 0;
+  const text = JSON.stringify(value, (_key, part: unknown) => {
+    if (part instanceof Blob) {
+      files += part.size;
+      return null;
+    }
+    return part;
+  });
+  return files + new Blob([text]).size;
+}
+
+/** Adds up every value of every store of one database. */
+async function databaseBytes(name: string): Promise<number> {
+  const database = await openExisting(name);
+  if (database === null) return 0;
+  try {
+    const stores = [...database.objectStoreNames];
+    if (stores.length === 0) return 0;
+    const transaction = database.transaction(stores, "readonly");
+    const sizes = await Promise.all(stores.map((store) => new Promise<number>((resolve) => {
+      const request = transaction.objectStore(store).getAll();
+      request.addEventListener("success", () => { resolve((request.result as unknown[]).reduce<number>((sum, value) => sum + valueBytes(value), 0)); });
+      request.addEventListener("error", () => { resolve(0); });
+    })));
+    return sizes.reduce((sum, size) => sum + size, 0);
+  } finally {
+    database.close();
+  }
+}
+
+/**
+ * Returns the bytes the area's IndexedDB databases take: 0 for an area without databases, or when
+ * the browser blocks IndexedDB.
+ * @param area - the storage area of a mini-app
+ */
+export async function databasesSize(area: StorageArea): Promise<number> {
+  try {
+    const sizes = await Promise.all((area.databases ?? []).map(databaseBytes));
+    return sizes.reduce((sum, size) => sum + size, 0);
+  } catch {
+    return 0;
+  }
+}
+
+/**
+ * Deletes the area's IndexedDB databases. The open mini-app is unmounted first (router/screen.ts)
+ * and lets its connection go; the delete waits for that.
+ * @param area - the storage area to empty
+ * @throws when the browser refuses a delete
+ */
+export async function clearDatabases(area: StorageArea): Promise<void> {
+  await Promise.all((area.databases ?? []).map((name) => new Promise<void>((resolve, reject) => {
+    const request = indexedDB.deleteDatabase(name);
+    request.addEventListener("success", () => { resolve(); });
+    request.addEventListener("error", () => { reject(request.error ?? new Error("IndexedDB delete failed")); });
+  })));
 }

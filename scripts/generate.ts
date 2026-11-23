@@ -145,7 +145,7 @@ writeFileSync(join(gen, "changelog.json"), `${JSON.stringify(changelog, null, 2)
 const depNames = new Set<string>();
 // The shell's packages and the vendored mini-apps' (their libraries ship in this app too). The
 // packages themselves are Moni's own code, not credits.
-const creditDirs = ["app", "packages/core", ...["teams", "scores", "sheet"].flatMap((v) => ["core", "miniapp"].map((part) => `miniapps/${v}/packages/${part}`))]
+const creditDirs = ["app", "packages/core", ...["teams", "scores", "sheet", "quiz"].flatMap((v) => ["core", "miniapp"].map((part) => `miniapps/${v}/packages/${part}`))]
   .filter((dir) => existsSync(join(root, dir, "package.json")));
 const creditPackages = creditDirs.map((dir) => JSON.parse(readFileSync(join(root, dir, "package.json"), "utf8")) as { name?: string; dependencies?: Record<string, string> });
 const ownNames = new Set(creditPackages.map((pj) => pj.name));

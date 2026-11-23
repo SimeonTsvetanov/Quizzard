@@ -127,7 +127,7 @@ describe("first open of a mini-app (PLAN T-12)", () => {
     write("index-react.js", 'const e=Symbol.for("react.transitional.element");');
     expect(checkHomeHasNoMiniAppCode(dist, ["assets/index-react.js", "assets/miniapp-scores-main-a.js"])).toMatchObject({ isWithinBudget: false });
   });
-  it("Scores is held to SPEC §7's 125 KB", () => {
-    expect(MINIAPP_FIRST_OPEN_BUDGETS_KB).toEqual({ scores: 125 });
+  it("Scores is held to SPEC §7's 125 KB, the quiz creator to its SPEC AC11's 60 KB", () => {
+    expect(MINIAPP_FIRST_OPEN_BUDGETS_KB).toEqual({ scores: 125, quiz: 60 });
   });
 });

@@ -130,7 +130,7 @@ test("Export holds the tools' data and Import brings it back", async ({ page }) 
   };
   expect(file.app).toBe(app.id);
   expect(file.tools["teams"]).toEqual(saved);
-  expect(Object.keys(file.tools)).toEqual(["teams", "scores", "sheet"]);
+  expect(Object.keys(file.tools)).toEqual(["teams", "scores", "sheet", "quiz"]); // quiz: its (empty) localStorage area; quizzes are not in this file
 
   await page.evaluate(() => {
     localStorage.clear();

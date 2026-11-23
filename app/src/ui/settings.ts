@@ -1,6 +1,6 @@
 import { app } from "../config.ts";
 import { dataAreas, miniAppName, type DataArea } from "../miniapps/registry.ts";
-import { areaSize, clearArea, planArea, readArea, type AreaImport } from "../storage/areas.ts";
+import { areaSize, clearArea, clearDatabases, databasesSize, planArea, readArea, type AreaImport } from "../storage/areas.ts";
 import { clearAll, estimate, exportAll, importAll, isPersisted, requestPersist } from "../storage/index.ts";
 import { getLanguage, LANG_NAMES, setLanguage, t } from "../i18n/index.ts";
 import { formatBytes, h } from "./dom.ts";
@@ -80,7 +80,9 @@ function confirmClear(only?: DataArea): void {
     if (!confirmed) return;
     document.dispatchEvent(new Event("app:data-clearing"));
     try {
-      for (const item of only === undefined ? dataAreas() : [only]) if (item.entry !== undefined) clearArea(item.area);
+      const cleared = (only === undefined ? dataAreas() : [only]).filter((item) => item.entry !== undefined);
+      for (const item of cleared) clearArea(item.area);
+      await Promise.all(cleared.map((item) => clearDatabases(item.area)));
       if (only === undefined) await clearAll();
       showToast({ message: only === undefined ? t("shell.settings.cleared") : t("app.data.clearedOne", { tool: areaName(only) }) });
     } catch {
@@ -93,17 +95,30 @@ function confirmClear(only?: DataArea): void {
   });
 }
 
-/** One row per storage area: name, size and — for a mini-app with saved data — its own Clear. */
+/** Shows a row's size and — for a mini-app with saved data — its own Clear. */
+function fillRow(line: HTMLElement, value: HTMLElement, item: DataArea, size: number): void {
+  value.textContent = size === 0 ? t("app.data.empty") : formatBytes(size);
+  if (item.entry === undefined || size === 0 || line.querySelector(".row-button") !== null) return;
+  const clear = h("button", { class: "row-button", type: "button", "aria-label": t("app.data.clearOneLabel", { tool: areaName(item) }) }, t("app.data.clearOne"));
+  clear.addEventListener("click", () => { confirmClear(item); });
+  line.append(clear);
+}
+
+/**
+ * One row per storage area: name, size and its own Clear. An area with IndexedDB databases (the quiz
+ * creator) is measured asynchronously: its row shows "…" until the size is known.
+ */
 function dataRows(): HTMLElement[] {
   return dataAreas().map((item) => {
     const size = areaSize(item.area);
-    const value = h("span", { class: "row-value" }, size === 0 ? t("app.data.empty") : formatBytes(size));
+    const value = h("span", { class: "row-value" });
     const line = h("div", { class: "row row--action", "data-area": item.id }, h("span", { class: "row-label" }, areaName(item)), value);
-    if (item.entry !== undefined && size > 0) {
-      const clear = h("button", { class: "row-button", type: "button", "aria-label": t("app.data.clearOneLabel", { tool: areaName(item) }) }, t("app.data.clearOne"));
-      clear.addEventListener("click", () => { confirmClear(item); });
-      line.append(clear);
+    if ((item.area.databases ?? []).length === 0) {
+      fillRow(line, value, item, size);
+      return line;
     }
+    value.textContent = "…";
+    void databasesSize(item.area).then((bytes) => { fillRow(line, value, item, size + bytes); });
     return line;
   });
 }

@@ -1,0 +1,554 @@
+/* Quiz creator: what every screen shares — the screen frame, glass panels, titles, fields, chips,
+   icon buttons, empty states, the "Saved" tick and the motion. Shared mode: the shell's `.button`
+   styles the buttons; only `quiz-*` components are defined here. The mount element stays
+   transparent (the app's background shows behind the tool) and gets no transform, filter, contain or
+   clipping. Nothing changes size on :focus. Every control is at least --tap-target. Motion is finite
+   and only inside `prefers-reduced-motion: no-preference`. */
+@layer components {
+  /* || Components: screen */
+  .quiz-screen {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-5);
+    /* Room for the stacked edges under the last card. */
+    padding-block-end: var(--space-4);
+  }
+
+  .quiz-head {
+    display: grid;
+    gap: var(--space-2);
+    justify-items: start;
+  }
+
+  .quiz-title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    font-weight: var(--weight-bold);
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-tight);
+    overflow-wrap: anywhere;
+
+    &:focus {
+      outline: none;
+    }
+  }
+
+  .quiz-sub {
+    margin: 0;
+    color: var(--color-text-secondary);
+    font-size: var(--text-md);
+  }
+
+  .quiz-section {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-md);
+    font-weight: var(--weight-semibold);
+  }
+
+  .quiz-panel {
+    padding: var(--space-4);
+    border-radius: var(--radius-xl);
+    background: var(--glass-surface);
+    box-shadow: var(--glass-edge), var(--shadow-1);
+  }
+
+  /* || Components: back link */
+  .quiz-back {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    min-height: var(--tap-target);
+    max-width: 100%;
+    margin-inline-start: calc(-1 * var(--space-2));
+    padding: 0 var(--space-3) 0 var(--space-1);
+    border: 0;
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: var(--color-accent-text);
+    font: inherit;
+    font-weight: var(--weight-semibold);
+    text-align: start;
+    cursor: pointer;
+
+    & span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    & svg {
+      flex: none;
+    }
+
+    @media (hover: hover) {
+      &:hover {
+        background: var(--color-accent-tint);
+      }
+    }
+  }
+
+  /* Phone-only controls (after the components they hide, so the same specificity wins by order). */
+  .quiz-narrow-only {
+    @media (width >= 700px) {
+      display: none;
+    }
+  }
+
+  /* || Components: icon button */
+  .quiz-icon-button {
+    display: inline-grid;
+    flex: none;
+    place-items: center;
+    width: var(--tap-target);
+    height: var(--tap-target);
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: var(--color-text);
+    cursor: pointer;
+
+    &:disabled {
+      color: var(--color-text-tertiary);
+      cursor: default;
+    }
+
+    @media (hover: hover) {
+      &:hover:not(:disabled) {
+        background: var(--color-fill);
+      }
+    }
+
+    &:active:not(:disabled) {
+      background: var(--color-fill);
+    }
+  }
+
+  .quiz-danger:not(:disabled) {
+    color: var(--color-danger-text);
+  }
+
+  .quiz-back,
+  .quiz-icon-button,
+  .quiz-reset,
+  .quiz-card-open,
+  .quiz-round-open,
+  .quiz-qcard-open,
+  .quiz-input,
+  .quiz-title-input,
+  .quiz-settings-summary {
+    &:focus-visible {
+      outline: var(--focus-ring-width) solid var(--color-focus);
+      outline-offset: var(--focus-ring-offset);
+    }
+  }
+
+  /* On top of the shell's `.button`: a disabled look and a mark that never shrinks. */
+  .quiz-button {
+    &:disabled {
+      background: var(--color-fill);
+      box-shadow: none;
+      color: var(--color-text-secondary);
+      cursor: default;
+      transform: none;
+    }
+
+    & svg {
+      flex: none;
+    }
+  }
+
+  .quiz-button--after svg {
+    order: 1;
+  }
+
+  /* A switch drawn as a button: pressed = on. */
+  .quiz-toggle[aria-pressed="true"] {
+    background: var(--color-accent);
+    color: var(--color-on-accent);
+  }
+
+  /* || Components: fields */
+  .quiz-field,
+  .quiz-group {
+    display: grid;
+    gap: var(--space-2);
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .quiz-label {
+    margin: 0;
+    padding: 0;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-bold);
+  }
+
+  .quiz-hint {
+    margin: 0;
+    color: var(--color-text-secondary);
+    font-size: var(--text-sm);
+  }
+
+  .quiz-input {
+    width: 100%;
+    min-width: 0;
+    min-height: var(--tap-target);
+    padding: var(--space-2) var(--space-3);
+    border: 0;
+    border-radius: var(--radius-md);
+    background: var(--color-fill);
+    color: var(--color-text);
+    font: inherit;
+    font-size: max(var(--quiz-field-min-font), var(--text-base));
+
+    &::placeholder {
+      color: var(--color-text-secondary);
+    }
+  }
+
+  textarea.quiz-input {
+    display: block;
+    resize: vertical;
+    /* Grows with the text where the browser can; else the rows attribute and the handle. */
+    field-sizing: content;
+    min-height: calc(2 * var(--tap-target));
+    line-height: var(--leading-normal);
+  }
+
+  .quiz-number {
+    width: var(--space-16);
+    flex: none;
+    font-family: var(--font-display);
+    font-weight: var(--weight-semibold);
+    text-align: center;
+  }
+
+  .quiz-unit {
+    color: var(--color-text-secondary);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+  }
+
+  /* A title that is a field: it reads as a heading and is edited in place. */
+  .quiz-title-input {
+    width: 100%;
+    min-width: 0;
+    min-height: var(--tap-target);
+    padding: var(--space-1) var(--space-3);
+    border: 0;
+    border-radius: var(--radius-md);
+    background: var(--color-fill);
+    color: var(--color-text);
+    font-family: var(--font-display);
+    font-size: max(var(--quiz-field-min-font), var(--text-lg));
+    font-weight: var(--weight-bold);
+    letter-spacing: var(--tracking-tight);
+    text-overflow: ellipsis;
+
+    &::placeholder {
+      color: var(--color-text-secondary);
+    }
+  }
+
+  /* || Components: stepper and points */
+  .quiz-stepper {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .quiz-step {
+    background: var(--color-fill);
+  }
+
+  .quiz-points {
+    display: grid;
+    grid-template-columns: auto auto minmax(0, 1fr);
+    align-items: center;
+    gap: var(--space-2);
+
+    @media (width < 480px) {
+      grid-template-columns: auto minmax(0, 1fr);
+
+      & > :last-child {
+        grid-column: 1 / -1;
+      }
+    }
+  }
+
+  /* || Components: chips (a radio group) */
+  .quiz-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .quiz-chip {
+    /* Holds its visually hidden radio, so it never widens the page. */
+    position: relative;
+    display: inline-flex;
+    cursor: pointer;
+
+    &[data-soon] {
+      cursor: default;
+    }
+  }
+
+  .quiz-chip-face {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: var(--tap-target);
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-full);
+    background: var(--color-fill);
+    font-size: var(--text-md);
+    font-weight: var(--weight-semibold);
+    -webkit-user-select: none;
+    user-select: none;
+
+    & svg {
+      flex: none;
+      color: var(--quiz-tone);
+    }
+
+    input:checked + & {
+      background: var(--color-accent);
+      color: var(--color-on-accent);
+
+      & svg {
+        color: inherit;
+      }
+    }
+
+    input:focus-visible + & {
+      outline: var(--focus-ring-width) solid var(--color-focus);
+      outline-offset: var(--focus-ring-offset);
+    }
+
+    [data-soon] > & {
+      background: transparent;
+      box-shadow: inset 0 0 0 1px var(--color-separator);
+      color: var(--color-text-secondary);
+    }
+  }
+
+  .quiz-soon {
+    padding: 0 var(--space-2);
+    border-radius: var(--radius-full);
+    background: var(--color-fill);
+    color: var(--color-text);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-bold);
+    letter-spacing: 0.02em;
+  }
+
+  /* || Components: kind chip, facts, flags */
+  .quiz-kind {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    padding: 0 var(--space-2);
+    border-radius: var(--radius-full);
+    background: color-mix(in oklch, var(--quiz-tone) 14%, transparent);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+
+    & svg {
+      color: var(--quiz-tone);
+    }
+  }
+
+  .quiz-fact {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    min-width: 0;
+    color: var(--color-text-secondary);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+
+    & svg {
+      flex: none;
+    }
+
+    & span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* The question's own value, not the round's. */
+    &[data-own] {
+      color: var(--color-accent-text);
+    }
+  }
+
+  .quiz-flag {
+    color: var(--color-warning-text);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-bold);
+  }
+
+  .quiz-limit {
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-lg);
+    background: var(--glass-surface);
+    box-shadow: var(--glass-edge);
+    color: var(--color-text);
+  }
+
+  /* || Components: empty state */
+  .quiz-empty {
+    display: grid;
+    justify-items: center;
+    gap: var(--space-3);
+    padding: var(--space-8) var(--space-5);
+    border-radius: var(--radius-xl);
+    background: var(--glass-surface);
+    box-shadow: var(--glass-edge), var(--shadow-1);
+    text-align: center;
+  }
+
+  .quiz-empty-wizard {
+    width: calc(2 * var(--space-12));
+    height: calc(2 * var(--space-12));
+  }
+
+  .quiz-empty-mark {
+    display: grid;
+    place-items: center;
+    width: var(--space-16);
+    height: var(--space-16);
+    border-radius: var(--radius-xl);
+    background: var(--color-accent-tint);
+    color: var(--color-accent-text);
+  }
+
+  .quiz-empty-title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-lg);
+    font-weight: var(--weight-bold);
+    line-height: var(--leading-tight);
+    text-wrap: balance;
+  }
+
+  .quiz-empty-text {
+    max-width: 34ch;
+    margin: 0;
+    color: var(--color-text-secondary);
+    text-wrap: balance;
+  }
+
+  /* || Components: the "Saved" tick (in the host's header) */
+  .quiz-saved {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    min-height: var(--tap-target);
+    padding-inline: var(--space-2);
+    color: var(--color-text);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    white-space: nowrap;
+
+    & svg {
+      color: var(--color-success-text);
+    }
+
+    &[data-saved="idle"] {
+      display: none;
+    }
+
+    &[data-saved="saving"] svg {
+      color: var(--color-text-tertiary);
+    }
+
+    &[data-saved="error"] svg {
+      color: var(--color-danger-text);
+    }
+  }
+
+  /* A narrow header has room for the tick only; the words stay for screen readers. */
+  .quiz-saved-words {
+    @media (width < 480px) {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+    }
+  }
+
+  /* || Components: motion */
+  @media (prefers-reduced-motion: no-preference) {
+    /* A screen that was just opened deals its cards in, one after the other. */
+    [data-entering] :is(.quiz-card, .quiz-round-card, .quiz-qcard) {
+      animation: quiz-deal var(--duration-slow) var(--ease-out) backwards;
+
+      &:nth-child(2) {
+        animation-delay: 45ms;
+      }
+
+      &:nth-child(3) {
+        animation-delay: 90ms;
+      }
+
+      &:nth-child(4) {
+        animation-delay: 135ms;
+      }
+
+      &:nth-child(5) {
+        animation-delay: 180ms;
+      }
+
+      &:nth-child(n + 6) {
+        animation-delay: 225ms;
+      }
+    }
+
+    [data-entering] :is(.quiz-empty, .quiz-form, .quiz-stage, .quiz-quiz-head) {
+      animation: quiz-rise var(--duration-slow) var(--ease-out) backwards;
+    }
+
+    .quiz-saved[data-saved="saved"] svg {
+      animation: quiz-tick var(--duration-slow) var(--ease-spring) backwards;
+    }
+  }
+
+  @keyframes quiz-deal {
+    from {
+      opacity: 0;
+      transform: translateY(var(--space-4)) rotate(-2deg);
+    }
+  }
+
+  @keyframes quiz-rise {
+    from {
+      opacity: 0;
+      transform: translateY(var(--space-2));
+    }
+  }
+
+  @keyframes quiz-tick {
+    from {
+      transform: scale(0.4);
+    }
+  }
+
+  @media (forced-colors: active) {
+    .quiz-panel,
+    .quiz-empty,
+    .quiz-chip-face,
+    .quiz-input,
+    .quiz-title-input {
+      outline: 1px solid CanvasText;
+    }
+  }
+}

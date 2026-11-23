@@ -104,8 +104,8 @@ describe("search texts (T-20)", () => {
     expect((app.l10n?.bg?.description ?? "").length).toBeLessThanOrEqual(155);
   });
 
-  it("names all three tools, in the same order and number in English and Bulgarian", () => {
-    expect(tools.map((f) => f.name)).toEqual(["Teams", "Scores", "Answer sheet"]);
+  it("names all four tools, in the same order and number in English and Bulgarian", () => {
+    expect(tools.map((f) => f.name)).toEqual(["Teams", "Scores", "Answer sheet", "Quiz creator"]);
     expect(app.l10n?.bg?.help.features).toHaveLength(tools.length);
     for (const f of tools) expect(f.route).toMatch(/^#\/[a-z]+$/);
   });

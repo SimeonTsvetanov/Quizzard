@@ -2,8 +2,16 @@
 // whether our Home is the entry below it, seeds Home under a direct launch, and remembers the
 // current screen's URL so a dialog link (#help) hands the address back when it closes.
 
-/** Key of the shell's part of `history.state`; nothing else in the app writes history.state. */
+/** Key of the shell's part of `history.state`; a mini-app passes it on untouched (see {@link SUB_KEY}). */
 const STATE_KEY = "quizzardScreen";
+
+/**
+ * A mini-app with screens of its own (the quiz creator) adds history entries with the SAME address
+ * as its first one, so Back walks its screens before it reaches Home. Each such entry carries
+ * everything the entry below had (the mark above included) plus this key: how many of the tool's own
+ * entries lie below it. The router reads it to go Home in one step ({@link stepsToHome}).
+ */
+const SUB_KEY = "quizzardSub";
 
 /** The hash of the Home screen written by the router. */
 export const HOME_HASH = "#/";
@@ -43,6 +51,25 @@ export function isMarked(): boolean {
 /** Tells whether `history.back()` from the current entry lands on the shell's Home. */
 export function hasHomeBelow(): boolean {
   return readScreenState(history.state)?.homeBelow === true;
+}
+
+/**
+ * Reads how many of a mini-app's own entries lie below an entry (0 for its first one, or for a value
+ * that is not a count).
+ * @param state - `history.state` as found
+ */
+export function readSubEntries(state: unknown): number {
+  const value: unknown = typeof state === "object" && state !== null ? Reflect.get(state, SUB_KEY) : undefined;
+  return typeof value === "number" && Number.isInteger(value) && value > 0 ? value : 0;
+}
+
+/**
+ * Returns how many entries `history.go(-n)` must cross from the current one to land on the shell's
+ * Home: the mini-app's own entries below this one, then its first entry.
+ * @returns `null` when Home is not below (a deep link opened over something else)
+ */
+export function stepsToHome(): number | null {
+  return hasHomeBelow() ? readSubEntries(history.state) + 1 : null;
 }
 
 /** Marks the current entry without changing its URL. */

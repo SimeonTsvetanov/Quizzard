@@ -5,6 +5,7 @@ import { ATTRIBUTION_NAME_PARAM, ATTRIBUTION_URL_PARAM, TEAMS_PARAM } from "@sim
 import { meta as teamsMeta } from "@simeonts/teamsync-random-team-generator-miniapp/meta";
 import { meta as scoresMeta } from "gg-counter-miniapp/meta";
 import { meta as sheetMeta } from "@simeonts/quizzard-sheet-miniapp/meta";
+import { meta as quizMeta } from "@simeonts/quizzard-quiz-miniapp/meta";
 import { app } from "../config.ts";
 import { getLanguage } from "../i18n/index.ts";
 import { e2eEntries } from "./e2e-entries.ts";
@@ -16,8 +17,8 @@ export const SHELL_STORAGE_AREA: StorageArea = { prefix: `${app.id}:v1:` };
  * Mini-apps shipped to users, in registry order. A vendored mini-app's line takes its package's own
  * `meta` (id, names, tagline, icon path, languages, storage area — one source, PLAN §1.1 item 2) and
  * loads its body and Help lazily; its storage area is its own (`quizzard-teams:v1:`,
- * `quizzard-scores:v1:`), apart from the standalone sites' keys (DECISIONS 2026-11-23). The "coming" card
- * stays hand-written until its code lands.
+ * `quizzard-scores:v1:`), apart from the standalone sites' keys (DECISIONS 2026-11-23). The quiz
+ * creator's area also names its IndexedDB database (`quizzard-quiz`), which Settings measures and clears.
  */
 const SHIPPED: readonly MiniAppEntry[] = [
   {
@@ -36,16 +37,9 @@ const SHIPPED: readonly MiniAppEntry[] = [
     help: () => import("@simeonts/quizzard-sheet-miniapp/help"),
   },
   {
-    meta: {
-      contract: 1,
-      id: "quiz",
-      name: { en: "Quiz creator", bg: "Създател на куизове" },
-      tagline: { en: "Build your own quiz night", bg: "Подгответе своя куиз вечер" },
-      icon: "miniapps/quiz.svg",
-      languages: ["en", "bg"],
-      status: "coming",
-      storage: { prefix: "quizzard-quiz:v1:" },
-    },
+    meta: quizMeta,
+    load: () => import("@simeonts/quizzard-quiz-miniapp"),
+    help: () => import("@simeonts/quizzard-quiz-miniapp/help"),
   },
 ];
 
@@ -54,9 +48,10 @@ const SHIPPED: readonly MiniAppEntry[] = [
  * host API; the rest of a route's query stays out. TeamSync's `shared` (Android share target) and
  * embed mode belong to its standalone site (PLAN §2: none in Quizzard v1), so `#/teams?shared=…`
  * never fills its list. GG Counter's screen reads no launch parameter (its host-api lists none), so
- * `scores` gets an empty query. A mini-app without a line here gets the whole query.
+ * `scores` gets an empty query; so do the Answer sheet and the quiz creator (its screens live in
+ * `history.state`, never in the address). A mini-app without a line here gets the whole query.
  */
-const LAUNCH_PARAMS: Readonly<Partial<Record<string, readonly string[]>>> = { teams: [TEAMS_PARAM], scores: [], sheet: [] };
+const LAUNCH_PARAMS: Readonly<Partial<Record<string, readonly string[]>>> = { teams: [TEAMS_PARAM], scores: [], sheet: [], quiz: [] };
 
 /**
  * Parameters Quizzard adds on its own (never read from the address): Teams names the app in the last

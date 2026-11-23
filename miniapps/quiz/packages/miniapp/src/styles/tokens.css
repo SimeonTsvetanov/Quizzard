@@ -1,0 +1,58 @@
+/* Quiz creator: the mini-app's own custom properties (the build lets mini-app CSS use only Quizzard's
+   tokens, the generated accent and what the mini-app declares here). `:root` is the mount element.
+
+   Kind colours (PLAN §1.1): one small colour per question kind so a round reads at a glance — text is
+   the tool's own violet, picture, audio and video are the other tools' accents (the same light/dark
+   pairs as app.config.ts `accent` and `toolAccents`). They are dots, icon colours and card edges only,
+   never text on a tint.
+
+   The stage: a slide is a projector slide — a deep violet ground with light text in both themes, so a
+   thumbnail looks like what the room will see. Its text pairs: ink on the ground ≥ 11:1, dimmed ink
+   ≥ 7:1, the dark ink on the "right answer" green ≥ 9:1. */
+@layer components {
+  :root {
+    --quiz-tone-text: var(--color-accent);
+    --quiz-tone-picture: light-dark(oklch(52.8% 0.123 158.1), oklch(77.3% 0.153 163.2));
+    --quiz-tone-audio: light-dark(oklch(54.1% 0.133 54), oklch(83.7% 0.164 84.4));
+    --quiz-tone-video: light-dark(oklch(51.5% 0.188 260.8), oklch(72.8% 0.142 257.7));
+    --quiz-tone-none: var(--color-text-tertiary);
+    --quiz-tone: var(--quiz-tone-none);
+
+    --quiz-stage-from: light-dark(oklch(37% 0.2 293), oklch(29% 0.13 293));
+    --quiz-stage-to: light-dark(oklch(23% 0.12 283), oklch(17% 0.07 283));
+    --quiz-stage-ink: oklch(98% 0.01 293);
+    --quiz-stage-dim: oklch(98% 0.01 293 / 0.76);
+    --quiz-stage-chip: oklch(100% 0 0 / 0.12);
+    --quiz-stage-edge: oklch(100% 0 0 / 0.2);
+    --quiz-stage-gold: oklch(87.9% 0.143 92);
+    --quiz-stage-right: oklch(80% 0.17 160);
+    --quiz-stage-on-right: oklch(22% 0.04 160);
+
+    /* The edges of the cards under the top card of a deck. */
+    --quiz-stack-1: color-mix(in oklch, var(--color-accent) 72%, var(--color-surface));
+    --quiz-stack-2: color-mix(in oklch, var(--color-accent) 46%, var(--color-surface));
+    --quiz-stack-3: color-mix(in oklch, var(--color-accent) 24%, var(--color-surface));
+
+    /* iOS Safari zooms into any field whose text is smaller than 16px. */
+    --quiz-field-min-font: 16px;
+    /* Under the host's sticky header (its height plus its own padding). */
+    --quiz-sticky-top: calc(var(--header-height) + var(--safe-top) + var(--space-2) + 1px);
+    --quiz-mark: var(--space-12);
+  }
+
+  [data-tone="text"] {
+    --quiz-tone: var(--quiz-tone-text);
+  }
+
+  [data-tone="picture"] {
+    --quiz-tone: var(--quiz-tone-picture);
+  }
+
+  [data-tone="audio"] {
+    --quiz-tone: var(--quiz-tone-audio);
+  }
+
+  [data-tone="video"] {
+    --quiz-tone: var(--quiz-tone-video);
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "name": "@simeonts/quizzard-quiz-miniapp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Quiz creator: the library, rounds, question editor and preview behind the Quizzard mini-app contract. Storage only through its storage module.",
+  "type": "module",
+  "license": "MIT",
+  "exports": {
+    ".": {
+      "types": "./miniapp.d.ts",
+      "default": "./src/index.ts"
+    },
+    "./contract": "./src/contract.ts",
+    "./meta": "./src/meta.ts",
+    "./help": "./src/help.ts",
+    "./vite-preset": "./vite-preset.ts"
+  },
+  "dependencies": {
+    "@simeonts/quizzard-quiz-core": "workspace:^",
+    "lucide": "^1.70.0"
+  },
+  "devDependencies": {
+    "fake-indexeddb": "^6.2.8"
+  }
+}

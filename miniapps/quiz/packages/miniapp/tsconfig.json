@@ -1,0 +1,26 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "emitDeclarationOnly": true,
+    "outDir": "../../../../.tsbuild/quiz-miniapp",
+    "rootDir": "../..",
+    "lib": [
+      "ES2024",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "allowImportingTsExtensions": true
+  },
+  "include": [
+    "src",
+    "vite-preset.ts",
+    "miniapp.d.ts",
+    "test"
+  ],
+  "references": [
+    {
+      "path": "../core"
+    }
+  ]
+}
