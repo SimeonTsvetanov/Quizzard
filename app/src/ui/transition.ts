@@ -17,6 +17,8 @@ const MORPH_NAME = "tool-screen";
 const MOUNT_WAIT_MS = 350;
 /** The transition's callback normally runs within a frame or two; after this long the screen changes without it. */
 const CALLBACK_WAIT_MS = 400;
+/** Far longer than the morph itself (about half a second): by then a transition still running is stuck. */
+const STUCK_MS = 2500;
 
 /** Options of {@link morphScreens}. */
 export interface MorphOptions {
@@ -66,6 +68,8 @@ export function morphScreens({ from, update, to }: MorphOptions): void {
     // A skipped transition (a second one started, the tab was hidden) rejects `finished`: nothing to report.
     transition.finished.then(clear, clear);
     setTimeout(() => { if (!hasChanged) clear(); }, CALLBACK_WAIT_MS);
+    // A transition holds the page's rendering while it runs: one that has not ended by now is cut short.
+    setTimeout(() => { transition.skipTransition(); }, STUCK_MS);
   } catch {
     clear(); // the API refused to start (an unsupported state): change the screen without the animation
   }

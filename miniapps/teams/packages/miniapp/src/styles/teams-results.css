@@ -81,8 +81,6 @@
     overflow: hidden;
     border-radius: var(--radius-xl);
     background: var(--glass-surface);
-    -webkit-backdrop-filter: var(--glass-blur);
-    backdrop-filter: var(--glass-blur);
     box-shadow: var(--glass-edge), var(--shadow-2);
     view-transition-class: team;
 
@@ -205,8 +203,6 @@
     /* Share and Copy: glass, like the cards above them. */
     & .button:not(.button--primary, .button--destructive) {
       background: var(--glass-surface);
-      -webkit-backdrop-filter: var(--glass-blur);
-      backdrop-filter: var(--glass-blur);
       box-shadow: var(--glass-edge), var(--shadow-1);
     }
 

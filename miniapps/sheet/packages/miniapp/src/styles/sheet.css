@@ -215,8 +215,6 @@
     padding: var(--sheet-card-padding) var(--sheet-card-padding) 0;
     border-radius: var(--radius-xl);
     background: var(--glass-surface);
-    -webkit-backdrop-filter: var(--glass-blur);
-    backdrop-filter: var(--glass-blur);
     box-shadow: var(--glass-edge), var(--shadow-2);
 
     /* Drawn again for another round: it fades up into its place, once. */

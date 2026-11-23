@@ -7,8 +7,6 @@
   .card {
     border-radius: var(--radius-xl);
     background: var(--glass-surface);
-    -webkit-backdrop-filter: var(--glass-blur);
-    backdrop-filter: var(--glass-blur);
     color: var(--color-text);
     box-shadow: var(--glass-edge), var(--shadow-1);
   }

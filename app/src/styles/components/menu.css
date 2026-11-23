@@ -14,10 +14,8 @@
     margin: 0 0 0 auto;
     padding: calc(var(--space-5) + var(--safe-top)) var(--space-5) calc(var(--space-5) + var(--safe-bottom));
     border-radius: var(--radius-xl) 0 0 var(--radius-xl);
-    /* Glass: the page shows through, softly blurred (tokens.css → Glass). */
+    /* Glass: the page shows through; the modal backdrop behind does the blurring (modal.css). */
     background: var(--glass-surface-strong);
-    -webkit-backdrop-filter: var(--glass-blur);
-    backdrop-filter: var(--glass-blur);
     color: var(--color-text);
     box-shadow: var(--glass-edge), var(--shadow-3);
     width: min(100% - 2 * var(--space-4), var(--menu-phone-width));
@@ -147,6 +145,12 @@
       &::backdrop {
         background: transparent;
       }
+
+      /* The dropdown has no dimmed, blurred page behind it, so it blurs what is under itself. On phones the
+         modal backdrop already does (modal.css): one blur per surface, never stacked — stacked or repeated
+         backdrop blurs made slow machines crawl (CI WebKit, 2026-11-23). */
+      -webkit-backdrop-filter: var(--glass-blur);
+      backdrop-filter: var(--glass-blur);
 
       & a,
       & nav button {

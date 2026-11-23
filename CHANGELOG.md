@@ -10,7 +10,7 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
   to its place under the tools (in the footer on a computer). Each time you come back to the home screen the
   letters of the name arrive again, and it breathes softly while you are there.
 ### Changed
-- Glass everywhere: the menu, Settings, Help and the other windows are see-through panels with the app's colour
+- Glass: the menu, Settings, Help and the other windows are see-through panels over a softly blurred page, with the app's colour
   in their titles, icons and chosen options.
 - Teams, Scores and Answer sheet have a bolder look inside: glass panels, the display font, clearer buttons
   and short animations.

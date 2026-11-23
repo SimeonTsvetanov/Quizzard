@@ -27,10 +27,8 @@
     max-height: var(--sheet-max-height);
     margin: 0;
     border-radius: var(--sheet-radius);
-    /* Glass: the page shows through, softly blurred (tokens.css → Glass). */
+    /* Glass: the page shows through; the modal backdrop behind does the blurring (modal.css). */
     background: var(--glass-surface-strong);
-    -webkit-backdrop-filter: var(--glass-blur);
-    backdrop-filter: var(--glass-blur);
     color: var(--color-text);
     box-shadow: var(--glass-edge), var(--shadow-3);
     overscroll-behavior: contain;
@@ -95,10 +93,8 @@
         flex: 1;
       }
     }
-    /* Its own glass: the body scrolls under it. */
-    background: var(--glass-surface-strong);
-    -webkit-backdrop-filter: var(--glass-blur);
-    backdrop-filter: var(--glass-blur);
+    /* Solid: the body scrolls under it. */
+    background: var(--color-surface-raised);
     -webkit-user-select: none;
     user-select: none;
 
