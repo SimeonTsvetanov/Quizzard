@@ -8,7 +8,7 @@
    The leader (place 1, `data-place`) wears a ring in the accent with a soft glow and has the score in the accent —
    an edge, never a fill, so it cannot be mistaken for the last-scored tint.
    Look (Moni 2026-11-23): glass cards (card.css), the score in the display font; the cards on screen when the
-   page opens rise in one after another.
+   page opens fade in one after another.
    Motion (SPEC 1.2 F20, DECISIONS 2026-11-20): a new card pops in, a removed one fades out in its slot
    (`data-motion`, use-leaving.ts), the tint fades from card to card, the score rolls in from its direction. */
 @layer components {
@@ -133,10 +133,10 @@
       }
     }
 
-    /* On screen when the page opened (no `data-motion`): rises in once, a step after the card before it. */
+    /* On screen when the page opened (no `data-motion`): fades in once, a step after the card before it. */
     @media (prefers-reduced-motion: no-preference) {
       &:not([data-motion]) {
-        animation: screen-rise var(--duration-slow) var(--ease-out) backwards;
+        animation: screen-in var(--duration-slow) var(--ease-out) backwards;
 
         &:nth-child(2) {
           animation-delay: var(--player-card-stagger);

@@ -1,7 +1,7 @@
 /* Cards (design → ui-patterns §7): a glass surface (see-through, blurred — the tool's glow shows behind
    it), large radius, a light edge and the resting shadow — no borders. Set by src/components/ui/card.tsx.
    The panels under the player grid (Add player, Leaderboard) carry a wash of the accent in their corner and
-   a small accent mark before the title; they rise in after the player cards when the screen opens. */
+   a small accent mark before the title; they fade in after the player cards when the screen opens. */
 @layer components {
   /* || Components: card */
   .card {
@@ -26,7 +26,7 @@
     }
 
     @media (prefers-reduced-motion: no-preference) {
-      animation: screen-rise var(--duration-slow) var(--ease-out) calc(var(--panel-stagger) * 2) backwards;
+      animation: screen-in var(--duration-slow) var(--ease-out) calc(var(--panel-stagger) * 2) backwards;
 
       & + & {
         animation-delay: calc(var(--panel-stagger) * 3);
@@ -34,10 +34,11 @@
     }
   }
 
-  @keyframes screen-rise {
+  /* Opacity only: a block that moved while it came in would be measured (and tapped) in the wrong place
+     for that moment — the e2e suite reads positions right after the screen opens. */
+  @keyframes screen-in {
     from {
       opacity: 0;
-      transform: translateY(var(--space-4));
     }
   }
 
