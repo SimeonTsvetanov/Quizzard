@@ -83,6 +83,11 @@ test("it is one screen: on a phone the page itself does not scroll, a long round
   expect(await scroll.evaluate((element) => element.scrollHeight > element.clientHeight)).toBe(
     true,
   );
+  // Playwright centres a control it is about to click, which also scrolls a desktop page towards its footer; a
+  // person typing does not scroll the page (measured: scrollY stays 0). Back to the top before looking at the bar.
+  await page.evaluate(() => {
+    window.scrollTo(0, 0);
+  });
   await expect(total(page)).toBeInViewport();
   await expect(tab(page, 1)).toBeInViewport();
   await expect(roundPoints(page)).toBeInViewport();
