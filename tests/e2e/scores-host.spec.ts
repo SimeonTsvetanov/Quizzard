@@ -107,7 +107,7 @@ async function watchCsp(page: Page): Promise<string[]> {
   });
   page.on("console", (message) => {
     if (message.type() === "error" && /Content Security Policy/i.test(message.text()))
-      violations.push(message.text());
+      {violations.push(message.text());}
   });
   return violations;
 }
@@ -155,7 +155,7 @@ test.describe("without a service worker", () => {
     // PLAN open point 8 (DECISIONS 2026-11-22): the session buttons always sit in the header slot.
     await expect(headerSlot(page).getByRole("button")).toHaveText(["", "", ""]);
     for (const name of ["Open leaderboard", "Add player", "Clear session"])
-      await expect(headerSlot(page).getByRole("button", { name })).toBeVisible();
+      {await expect(headerSlot(page).getByRole("button", { name })).toBeVisible();}
     await expect(homeView(page)).toBeHidden();
     await backButton(page).click();
     await expect(homeView(page)).toBeVisible();

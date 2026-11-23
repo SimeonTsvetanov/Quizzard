@@ -14,7 +14,7 @@ async function layerOrder(page: Page): Promise<string[]> {
   return page.evaluate(() => {
     const layerNames = (rule: CSSRule, prefix: string): string[] => {
       if (rule instanceof CSSLayerStatementRule)
-        return rule.nameList.map((name) => `${prefix}${name}`);
+        {return rule.nameList.map((name) => `${prefix}${name}`);}
       if (!(rule instanceof CSSLayerBlockRule)) return [];
       const name = `${prefix}${rule.name}`;
       return [name, ...Array.from(rule.cssRules).flatMap((child) => layerNames(child, `${name}.`))];

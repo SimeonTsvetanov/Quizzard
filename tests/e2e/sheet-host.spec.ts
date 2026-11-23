@@ -68,12 +68,12 @@ test("it is one screen: on a phone the page itself does not scroll, a long round
 }) => {
   await open(page);
   for (let index = 0; index < 14; index += 1)
-    await write(page, index, `Answer ${String(index + 1)}`);
+    {await write(page, index, `Answer ${String(index + 1)}`);}
   // Desktop pages end with the site footer, so only phones are a single fixed screen.
   if (isMobile)
-    expect(
+    {expect(
       await page.evaluate(() => document.documentElement.scrollHeight - window.innerHeight),
-    ).toBeLessThanOrEqual(1);
+    ).toBeLessThanOrEqual(1);}
   expect(
     await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth),
   ).toBeLessThanOrEqual(0);
@@ -398,7 +398,7 @@ test("with the keyboard open (a short screen) “Add an answer” still adds a l
   await page.setViewportSize({ width: 412, height: 500 });
   await open(page);
   for (let index = 0; index < 6; index += 1)
-    await write(page, index, `Answer ${String(index + 1)}`);
+    {await write(page, index, `Answer ${String(index + 1)}`);}
   await expect(rows(page)).toHaveCount(6);
   await expect(answer(rows(page).nth(5))).toBeInViewport({ ratio: 1 });
 });
@@ -459,7 +459,7 @@ test("“Remove answers” turns every line's marks into a remove button; a remo
   await expect(total(page)).toHaveText("2");
   // Removing every line leaves one empty line to write on; "Done" brings the marks back.
   for (let left = 3; left > 0; left -= 1)
-    await round(page).getByRole("button", { name: "Remove answer 1", exact: true }).click();
+    {await round(page).getByRole("button", { name: "Remove answer 1", exact: true }).click();}
   await expect(rows(page)).toHaveCount(1);
   await expect(answer(rows(page).nth(0))).toHaveValue("");
   await round(page).getByRole("button", { name: "Done" }).click();

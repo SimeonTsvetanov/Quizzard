@@ -12,6 +12,9 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 - Home: the wizard greets you, the tiles carry their tool's colour and icon, the lights behind them drift
   slowly and a few stars twinkle.
 - Answer sheet: its top bar is a banner in the tool's colour.
+### Fixed
+- Going back from a tool closes into the tile you opened, not into the top one: the tiles keep their order
+  while the app is open, and the tool used last moves to the top the next time you open Quizzard.
 
 ## [0.13.0] - 2026-11-23
 ### Changed

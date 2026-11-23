@@ -45,7 +45,7 @@ async function watchCsp(page: Page): Promise<string[]> {
   });
   page.on("console", (message) => {
     if (message.type() === "error" && /Content Security Policy/i.test(message.text()))
-      violations.push(message.text());
+      {violations.push(message.text());}
   });
   return violations;
 }
@@ -225,10 +225,10 @@ test("the service worker precaches every Teams chunk (PLAN §1.1 item 7)", async
   const chunks = [...new Set(worker.match(/assets\/miniapp-teams-[\w-]+\.js/g))];
   // The body, its lazily rendered screen and its Help (app/build/miniapp-chunks.ts names them).
   for (const part of ["main", "render", "help"])
-    expect(
+    {expect(
       chunks.filter((file) => file.startsWith(`assets/miniapp-teams-${part}-`)),
       part,
-    ).toHaveLength(1);
+    ).toHaveLength(1);}
 });
 
 test("after one visit #/teams reloads offline (its chunks are precached)", async ({

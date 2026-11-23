@@ -38,7 +38,7 @@ test("shortcuts have a 96 px icon (pwa §2)", async ({ request }) => {
     shortcuts?: { icons?: { src: string; sizes: string }[] }[];
   };
   for (const shortcut of m.shortcuts ?? [])
-    expect(shortcut.icons?.some((i) => i.sizes === "96x96")).toBe(true);
+    {expect(shortcut.icons?.some((i) => i.sizes === "96x96")).toBe(true);}
   const icon = await request.get("./pwa-96x96.png");
   expect(icon.ok()).toBe(true);
 });

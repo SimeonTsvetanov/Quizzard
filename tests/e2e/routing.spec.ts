@@ -209,7 +209,7 @@ test("the mount element carries data-miniapp and has no transform, filter, conta
           style.perspective !== "none" || /transform|filter|perspective/.test(style.willChange),
       };
       for (const [name, isSet] of Object.entries(checks))
-        if (isSet) found.push(`${node.tagName.toLowerCase()}.${node.className}: ${name}`);
+        {if (isSet) found.push(`${node.tagName.toLowerCase()}.${node.className}: ${name}`);}
     }
     return found;
   });

@@ -153,7 +153,7 @@ test.describe("toasts and sheets", () => {
       delete (Navigator.prototype as Partial<Navigator>).share;
     }); // the fallback sheet
     if (browserName === "chromium")
-      await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+      {await context.grantPermissions(["clipboard-read", "clipboard-write"]);}
     await page.goto("./");
     await page.click("[data-menu-open]");
     await page.locator('dialog[data-menu] [data-action="share"]').click();
@@ -374,7 +374,7 @@ test("a note goes away on a tap anywhere else, and by itself within a few second
     delete (Navigator.prototype as Partial<Navigator>).share;
   });
   if (browserName === "chromium")
-    await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+    {await context.grantPermissions(["clipboard-read", "clipboard-write"]);}
   await page.goto("./");
   const copyFromMenu = async (): Promise<void> => {
     await page.click("[data-menu-open]");

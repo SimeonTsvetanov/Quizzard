@@ -19,7 +19,7 @@
 ## 3. Features (each testable, linked to an acceptance criterion)
 | ID | Feature | Acceptance |
 |---|---|---|
-| F1 | **Home = launcher:** a card per mini-app (logo mark, name, one line), opened with one tap; the last used mini-app is offered first | AC1 |
+| F1 | **Home = launcher:** a card per mini-app (logo mark, name, one line), opened with one tap; the last used mini-app is offered first (from the next page load; the order does not change during a visit) | AC1 |
 | F2 | **Mini-app contract:** every mini-app is a module with `meta` (id, name, tagline, icon, languages), `mount(element, context)` → `unmount()`, and its own storage namespace; the shell knows nothing else about it (works for no-framework and React mini-apps) | AC2, AC6 |
 | F3 | **TeamSync inside Quizzard**, same behaviour as the standalone app, in Quizzard's look | AC2 |
 | F4 | **GG Counter inside Quizzard**, same behaviour as the standalone app, in Quizzard's look | AC2 |

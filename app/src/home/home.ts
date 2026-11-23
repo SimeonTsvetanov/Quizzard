@@ -40,6 +40,9 @@ export function rememberLastUsed(id: string): void {
  */
 export function createHome(list: HTMLElement, entries: readonly MiniAppEntry[]): Home {
   let openedId: string | null = null;
+  // The order of this visit, fixed at the first render: a tool shrinks back into the tile it grew out of.
+  // The tool used last moves to the top only at the next page load.
+  let leading: string | null | undefined;
   list.addEventListener("click", (event) => {
     const card = event.target instanceof Element ? event.target.closest<HTMLElement>("[data-card]") : null;
     if (card?.matches(":any-link") === true) openedId = card.dataset["card"] ?? null;
@@ -48,7 +51,8 @@ export function createHome(list: HTMLElement, entries: readonly MiniAppEntry[]):
   return {
     render() {
       const focused = document.activeElement instanceof HTMLElement && list.contains(document.activeElement) ? document.activeElement.dataset["card"] : undefined;
-      const last = lastUsedId();
+      leading ??= lastUsedId();
+      const last = leading;
       // The tool used last leads the list as a wide card: one tap back into the game.
       const ordered = orderForHome(entries, last);
       const hasFeatured = ordered[0]?.meta.id === last && ordered[0].meta.status === "ready";

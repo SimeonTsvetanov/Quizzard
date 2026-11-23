@@ -51,7 +51,7 @@ export async function prepare(page: Page, shot: keyof typeof SHOT_ROUTES): Promi
   await page.goto(SHOT_ROUTES[shot]);
   // An explicit "ready" signal instead of networkidle (testing §6).
   if (shot === "wide")
-    await expect(page.locator('[data-miniapp="sheet"] [data-total]')).toHaveText("13");
+    {await expect(page.locator('[data-miniapp="sheet"] [data-total]')).toHaveText("13");}
   else await expect(page.locator('[data-card="sheet"]')).toBeVisible();
   await page.evaluate(() => document.fonts.ready.then(() => undefined));
   await page.evaluate(() =>

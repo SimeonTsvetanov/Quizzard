@@ -91,8 +91,9 @@ for (const viewport of [
       expect(columns).toBe(viewport.width < 600 ? 1 : 4);
       // Cards in one row share its height.
       const rows = Map.groupBy(boxes, ({ y }) => Math.round(y));
-      for (const row of rows.values())
+      for (const row of rows.values()) {
         expect(new Set(row.map(({ height }) => Math.round(height))).size).toBe(1);
+      }
     });
 
     test("ready cards first in registry order, coming ones after; a ready card opens, Back returns to it", async ({
@@ -105,8 +106,12 @@ for (const viewport of [
       await expect(page.locator('[data-miniapp="gamma"] [data-probe]')).toBeVisible();
       await back(page).click();
       await expect(page.locator("[data-view=home]")).toBeVisible();
-      // Focus goes back to the card that opened the mini-app (accessibility §3), now listed first.
+      // Focus goes back to the card that opened the mini-app (accessibility §3). The order of this visit does not
+      // change — the tool shrinks back into the tile it grew out of — and it leads the list at the next load.
       await expect(card(page, "gamma")).toBeFocused();
+      expect(await ids(page)).toEqual(E2E_ORDER);
+      await page.reload();
+      await expect(cards(page)).toHaveCount(12);
       expect((await ids(page))[0]).toBe("gamma");
     });
 
@@ -118,8 +123,9 @@ for (const viewport of [
         Object.assign(window, { homeLayoutShifts: shifts });
         new PerformanceObserver((list) => {
           for (const entry of list.getEntries()) {
-            if (Reflect.get(entry, "hadRecentInput") !== true)
+            if (Reflect.get(entry, "hadRecentInput") !== true) {
               shifts.push(Number(Reflect.get(entry, "value")));
+            }
           }
         }).observe({ type: "layout-shift", buffered: true });
       });
@@ -281,6 +287,9 @@ test("the tool used last leads Home as a wide card marked “Last used”; a til
   await card(page, "alpha").click();
   await expect(page.locator('[data-miniapp="alpha"] [data-probe]')).toBeVisible();
   await back(page).click();
+  await expect(page.locator("[data-view=home]")).toBeVisible();
+  await expect(page.locator(".launcher-item--featured")).toHaveCount(0); // same order until the next load
+  await page.reload();
   const featured = page.locator(".launcher-item--featured");
   await expect(featured.locator("[data-card]")).toHaveAttribute("data-card", "alpha");
   await expect(featured).toContainText("Last used");
