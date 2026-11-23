@@ -1,6 +1,6 @@
 # Quiz creator — SPEC
 
-**Status:** draft for Moni's approval, 2026-11-23. Sources: `BRIEF.md` (his requirements, the reference quiz) and
+**Status:** approved by Moni 2026-11-23. Sources: `BRIEF.md` (his requirements, the reference quiz) and
 his answers of 2026-11-23. After approval: `PLAN.md` (tasks), then build. Mini-app id `quiz`, route `#/quiz`.
 
 ## 1. Purpose
