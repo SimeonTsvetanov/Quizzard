@@ -23,8 +23,13 @@
 
     /* A tool is open, or the screen is changing (the new picture of a screen change is live: a moving sky would
        be redrawn into it on every frame): the sky keeps its place. */
+    /* The pseudo-elements too: the sun's beams turn on ::before and ::after, which `*` does not reach. */
     :root[data-tool] & *,
-    :root:active-view-transition & * {
+    :root[data-tool] & *::before,
+    :root[data-tool] & *::after,
+    :root:active-view-transition & *,
+    :root:active-view-transition & *::before,
+    :root:active-view-transition & *::after {
       animation-play-state: paused;
     }
   }
