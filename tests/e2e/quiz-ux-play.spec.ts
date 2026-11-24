@@ -127,3 +127,182 @@ test("M8: the longest points note and a long round name are whole on the stage a
   const chip = await stage(page).locator(".quiz-slide-chip--points").boundingBox();
   expect((chip?.x ?? 0) + (chip?.width ?? 0)).toBeLessThanOrEqual((slide?.x ?? 0) + (slide?.width ?? 0));
 });
+
+test("A (owner): the stage and the host panel count as “n/total” — the place in full, the total quieter", async ({ page, context }) => {
+  await page.setViewportSize({ width: 1280, height: 860 });
+  await play(page);
+  await next(page, 2);
+  const kicker = view(page, "rules").locator(".qp-kicker");
+  await expect(kicker.locator("[data-count]")).toHaveAttribute("data-count", "1/2"); // "Round 1/2"
+  await expect(kicker).toContainText("Round");
+  await next(page);
+  const badge = stage(page).locator("[data-slide-number] [data-count]");
+  await expect(badge).toHaveAttribute("data-count", "1/3");
+  await expect(badge.locator(".quiz-count-said")).toHaveText("1 of 3"); // what a screen reader hears
+  await expect(stage(page).locator(".quiz-slide-round [data-count]")).toHaveAttribute("data-count", "1/2");
+  // The total is smaller and dimmer than the place, and still readable: contrast against what it stands on.
+  const measure = (selector: string): Promise<{ now: number; of: number; ratio: number }> => stage(page).locator(selector).evaluate((count) => {
+    const parse = (text: string): number[] => {
+      const canvas = document.createElement("canvas");
+      canvas.width = 1; canvas.height = 1;
+      const pen = canvas.getContext("2d", { willReadFrequently: true });
+      if (!pen) return [0, 0, 0, 1];
+      pen.fillStyle = text; pen.fillRect(0, 0, 1, 1);
+      const [r = 0, g = 0, b = 0, a = 255] = pen.getImageData(0, 0, 1, 1).data;
+      return [r, g, b, a / 255];
+    };
+    const luminance = ([r = 0, g = 0, b = 0]: number[]): number => { const [x = 0, y = 0, z = 0] = [r, g, b].map((v) => { const c = v / 255; return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; }); return 0.2126 * x + 0.7152 * y + 0.0722 * z; };
+    const now = count.querySelector(".quiz-count-now");
+    const total = count.querySelector(".quiz-count-of");
+    if (!now || !total) return { now: 0, of: 0, ratio: 0 };
+    // The ground under the counter: the nearest opaque background, else the stage's darkest colour (the worst case for light text).
+    let ground: number[] | null = null;
+    for (let node: Element | null = total; node && !ground; node = node.parentElement) { const color = parse(getComputedStyle(node).backgroundColor); if ((color[3] ?? 0) >= 0.99) ground = color; }
+    const base = ground ?? parse(getComputedStyle(document.querySelector(".qp-player") ?? document.body).getPropertyValue("--qp-ground") || "rgb(20, 12, 40)");
+    const ink = parse(getComputedStyle(total).color);
+    const alpha = ink[3] ?? 1;
+    const mixed = [0, 1, 2].map((i) => (ink[i] ?? 0) * alpha + (base[i] ?? 0) * (1 - alpha));
+    const [a, b] = [luminance(mixed), luminance(base)];
+    return { now: parseFloat(getComputedStyle(now).fontSize), of: parseFloat(getComputedStyle(total).fontSize), ratio: (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05) };
+  });
+  for (const selector of ["[data-slide-number] [data-count]", ".quiz-slide-round [data-count]"]) {
+    const sizes = await measure(selector);
+    expect(sizes.of).toBeLessThan(sizes.now);
+    expect(sizes.ratio, `${selector} contrast`).toBeGreaterThanOrEqual(4.5);
+  }
+  // The host panel says the same.
+  const opened = context.waitForEvent("page");
+  await control(page, "audience").click();
+  const audience = await opened;
+  await expect(panel(page).locator("[data-host-where] [data-count]")).toHaveCount(2);
+  await expect(panel(page).locator("[data-host-where] [data-count]").first()).toHaveAttribute("data-count", "1/2");
+  await expect(panel(page).locator("[data-host-where] [data-count]").last()).toHaveAttribute("data-count", "1/3");
+  await audience.close();
+});
+
+/** Every button of the control bar: its hook, its box and its tooltip. */
+const barButtons = (page: Page): Promise<{ id: string; x: number; y: number; w: number; h: number; title: string; label: string }[]> =>
+  page.locator(".qp-bar button:visible").evaluateAll((buttons) => buttons.map((button) => { const box = button.getBoundingClientRect(); return { id: button.getAttribute("data-control") ?? "", x: Math.round(box.x), y: Math.round(box.y), w: Math.round(box.width), h: Math.round(box.height), title: button.getAttribute("title") ?? "", label: button.getAttribute("aria-label") ?? "" }; }));
+
+test("B (owner): one control bar for the stage and the host panel — same buttons, order, sizes and places; the primary button never moves", async ({ page, context }) => {
+  await page.setViewportSize({ width: 1280, height: 860 });
+  await play(page);
+  const onTitle = await barButtons(page);
+  expect(onTitle.map((button) => button.id)).toEqual(["exit", "back", "timer", "reset", "next", "black", "scores", "audience", "fullscreen", "menu"]);
+  expect(onTitle.find((button) => button.id === "next")?.label).toBe("Start");
+  // Every button 44 px high on one line; the icon buttons 44 px wide; 8 px between neighbours in a group.
+  expect(new Set(onTitle.map((button) => `${String(button.y)}/${String(button.h)}`)).size).toBe(1);
+  expect(onTitle[0]?.h).toBe(44);
+  expect(onTitle.filter((button) => button.id !== "next").map((button) => button.w)).toEqual(Array.from({ length: 9 }, () => 44));
+  const gaps = (list: typeof onTitle, ids: string[]): number[] => ids.slice(1).map((id, index) => { const a = list.find((button) => button.id === ids[index]); const b = list.find((button) => button.id === id); return (b?.x ?? 0) - ((a?.x ?? 0) + (a?.w ?? 0)); });
+  expect(gaps(onTitle, ["exit", "back", "timer", "reset"])).toEqual([8, 8, 8]);
+  expect(gaps(onTitle, ["black", "scores", "audience", "fullscreen", "menu"])).toEqual([8, 8, 8, 8]);
+  // The primary button: in the middle of the bar, one width whatever it says.
+  const primary = onTitle.find((button) => button.id === "next");
+  expect(Math.abs((primary?.x ?? 0) + (primary?.w ?? 0) / 2 - 640)).toBeLessThanOrEqual(1);
+  // Equal page margins: the first button is as far from the left edge as the last from the right.
+  expect(onTitle[0]?.x).toBe(1280 - ((onTitle.at(-1)?.x ?? 0) + (onTitle.at(-1)?.w ?? 0)));
+  // Every button says what it does, with its key.
+  expect(Object.fromEntries(onTitle.map((button) => [button.id, button.title]))).toMatchObject({ back: "Back (←)", next: "Start (Space)", timer: "Start timer (T)", reset: "Restart timer (R)", black: "Black screen (B)", scores: "Scores (S)", fullscreen: "Full screen (F)", menu: "Menu (M)", audience: "Open audience window", exit: "Back to the quiz" });
+  await next(page, 3); // a question: "Next"
+  const onQuestion = await barButtons(page);
+  await next(page, 4); // the answers: "Show answer"
+  await expect(control(page, "next")).toHaveAttribute("aria-label", "Show answer");
+  const onReveal = await barButtons(page);
+  const places = (list: typeof onTitle): string[] => list.map((button) => `${button.id}:${String(button.x)},${String(button.y)},${String(button.w)},${String(button.h)}`);
+  expect(places(onQuestion)).toEqual(places(onTitle));
+  expect(places(onReveal)).toEqual(places(onTitle)); // nothing shifts when the label changes
+
+  // The host panel: the very same bar, at the same place.
+  const opened = context.waitForEvent("page");
+  await control(page, "audience").click();
+  const audience = await opened;
+  await expect(panel(page)).toBeVisible();
+  const onPanel = await barButtons(page);
+  expect(places(onPanel)).toEqual(places(onTitle));
+  expect(onPanel.find((button) => button.id === "audience")?.label).toBe("Close audience window");
+  const colours = (id: string): Promise<string[]> => page.locator(`.qp-bar [data-control="${id}"]`).evaluate((button) => [getComputedStyle(button).backgroundColor, getComputedStyle(button).color, getComputedStyle(button).borderRadius]);
+  const panelLook = { next: await colours("next"), back: await colours("back"), menu: await colours("menu") };
+  await panel(page).locator('[data-control="next"]').click(); // it works from the panel
+  await expect(control(page, "next")).not.toHaveAttribute("aria-label", "Show answer"); // the answer is out, in both windows
+  await expect(stage(audience)).toBeVisible();
+  await control(page, "audience").click(); // and closes the audience window
+  await expect(panel(page)).toHaveCount(0);
+  expect({ next: await colours("next"), back: await colours("back"), menu: await colours("menu") }).toEqual(panelLook); // the same colours under the stage
+  expect(places(await barButtons(page))).toEqual(places(onTitle));
+});
+
+test("B on a phone: the same bar under the stage and the panel, the primary button between two ends that never change", async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 740 });
+  await play(page);
+  const first = await barButtons(page);
+  expect(first.map((button) => button.id)).toEqual(["exit", "back", "timer", "next", "menu"]);
+  expect(new Set(first.map((button) => button.h))).toEqual(new Set([44]));
+  await next(page, 3);
+  await next(page, 4);
+  expect((await barButtons(page)).map((button) => `${button.id}:${String(button.x)},${String(button.w)}`)).toEqual(first.map((button) => `${button.id}:${String(button.x)},${String(button.w)}`));
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
+});
+
+test("T8: the screen is kept awake during Play — asked for at the start, again when the page is back on show, let go on leaving", async ({ page }) => {
+  await page.addInitScript(() => {
+    const log = { requests: 0, releases: 0 };
+    Object.defineProperty(window, "__wake", { value: log });
+    Object.defineProperty(navigator, "wakeLock", { configurable: true, value: { request: (type: string) => { if (type === "screen") log.requests += 1; return Promise.resolve({ release: () => { log.releases += 1; return Promise.resolve(); } }); } } });
+  });
+  const wake = (): Promise<{ requests: number; releases: number }> => page.evaluate(() => (window as unknown as { __wake: { requests: number; releases: number } }).__wake);
+  await play(page);
+  await expect.poll(wake).toEqual({ requests: 1, releases: 0 });
+  // The page is hidden (another tab, the phone locked): the lock goes; it is asked for again when the page is back.
+  await page.evaluate(() => { Object.defineProperty(document, "visibilityState", { configurable: true, get: () => "hidden" }); document.dispatchEvent(new Event("visibilitychange")); });
+  await expect.poll(wake).toEqual({ requests: 1, releases: 1 });
+  await page.evaluate(() => { Object.defineProperty(document, "visibilityState", { configurable: true, get: () => "visible" }); document.dispatchEvent(new Event("visibilitychange")); });
+  await expect.poll(wake).toEqual({ requests: 2, releases: 1 });
+  await control(page, "exit").click();
+  await expect(root(page).locator("[data-play-quiz]")).toBeVisible();
+  await expect.poll(wake).toEqual({ requests: 2, releases: 2 });
+});
+
+test("T12 + T9 + P1: the time-up sound is off until switched on and is remembered; team names survive a restart; no ranks before any points", async ({ page }) => {
+  await page.addInitScript(() => {
+    let made = 0;
+    const Real = window.AudioContext;
+    Object.defineProperty(window, "__sounds", { get: () => made });
+    window.AudioContext = class extends Real { constructor() { super(); made += 1; } };
+  });
+  const sounds = (): Promise<number> => page.evaluate(() => (window as unknown as { __sounds: number }).__sounds);
+  const base = pubNight();
+  const quick = { ...base, quiz: { ...base.quiz, rounds: base.quiz.rounds.map((round) => ({ ...round, defaults: { seconds: 5, points: { value: 1 }, questionKind: "text", answerType: "open" } })) } };
+  await play(page, quick);
+  await next(page);
+  await view(page, "teams-view").locator(".qp-team-field").first().fill("The Quizzy Rascals");
+  await page.keyboard.press("Enter");
+  await page.keyboard.press("KeyM");
+  const menu = page.locator('[data-dialog="menu"]');
+  await expect(menu.locator("[data-sound]")).not.toBeChecked(); // off by default
+  await menu.locator("[data-jump-screen='board']").first().click();
+  await expect(view(page, "board").locator("[data-board-empty]")).toHaveText("No points yet");
+  await expect(view(page, "board").locator(".qp-board-rank").first()).toBeHidden();
+  // A question's 5 s run out without the sound: nothing is played.
+  await page.keyboard.press("KeyM");
+  await menu.locator("[data-auto]").uncheck();
+  await menu.locator('[data-jump-screen="question"]').first().click();
+  await page.keyboard.press("KeyT");
+  await expect(stage(page).locator("[data-dial]")).toHaveAttribute("data-status", "done", { timeout: 9000 });
+  expect(await sounds()).toBe(0);
+  await page.keyboard.press("KeyM");
+  await menu.locator("[data-sound]").check();
+  await page.keyboard.press("Escape");
+  await page.keyboard.press("KeyR");
+  await page.keyboard.press("KeyT");
+  await expect(stage(page).locator("[data-dial]")).toHaveAttribute("data-status", "done", { timeout: 9000 });
+  expect(await sounds()).toBe(1);
+  // Remembered with the game, and the team's name is still there after "Start the game again".
+  await page.reload();
+  await expect(stage(page)).toBeVisible();
+  await page.keyboard.press("KeyM");
+  await expect(menu.locator("[data-sound]")).toBeChecked();
+  await menu.locator("[data-restart]").click();
+  await next(page);
+  await expect(view(page, "teams-view").locator(".qp-team-field").first()).toHaveValue("The Quizzy Rascals");
+});

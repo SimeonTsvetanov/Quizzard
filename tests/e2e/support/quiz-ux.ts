@@ -135,6 +135,24 @@ export async function openQuiz(page: Page, file: SeedFile = pubNight()): Promise
 }
 
 /**
+ * Replaces the library with one quiz and opens it (a second quiz in the same test).
+ * @param page - the page
+ * @param file - the quiz
+ */
+export async function openQuizAgain(page: Page, file: SeedFile): Promise<void> {
+  await page.evaluate(() => new Promise<void>((resolve) => {
+    const request = indexedDB.open("quizzard-quiz");
+    request.onsuccess = () => {
+      const transaction = request.result.transaction(["quizzes", "media"], "readwrite");
+      transaction.objectStore("quizzes").clear();
+      transaction.objectStore("media").clear();
+      transaction.oncomplete = () => { request.result.close(); resolve(); };
+    };
+  }));
+  await openQuiz(page, file);
+}
+
+/**
  * Seeds one quiz and starts Play on its title screen.
  * @param page - the page
  * @param file - the quiz

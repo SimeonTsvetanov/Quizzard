@@ -34,10 +34,29 @@ function indexOf(list: HTMLElement, item: Element): number {
 /** The item under a point, other than the dragged one. */
 function itemAt(list: HTMLElement, dragged: HTMLElement, x: number, y: number): HTMLElement | undefined {
   return [...list.children].find((child): child is HTMLElement => {
-    if (child === dragged || !(child instanceof HTMLElement)) return false;
+    // A card that is still sliding to its new place is not a target: its box is where it was a moment
+    // ago, and taking it would swap the two back and forth under a fast pointer.
+    if (child === dragged || !(child instanceof HTMLElement) || child.getAnimations().length > 0) return false;
     const box = child.getBoundingClientRect();
     return x >= box.left && x <= box.right && y >= box.top && y <= box.bottom;
   });
+}
+
+/**
+ * Gives the dragged item the place of another by moving the OTHERS around it: the dragged element
+ * itself never leaves the page, so it keeps the pointer it has captured (an element that is taken
+ * out and put back loses it, and the drag would end at the first swap).
+ */
+function takePlaceOf(list: HTMLElement, item: HTMLElement, over: HTMLElement): void {
+  const items = [...list.children];
+  const from = items.indexOf(item);
+  const to = items.indexOf(over);
+  if (to > from) {
+    for (const other of items.slice(from + 1, to + 1)) list.insertBefore(other, item);
+    return;
+  }
+  const after = item.nextSibling;
+  for (const other of items.slice(to, from)) list.insertBefore(other, after);
 }
 
 /** How far the page scrolls in one frame for a pointer at this height: more the nearer the edge, nothing in between. */
@@ -86,7 +105,7 @@ export function startDrag({ event, handle, item, list, attribute, onDrop }: Drag
     // The others slide to their new places; the dragged one follows the pointer.
     const before = new Map(recordPlaces(list, attribute));
     before.delete(item.getAttribute(attribute) ?? "");
-    if (indexOf(list, over) > indexOf(list, item)) over.after(item); else over.before(item);
+    takePlaceOf(list, item, over);
     slideFrom(list, attribute, before);
     follow();
   };
