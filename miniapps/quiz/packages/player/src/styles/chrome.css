@@ -75,7 +75,7 @@
 
 /* A phone: the tools that are also in the menu leave the bar. */
 @media (width < 600px) {
-  .qp-bar :is([data-control="reset"], [data-control="scores"], [data-control="audience"], [data-control="fullscreen"]) {
+  .qp-bar :is([data-control="reset"], [data-control="black"], [data-control="scores"], [data-control="audience"], [data-control="fullscreen"]) {
     display: none;
   }
 }

@@ -252,16 +252,18 @@ test("limits explain themselves: 8 options at most, 2 at least", async ({ page }
   await expect(options).toHaveCount(7);
 });
 
-test("pictures, audio and video are in the kind picker as “Soon” and cannot be chosen", async ({ page }) => {
+test("pictures, audio and video are in the kind picker and can be chosen: each brings its file picker", async ({ page }) => {
   await seed(page);
   await questions(page).nth(0).getByRole("button", { name: /^Question 1/ }).click();
   const kinds = root(page).getByRole("group", { name: "Kind of question" });
   await expect(kinds.getByRole("radio", { name: "Text" })).toBeChecked();
-  for (const name of ["Picture", "Audio", "Video"]) {
-    await expect(kinds.getByRole("radio", { name: new RegExp(`^${name}`) })).toBeDisabled();
-    await expect(kinds.locator("label", { hasText: name })).toContainText("Soon");
+  for (const [name, choose] of [["Picture", "Choose a picture"], ["Audio", "Choose an audio file"], ["Video", "Choose a video"]] as const) {
+    await expect(root(page).getByRole("group", { name: "Kind of question" }).getByRole("radio", { name })).toBeEnabled();
+    await root(page).getByRole("group", { name: "Kind of question" }).locator("label", { hasText: name }).click();
+    await expect(root(page).getByRole("group", { name: "Kind of question" }).getByRole("radio", { name })).toBeChecked();
+    await expect(root(page).getByRole("button", { name: new RegExp(`^${choose}`) })).toBeVisible();
   }
-  await expect(kinds.getByText("Pictures, audio and video arrive in the next versions.")).toBeVisible();
+  await expect(root(page).getByRole("group", { name: "Kind of question" })).not.toContainText("Soon");
 });
 
 test("deletes: a question goes at once with Undo; a round and a quiz with something in them ask first, then offer Undo", async ({ page }) => {
@@ -401,7 +403,9 @@ test("Bulgarian: every screen speaks it, with the decimal comma", async ({ page 
   await expect(root(page).getByLabel("Име на рунд 1")).toHaveValue("Рунд 1");
   await root(page).getByRole("button", { name: "Добави въпрос" }).click();
   await root(page).getByLabel("Въпрос", { exact: true }).fill("Коя река минава през Париж?");
-  await expect(root(page).getByText("Снимките, аудиото и видеото идват в следващите версии.")).toBeVisible();
+  await root(page).getByRole("group", { name: "Вид на въпроса" }).locator("label", { hasText: "Снимка" }).click();
+  await expect(root(page).getByRole("button", { name: /^Изберете снимка/ })).toContainText("JPEG, PNG, WebP или GIF · до 15,7 MB");
+  await root(page).getByRole("group", { name: "Вид на въпроса" }).locator("label", { hasText: "Текст" }).click();
   await form(page).getByText("Избор от няколко", { exact: true }).click();
   await expect(root(page).getByText("От 2 до 8 възможности. Отбележете всяка вярна — може да са няколко.")).toBeVisible();
   const points = root(page).locator('[data-timing="points"]');
