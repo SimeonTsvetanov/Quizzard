@@ -114,6 +114,8 @@ The user guide lives in [`docs/`](docs/index.md) and is mirrored to the reposito
 - [Make random teams](docs/how-to/make-teams.md)
 - [Keep score](docs/how-to/keep-score.md)
 - [Use the answer sheet](docs/how-to/use-the-answer-sheet.md)
+- [Make a quiz](docs/how-to/make-a-quiz.md)
+- [Play a quiz](docs/how-to/play-a-quiz.md)
 - [Install the app](docs/how-to/install-the-app.md)
 - [Back up and move your data](docs/how-to/back-up-and-move-your-data.md)
 - [Settings](docs/reference/settings.md) · [Limits](docs/reference/limits.md) · [Privacy and your data](docs/about/privacy-and-data.md)

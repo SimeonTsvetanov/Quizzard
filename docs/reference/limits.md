@@ -54,6 +54,40 @@ Other rules:
 - At 1,000 rounds, Quizzard shows "A game can have up to 1000 rounds."
 - If your browser can't save the game, Quizzard says "This browser did not save the game. It stays on screen until you close the page."
 
+## Quiz creator
+
+| Limit | Value |
+|---|---|
+| Rounds in a quiz | 20 |
+| Questions in a round | 50 |
+| Options of a **Multiple choice** question | 2 to 8; one or several can be correct |
+| Characters in a quiz name | 80 |
+| Characters in a round name | 60 |
+| Characters in a question | 500 |
+| Characters in an open answer | 300 |
+| Characters in an option | 120 |
+| Characters in an explanation or a host note | 500 each |
+| Characters in a round's rules | 600 |
+| Characters in a points note | 80 |
+| Time for a question | 5 to 600 seconds; a new round starts at 30 |
+| Points for a question | 0 to 100; a new round starts at 1 |
+| Picture | JPEG, PNG, WebP or GIF, up to 15 MB. A picture wider or taller than 1,920 px is scaled down. |
+| Audio | MP3 or M4A, up to 15 MB |
+| Video | MP4 (H.264 + AAC), up to 50 MB |
+| Pictures, audio and video of one quiz | 250 MB together |
+| Teams in a game | 2 to 12; a game starts with 4 |
+| Characters in a team name | 40 |
+| Points of a team in one round | 0 to 999 |
+
+Other rules:
+
+- Sizes are shown in MB of 1,024 × 1,024 bytes, the same unit as the limits.
+- A file of another kind, a file over its limit, or a clip your browser can't play is refused with a message that names the file and the limit. Nothing is saved then.
+- At a limit, the button that adds more is replaced by the reason, for example "20 rounds at most — this quiz is full."
+- An export over 100 MB asks first: large files may not open on a phone.
+- **Play** and **Export** ask first while questions are not finished.
+- The search field in **Your quizzes** shows from 6 quizzes.
+
 ## Import
 
 | Limit | Value |
@@ -68,4 +102,5 @@ A file over a limit is refused before Quizzard writes anything. A real export is
 - [Make teams](../how-to/make-teams.md)
 - [Keep score](../how-to/keep-score.md)
 - [Use the answer sheet](../how-to/use-the-answer-sheet.md)
+- [Make a quiz](../how-to/make-a-quiz.md)
 - [Quizzard user documentation](../index.md)

@@ -62,7 +62,7 @@ function roundPicker(app: App, { quiz, round, question }: CardPlace): HTMLElemen
  */
 export function editorHead(app: App, place: CardPlace): HTMLElement {
   const { t } = app;
-  const title = h("h2", { class: "quiz-title", id: "quiz-editor-title", tabindex: "-1", "data-screen-title": "" }, t("editor.title", { n: place.index + 1 }));
+  const title = h("h1", { class: "quiz-title", id: "quiz-editor-title", tabindex: "-1", "data-screen-title": "" }, t("editor.title", { n: place.index + 1 }));
   const where = h("span", { class: "quiz-editor-where", "data-editor-where": "" }, t("editor.of", { total: place.round.questions.length }));
   const head = h("div", { class: "quiz-head" }, backLink(place.round.name, () => { up(app); }), h("div", { class: "quiz-editor-title" }, title, where, arrows(app, place)));
   const picker = roundPicker(app, place);

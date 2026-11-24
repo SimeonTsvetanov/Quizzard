@@ -117,3 +117,54 @@ describe("the Undo strip", () => {
     expect(run).toHaveBeenCalledTimes(1);
   });
 });
+
+describe("the time-up sound and the screen that stays awake", () => {
+  it("a timer that ran out on its own screen is a moment for the sound; a jump or a pause is not", async () => {
+    const { ranOut } = await import("../src/ui/sound.ts");
+    const running = step(step(step(newGame(), { type: "jump", index: 3 }), { type: "setAuto", value: false }), { type: "timerStart" });
+    expect(running.timer.status).toBe("running");
+    const over = step(running, { type: "tick", ms: running.timer.leftMs + 10 });
+    expect(ranOut(running, over)).toBe(true);
+    expect(ranOut(running, step(running, { type: "timerPause" }))).toBe(false);
+    expect(ranOut(running, step(running, { type: "next" }))).toBe(false);
+    expect(ranOut(over, over)).toBe(false);
+  });
+
+  it("the sound is off in a new game, switched by the menu, saved only when on, and a game saved before it existed opens with it off", async () => {
+    const { restore, toSaved } = await import("../src/game/save.ts");
+    const fresh = newGame();
+    expect(fresh.sound).toBeUndefined();
+    expect("sound" in toSaved(fresh)).toBe(false); // old saves and new ones without it have the same shape
+    const on = step(fresh, { type: "setSound", value: true });
+    expect(toSaved(on).sound).toBe(true);
+    expect(restore(fresh, toSaved(on)).sound).toBe(true);
+    expect(restore(fresh, toSaved(fresh)).sound).toBeUndefined();
+    expect(step(on, { type: "setSound", value: true })).toBe(on);
+    expect(step(on, { type: "setSound", value: false }).sound).toBe(false);
+  });
+
+  it("the wake lock is asked for at once, again when the page is back on show, and let go at the end", async () => {
+    const { keepAwake } = await import("../src/ui/wake.ts");
+    const log = { requests: 0, releases: 0 };
+    const wakeLock = { request: () => { log.requests += 1; return Promise.resolve({ release: () => { log.releases += 1; return Promise.resolve(); } }); } };
+    const controller = new AbortController();
+    keepAwake(controller.signal, wakeLock);
+    await settle();
+    expect(log).toEqual({ requests: 1, releases: 0 });
+    const visibility = vi.spyOn(document, "visibilityState", "get");
+    visibility.mockReturnValue("hidden");
+    document.dispatchEvent(new Event("visibilitychange"));
+    expect(log.releases).toBe(1);
+    visibility.mockReturnValue("visible");
+    document.dispatchEvent(new Event("visibilitychange"));
+    await settle();
+    expect(log.requests).toBe(2);
+    controller.abort();
+    expect(log.releases).toBe(2);
+    document.dispatchEvent(new Event("visibilitychange"));
+    await settle();
+    expect(log.requests).toBe(2); // nothing after the player is gone
+    visibility.mockRestore();
+    keepAwake(new AbortController().signal, undefined); // a browser without it: nothing happens, nothing throws
+  });
+});

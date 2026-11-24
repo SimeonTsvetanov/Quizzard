@@ -268,7 +268,7 @@ function searchField(app: App, list: HTMLElement): HTMLElement {
  */
 export function libraryScreen(app: App): HTMLElement {
   const { t, library } = app;
-  const title = h("h2", { class: "quiz-title", id: "quiz-library-title", tabindex: "-1", "data-screen-title": "" }, t("library.title"));
+  const title = h("h1", { class: "quiz-title", id: "quiz-library-title", tabindex: "-1", "data-screen-title": "" }, t("library.title"));
   const screen = h("section", { class: "quiz-screen quiz-library", "aria-labelledby": "quiz-library-title", "data-screen": "library" });
   takeDrops(app, screen);
   if (library === null) {

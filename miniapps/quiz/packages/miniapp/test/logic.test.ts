@@ -14,7 +14,8 @@ import { kindUis } from "../src/kinds-ui/index.ts";
 import { meta } from "../src/meta.ts";
 import { pointsText, promptSize } from "../src/render/slide.ts";
 import { withQuestion, withRound } from "../src/screens/common.ts";
-import { stackOf } from "../src/screens/library.ts";
+import { matches, stackOf } from "../src/screens/library.ts";
+import { LIST_MODE_KEY, readListMode, writeListMode } from "../src/storage/view-prefs.ts";
 import { playOrder } from "../src/screens/preview.ts";
 import { DB_NAME } from "../src/storage/db.ts";
 import { answerChoices, canShow, createUiRegistries, kindChoices } from "../src/ui-registry.ts";
@@ -167,6 +168,30 @@ describe("pickers come from the registries (PLAN §2 rule 1)", () => {
   });
 });
 
+describe("UX review helpers", () => {
+  it("the library's search finds a quiz by every typed word, whatever the case", () => {
+    expect(matches("Pub night — autumn", "pub")).toBe(true);
+    expect(matches("Pub night — autumn", "AUTUMN pub")).toBe(true);
+    expect(matches("Pub night — autumn", "pub winter")).toBe(false);
+    expect(matches("Куиз вечер", "ВЕЧЕР")).toBe(true);
+    expect(matches("Anything", "")).toBe(true);
+  });
+  it("the list mode is cards until the person chooses the list, and survives odd stored values", () => {
+    const values = new Map<string, unknown>();
+    const prefs = { get: <T>(key: string, fallback: T): T => (values.has(key) ? (values.get(key) as T) : fallback), set: (key: string, value: unknown): boolean => { values.set(key, value); return true; }, remove: (key: string): void => { values.delete(key); } };
+    expect(readListMode(prefs)).toBe("cards");
+    writeListMode(prefs, "list");
+    expect(readListMode(prefs)).toBe("list");
+    values.set(LIST_MODE_KEY, 42);
+    expect(readListMode(prefs)).toBe("cards");
+  });
+  it("a Play route keeps where it starts from, and reads without it as before", () => {
+    const from: Route = { screen: "play", quiz: "q", from: "round-2" };
+    expect(readRoute(entryState(null, from, 1))).toEqual(from);
+    expect(readRoute({ [ROUTE_KEY]: { screen: "play", quiz: "q" } })).toEqual({ screen: "play", quiz: "q" });
+  });
+});
+
 describe("texts and meta", () => {
   const keys = (node: object, prefix = ""): string[] => Object.entries(node).flatMap(([key, value]) => (typeof value === "string" ? [`${prefix}${key}`] : keys(value as object, `${prefix}${key}.`)));
   it("Bulgarian has every key English has, and no empty text", () => {
@@ -186,8 +211,8 @@ describe("texts and meta", () => {
     expect(help.bg.faq).toHaveLength(help.en.faq.length);
   });
   it("Help quotes the UI labels exactly", () => {
-    for (const label of [en.library.new, en.round.add, en.question.add, en.answer.open, en.answer.choice, en.answer.trueFalse, en.done, en.quiz.preview, en.preview.showAnswer, en.round.settings, en.timing.fromRound, en.quiz.play, en.quiz.export]) expect(JSON.stringify(help.en)).toContain(`“${label}”`);
-    for (const label of [bg.library.new, bg.round.add, bg.question.add, bg.answer.open, bg.answer.choice, bg.answer.trueFalse, bg.done, bg.quiz.preview, bg.preview.showAnswer, bg.round.settings, bg.timing.fromRound, bg.quiz.play, bg.quiz.export]) expect(JSON.stringify(help.bg)).toContain(`„${label}“`);
+    for (const label of [en.library.new, en.round.add, en.question.add, en.answer.open, en.answer.choice, en.answer.trueFalse, en.done, en.quiz.preview, en.preview.showAnswer, en.round.settings, en.timing.fromRound, en.quiz.play, en.quiz.export, en.library.create, en.editor.another, en.round.view.cards, en.round.view.list, en.print.button, en.quiz.more, en.menu.playFrom, en.menu.toRound, en.editor.round, en.unfinished.go.play, en.unfinished.go.export, en.question.unfinished, en.quiz.exportShort]) expect(JSON.stringify(help.en)).toContain(`“${label}”`);
+    for (const label of [bg.library.new, bg.round.add, bg.question.add, bg.answer.open, bg.answer.choice, bg.answer.trueFalse, bg.done, bg.quiz.preview, bg.preview.showAnswer, bg.round.settings, bg.timing.fromRound, bg.quiz.play, bg.quiz.export, bg.library.create, bg.editor.another, bg.round.view.cards, bg.round.view.list, bg.print.button, bg.quiz.more, bg.menu.playFrom, bg.menu.toRound, bg.editor.round, bg.unfinished.go.play, bg.unfinished.go.export, bg.question.unfinished, bg.quiz.exportShort]) expect(JSON.stringify(help.bg)).toContain(`„${label}“`);
   });
   it("meta declares the database the storage module opens, so Settings can measure and clear it", () => {
     expect(meta).toMatchObject({ id: "quiz", status: "ready", contract: 1, languages: ["en", "bg"] });

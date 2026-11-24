@@ -55,6 +55,108 @@ async function blurFocus(page: Page): Promise<void> {
   await page.evaluate(() => { if (document.activeElement instanceof HTMLElement) document.activeElement.blur(); });
 }
 
+/** The quiz of the Quiz creator pictures: two rounds, five text questions, one with several right options. */
+const QUIZ_FILE = {
+  format: "quizzard-quiz",
+  version: 1,
+  media: [],
+  quiz: {
+    id: "docs-quiz", name: "Pub night", createdAt: "2026-11-23T18:00:00.000Z", updatedAt: "2026-11-23T18:00:00.000Z", language: "en", settings: { teams: 4 },
+    rounds: [
+      {
+        id: "r1", kind: "standard", name: "History", defaults: { seconds: 30, points: { value: 1 }, questionKind: "text", answerType: "open" },
+        questions: [
+          { id: "q1", kind: "text", prompt: "Which river flows through Paris?", answer: { type: "open", text: "The Seine" }, explanation: "It splits around two islands." },
+          { id: "q2", kind: "text", prompt: "Which of these are planets?", answer: { type: "choice", options: [{ id: "a", text: "Mars" }, { id: "b", text: "Europa" }, { id: "c", text: "Venus" }], correct: ["a", "c"] } },
+          { id: "q3", kind: "text", prompt: "The Great Wall of China is visible from the Moon.", answer: { type: "trueFalse", correct: false } },
+        ],
+      },
+      {
+        id: "r2", kind: "standard", name: "Music", defaults: { seconds: 30, points: { value: 1 }, questionKind: "text", answerType: "open" },
+        questions: [
+          { id: "q4", kind: "text", prompt: "Name the band and the song.", answer: { type: "open", text: "Queen — Bohemian Rhapsody" }, points: { value: 2, note: "1 for the band, 1 for the song" } },
+          { id: "q5", kind: "text", prompt: "Which instrument has 88 keys?", answer: { type: "open", text: "The piano" } },
+        ],
+      },
+    ],
+  },
+};
+
+/** Puts the sample quiz into the Quiz creator's library (its IndexedDB database) and opens the library. */
+async function seedQuiz(page: Page): Promise<void> {
+  await openTool(page, "#/quiz", async (p) => { await p.locator('[data-miniapp="quiz"] [data-screen="library"]').waitFor(); });
+  await page.evaluate((record) => new Promise<void>((resolve, reject) => {
+    const request = indexedDB.open("quizzard-quiz");
+    request.onsuccess = () => {
+      const transaction = request.result.transaction("quizzes", "readwrite");
+      transaction.objectStore("quizzes").put(record);
+      transaction.oncomplete = () => { request.result.close(); resolve(); };
+      transaction.onerror = () => { reject(new Error("seed failed")); };
+    };
+  }), QUIZ_FILE);
+  await page.reload();
+  await page.locator('[data-miniapp="quiz"] .quiz-card').first().waitFor();
+  await waitOutOfflineToast(page);
+}
+
+/** Lets the cards finish arriving, so no picture is taken in the middle of a move. */
+async function settle(page: Page): Promise<void> {
+  await page.evaluate(() => Promise.all(document.getAnimations().filter((one) => one.effect?.getComputedTiming().iterations !== Infinity).map((animation) => animation.finished.catch(() => undefined))));
+  await blurFocus(page);
+}
+
+/** The Quiz creator pictures of "Make a quiz" and "Play a quiz". */
+const QUIZ_SHOTS: readonly DocsShot[] = [
+  { page: "make-a-quiz", name: "library", device: "phone", setUp: async (page) => { await seedQuiz(page); await settle(page); } },
+  {
+    page: "make-a-quiz", name: "quiz", device: "phone",
+    setUp: async (page) => {
+      await page.setViewportSize({ width: 390, height: 1000 }); // tall: the header card and both rounds without scrolling
+      await seedQuiz(page);
+      await page.locator('[data-miniapp="quiz"] .quiz-card-open').first().click();
+      await page.locator('[data-miniapp="quiz"] [data-play-quiz]').waitFor();
+      await settle(page);
+    },
+  },
+  {
+    page: "make-a-quiz", name: "editor", device: "phone",
+    setUp: async (page) => {
+      await seedQuiz(page);
+      await page.locator('[data-miniapp="quiz"] .quiz-card-open').first().click();
+      await page.locator('[data-miniapp="quiz"] [data-focus="round:r1"]').click();
+      await page.locator('[data-miniapp="quiz"] [data-focus="question:q1"]').click();
+      await page.locator('[data-miniapp="quiz"] [data-screen="editor"]').waitFor();
+      await settle(page);
+    },
+  },
+  {
+    page: "play-a-quiz", name: "stage", device: "desktop",
+    setUp: async (page) => {
+      await seedQuiz(page);
+      await page.locator('[data-miniapp="quiz"] .quiz-card-open').first().click();
+      await page.locator('[data-miniapp="quiz"] [data-play-quiz]').click();
+      await page.locator('.qp-stage[data-stage="live"] [data-view="title"]').waitFor();
+      for (let press = 0; press < 3; press += 1) await page.keyboard.press("Space");
+      await page.locator('.qp-stage[data-stage="live"] .quiz-slide-prompt').waitFor();
+      await page.keyboard.press("KeyT"); // the timer rests: the picture is the same every time
+      await settle(page);
+    },
+  },
+  {
+    page: "play-a-quiz", name: "menu", device: "desktop",
+    setUp: async (page) => {
+      await seedQuiz(page);
+      await page.locator('[data-miniapp="quiz"] .quiz-card-open').first().click();
+      await page.locator('[data-miniapp="quiz"] [data-play-quiz]').click();
+      await page.locator('.qp-stage[data-stage="live"] [data-view="title"]').waitFor();
+      await page.keyboard.press("KeyM");
+      await page.locator('[data-dialog="menu"]').waitFor();
+      await settle(page);
+    },
+    crop: (page) => page.locator('[data-dialog="menu"]'),
+  },
+];
+
 /** The names of the Teams picture: nine people, three teams of three (they fit above the buttons on a phone). */
 const NAMES = ["Maria", "Liam", "Aisha", "Kenji", "Elena", "Noah", "Priya", "Carlos", "Sofia"];
 
@@ -150,4 +252,5 @@ export const DOCS_SHOTS: readonly DocsShot[] = [
     crop: (page) => page.getByRole("dialog", { name: "Settings" }),
     mask: (page) => [page.getByRole("dialog", { name: "Settings" }).locator(".row", { hasText: "Space used" }).locator(".row-value")], // the browser's figure for the whole site: it changes from run to run
   },
+  ...QUIZ_SHOTS,
 ];

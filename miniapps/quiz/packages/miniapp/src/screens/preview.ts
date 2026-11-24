@@ -73,7 +73,7 @@ export function previewScreen(app: App, quiz: Quiz): HTMLElement {
     return screen;
   }
   const where = t("preview.where", { round: stop.round.name, n: stop.number, total: stop.round.questions.length });
-  const title = h("h2", { class: "quiz-preview-title", id: "quiz-preview-title", tabindex: "-1", "data-screen-title": "" }, where);
+  const title = h("h1", { class: "quiz-preview-title", id: "quiz-preview-title", tabindex: "-1", "data-screen-title": "" }, where);
   // The preview's media is live: the picture zooms, the clip plays — and stops when the screen is left.
   const media = createLocalMedia();
   app.view.cleanup = () => { media.stop(); };

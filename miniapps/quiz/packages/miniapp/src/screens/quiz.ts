@@ -36,7 +36,7 @@ function quizHead(app: App, quiz: Quiz): HTMLElement {
   });
   const head = h("header", { class: "quiz-panel quiz-quiz-head" },
     backLink(t("library.title"), () => { toLibrary(app); }),
-    h("h2", { class: "visually-hidden", id: "quiz-quiz-title", tabindex: "-1", "data-screen-title": "" }, quiz.name === "" ? t("quiz.unnamed") : quiz.name),
+    h("h1", { class: "visually-hidden", id: "quiz-quiz-title", tabindex: "-1", "data-screen-title": "" }, quiz.name === "" ? t("quiz.unnamed") : quiz.name),
     name,
     h("div", { class: "quiz-stats" },
       stat(String(size.rounds), t("count.roundsLabel", { count: size.rounds }), "data-total-rounds"),
