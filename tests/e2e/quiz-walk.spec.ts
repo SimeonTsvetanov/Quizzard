@@ -119,6 +119,14 @@ async function playAt(page: Page, tile: string | null): Promise<void> {
 }
 
 const STAGE = ".qp-player";
+/** The score screen with its points entry on show: a wide stage has it at once, an upright or small one after one Next (the answers come first). */
+const toPoints = async (page: Page): Promise<void> => {
+  await playAt(page, '[data-jump-screen="score"]');
+  const more = page.getByRole("button", { name: /^One point more for / }).first();
+  if (!(await more.isVisible())) await page.keyboard.press("Space");
+  await expect(more).toBeVisible();
+};
+
 const PLAYER: readonly Place[] = [
   { name: "stage: title", scope: STAGE, open: (page) => playAt(page, null) },
   { name: "stage: teams", scope: STAGE, open: (page) => playAt(page, '[data-jump-screen="teams"]') },
@@ -127,8 +135,9 @@ const PLAYER: readonly Place[] = [
   { name: "stage: picture question", scope: ".qp-stage", open: async (page) => { await playAt(page, '[data-jump-screen="question"]'); await page.keyboard.press("Space"); await page.keyboard.press("Space"); } },
   { name: "stage: answer", scope: STAGE, open: (page) => playAt(page, '[data-jump-screen="answer"]') },
   { name: "stage: score entry", scope: STAGE, open: (page) => playAt(page, '[data-jump-screen="score"]') },
+  { name: "stage: score entry, the points", scope: STAGE, open: (page) => toPoints(page) },
   { name: "stage: leaderboard", scope: STAGE, open: (page) => playAt(page, '[data-jump-screen="board"]') },
-  { name: "stage: tie", scope: STAGE, open: async (page) => { await playAt(page, '[data-jump-screen="score"]'); for (const team of ["Team 1", "Team 2"]) await page.getByRole("button", { name: `One point more for ${team}` }).first().click(); await page.keyboard.press("KeyM"); await page.locator('[data-dialog="menu"] [data-jump-screen="tie"]').click(); } },
+  { name: "stage: tie", scope: STAGE, open: async (page) => { await toPoints(page); for (const team of ["Team 1", "Team 2"]) await page.getByRole("button", { name: `One point more for ${team}` }).first().click(); await page.keyboard.press("KeyM"); await page.locator('[data-dialog="menu"] [data-jump-screen="tie"]').click(); } },
   { name: "stage: final", scope: STAGE, open: (page) => playAt(page, '[data-jump="end"]') },
   { name: "stage: break", scope: STAGE, open: async (page) => { await playAt(page, '[data-jump-screen="rules"]'); await page.keyboard.press("KeyM"); await page.locator('[data-dialog="menu"] [data-break="5"]').click(); } },
   { name: "menu", scope: '[data-dialog="menu"]', open: async (page) => { await playAt(page, '[data-jump-screen="question"]'); await page.keyboard.press("KeyM"); await expect(page.locator('[data-dialog="menu"]')).toBeVisible(); } },
