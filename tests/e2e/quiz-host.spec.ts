@@ -64,6 +64,7 @@ async function toQuiz(page: Page): Promise<void> {
 async function addRound(page: Page, name: string): Promise<void> {
   const count = await roundCards(page).count();
   await root(page).getByRole("button", { name: "Add round" }).click();
+  await page.locator("[data-pick-standard]").click(); // "Add round" asks for the kind first (SPEC §10)
   await root(page).getByLabel(`Name of round ${String(count + 1)}`).fill(name);
 }
 
@@ -418,6 +419,7 @@ test("Bulgarian: every screen speaks it, with the decimal comma", async ({ page 
   await root(page).getByRole("button", { name: "Създай куиза" }).click();
   await expect(root(page).getByLabel("Име на куиза")).toHaveValue("Нов куиз");
   await root(page).getByRole("button", { name: "Добави рунд" }).click();
+  await page.locator("[data-pick-standard]").click(); // "Add round" asks for the kind first (SPEC §10)
   await expect(root(page).getByLabel("Име на рунд 1")).toHaveValue("Рунд 1");
   await root(page).getByRole("button", { name: "Добави въпрос" }).click();
   await root(page).getByLabel("Въпрос", { exact: true }).fill("Коя река минава през Париж?");

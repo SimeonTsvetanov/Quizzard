@@ -118,7 +118,7 @@
   width: 590px;
 
   [data-shape="tall"] & {
-    width: 520px;
+    width: 660px;
   }
 }
 

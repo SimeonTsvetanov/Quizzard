@@ -131,6 +131,7 @@ async function newQuizWithRound(page: Page): Promise<void> {
   await root(page).locator("[data-new-quiz]").click();
   await root(page).locator("[data-create-quiz]").click();
   await root(page).locator("[data-add-round]").click();
+  await page.locator("[data-pick-standard]").click(); // "Add round" asks for the kind first (SPEC §10)
   await expect(root(page).locator("[data-add-question]")).toBeVisible();
 }
 

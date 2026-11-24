@@ -13,6 +13,7 @@ test.describe("on a 390 px phone", () => {
     await expect(root(page).locator("#quiz-round-title")).toBeFocused();
     await root(page).locator("[data-up]:visible").first().click();
     await root(page).locator("[data-add-round]").click();
+    await page.locator("[data-pick-standard]").click(); // "Add round" asks for the kind first (SPEC §10)
     const name = root(page).locator("[data-round-name]");
     await expect(name).toBeFocused();
     // The new round's name is selected whole: typing replaces "Round 3".
