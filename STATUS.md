@@ -18,7 +18,7 @@
 - T-12/T-13 GG Counter at `#/scores` from submodule `vendor/gg-counter` (a6745fb = 1.2.4), isolated CSS (Tailwind under Vite 8), header buttons in the slot, toasts inside its dialogs: Home 45.4 KB, Scores first open 92.3 KB of 125; its suite 74/76 in `scores` + `scores-mobile` (motion/keyboard ×5 green), scores-host.spec green ×5.
 
 ## Next
-- Quiz creator: SPEC approved 2026-11-23; PLAN in docs/quiz-creator/PLAN.md. Slice 1 shipped in 0.17.0 (text questions, library, rounds, editor, preview). Next: user docs page for it, then slice 2 (player + export).
+- Quiz creator: SPEC approved 2026-11-23; PLAN in docs/quiz-creator/PLAN.md. Slices 1–2 shipped (0.17.0 creator with text questions; 0.18.0 player, export to one HTML, Play, presenter view). Next: slices 3–4 (pictures, audio, video), 5 (quiz files), then a full UX review and the user docs page. Firefox/WebKit not yet run for the player (manual CI run needed).
 - Open after the move in: ESLint/Prettier/`tsc` still skip `miniapps/`; standalone-only code left in the two packages (theme storage, `./module` entry, standalone host in tests) can go.
 - Open from T-15: quota warning and `notifySaved` → persist. Then T-17 (new:miniapp + quiz card), T-18 icons, T-19 texts (Bulgarian tagline), T-20 SEO, T-21 shortcuts, T-22 a11y, T-23 perf/security, T-24 user docs, T-25 release 1.0.0.
 - Open review findings 2, 4, 6–10, 13, 14 (progress/2026-11-22.md); two flaky tests, then `--fail-on-flaky-tests` back.

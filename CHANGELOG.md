@@ -4,6 +4,16 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.18.0] - 2026-11-24
+### Added
+- **Quiz creator: play your quiz.** "Play" runs it in the app, and "Export to play" saves it as one file that
+  opens on any computer without the internet. The game has it all: team names, each question with a timer that
+  moves on by itself, answers revealed one by one with the explanation, points per team after every round, a
+  leaderboard that shows who moved up or down, a tie-break and a podium. A game you leave continues where it was.
+- **Presenter view:** open the audience window on the projector and keep the control panel for yourself —
+  what is on the big screen, what comes next, the answer in advance, the timer and the points.
+- Keys while playing: Space or → next, ← back, T timer, R restart the timer, M menu, S scores, F full screen.
+
 ## [0.17.0] - 2026-11-23
 ### Added
 - **Quiz creator** (first part): make your own quizzes. A library of quizzes, rounds with their own default
