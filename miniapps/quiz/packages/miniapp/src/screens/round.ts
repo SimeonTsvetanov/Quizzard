@@ -2,7 +2,8 @@
 // questions — as slide cards or, for a long round, as a compact list (the choice is remembered on
 // this device). On a phone it is a screen of its own; on a wide screen it is the right pane next to
 // the rounds list.
-import { MAX_QUESTIONS_PER_ROUND, ROUND_NAME_MAX, type Quiz, type Round, addQuestion, canAddQuestion, renameRound, unfinishedCount, unfinishedQuestions } from "@simeonts/quizzard-quiz-core";
+import { MAX_QUESTIONS_PER_ROUND, ROUND_NAME_MAX, type Quiz, type Round, addQuestion, canAddQuestion, canReorder, renameRound, shapeOf, unfinishedCount, unfinishedQuestions } from "@simeonts/quizzard-quiz-core";
+import { kindBadge, roundKindUis } from "../round-kinds-ui.ts";
 import type { App } from "../app/state.ts";
 import { iconButton, labelButton } from "../dom/controls.ts";
 import { h } from "../dom/h.ts";
@@ -32,13 +33,15 @@ function questionList(app: App, quiz: Quiz, round: Round, mode: ListMode): HTMLE
   if (round.questions.length === 0) return emptyState({ icon: null, title: t("round.emptyTitle"), text: t("round.emptyText") });
   const draw = mode === "list" ? questionRow : questionCard;
   const list = h("ol", { class: mode === "list" ? "quiz-qrows" : "quiz-questions", "data-question-list": mode }, ...round.questions.map((question, index) => draw(app, { quiz, round, question, index })));
-  makeSortable({ list, attribute: QUESTION_ATTRIBUTE, onMove: (id, to) => { moveTo(app, id, to); } });
+  if (canReorder(round, app.env.registries)) makeSortable({ list, attribute: QUESTION_ATTRIBUTE, onMove: (id, to) => { moveTo(app, id, to); } });
   return list;
 }
 
-/** "Add question", or at the limit a note that says why there is no button. */
+/** "Add question", or a note that says why there is no button: a special round's fixed set, or the limit. */
 function addControl(app: App, round: Round): HTMLElement {
   const { t } = app;
+  const fixed = shapeOf(round, app.env.registries) ? roundKindUis.get(round.kind)?.fixed : undefined;
+  if (fixed !== undefined) return h("p", { class: "quiz-hint quiz-limit", "data-round-fixed": "" }, t(fixed));
   if (!canAddQuestion(round)) return h("p", { class: "quiz-hint quiz-limit" }, t("question.limit", { max: MAX_QUESTIONS_PER_ROUND }));
   const add = addButton(t("question.add"), "data-add-question");
   add.addEventListener("click", () => { newQuestion(app, round.id); });
@@ -121,8 +124,8 @@ export function roundPane(app: App, quiz: Quiz, round: Round): HTMLElement {
   };
   const badge = unfinishedLink(app, round);
   const head = h("div", { class: "quiz-round-head" },
-    h("span", { class: "quiz-round-number", "aria-hidden": "true" }, String(number)),
-    h("div", { class: "quiz-round-names" }, h("h2", { class: "visually-hidden", id: "quiz-round-title", tabindex: "-1", "data-screen-title": "" }, t("round.title", { n: number, name: round.name })), name, h("div", { class: "quiz-round-line" }, summary, ...(badge ? [badge] : []), headActions(app, round))));
+    h("span", { class: "quiz-round-number", "aria-hidden": "true", ...(shapeOf(round, app.env.registries) ? { "data-round-kind": round.kind } : {}) }, String(number)),
+    h("div", { class: "quiz-round-names" }, h("h2", { class: "visually-hidden", id: "quiz-round-title", tabindex: "-1", "data-screen-title": "" }, t("round.title", { n: number, name: round.name })), name, h("div", { class: "quiz-round-line" }, ...[kindBadge(app, round)].filter((part) => part !== null), summary, ...(badge ? [badge] : []), headActions(app, round))));
   const bar = h("div", { class: "quiz-round-bar" }, h("h3", { class: "quiz-section" }, t("round.questions")), ...(round.questions.length > 0 ? [viewToggle(app, mode)] : []));
   return h("section", { class: "quiz-pane quiz-pane--round", "aria-labelledby": "quiz-round-title", "data-round": round.id },
     backLink(quiz.name === "" ? t("quiz.unnamed") : quiz.name, () => { up(app); }, "quiz-narrow-only"),

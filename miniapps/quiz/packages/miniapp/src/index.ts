@@ -6,6 +6,7 @@ import "./styles/library.css";
 import "./styles/quiz.css";
 import "./styles/round.css";
 import "./styles/editor.css";
+import "./styles/special.css";
 import "./styles/media.css";
 import "./styles/slide.css";
 import "./styles/preview.css";

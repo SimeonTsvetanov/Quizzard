@@ -2,7 +2,8 @@
 // be done with a question or a round besides the buttons on its card — preview, play from here, to
 // the top or the bottom, to another round. A compact row has no buttons of its own, so its list also
 // carries move up/down, duplicate and delete.
-import type { Question, Quiz, Round } from "@simeonts/quizzard-quiz-core";
+import { type Question, type Quiz, type Round, canRemoveQuestion, canReorder, shapeOf } from "@simeonts/quizzard-quiz-core";
+import { roundKindName } from "../round-kinds-ui.ts";
 import type { App } from "../app/state.ts";
 import { type SheetItem, openSheet } from "../dom/sheet.ts";
 import { questionName } from "./common.ts";
@@ -49,13 +50,17 @@ function ends(app: App, index: number, last: number, move: (to: number) => void)
   ];
 }
 
-/** The rounds of the quiz as a list to pick from; the question's own round is marked and cannot be chosen. */
-function roundItems(options: QuestionMenuOptions): SheetItem[] {
+/**
+ * The rounds of the quiz as a list to pick from; the question's own round is marked and cannot be
+ * chosen, nor can a special round, whose questions are fixed (it says which kind it is).
+ */
+function roundItems(app: App, options: QuestionMenuOptions): SheetItem[] {
   return options.quiz.rounds.map((round, index) => ({
     label: `${String(index + 1)}. ${round.name}`,
     hook: "data-pick-round",
     isCurrent: round === options.round,
-    isOff: round === options.round,
+    isOff: round === options.round || shapeOf(round, app.env.registries) !== undefined,
+    ...(shapeOf(round, app.env.registries) ? { detail: roundKindName(app, round.kind) } : {}),
     run: run(() => { options.moveToRound(round.id); }),
   }));
 }
@@ -74,23 +79,26 @@ export function openQuestionMenu(app: App, options: QuestionMenuOptions): void {
     { label: t("menu.preview"), icon: "eye", hook: "data-preview", run: run(options.preview) },
     { label: t("menu.playFrom"), icon: "play", hook: "data-play-from", run: run(options.playFrom) },
   ];
-  if (options.isCompact) {
+  // A special round keeps its questions (SPEC §10): no moves out, no copies or deletes, and — in a Golden pyramid — no moves at all.
+  const isFixed = !canRemoveQuestion(round, app.env.registries);
+  const canMove = canReorder(round, app.env.registries);
+  if (options.isCompact && canMove) {
     items.push(
       { label: t("menu.up"), icon: "up", hook: "data-move-up", isOff: index === 0, run: run(() => { options.move(index - 1); }) },
       { label: t("menu.down"), icon: "down", hook: "data-move-down", isOff: index === last, run: run(() => { options.move(index + 1); }) });
   }
-  items.push(...ends(app, index, last, options.move));
+  if (canMove) items.push(...ends(app, index, last, options.move));
   const sheet = openSheet({ host: app.host, title: questionName(app, options.question, n), items: [], closeLabel: t("menu.close") });
-  if (quiz.rounds.length > 1) {
+  if (quiz.rounds.length > 1 && !isFixed) {
     items.push({
       label: t("menu.toRound"), icon: "round", hook: "data-move-round-menu",
       run: () => {
-        sheet.show({ title: t("menu.pickRound", { n }), items: roundItems(options) });
+        sheet.show({ title: t("menu.pickRound", { n }), items: roundItems(app, options) });
         return "stay";
       },
     });
   }
-  if (options.isCompact) {
+  if (options.isCompact && !isFixed) {
     items.push(
       { label: t("menu.duplicate"), icon: "copy", hook: "data-duplicate", run: run(options.duplicate) },
       { label: t("menu.delete"), icon: "trash", hook: "data-delete", isDanger: true, run: run(options.remove) });

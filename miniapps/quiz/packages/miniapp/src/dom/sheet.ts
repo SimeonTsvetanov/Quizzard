@@ -20,6 +20,8 @@ export interface SheetItem {
   readonly isCurrent?: boolean;
   /** The line loses something: red words. */
   readonly isDanger?: boolean;
+  /** The second line is read whole (a choice explained in a sentence), not cut to one line. */
+  readonly isWrapped?: boolean;
   /** Among the buttons under the list: the way on, drawn solid. */
   readonly isPrimary?: boolean;
   /** Does what the line says; `"stay"` keeps the sheet open (the line showed another list in it). */
@@ -47,7 +49,7 @@ export interface Sheet {
 }
 
 function line(item: SheetItem, close: () => void): HTMLLIElement {
-  const button = h("button", { type: "button", class: "quiz-sheet-item", ...(item.hook === undefined ? {} : { [item.hook]: "" }), ...(item.isCurrent === true ? { "aria-current": "true" } : {}), ...(item.isDanger === true ? { "data-danger": "" } : {}) });
+  const button = h("button", { type: "button", class: "quiz-sheet-item", ...(item.hook === undefined ? {} : { [item.hook]: "" }), ...(item.isCurrent === true ? { "aria-current": "true" } : {}), ...(item.isDanger === true ? { "data-danger": "" } : {}), ...(item.isWrapped === true ? { "data-wrap": "" } : {}) });
   if (item.icon !== undefined) button.append(icon(item.icon, 20));
   const words = h("span", { class: "quiz-sheet-words" }, h("span", {}, item.label));
   if (item.detail !== undefined) words.append(h("span", { class: "quiz-sheet-detail" }, item.detail));

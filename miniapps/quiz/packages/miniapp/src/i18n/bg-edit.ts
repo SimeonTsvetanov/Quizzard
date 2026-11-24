@@ -11,6 +11,8 @@ export const bgEdit = {
     open: "Отворен отговор",
     choice: "Избор от няколко",
     trueFalse: "Вярно / невярно",
+    list: "Приети отговори",
+    digit: "Една цифра",
   },
   editor: {
     title: "Въпрос {{n}}",

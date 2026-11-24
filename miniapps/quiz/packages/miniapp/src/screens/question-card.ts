@@ -2,7 +2,7 @@
 // the shared renderer (the card IS the question as it will be played), under it its kind, time and
 // points — in the accent when they are the question's own — and the row of actions every card has.
 // A compact row for long rounds: handle, number, kind, first line, "More".
-import { effectivePoints, effectiveSeconds, isComplete } from "@simeonts/quizzard-quiz-core";
+import { canRemoveQuestion, canReorder, effectivePoints, effectiveSeconds, isComplete } from "@simeonts/quizzard-quiz-core";
 import type { App } from "../app/state.ts";
 import { h } from "../dom/h.ts";
 import { icon } from "../dom/icons.ts";
@@ -34,6 +34,8 @@ function actions(app: App, { round, question, index }: CardPlace, isCompact: boo
     index,
     last: round.questions.length - 1,
     isCompact,
+    isFixed: !canRemoveQuestion(round, app.env.registries),
+    canReorder: canReorder(round, app.env.registries),
     onMove: (to, focus) => { moveTo(app, id, to, `[data-move="${focus}"]`); },
     onDuplicate: () => { copy(app, id); },
     onRemove: () => { remove(app, id); },
@@ -109,6 +111,8 @@ export function questionRow(app: App, place: CardPlace): HTMLElement {
   const mark = flag(app, place);
   if (mark) open.append(mark);
   open.addEventListener("click", () => { edit(app, question.id); });
-  const [drag, more] = [...actions(app, place, true).children];
+  const row = actions(app, place, true);
+  const drag = row.querySelector("[data-drag]");
+  const more = row.querySelector("[data-more]");
   return h("li", { class: "quiz-qrow", [QUESTION_ATTRIBUTE]: question.id, "data-tone": kind?.tone ?? "none" }, ...(drag ? [drag] : []), open, ...(more ? [more] : []));
 }

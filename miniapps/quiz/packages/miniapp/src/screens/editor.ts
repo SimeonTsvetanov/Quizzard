@@ -4,7 +4,7 @@
 // you type; typing never rebuilds the form. The live preview is the shared slide: next to the form
 // on a wide screen, behind the "Preview" switch on a phone.
 import {
-  EXPLANATION_MAX, HOST_NOTE_MAX, PROMPT_MAX, type Answer, type Quiz, canAddQuestion, editQuestion, freeAnswerTypes, mediaOf, setAnswerType, setQuestionKind, setRoundDefaults,
+  EXPLANATION_MAX, HOST_NOTE_MAX, PROMPT_MAX, type Answer, type Quiz, canAddQuestion, editQuestion, freeAnswerTypes, mediaOf, setAnswerType, setQuestionKind, setRoundDefaults, shapeOf,
 } from "@simeonts/quizzard-quiz-core";
 import { type LocalMedia, createLocalMedia } from "@simeonts/quizzard-quiz-player/render";
 import type { App } from "../app/state.ts";
@@ -12,6 +12,7 @@ import { chipPicker, labelButton, textField } from "../dom/controls.ts";
 import { h } from "../dom/h.ts";
 import { icon } from "../dom/icons.ts";
 import { answerChoices, canShow, kindChoices } from "../ui-registry.ts";
+import { roundKindName } from "../round-kinds-ui.ts";
 import { backLink, emptyState, up } from "./common.ts";
 import { offerMediaUndo, questionFiles } from "./editor-files.ts";
 import { editorHead, step } from "./editor-head.ts";
@@ -79,12 +80,19 @@ function pickers(app: App, { question, round }: CardPlace): { kind: HTMLElement;
     },
   });
   if (view.stickyFor === id) answer.append(h("p", { class: "quiz-hint", "data-sticky-note": "" }, t("editor.sticky")));
+  // A special round answers all its questions one way: said in a line, no picker (SPEC §10).
+  const fixed = shapeOf(round, env.registries);
+  if (fixed) {
+    const type = ui.answers.get(fixed.answerType);
+    return { kind, answer: h("p", { class: "quiz-hint quiz-fixed-line", "data-answer-fixed": "" }, t("roundKind.answerFixed", { type: type ? t(type.label) : fixed.answerType, round: roundKindName(app, round.kind) })) };
+  }
   return { kind, answer };
 }
 
-/** At the end of the form: the whole question duplicated or deleted (the card's own moves, with its Undo). */
+/** At the end of the form: the whole question duplicated or deleted (the card's own moves, with its Undo) — or, in a special round, why not. */
 function ending(app: App, { question, index, round }: CardPlace): HTMLElement {
   const { t } = app;
+  if (shapeOf(round, app.env.registries)) return h("p", { class: "quiz-hint quiz-form-end", "data-question-fixed": "" }, t("roundKind.keptHere", { round: roundKindName(app, round.kind) }));
   const copy = labelButton("copy", t("editor.duplicate"), { class: "button", "data-editor-duplicate": "" });
   copy.disabled = !canAddQuestion(round);
   copy.addEventListener("click", () => {
@@ -114,6 +122,7 @@ function form(app: App, place: CardPlace, live: Live, signal: AbortSignal): HTML
     answer: question.answer, t, ids: env.ids,
     change: (answer: Answer) => { edited((quiz) => editQuestion(quiz, id, { answer })); },
     offerUndo: (message, run) => { app.context.shell.toast(message, { action: { label: t("undo"), run } }); },
+    place: { round: place.round, index: place.index },
   }) ?? null;
   const explanation = textField({ label: t("editor.explanation"), value: question.explanation ?? "", max: EXPLANATION_MAX, rows: 2, placeholder: t("editor.explanationPlaceholder"), props: { "data-explanation": "" }, onInput: (value) => { edited((quiz) => editQuestion(quiz, id, { explanation: value })); } });
   // The host's own note: saved with the question, shown on the host panel, never on the stage — so no preview to refresh.

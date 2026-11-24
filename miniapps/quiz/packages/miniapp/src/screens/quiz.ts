@@ -2,7 +2,8 @@
 // stacked cards — each with its number, name, counts, one dot per question in the kind's colour and
 // the row of actions every card has. On a wide screen the open round sits next to the list
 // (round.ts) and choosing another round changes no page.
-import { MAX_ROUNDS, QUIZ_NAME_MAX, type Quiz, type Round, addRound, canAddRound, renameQuiz, totals, unfinishedCount } from "@simeonts/quizzard-quiz-core";
+import { MAX_ROUNDS, QUIZ_NAME_MAX, type Quiz, type Round, canAddRound, renameQuiz, shapeOf, totals, unfinishedCount } from "@simeonts/quizzard-quiz-core";
+import { kindBadge } from "../round-kinds-ui.ts";
 import type { App } from "../app/state.ts";
 import { h } from "../dom/h.ts";
 import { nameField } from "../dom/name-field.ts";
@@ -84,12 +85,12 @@ function roundCard(app: App, quiz: Quiz, round: Round, index: number, openId: st
   const unfinished = unfinishedCount(round, app.env.registries);
   const meta = h("span", { class: "quiz-card-meta", "data-round-card-meta": "" }, roundSummary(app, round));
   const open = h("button", { type: "button", class: "quiz-round-open", "data-focus": `round:${round.id}`, ...(round.id === openId ? { "aria-current": "true" } : {}) },
-    h("span", { class: "quiz-round-tile", "aria-hidden": "true" }, String(n)),
+    h("span", { class: "quiz-round-tile", "aria-hidden": "true", ...(shapeOf(round, app.env.registries) ? { "data-round-kind": round.kind } : {}) }, String(n)),
     h("span", { class: "quiz-round-body" },
       h("span", { class: "visually-hidden" }, `${t("round.number", { n })}: `),
       h("span", { class: "quiz-round-name", "data-round-card-name": "" }, round.name),
       meta,
-      h("span", { class: "quiz-round-marks" }, kindDots(app, round), ...(unfinished > 0 ? [h("span", { class: "quiz-badge", "data-unfinished-count": String(unfinished) }, t("round.unfinished", { count: unfinished }))] : []))));
+      h("span", { class: "quiz-round-marks" }, ...[kindBadge(app, round)].filter((part) => part !== null), kindDots(app, round), ...(unfinished > 0 ? [h("span", { class: "quiz-badge", "data-unfinished-count": String(unfinished) }, t("round.unfinished", { count: unfinished }))] : []))));
   open.addEventListener("click", () => { openRound(app, round.id); });
   return h("li", { class: "quiz-round-card", [ROUND_ATTRIBUTE]: round.id, "data-stack": String(stackOf(round.questions.length)) }, open, roundActions(app, quiz, round, index));
 }
@@ -100,15 +101,11 @@ function addRoundControl(app: App): HTMLElement {
   const quiz = app.current?.quiz;
   if (quiz && !canAddRound(quiz)) return h("p", { class: "quiz-hint quiz-limit" }, t("round.limit", { max: MAX_ROUNDS }));
   const add = addButton(t("round.add"), "data-add-round");
+  // The kind first (Standard, Golden pyramid, Safe): screens/round-chooser.ts, loaded with the first press.
   add.addEventListener("click", () => {
-    const now = app.current?.quiz;
-    if (!now) return;
-    const next = addRound(now, t("round.defaultName", { n: now.rounds.length + 1 }), app.env);
-    const added = next.rounds.at(-1);
-    if (!app.change(next) || !added) return;
-    // The new round's name is the next thing to type: focused with its text selected.
-    app.view.selectNext = true;
-    openRound(app, added.id, "[data-round-name]");
+    void import("./round-chooser.ts").then(({ chooseRoundKind }) => { if (!app.signal.aborted) chooseRoundKind(app); }).catch(() => {
+      if (!app.signal.aborted) app.context.shell.toast(t("menu.failed"), { tone: "error" });
+    });
   });
   return add;
 }

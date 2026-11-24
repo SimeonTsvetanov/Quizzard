@@ -11,6 +11,8 @@ export const enEdit = {
     open: "Open answer",
     choice: "Multiple choice",
     trueFalse: "True / false",
+    list: "Accepted answers",
+    digit: "One digit",
   },
   editor: {
     title: "Question {{n}}",

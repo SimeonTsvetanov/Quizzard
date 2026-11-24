@@ -3,8 +3,8 @@
 // of each is the player's (`@simeonts/quizzard-quiz-player/render`, so a question looks the same in
 // a thumbnail and when played); the creator adds the face (name, icon) and the editor part. Screens and the slide renderer look entries up by id and never switch on a name. A kind or
 // answer type whose UI parts are not registered is "coming soon": listed, never selectable.
-import { type Answer, type IdSource, type MediaEntry, type MediaType, type Question, type Registry, type RegistryEntry, createRegistry } from "@simeonts/quizzard-quiz-core";
-import type { SlideAnswer, SlideKind, SlideView } from "@simeonts/quizzard-quiz-player/render";
+import { type Answer, type IdSource, type MediaEntry, type MediaType, type Question, type Registry, type RegistryEntry, type Round, createRegistry } from "@simeonts/quizzard-quiz-core";
+import { type SlideAnswer, type SlideKind, type SlideRound, type SlideView, roundSlides } from "@simeonts/quizzard-quiz-player/render";
 import type { Lang } from "./contract.ts";
 import type { IconName } from "./dom/icons.ts";
 import type { TextKey, Translate } from "./i18n/translate.ts";
@@ -20,6 +20,8 @@ export interface AnswerEditorContext {
   readonly change: (answer: Answer) => void;
   /** Offers "Undo" after the part removed something a person typed (an option with text); left out where nothing can show it. */
   readonly offerUndo?: (message: string, run: () => void) => void;
+  /** The question's place: a special round's answer depends on it (a Golden pyramid's question n asks for n). */
+  readonly place?: { readonly round: Round; readonly index: number };
 }
 
 /** The file of the question being edited and how to change it; the editor does the storing. */
@@ -82,10 +84,12 @@ export interface AnswerUi extends RegistryEntry {
   readonly parts?: AnswerParts;
 }
 
-/** The two UI registries the screens and the slide renderer work through. */
+/** The UI registries the screens and the slide renderer work through. */
 export interface UiRegistries {
   readonly kinds: Registry<KindUi>;
   readonly answers: Registry<AnswerUi>;
+  /** The special rounds on the slide (the player's parts: the pyramid, the vault). */
+  readonly rounds: Registry<SlideRound>;
 }
 
 /** A kind's name and icon in the creator. */
@@ -123,7 +127,7 @@ export function answerUi(slide: SlideAnswer, face: Face, editor: AnswerParts["ed
  * @param answers - answer types
  */
 export function createUiRegistries(kinds: readonly KindUi[] = [], answers: readonly AnswerUi[] = []): UiRegistries {
-  return { kinds: createRegistry<KindUi>(kinds), answers: createRegistry<AnswerUi>(answers) };
+  return { kinds: createRegistry<KindUi>(kinds), answers: createRegistry<AnswerUi>(answers), rounds: createRegistry<SlideRound>(roundSlides) };
 }
 
 /** What a picker shows for one id: its face and whether it can be chosen. */

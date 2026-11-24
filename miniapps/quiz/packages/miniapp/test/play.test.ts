@@ -1,7 +1,7 @@
 // Slice 2 in the creator: the Play screen in the history, the game kept per quiz in the mini-app's
 // storage area, and the creator's kind and answer entries built on the player's slide parts.
 import { describe, expect, it } from "vitest";
-import { audioKindSlide, choiceAnswerSlide, kindSlides, openAnswerSlide, textKindSlide, trueFalseAnswerSlide } from "@simeonts/quizzard-quiz-player/render";
+import { answerSlides, audioKindSlide, kindSlides, textKindSlide } from "@simeonts/quizzard-quiz-player/render";
 import { answerUis } from "../src/answers-ui/index.ts";
 import { returnFocus, settle } from "../src/app/mount.ts";
 import { AUDIENCE_PARAM, ROUTE_KEY, readRoute, type Route } from "../src/app/routes.ts";
@@ -91,7 +91,8 @@ describe("creator entries on the player's slide parts", () => {
     const text = kindUis.find((entry) => entry.id === "text");
     expect(text?.parts?.slide).toBe(textKindSlide.parts?.slide);
     expect(text?.tone).toBe(textKindSlide.tone);
-    const slides = new Map([openAnswerSlide, choiceAnswerSlide, trueFalseAnswerSlide].map((entry) => [entry.id, entry.parts?.slide]));
+    const slides = new Map(answerSlides.map((entry) => [entry.id, entry.parts?.slide]));
+    expect(answerUis.map((entry) => entry.id)).toEqual(answerSlides.map((entry) => entry.id));
     for (const entry of answerUis) expect(entry.parts?.slide).toBe(slides.get(entry.id));
     expect(kindUis.map((entry) => entry.id)).toEqual(kindSlides.map((entry) => entry.id));
   });

@@ -1,7 +1,7 @@
 // The round's settings strip (SPEC F2): default time and points, what a new question starts as,
 // optional rules, and the round's own actions. Closed it is one line that says what the round gives;
 // changing a value never rebuilds the strip, so the caret stays where it is.
-import { RULES_MAX, type Quiz, type Round, freeAnswerTypes, setRoundDefaults, setRoundRules } from "@simeonts/quizzard-quiz-core";
+import { RULES_MAX, type Quiz, type Round, freeAnswerTypes, roundMaxPoints, setRoundDefaults, setRoundRules, shapeOf } from "@simeonts/quizzard-quiz-core";
 import { applyAllRow } from "./round-apply.ts";
 import type { App } from "../app/state.ts";
 import { chipPicker, labelButton, textField } from "../dom/controls.ts";
@@ -11,6 +11,7 @@ import { slideLabels } from "../format.ts";
 import { pointsText } from "../render/slide.ts";
 import { answerChoices, kindChoices } from "../ui-registry.ts";
 import { copyRound, removeRound } from "./round-moves.ts";
+import { specialPoints } from "./round-special.ts";
 import { pointsFields, secondsField } from "./value-fields.ts";
 
 /** The open round as it is in the quiz right now (the strip outlives many edits). */
@@ -23,7 +24,9 @@ function live(app: App, roundId: string): { quiz: Quiz; round: Round } | undefin
 /** "30 s · 1 point" — what the closed strip says. */
 function gist(app: App, round: Round): string {
   const labels = slideLabels(app.t, app.lang);
-  return `${labels.seconds(round.defaults.seconds)} · ${pointsText(round.defaults.points, labels)}`;
+  // A special round's points are its whole: "60 s · 10 points".
+  const points = shapeOf(round, app.env.registries) ? labels.points(roundMaxPoints(round)) : pointsText(round.defaults.points, labels);
+  return `${labels.seconds(round.defaults.seconds)} · ${points}`;
 }
 
 /** The pickers of what a new question starts as. */
@@ -33,9 +36,11 @@ function defaultsPickers(app: App, round: Round, onChange: () => void): HTMLElem
     const now = live(app, round.id);
     if (now && app.change(setRoundDefaults(now.quiz, round.id, change))) onChange();
   };
+  const isFixed = shapeOf(round, env.registries) !== undefined;
   return [
     chipPicker({ legend: t("round.defaultKind"), name: "quiz-round-kind", options: kindChoices(env.registries.kinds.list().map((kind) => kind.id), ui, t), value: round.defaults.questionKind, soon: t("soon"), hint: t("kind.soonHint"), onPick: (id) => { set({ questionKind: id }); } }),
-    chipPicker({ legend: t("round.defaultAnswer"), name: "quiz-round-answer", options: answerChoices(freeAnswerTypes(env.registries), ui, t), value: round.defaults.answerType, soon: t("soon"), onPick: (id) => { set({ answerType: id }); } }),
+    // A special round answers every question one way: no picker (SPEC §10).
+    ...(isFixed ? [] : [chipPicker({ legend: t("round.defaultAnswer"), name: "quiz-round-answer", options: answerChoices(freeAnswerTypes(env.registries), ui, t), value: round.defaults.answerType, soon: t("soon"), onPick: (id) => { set({ answerType: id }); } })]),
   ];
 }
 
@@ -68,7 +73,7 @@ export function roundSettings(app: App, round: Round, onChange: () => void): HTM
     h("summary", { class: "quiz-settings-summary" }, icon("settings", 20), h("span", { class: "quiz-settings-name" }, t("round.settings")), summaryText),
     h("div", { class: "quiz-settings-body" },
       h("div", { class: "quiz-group" }, h("span", { class: "quiz-label" }, t("round.time")), time.element),
-      h("div", { class: "quiz-group" }, h("span", { class: "quiz-label" }, t("round.points")), points.element, h("p", { class: "quiz-hint" }, t("points.hint"))),
+      ...(specialPoints(app, round, changed) ?? [h("div", { class: "quiz-group" }, h("span", { class: "quiz-label" }, t("round.points")), points.element, h("p", { class: "quiz-hint" }, t("points.hint")))]),
       applyAllRow(app, round.id, () => gist(app, live(app, round.id)?.round ?? round), changed),
       ...defaultsPickers(app, round, changed),
       rules,

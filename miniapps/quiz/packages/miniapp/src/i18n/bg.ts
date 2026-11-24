@@ -2,6 +2,7 @@ import type { Messages } from "./en.ts";
 import { bgEdit } from "./bg-edit.ts";
 import { bgFiles } from "./bg-files.ts";
 import { bgMore } from "./bg-more.ts";
+import { bgSpecial } from "./bg-special.ts";
 
 /**
  * Bulgarian texts of the quiz creator, in Quizzard's one register (app/src/i18n/bg.ts): buttons and menu
@@ -151,4 +152,5 @@ export const bg: Messages = {
   ...bgEdit,
   ...bgFiles,
   ...bgMore,
+  ...bgSpecial,
 };

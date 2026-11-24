@@ -31,6 +31,10 @@ export interface ActionRowOptions {
   readonly onMore: () => void;
   /** Only the handle and "More" (a compact row: the rest is in the list "More" opens). */
   readonly isCompact?: boolean;
+  /** A special round's question: kept in its round — no duplicate, no delete (SPEC §10). */
+  readonly isFixed?: boolean;
+  /** `false` = the card keeps its place: no handle, no up and down. */
+  readonly canReorder?: boolean;
 }
 
 /**
@@ -53,7 +57,8 @@ export function actionRow(options: ActionRowOptions): HTMLElement {
   const drag = iconButton("grip", labels.drag, { class: "quiz-drag", "data-drag": "" });
   const more = iconButton("more", labels.more, { "data-more": "", "aria-haspopup": "dialog" });
   more.addEventListener("click", options.onMore);
-  if (options.isCompact === true) return h("div", { class: "quiz-card-row", "data-card-actions": "" }, drag, more);
+  const canMove = options.canReorder !== false;
+  if (options.isCompact === true) return h("div", { class: "quiz-card-row", "data-card-actions": "" }, ...(canMove ? [drag] : []), more);
   const up = iconButton("up", labels.up, { "data-move": "up" });
   const down = iconButton("down", labels.down, { "data-move": "down" });
   up.disabled = index === 0;
@@ -65,5 +70,7 @@ export function actionRow(options: ActionRowOptions): HTMLElement {
   copy.addEventListener("click", options.onDuplicate);
   const trash = iconButton("trash", labels.remove, { class: "quiz-danger", "data-delete": "" });
   trash.addEventListener("click", options.onRemove);
-  return h("div", { class: "quiz-card-row", "data-card-actions": "" }, drag, up, down, copy, trash, more);
+  const moves = canMove ? [drag, up, down] : [];
+  const edits = options.isFixed === true ? [] : [copy, trash];
+  return h("div", { class: "quiz-card-row", "data-card-actions": "" }, ...moves, ...edits, more);
 }

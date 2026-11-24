@@ -1,6 +1,7 @@
 import { enEdit } from "./en-edit.ts";
 import { enFiles } from "./en-files.ts";
 import { enMore } from "./en-more.ts";
+import { enSpecial } from "./en-special.ts";
 
 /** English texts of the quiz creator — the source of truth for every key (bg.ts must match). */
 export const en = {
@@ -146,6 +147,7 @@ export const en = {
   ...enEdit,
   ...enFiles,
   ...enMore,
+  ...enSpecial,
 } as const;
 
 /** A dictionary's shape: the same keys, any texts. */

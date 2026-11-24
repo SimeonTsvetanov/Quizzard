@@ -1,7 +1,8 @@
 // "Time and points" of one question (SPEC F5, AC2): each shows the round's value with the tag "from
 // the round" until it is changed here; then the question keeps its own and a button leads back to
 // the round's. The tag and the button share one line, so nothing moves when they swap.
-import { type Question, type Quiz, type Round, effectivePoints, effectiveSeconds, findQuestion, setQuestionPoints, setQuestionSeconds } from "@simeonts/quizzard-quiz-core";
+import { type Question, type Quiz, type Round, effectivePoints, effectiveSeconds, findQuestion, setQuestionPoints, setQuestionSeconds, shapeOf } from "@simeonts/quizzard-quiz-core";
+import { roundKindUis } from "../round-kinds-ui.ts";
 import type { App } from "../app/state.ts";
 import { h } from "../dom/h.ts";
 import { icon } from "../dom/icons.ts";
@@ -70,7 +71,14 @@ export function timingFields(app: App, questionId: string, onChange: () => void)
     pointsOrigin.show(now.question.points !== undefined, pointsText(now.round.defaults.points, labels));
   }
   sync();
+  const timeGroup = h("div", { class: "quiz-group", "data-timing": "time" }, h("span", { class: "quiz-label" }, t("timing.time")), time.element, timeOrigin.element);
+  // A special round's points come from its rule (SPEC §10): said, not asked.
+  const rule = shapeOf(start.round, app.env.registries) ? roundKindUis.get(start.round.kind)?.points : undefined;
+  if (rule !== undefined) {
+    const value = labels.points(effectivePoints(start.round, start.question).value);
+    return h("div", { class: "quiz-timing" }, timeGroup, h("div", { class: "quiz-group", "data-timing": "points", "data-fixed": "" }, h("span", { class: "quiz-label" }, t("timing.points")), h("p", { class: "quiz-fixed-value" }, value), h("p", { class: "quiz-hint" }, t(rule))));
+  }
   return h("div", { class: "quiz-timing" },
-    h("div", { class: "quiz-group", "data-timing": "time" }, h("span", { class: "quiz-label" }, t("timing.time")), time.element, timeOrigin.element),
+    timeGroup,
     h("div", { class: "quiz-group", "data-timing": "points" }, h("span", { class: "quiz-label" }, t("timing.points")), points.element, pointsOrigin.element, h("p", { class: "quiz-hint" }, t("points.hint"))));
 }

@@ -131,6 +131,10 @@
     font-weight: var(--weight-regular, 400);
     text-overflow: ellipsis;
     white-space: nowrap;
+
+    [data-wrap] & {
+      white-space: normal;
+    }
   }
 
   .quiz-sheet-actions {

@@ -2,6 +2,7 @@
 // arrows to the previous and next question (so a long round is filled without going back to the
 // list), and — in a quiz with more than one round — the round the question is in, as a picker that
 // moves it (UX review S4, T4).
+import { shapeOf } from "@simeonts/quizzard-quiz-core";
 import type { App } from "../app/state.ts";
 import { iconButton } from "../dom/controls.ts";
 import { h } from "../dom/h.ts";
@@ -43,11 +44,15 @@ function arrows(app: App, place: CardPlace): HTMLElement {
   return h("div", { class: "quiz-editor-arrows" }, previous, next);
 }
 
-/** "In round": the round the question is in; choosing another moves it there. Only when the quiz has more than one. */
+/**
+ * "In round": the round the question is in; choosing another moves it there. Only when the quiz has
+ * more than one, and not for a special round's question; a special round is no choice (SPEC §10).
+ */
 function roundPicker(app: App, { quiz, round, question }: CardPlace): HTMLElement | null {
-  if (quiz.rounds.length < 2) return null;
+  if (quiz.rounds.length < 2 || shapeOf(round, app.env.registries)) return null;
   const select = h("select", { class: "quiz-input quiz-select", "data-move-round": "" }, ...quiz.rounds.map((candidate, index) => {
     const option = h("option", { value: candidate.id }, `${String(index + 1)}. ${candidate.name}`);
+    option.disabled = shapeOf(candidate, app.env.registries) !== undefined;
     option.selected = candidate === round;
     return option;
   }));
