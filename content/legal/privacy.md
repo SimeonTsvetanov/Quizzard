@@ -1,6 +1,6 @@
 <!-- From the forge template app-shell/templates/legal/privacy.md (legal-pages §2, 2026-11-07), filled for Quizzard on 2026-11-22 with the wording of GG Counter's and TeamSync's privacy texts where the facts are the same, and checked against the code the same day (where: docs/DECISIONS.md 2026-11-22 "Policy pages filled"). Not legal advice. One bullet per layer the app really has: no feedback webhook, no API, no AI features. {App} and {email} are filled by scripts/generate.ts from app.config.ts. -->
 
-**Privacy** — Last updated: 23 November 2026
+**Privacy** — Last updated: 24 November 2026
 
 - **Who is responsible:** {App} is made by Simeon Tsvetanov, Bulgaria (contact: {email}). The
   names, players and scores you enter stay on your device and under your control only; where data
@@ -27,9 +27,21 @@
     question when it differs) and the round's bonus points.
   - **Quiz creator:** the quizzes you make — each quiz's name, its rounds (name, rules, time and
     points per question), the questions with their answers, options and explanations, and when the
-    quiz was made and last changed. If you close or reload the page right after a change, that
+    quiz was made and last changed, and your own note to each question. The pictures, audio and
+    video you add to a quiz are kept as files in the same database, each with its name, size,
+    length or dimensions and a small preview picture; a photo is scaled down and saved again
+    without the data the camera wrote into it (such as the place it was taken), audio and video
+    are kept exactly as you added them. A game you are playing (team names, scores, where the game
+    is) is kept in local storage. If you close or reload the page right after a change, that
     quiz is kept for a moment in local storage and moved into the database the next time you open
-    the Quiz creator.
+    the Quiz creator. With the first media file you add, the app asks the browser to keep this
+    site's storage persistent (`navigator.storage.persist()`), and before storing a file it asks
+    the browser how much space is free (`navigator.storage.estimate()`).
+  - **Files you make with the Quiz creator:** **Export to play** and **Save quiz file** write a
+    file on your device that contains the quiz and its pictures, audio and video (the quiz file
+    also your notes; the exported file carries them inside but never shows them on the stage).
+    These files leave your device only when you send or share them yourself; **Share** hands the
+    quiz file to the app you choose in your device's share menu.
   - **Separate from the author's other apps:** {App} keeps its data under its own names. The
     TeamSync and GG Counter sites are on the same web address (`simeontsvetanov.github.io`), but
     {App} does not read, change or delete what they saved, and they do not see {App}'s data.

@@ -323,7 +323,7 @@
       flex: 1;
       height: 100%;
       border-radius: 99cqi;
-      background: var(--quiz-tone);
+      background: var(--quiz-stage-gold);
       transform: scaleY(var(--quiz-bar, 0.2));
       transition: transform 240ms ease-out;
     }

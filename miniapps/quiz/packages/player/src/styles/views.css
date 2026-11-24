@@ -334,3 +334,38 @@
     line-clamp: 12;
   }
 }
+
+/* || The slide's own buttons inside the player: the frame's button reset (frame.css) is not in a
+   layer and would win over the slide's layered stylesheet, so their faces are said again here. */
+.qp-player .quiz-slide-clip-play,
+.qp-player .quiz-slide-clip-tap {
+  background: var(--quiz-stage-gold);
+  color: var(--qp-on-gold);
+}
+
+.qp-player .quiz-slide-clip-restart {
+  background: var(--quiz-stage-chip);
+  box-shadow: inset 0 0 0 0.15cqi var(--quiz-stage-edge);
+  color: var(--quiz-stage-ink);
+}
+
+.qp-player :is(.quiz-slide-clip-play, .quiz-slide-clip-restart) {
+  border-radius: 50%;
+}
+
+.qp-player .quiz-slide-clip-tap {
+  padding: 1.2cqi 3.4cqi;
+  border-radius: 99cqi;
+  box-shadow: 0 1cqi 4cqi oklch(0% 0 0 / 0.45);
+  font-size: 3cqi;
+  font-weight: 700;
+}
+
+.qp-player .quiz-slide-zoom {
+  border-radius: 2.4cqmin;
+}
+
+.qp-stage :is(.quiz-slide-clip-play, .quiz-slide-clip-restart, .quiz-slide-clip-tap, .quiz-slide-zoom):focus-visible {
+  outline: 4px solid var(--qp-ink);
+  outline-offset: 4px;
+}

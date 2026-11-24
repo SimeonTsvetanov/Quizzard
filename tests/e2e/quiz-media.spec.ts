@@ -205,6 +205,9 @@ test("AC4 + AC5: a picture is picked, scaled, stored and shown whole in the edit
   await expect(picker.locator("[data-media-facts]")).toContainText("1920 × 1280 px");
   await expect(picker.locator("[data-media-error]")).toBeHidden();
   expect(await storedMedia(page)).toHaveLength(1);
+  // On a phone the live slide is behind the "Preview" switch.
+  const liveSwitch = root(page).locator("[data-live-toggle]");
+  if (await liveSwitch.isVisible()) await liveSwitch.click();
   await expectWhole(root(page).locator("[data-live-slide] [data-slide-picture]"));
 
   // Replace: a photo held sideways (EXIF orientation) comes out upright; a small picture keeps its size.
@@ -480,7 +483,7 @@ async function presentMedia(host: Page, audience: Page): Promise<void> {
   await expect(prompt(audience)).toHaveText("Which note is this?");
   // The host sees the note; nothing of it is anywhere in the audience's page.
   await expect(panel(host).locator("[data-host-note]")).toContainText(NOTE);
-  expect(await audience.evaluate(() => document.documentElement.outerHTML)).not.toContain("zebra-note-7");
+  expect(await audience.content()).not.toContain("zebra-note-7");
   // The panel's previews are stills: only the audience's window has the clip.
   await expect(panel(host).locator("audio, video")).toHaveCount(0);
   const card = panel(host).locator('[data-card="media"]');
