@@ -348,6 +348,7 @@
     /* A name grows to the lines it needs (dom/name-field.ts sets the height): no handle, no inner scroll. */
     textarea& {
       display: block;
+      box-sizing: border-box;
       padding-block: var(--space-2);
       overflow: hidden;
       line-height: var(--leading-tight);

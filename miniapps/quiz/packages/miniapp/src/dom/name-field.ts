@@ -37,7 +37,14 @@ export function nameField(options: NameFieldOptions): HTMLTextAreaElement {
     event.preventDefault();
     field.blur();
   });
-  // Its height follows its width too (a turn of the phone, the pane next to it): measured once it is on the page.
-  new ResizeObserver(fit).observe(field);
+  // Its height follows its width too (a turn of the phone, the pane next to it): measured once it is
+  // on the page and again only when the width changed — never in answer to its own new height.
+  let width = -1;
+  new ResizeObserver(() => {
+    if (field.clientWidth === width) return;
+    width = field.clientWidth;
+    // In the next frame: a size changed inside the observer's own callback is reported by the browser as an error.
+    requestAnimationFrame(fit);
+  }).observe(field);
   return field;
 }
