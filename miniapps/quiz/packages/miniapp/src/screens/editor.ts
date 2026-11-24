@@ -4,7 +4,7 @@
 // you type; typing never rebuilds the form. The live preview is the shared slide: next to the form
 // on a wide screen, behind the "Preview" switch on a phone.
 import {
-  EXPLANATION_MAX, HOST_NOTE_MAX, PROMPT_MAX, type Answer, type Quiz, canAddQuestion, editQuestion, mediaOf, setAnswerType, setQuestionKind, setRoundDefaults,
+  EXPLANATION_MAX, HOST_NOTE_MAX, PROMPT_MAX, type Answer, type Quiz, canAddQuestion, editQuestion, freeAnswerTypes, mediaOf, setAnswerType, setQuestionKind, setRoundDefaults,
 } from "@simeonts/quizzard-quiz-core";
 import { type LocalMedia, createLocalMedia } from "@simeonts/quizzard-quiz-player/render";
 import type { App } from "../app/state.ts";
@@ -66,7 +66,7 @@ function pickers(app: App, { question, round }: CardPlace): { kind: HTMLElement;
   });
   const answer = chipPicker({
     legend: t("editor.answerType"), name: "quiz-answer-type", value: question.answer.type, soon: t("soon"),
-    options: answerChoices(env.registries.answers.list().map((entry) => entry.id), ui, t),
+    options: answerChoices(freeAnswerTypes(env.registries), ui, t),
     onPick: (typeId) => {
       const now = placeOf(app, id);
       if (!now) return;

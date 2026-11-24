@@ -6,7 +6,7 @@ import { type IdSource, randomId } from "./ids.ts";
 import * as limits from "./limits.ts";
 import { QUIZ_FORMAT, QUIZ_VERSION, type MediaEntry, type Points, type Question, type Quiz, type QuizFile, type Round, type RoundDefaults, makePoints } from "./model.ts";
 import { effectiveSeconds } from "./effective.ts";
-import { type Registries, defaultRegistries } from "./registries.ts";
+import { type Registries, defaultRegistries, shapeOf } from "./registries.ts";
 
 export { effectivePoints, effectiveSeconds } from "./effective.ts";
 
@@ -174,8 +174,9 @@ function firstDefaults(registries: Registries): RoundDefaults {
 }
 
 /**
- * Adds a round at the end (find it as the last of `rounds`). It starts with the defaults of the round
- * before it, so a quiz with its own timing is not set up again for every round.
+ * Adds a standard round at the end (find it as the last of `rounds`). It starts with the defaults of the
+ * last free round before it (a special round's are its own), so a quiz with its own timing is not set
+ * up again for every round. Special rounds: `addRoundOfKind`.
  * @param quiz - the quiz
  * @param name - the round's name (the caller's "Round 3" — the core has no texts)
  * @param env - gives the id and, for a first round, the first registered kinds
@@ -187,7 +188,7 @@ export function addRound(quiz: Quiz, name: string, env: Env = defaultEnv): Quiz 
     id: env.ids(),
     kind: kind.id,
     name: limits.cut(name, limits.ROUND_NAME_MAX),
-    defaults: quiz.rounds.at(-1)?.defaults ?? firstDefaults(env.registries),
+    defaults: quiz.rounds.findLast((before) => !shapeOf(before, env.registries))?.defaults ?? firstDefaults(env.registries),
     questions: [],
   };
   return { ...quiz, rounds: [...quiz.rounds, round] };
@@ -231,14 +232,16 @@ export function cleanPoints(points: Points): Points {
 
 /**
  * Changes a round's defaults. Questions with their own time or points keep them (AC2); the others
- * follow, because they store nothing.
+ * follow, because they store nothing. A special round keeps its points and answer type (SPEC §10).
  * @param quiz - the quiz
  * @param roundId - the round
  * @param change - only the defaults to change
+ * @param registries - which round kinds fix what
  */
-export function setRoundDefaults(quiz: Quiz, roundId: string, change: Partial<RoundDefaults>): Quiz {
+export function setRoundDefaults(quiz: Quiz, roundId: string, change: Partial<RoundDefaults>, registries: Registries = defaultRegistries): Quiz {
   return changeRound(quiz, roundId, (round) => {
-    const defaults = { ...round.defaults, ...change };
+    const isFixed = shapeOf(round, registries) !== undefined;
+    const defaults = { ...round.defaults, ...change, ...(isFixed ? { points: round.defaults.points, answerType: round.defaults.answerType } : {}) };
     return { ...round, defaults: { ...defaults, seconds: cleanSeconds(defaults.seconds), points: cleanPoints(defaults.points) } };
   });
 }

@@ -1,7 +1,7 @@
 // The round's settings strip (SPEC F2): default time and points, what a new question starts as,
 // optional rules, and the round's own actions. Closed it is one line that says what the round gives;
 // changing a value never rebuilds the strip, so the caret stays where it is.
-import { RULES_MAX, type Quiz, type Round, setRoundDefaults, setRoundRules } from "@simeonts/quizzard-quiz-core";
+import { RULES_MAX, type Quiz, type Round, freeAnswerTypes, setRoundDefaults, setRoundRules } from "@simeonts/quizzard-quiz-core";
 import { applyAllRow } from "./round-apply.ts";
 import type { App } from "../app/state.ts";
 import { chipPicker, labelButton, textField } from "../dom/controls.ts";
@@ -35,7 +35,7 @@ function defaultsPickers(app: App, round: Round, onChange: () => void): HTMLElem
   };
   return [
     chipPicker({ legend: t("round.defaultKind"), name: "quiz-round-kind", options: kindChoices(env.registries.kinds.list().map((kind) => kind.id), ui, t), value: round.defaults.questionKind, soon: t("soon"), hint: t("kind.soonHint"), onPick: (id) => { set({ questionKind: id }); } }),
-    chipPicker({ legend: t("round.defaultAnswer"), name: "quiz-round-answer", options: answerChoices(env.registries.answers.list().map((answer) => answer.id), ui, t), value: round.defaults.answerType, soon: t("soon"), onPick: (id) => { set({ answerType: id }); } }),
+    chipPicker({ legend: t("round.defaultAnswer"), name: "quiz-round-answer", options: answerChoices(freeAnswerTypes(env.registries), ui, t), value: round.defaults.answerType, soon: t("soon"), onPick: (id) => { set({ answerType: id }); } }),
   ];
 }
 

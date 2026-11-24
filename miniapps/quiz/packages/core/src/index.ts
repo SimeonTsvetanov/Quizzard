@@ -10,6 +10,8 @@
  */
 export * from "./answers/answer-type.ts";
 export * from "./answers/choice.ts";
+export * from "./answers/digit.ts";
+export * from "./answers/list.ts";
 export * from "./answers/open.ts";
 export * from "./answers/true-false.ts";
 export * from "./complete.ts";
@@ -32,6 +34,10 @@ export * from "./quiz-file.ts";
 export * from "./registries.ts";
 export * from "./registry.ts";
 export * from "./rounds/kinds.ts";
+export * from "./rounds/pyramid.ts";
 export * from "./rounds/round-kind.ts";
+export * from "./round-points.ts";
+export * from "./rounds/safe.ts";
+export * from "./special-rounds.ts";
 export * from "./rounds/standard.ts";
 export * from "./validate.ts";

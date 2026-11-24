@@ -1,0 +1,162 @@
+{
+  "format": "quizzard-quiz",
+  "version": 1,
+  "quiz": {
+    "id": "s1",
+    "name": "Special rounds",
+    "createdAt": "2026-11-24T10:00:00.000Z",
+    "updatedAt": "2026-11-24T10:00:00.000Z",
+    "language": "en",
+    "rounds": [
+      {
+        "id": "s6",
+        "kind": "pyramid",
+        "name": "Golden pyramid",
+        "defaults": {
+          "seconds": 60,
+          "points": {
+            "value": 1
+          },
+          "questionKind": "text",
+          "answerType": "list"
+        },
+        "questions": [
+          {
+            "id": "s2",
+            "kind": "text",
+            "prompt": "Name the largest planet.",
+            "answer": {
+              "type": "list",
+              "items": [
+                "Jupiter"
+              ]
+            }
+          },
+          {
+            "id": "s3",
+            "kind": "text",
+            "prompt": "Name 2 primary colours.",
+            "answer": {
+              "type": "list",
+              "items": [
+                "Red",
+                "Blue",
+                "Yellow"
+              ]
+            },
+            "points": {
+              "value": 2
+            }
+          },
+          {
+            "id": "s4",
+            "kind": "text",
+            "prompt": "Name 3 noble gases.",
+            "answer": {
+              "type": "list",
+              "items": [
+                "Helium",
+                "Neon",
+                "Argon",
+                "Krypton",
+                "Xenon",
+                "Radon"
+              ]
+            },
+            "points": {
+              "value": 3
+            }
+          },
+          {
+            "id": "s5",
+            "kind": "text",
+            "prompt": "Name 4 US states.",
+            "answer": {
+              "type": "list",
+              "items": [
+                "Ohio",
+                "Iowa",
+                "Utah",
+                "Texas",
+                "Maine",
+                "Idaho"
+              ]
+            },
+            "points": {
+              "value": 4
+            }
+          }
+        ],
+        "rules": "Question 1 asks for 1 answer, question 4 for 4. One point per accepted answer."
+      },
+      {
+        "id": "s12",
+        "kind": "safe",
+        "name": "Safe",
+        "defaults": {
+          "seconds": 45,
+          "points": {
+            "value": 1
+          },
+          "questionKind": "text",
+          "answerType": "digit"
+        },
+        "questions": [
+          {
+            "id": "s7",
+            "kind": "text",
+            "prompt": "How many? (1)",
+            "answer": {
+              "type": "digit",
+              "digit": 4
+            }
+          },
+          {
+            "id": "s8",
+            "kind": "text",
+            "prompt": "How many? (2)",
+            "answer": {
+              "type": "digit",
+              "digit": 7
+            }
+          },
+          {
+            "id": "s9",
+            "kind": "text",
+            "prompt": "How many? (3)",
+            "answer": {
+              "type": "digit",
+              "digit": 1
+            }
+          },
+          {
+            "id": "s10",
+            "kind": "text",
+            "prompt": "How many? (4)",
+            "answer": {
+              "type": "digit",
+              "digit": 9
+            }
+          },
+          {
+            "id": "s11",
+            "kind": "text",
+            "prompt": "How many? (5)",
+            "answer": {
+              "type": "digit",
+              "digit": 2
+            }
+          }
+        ],
+        "data": {
+          "bonus": 3
+        },
+        "rules": "Every answer is one digit. All five open the safe: +3."
+      }
+    ],
+    "settings": {
+      "teams": 4
+    }
+  },
+  "media": []
+}

@@ -59,3 +59,19 @@ type this version does not take, over its own limit, or a quiz over the whole li
 for good: `player/test/quiz-file-fixture.test.ts` opens it and checks this version still writes the
 same bytes; `tests/e2e/quiz-media.spec.ts` opens it through the app. A format change adds a
 container version (or a quiz version with a migration) and a new fixture; the old ones stay.
+
+## Special rounds in quiz version 1 (2026-11-24)
+
+The Golden pyramid and the Safe (SPEC §10) needed no new version: only optional fields and new
+open-string values, which every version-1 reader keeps.
+
+| Where | Field | Values |
+|---|---|---|
+| `Round.kind` | (open string) | `"pyramid"`, `"safe"` |
+| `Round.data` | optional object, checked by the round kind | Safe: `{ "bonus": 3 }` (a number ≥ 0; absent = 3) |
+| `Answer.type` | (open string) | `"list"` — `{ "items": ["Ohio", "Iowa"] }`; `"digit"` — `{ "digit": 7 }` (absent until picked) |
+| `Question.points` | as before | Pyramid question *n* has `{ "value": n }` (question 1 takes the round's 1) |
+
+An older Quizzard opens such a quiz, keeps the rounds untouched, plays none of their screens and shows
+their questions as "not supported in this version". `core/test/fixtures/v1/special-rounds.quiz.json` is
+kept for good next to `sample.quiz.json`.

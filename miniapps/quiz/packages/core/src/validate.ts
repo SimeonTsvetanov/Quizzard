@@ -37,5 +37,6 @@ export function isQuizFile(value: unknown, registries: Registries = defaultRegis
   const questions = rounds.flatMap((round) => round.questions);
   if (!areUnique(rounds.map((round) => round.id)) || !areUnique(questions.map((question) => question.id))) return false;
   if (!areUnique(file.media.map((entry) => entry.id))) return false;
+  if (!rounds.every((round) => registries.rounds.get(round.kind)?.isDataValid?.(round.data) ?? true)) return false;
   return questions.every((question) => isValidQuestion(question, registries));
 }

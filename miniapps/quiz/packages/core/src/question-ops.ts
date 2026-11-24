@@ -3,13 +3,24 @@
 import * as limits from "./limits.ts";
 import { type Answer, type MediaRef, type Points, type Question, type QuestionData, type Quiz, type Round, samePoints } from "./model.ts";
 import { type Env, changeRound, cleanPoints, cleanSeconds, defaultEnv, findQuestion, findRound, moveItem, without } from "./ops.ts";
+import { type Registries, canReorder, defaultRegistries, shapeOf } from "./registries.ts";
 
 /**
- * Whether one more question fits in the round.
+ * Whether one more question fits in the round. A special round has its fixed number (SPEC §10).
  * @param round - the round
+ * @param registries - which round kinds are special
  */
-export function canAddQuestion(round: Round): boolean {
-  return round.questions.length < limits.MAX_QUESTIONS_PER_ROUND;
+export function canAddQuestion(round: Round, registries: Registries = defaultRegistries): boolean {
+  return !shapeOf(round, registries) && round.questions.length < limits.MAX_QUESTIONS_PER_ROUND;
+}
+
+/**
+ * Whether a question may be deleted from the round, or moved out of it: not from a special round.
+ * @param round - the round
+ * @param registries - which round kinds are special
+ */
+export function canRemoveQuestion(round: Round, registries: Registries = defaultRegistries): boolean {
+  return !shapeOf(round, registries);
 }
 
 /**
@@ -37,7 +48,7 @@ export function newQuestion(kind: string, answerType: string, env: Env = default
  */
 export function addQuestion(quiz: Quiz, roundId: string, choice: { readonly kind?: string; readonly answerType?: string } = {}, env: Env = defaultEnv): Quiz {
   return changeRound(quiz, roundId, (round) => {
-    if (!canAddQuestion(round)) return round;
+    if (!canAddQuestion(round, env.registries)) return round;
     const question = newQuestion(choice.kind ?? round.defaults.questionKind, choice.answerType ?? round.defaults.answerType, env);
     return question ? { ...round, questions: [...round.questions, question] } : round;
   });
@@ -131,7 +142,10 @@ export function setQuestionKind(quiz: Quiz, questionId: string, kind: string, en
 export function setAnswerType(quiz: Quiz, questionId: string, answerType: string, env: Env = defaultEnv): Quiz {
   const entry = env.registries.answers.get(answerType);
   if (!entry) return quiz;
-  return changeQuestion(quiz, questionId, (question) => (question.answer.type === answerType ? question : { ...question, answer: entry.defaults(env.ids) }));
+  return changeQuestion(quiz, questionId, (question, round) => {
+    if (question.answer.type === answerType || shapeOf(round, env.registries)) return question;
+    return { ...question, answer: entry.defaults(env.ids) };
+  });
 }
 
 /**
@@ -155,9 +169,11 @@ export function setQuestionSeconds(quiz: Quiz, questionId: string, seconds: numb
  * @param quiz - the quiz
  * @param questionId - the question
  * @param points - the question's own points, or `undefined` to clear them
+ * @param registries - which round kinds fix the points (SPEC §10: no change there)
  */
-export function setQuestionPoints(quiz: Quiz, questionId: string, points: Points | undefined): Quiz {
+export function setQuestionPoints(quiz: Quiz, questionId: string, points: Points | undefined, registries: Registries = defaultRegistries): Quiz {
   return changeQuestion(quiz, questionId, (question, round) => {
+    if (shapeOf(round, registries)) return question;
     const own = points === undefined ? undefined : cleanPoints(points);
     if (own === undefined || samePoints(own, round.defaults.points)) return question.points === undefined ? question : without(question, "points");
     return { ...question, points: own };
@@ -171,16 +187,18 @@ export function setQuestionPoints(quiz: Quiz, questionId: string, points: Points
  * @param questionId - the question
  * @param toRoundId - the round it should be in afterwards
  * @param toIndex - its index there (clamped); the end when left out
+ * @param registries - which round kinds fix their questions (SPEC §10)
  */
-export function moveQuestion(quiz: Quiz, questionId: string, toRoundId: string, toIndex?: number): Quiz {
+export function moveQuestion(quiz: Quiz, questionId: string, toRoundId: string, toIndex?: number, registries: Registries = defaultRegistries): Quiz {
   const place = findQuestion(quiz, questionId);
   const target = findRound(quiz, toRoundId);
   if (!place || !target) return quiz;
   if (target === place.round) {
+    if (!canReorder(target, registries)) return quiz;
     return changeRound(quiz, target.id, (round) => ({ ...round, questions: moveItem(round.questions, place.index, toIndex ?? round.questions.length) }));
   }
-  if (!canAddQuestion(target)) return quiz;
-  const removed = deleteQuestion(quiz, questionId);
+  if (!canAddQuestion(target, registries) || !canRemoveQuestion(place.round, registries)) return quiz;
+  const removed = deleteQuestion(quiz, questionId, registries);
   return changeRound(removed, toRoundId, (round) => {
     const questions = [...round.questions, place.question];
     return { ...round, questions: moveItem(questions, questions.length - 1, toIndex ?? questions.length) };
@@ -191,10 +209,11 @@ export function moveQuestion(quiz: Quiz, questionId: string, toRoundId: string, 
  * Deletes a question.
  * @param quiz - the quiz
  * @param questionId - the question
+ * @param registries - which round kinds fix their questions (SPEC §10)
  */
-export function deleteQuestion(quiz: Quiz, questionId: string): Quiz {
+export function deleteQuestion(quiz: Quiz, questionId: string, registries: Registries = defaultRegistries): Quiz {
   const place = findQuestion(quiz, questionId);
-  if (!place) return quiz;
+  if (!place || !canRemoveQuestion(place.round, registries)) return quiz;
   return changeRound(quiz, place.round.id, (round) => ({ ...round, questions: round.questions.filter((question) => question !== place.question) }));
 }
 
@@ -206,7 +225,7 @@ export function deleteQuestion(quiz: Quiz, questionId: string): Quiz {
  */
 export function duplicateQuestion(quiz: Quiz, questionId: string, env: Env = defaultEnv): Quiz {
   const place = findQuestion(quiz, questionId);
-  if (!place || !canAddQuestion(place.round)) return quiz;
+  if (!place || !canAddQuestion(place.round, env.registries)) return quiz;
   const copy: Question = { ...place.question, id: env.ids() };
   return changeRound(quiz, place.round.id, (round) => ({ ...round, questions: [...round.questions.slice(0, place.index + 1), copy, ...round.questions.slice(place.index + 1)] }));
 }
@@ -214,9 +233,11 @@ export function duplicateQuestion(quiz: Quiz, questionId: string, env: Env = def
 /**
  * How many questions of a round have a time or points of their own — what "apply to all" would change.
  * @param round - the round
+ * @param registries - which round kinds fix the points (those are not the question's own choice)
  */
-export function ownValueCount(round: Round): number {
-  return round.questions.filter((question) => question.seconds !== undefined || question.points !== undefined).length;
+export function ownValueCount(round: Round, registries: Registries = defaultRegistries): number {
+  const isFixed = shapeOf(round, registries) !== undefined;
+  return round.questions.filter((question) => question.seconds !== undefined || (!isFixed && question.points !== undefined)).length;
 }
 
 /**
@@ -224,10 +245,12 @@ export function ownValueCount(round: Round): number {
  * (SPEC F5 — a question without its own follows the round). The same quiz when none had its own.
  * @param quiz - the quiz
  * @param roundId - the round
+ * @param registries - which round kinds fix the points (their questions keep them: SPEC §10)
  */
-export function applyRoundDefaults(quiz: Quiz, roundId: string): Quiz {
+export function applyRoundDefaults(quiz: Quiz, roundId: string, registries: Registries = defaultRegistries): Quiz {
   return changeRound(quiz, roundId, (round) => {
-    if (ownValueCount(round) === 0) return round;
-    return { ...round, questions: round.questions.map((question) => without(without(question, "seconds"), "points")) };
+    if (ownValueCount(round, registries) === 0) return round;
+    const isFixed = shapeOf(round, registries) !== undefined;
+    return { ...round, questions: round.questions.map((question) => (isFixed ? without(question, "seconds") : without(without(question, "seconds"), "points"))) };
   });
 }

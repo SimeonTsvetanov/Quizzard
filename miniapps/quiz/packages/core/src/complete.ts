@@ -19,13 +19,20 @@ function isKnown(question: Question, registries: Registries): boolean {
   return registries.kinds.has(question.kind) && registries.answers.has(question.answer.type);
 }
 
+/** Whether a known question is not finished: by its kind and answer type, then by its round's rule for its place. */
+function isUnfinished(round: Round, question: Question, index: number, registries: Registries): boolean {
+  if (!isKnown(question, registries)) return false;
+  if (!isComplete(question, registries)) return true;
+  return !(registries.rounds.get(round.kind)?.isQuestionComplete?.(question, index) ?? true);
+}
+
 /**
  * How many questions of a round are not finished.
  * @param round - the round
  * @param registries - the kinds and answer types this version knows
  */
 export function unfinishedCount(round: Round, registries: Registries = defaultRegistries): number {
-  return round.questions.filter((question) => isKnown(question, registries) && !isComplete(question, registries)).length;
+  return round.questions.filter((question, index) => isUnfinished(round, question, index, registries)).length;
 }
 
 /**
@@ -35,5 +42,5 @@ export function unfinishedCount(round: Round, registries: Registries = defaultRe
  */
 export function unfinishedQuestions(quiz: Quiz, registries: Registries = defaultRegistries): readonly Unfinished[] {
   return quiz.rounds.flatMap((round, roundIndex) =>
-    round.questions.flatMap((question, index) => (isKnown(question, registries) && !isComplete(question, registries) ? [{ round, question, roundIndex, index }] : [])));
+    round.questions.flatMap((question, index) => (isUnfinished(round, question, index, registries) ? [{ round, question, roundIndex, index }] : [])));
 }

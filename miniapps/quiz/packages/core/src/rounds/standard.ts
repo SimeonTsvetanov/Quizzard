@@ -17,8 +17,11 @@ export const STANDARD_SCREENS = {
   board: "board",
 } as const;
 
-/** rules → every question → "Answers" → every answer → score entry → leaderboard. */
-function screens(round: Round): readonly PlayerScreen[] {
+/**
+ * rules → every question → "Answers" → every answer → score entry → leaderboard. The special rounds play the same.
+ * @param round - the round
+ */
+export function standardScreens(round: Round): readonly PlayerScreen[] {
   const roundId = round.id;
   const each = (screen: string): PlayerScreen[] => round.questions.map((question) => ({ screen, roundId, questionId: question.id }));
   return [
@@ -32,4 +35,4 @@ function screens(round: Round): readonly PlayerScreen[] {
 }
 
 /** Round kind `standard`: the reference quiz's round. */
-export const standardRound: RoundKind = { id: "standard", screens };
+export const standardRound: RoundKind = { id: "standard", screens: standardScreens };

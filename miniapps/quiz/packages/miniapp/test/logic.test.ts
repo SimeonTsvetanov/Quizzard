@@ -1,7 +1,7 @@
 // The creator's pure logic: routes in `history.state`, where the focus returns, formats, the Undo
 // helpers, the deck's thickness, the registries' pickers (AC10 on the UI side), Help and meta.
 import { beforeAll, describe, expect, it } from "vitest";
-import { PICTURE_MAX_BYTES, QUIZ_MEDIA_MAX_BYTES, VIDEO_MAX_BYTES, addQuestion, addRound, createQuiz, createRegistries, defineBasicKind, deleteQuestion, deleteRound, sequentialIds, type Env, type Quiz } from "@simeonts/quizzard-quiz-core";
+import { PICTURE_MAX_BYTES, QUIZ_MEDIA_MAX_BYTES, VIDEO_MAX_BYTES, addQuestion, addRound, createQuiz, createRegistries, defineBasicKind, deleteQuestion, freeAnswerTypes, deleteRound, sequentialIds, type Env, type Quiz } from "@simeonts/quizzard-quiz-core";
 import { answerUis } from "../src/answers-ui/index.ts";
 import { returnFocus, settle } from "../src/app/mount.ts";
 import { LIBRARY, ROUTE_KEY, SUB_KEY, entryState, readDepth, readRoute, type Route } from "../src/app/routes.ts";
@@ -154,7 +154,7 @@ describe("pickers come from the registries (PLAN §2 rule 1)", () => {
     expect(kindChoices(kindIds(), ui, t).map((choice) => [choice.label, choice.isAvailable])).toEqual([["Text", true], ["Picture", true], ["Audio", true], ["Video", true]]);
   });
   it("all three answer types can be chosen", () => {
-    expect(answerChoices(registries.answers.list().map((answer) => answer.id), ui, t).map((choice) => [choice.label, choice.isAvailable])).toEqual([["Open answer", true], ["Multiple choice", true], ["True / false", true]]);
+    expect(answerChoices(freeAnswerTypes(registries), ui, t).map((choice) => [choice.label, choice.isAvailable])).toEqual([["Open answer", true], ["Multiple choice", true], ["True / false", true]]);
   });
   it("AC10: a new kind appears in the picker with no change outside its registry entries — soon without UI parts, selectable with them", () => {
     registries.kinds.register(defineBasicKind("pyramid", null));

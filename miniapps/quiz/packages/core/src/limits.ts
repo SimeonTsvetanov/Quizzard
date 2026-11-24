@@ -24,6 +24,13 @@ export const HOST_NOTE_MAX = 500;
 /** Longest points note ("1 for the band, 2 with the song"), in characters. */
 export const POINTS_NOTE_MAX = 80;
 
+/** Most accepted answers of one Golden pyramid question (SPEC §10: "name a US state" has 50). */
+export const LIST_ITEMS_MAX = 60;
+/** Lowest and highest bonus of a Safe round, and the bonus a new one starts with (SPEC §10). */
+export const SAFE_BONUS_MIN = 0;
+export const SAFE_BONUS_MAX = 20;
+export const SAFE_BONUS_DEFAULT = 3;
+
 /** Most rounds in one quiz. */
 export const MAX_ROUNDS = 20;
 /** Most questions in one round. */

@@ -89,6 +89,8 @@ export interface Round {
   readonly rules?: string;
   readonly defaults: RoundDefaults;
   readonly questions: readonly Question[];
+  /** The round kind's own values (a Safe's bonus), checked by its entry; absent for a standard round. */
+  readonly data?: Readonly<Record<string, unknown>>;
 }
 
 /** A quiz: the deck. Timestamps are ISO 8601 strings; `language` is the player's language ("en", "bg"). */
@@ -140,6 +142,7 @@ export const roundSchema = z.looseObject({
   rules: z.string().optional(),
   defaults: z.looseObject({ seconds: z.number().positive(), points: pointsSchema, questionKind: id, answerType: id }),
   questions: z.array(questionSchema),
+  data: z.record(z.string(), z.unknown()).optional(),
 });
 
 /** Schema of a quiz. */
