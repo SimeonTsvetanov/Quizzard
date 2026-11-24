@@ -37,7 +37,7 @@ export const bgEdit = {
     duplicated: "Това е копието: въпрос {{n}}",
     delete: "Изтрий въпроса",
     previewHide: "Скрий прегледа",
-    another: "Добави още един",
+    another: "Още един",
     anotherHint: "Готово и нов въпрос в този рунд (Ctrl + Enter)",
   },
   open: {

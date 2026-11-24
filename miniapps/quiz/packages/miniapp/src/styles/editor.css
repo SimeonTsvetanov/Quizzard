@@ -289,7 +289,27 @@
       flex: 1;
       min-width: 0;
       min-height: var(--tap-target);
+      padding-inline: var(--space-3);
       white-space: nowrap;
+
+      /* Words that do not fit are cut inside their own button, never over its neighbour. */
+      & span {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+
+    /* "Done" is as wide as its word; "Add another" takes the room that is left. */
+    & [data-done] {
+      flex: 0 0 auto;
+    }
+
+    /* The narrowest phones: "Add another" is its words alone, so they are whole in every language. */
+    @media (width < 400px) {
+      & [data-add-another] svg {
+        display: none;
+      }
     }
 
     /* Phone: the "Preview" switch is its mark alone (its name stays for screen readers and as the
