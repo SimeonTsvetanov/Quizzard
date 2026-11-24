@@ -4,6 +4,18 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.19.0] - 2026-11-24
+### Added
+- **Quiz creator: pictures, audio and video.** Add a file from your device to a question — pick it, drop it or
+  paste it. Pictures are never stretched or cropped; large photos are made smaller automatically. Audio (MP3,
+  M4A) and video (MP4) play on the stage with their own controls, and the timer waits for the clip. A file that
+  is too big or of another format is refused with a message that says why.
+- **Quiz files:** "Save quiz file" makes one file with the quiz and everything in it; "Open a quiz file" adds a
+  quiz someone sent you. Share it straight from the phone where the phone allows it.
+- **For the host:** a private note per question (only you see it), a black screen (key B), a break timer of 5,
+  10 or 15 minutes, a grid to jump to any screen, and clicker keys (Page Up / Page Down).
+- "Apply time and points to all questions" in a round's settings.
+
 ## [0.18.0] - 2026-11-24
 ### Added
 - **Quiz creator: play your quiz.** "Play" runs it in the app, and "Export to play" saves it as one file that
