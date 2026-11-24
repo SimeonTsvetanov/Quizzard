@@ -37,6 +37,9 @@ const KEYS: Readonly<Record<string, (commands: Commands) => void>> = {
   PageUp: (commands) => { commands.dispatch({ type: "back" }); },
   KeyT: (commands) => { commands.dispatch({ type: "timerToggle" }); },
   KeyR: (commands) => { commands.dispatch({ type: "timerReset" }); },
+  KeyP: (commands) => { commands.dispatch({ type: "media", command: "toggle" }); },
+  KeyZ: (commands) => { commands.dispatch({ type: "media", command: "zoom" }); },
+  KeyB: (commands) => { commands.dispatch({ type: "black" }); },
   KeyM: (commands) => { commands.openMenu(); },
   KeyS: (commands) => { commands.openScores(); },
   KeyF: (commands) => { commands.toggleFullscreen(); },
@@ -51,8 +54,9 @@ function isTaken(event: KeyboardEvent): boolean {
 }
 
 /**
- * Listens for the player's keys: Space/→ next, ← back, T timer, R restart the timer, M menu,
- * S scores, F full screen.
+ * Listens for the player's keys: Space/→/Page Down next, ←/Page Up back (a clicker sends the Page
+ * keys), T timer, R restart the timer, P play or pause the clip, Z zoom the picture, B black
+ * screen, M menu, S scores, F full screen.
  * @param commands - what the keys do
  * @param signal - stops listening
  */

@@ -31,7 +31,8 @@ function browserStorage(quizId: string): GameStorage {
 function start(): void {
   const root = h("div", { id: "qp-root" });
   document.body.prepend(root);
-  const file = readEmbeddedQuiz(document.getElementById(EXPORT_QUIZ_ID)?.textContent ?? "");
+  const block = document.getElementById(EXPORT_QUIZ_ID);
+  const file = readEmbeddedQuiz(block?.textContent ?? "");
   const lang = playerLang(file?.quiz.language ?? document.documentElement.lang);
   const t = createTranslator(lang);
   document.documentElement.lang = lang;
@@ -44,6 +45,9 @@ function start(): void {
   const mediaUrl = embeddedMedia(document);
   const transport = location.hash === AUDIENCE_HASH ? openerTransport() : null;
   if (transport !== null) {
+    // The audience's window takes the quiz from the host's (without the host's notes): its own copy,
+    // answers and notes included, is taken out of the page.
+    block?.remove();
     createAudience({ root, transport, lang, mediaUrl });
     return;
   }

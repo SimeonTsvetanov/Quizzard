@@ -27,6 +27,15 @@ export type ChannelMessage =
   /** Either way: this window is closing. */
   | { readonly kind: "bye" };
 
+/**
+ * The quiz as the audience's window gets it: without the host's notes, which never leave the host's window.
+ * @param file - the quiz
+ */
+export function forAudience(file: QuizFile): QuizFile {
+  const rounds = file.quiz.rounds.map((round) => ({ ...round, questions: round.questions.map((question) => Object.fromEntries(Object.entries(question).filter(([name]) => name !== "note")) as typeof question) }));
+  return { ...file, quiz: { ...file.quiz, rounds } };
+}
+
 /** The mark every message carries, so other `postMessage` traffic is ignored. */
 export const CHANNEL_MARK = "quizzard-play";
 /** The protocol version; a peer with another version is ignored. */

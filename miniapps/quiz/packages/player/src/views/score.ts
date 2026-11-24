@@ -73,6 +73,7 @@ function pointsGuide({ env, round }: ViewContext): HTMLElement {
 /** Score entry after a round: a number per team, the questions' points and notes next to it. */
 export const scoreView: ViewEntry = {
   id: "score",
+  tile: ({ env }) => ({ mark: env.t("score.title"), name: env.t("score.title") }),
   structure: teamDigest,
   stage: (context) => {
     const { env, round, canEdit } = context;

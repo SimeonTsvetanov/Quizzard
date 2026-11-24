@@ -51,6 +51,7 @@ function teamList(context: ViewContext, isEditable: boolean): DrawnView {
 /** The teams screen: who plays. The host types the names here, or in the host panel. */
 export const teamsView: ViewEntry = {
   id: "teams",
+  tile: ({ env }) => ({ mark: env.t("teams.title"), name: env.t("teams.title") }),
   structure: teamDigest,
   stage: (context) => {
     const { env, canEdit } = context;

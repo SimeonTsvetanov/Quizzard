@@ -1,5 +1,5 @@
 // The control bar under the stage, for a host who plays in one window: back, the timer, next, the
-// scores, the menu, the audience window and full screen. Real size (44 px targets) whatever the
+// black screen, the scores, the menu, the audience window and full screen. Real size (44 px targets) whatever the
 // stage's scale. It dims while nobody touches it.
 import type { GameState } from "../game/state.ts";
 import type { Translate } from "../i18n/translate.ts";
@@ -29,8 +29,13 @@ export function barButton(name: StageIcon, label: string, run: () => void, props
   return button;
 }
 
-/** Sets a button's mark and name. */
-function face(button: HTMLButtonElement, name: StageIcon, label: string): void {
+/**
+ * Sets a bar button's mark and name; nothing is redrawn when they are already these.
+ * @param button - a button made by {@link barButton}
+ * @param name - the mark
+ * @param label - what it does now
+ */
+export function setFace(button: HTMLButtonElement, name: StageIcon, label: string): void {
   if (button.getAttribute("aria-label") === label) return;
   button.setAttribute("aria-label", label);
   button.title = label;
@@ -47,7 +52,9 @@ export function createBar(t: Translate, commands: Commands): Bar {
   const timer = barButton("play", t("control.start"), () => { commands.dispatch({ type: "timerToggle" }); }, { "data-control": "timer" });
   const reset = barButton("reset", t("control.reset"), () => { commands.dispatch({ type: "timerReset" }); }, { "data-control": "reset" });
   const next = barButton("right", t("control.next"), () => { commands.dispatch({ type: "next" }); }, { "data-control": "next", "data-words": "", "data-primary": "" });
+  const black = barButton("black", t("control.black"), () => { commands.dispatch({ type: "black" }); }, { "data-control": "black", "aria-pressed": "false" });
   const tools = h("div", { class: "qp-bar-group" },
+    black,
     barButton("scores", t("control.scores"), commands.openScores, { "data-control": "scores" }),
     barButton("audience", t("control.audience"), commands.toggleAudience, { "data-control": "audience" }),
     barButton("fullscreen", t("control.fullscreen"), commands.toggleFullscreen, { "data-control": "fullscreen" }),
@@ -68,8 +75,9 @@ export function createBar(t: Translate, commands: Commands): Bar {
       next.disabled = state.index === state.screens.length - 1 && !hasReveal;
       timer.disabled = !hasTimer;
       reset.disabled = !hasTimer;
-      face(timer, isRunning ? "pause" : "play", isRunning ? t("control.pause") : t("control.start"));
-      face(next, hasReveal ? "eye" : "right", hasReveal ? t("control.reveal") : t("control.next"));
+      black.setAttribute("aria-pressed", String(state.curtain?.kind === "black"));
+      setFace(timer, isRunning ? "pause" : "play", isRunning ? t("control.pause") : t("control.start"));
+      setFace(next, hasReveal ? "eye" : "right", hasReveal ? t("control.reveal") : t("control.next"));
     },
   };
 }

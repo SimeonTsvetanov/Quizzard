@@ -3,8 +3,8 @@
 import fc from "fast-check";
 import { describe, expect, it } from "vitest";
 import {
-  EXPORT_DATA_MARK, EXPORT_MEDIA_ATTR, EXPORT_QUIZ_ID, ExportError, type ExportMedia, type QuizFile, assembleExport, editQuestion, exportFileName, extractEmbedded,
-  isPlayableFile, isQuizFile, jsonForScript, readEmbeddedQuiz, renameQuiz, toFile,
+  EXPORT_DATA_MARK, EXPORT_MEDIA_ATTR, EXPORT_QUIZ_ID, ExportError, MEDIA_BLOCK_CLOSE, QUIZ_FILE_EXTENSION, type ExportMedia, type QuizFile, assembleExport, base64Length, editQuestion,
+  exportFileName, exportParts, exportSize, extractEmbedded, isPlayableFile, isQuizFile, jsonForScript, mediaBlockOpen, readEmbeddedQuiz, renameQuiz, safeFileName, toFile,
 } from "../src/index.ts";
 import sample from "./fixtures/v1/sample.quiz.json" with { type: "json" };
 import { questionAt, sampleQuiz } from "./helpers.ts";
@@ -169,5 +169,36 @@ describe("exportFileName", () => {
   it("falls back when nothing of the name is left", () => {
     expect(exportFileName("")).toBe("quiz.html");
     expect(exportFileName(" /:. ", "куиз")).toBe("куиз.html");
+  });
+});
+
+describe("the pieces of an export (large quizzes are written piece by piece)", () => {
+  it("exportParts + media blocks join to exactly what assembleExport gives", () => {
+    const file = toFile(sampleQuiz([1]));
+    const media: ExportMedia[] = [{ id: "m1", mime: "image/png", base64: "aGVsbG8=" }, { id: 'm"2', mime: "audio/mpeg", base64: "" }];
+    const parts = exportParts(TEMPLATE, file);
+    const joined = [parts.before, parts.quiz, ...media.map((entry) => `${mediaBlockOpen(entry)}${entry.base64}${MEDIA_BLOCK_CLOSE}`), parts.after].join("");
+    expect(joined).toBe(assembleExport(TEMPLATE, file, media));
+    expect(extractEmbedded(joined).media).toEqual(media);
+    expect(() => exportParts("no mark", file)).toThrow(ExportError);
+    expect(() => mediaBlockOpen({ id: "", mime: "image/png" })).toThrow(ExportError);
+    expect(() => mediaBlockOpen({ id: "a", mime: "<script>" })).toThrow(ExportError);
+  });
+
+  it("exportSize: the page plus each file as base64", () => {
+    expect(base64Length(0)).toBe(0);
+    expect(base64Length(1)).toBe(4);
+    expect(base64Length(3)).toBe(4);
+    expect(base64Length(4)).toBe(8);
+    expect(exportSize(1000, [])).toBe(1000);
+    expect(exportSize(1000, [{ bytes: 300 }, { bytes: 1 }])).toBe(1000 + 400 + 120 + 4 + 120);
+    const real = assembleExport(TEMPLATE, toFile(sampleQuiz([1])), [{ id: "m1", mime: "image/png", base64: "aGVsbG8=" }]);
+    expect(Math.abs(exportSize(assembleExport(TEMPLATE, toFile(sampleQuiz([1]))).length, [{ bytes: 5 }]) - real.length)).toBeLessThan(120);
+  });
+
+  it("safeFileName gives the quiz file's name the same care as the export's", () => {
+    expect(safeFileName("Pub: night?", "quiz", QUIZ_FILE_EXTENSION)).toBe("Pub night.quizzard");
+    expect(safeFileName("  ..  ", "quiz", QUIZ_FILE_EXTENSION)).toBe("quiz.quizzard");
+    expect(exportFileName("Pub night")).toBe("Pub night.html");
   });
 });

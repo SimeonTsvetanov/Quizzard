@@ -3,8 +3,9 @@
 // of each is the player's (`@simeonts/quizzard-quiz-player/render`, so a question looks the same in
 // a thumbnail and when played); the creator adds the face (name, icon) and the editor part. Screens and the slide renderer look entries up by id and never switch on a name. A kind or
 // answer type whose UI parts are not registered is "coming soon": listed, never selectable.
-import { type Answer, type IdSource, type Question, type Registry, type RegistryEntry, createRegistry } from "@simeonts/quizzard-quiz-core";
+import { type Answer, type IdSource, type MediaEntry, type MediaType, type Question, type Registry, type RegistryEntry, createRegistry } from "@simeonts/quizzard-quiz-core";
 import type { SlideAnswer, SlideKind, SlideView } from "@simeonts/quizzard-quiz-player/render";
+import type { Lang } from "./contract.ts";
 import type { IconName } from "./dom/icons.ts";
 import type { TextKey, Translate } from "./i18n/translate.ts";
 
@@ -19,10 +20,34 @@ export interface AnswerEditorContext {
   readonly change: (answer: Answer) => void;
 }
 
+/** The file of the question being edited and how to change it; the editor does the storing. */
+export interface QuestionFiles {
+  /** The media type the question's kind takes (core `QuestionKind.mediaType`); `null` for a kind without a file. */
+  readonly type: MediaType | null;
+  /** The file the question has now. */
+  readonly entry: MediaEntry | undefined;
+  /** A small picture of the file for the form, or `null` (an audio clip, no file). */
+  readonly still: string | null;
+  /** How many other questions of the quiz show the same file. */
+  readonly sharedWith: number;
+  /**
+   * Takes a picked file: checks it, prepares it, stores it and puts it on the question.
+   * @returns `null` once the file is on the question (the editor is drawn again), or the message
+   * that says why it was refused — nothing was stored then
+   */
+  pick(file: File): Promise<string | null>;
+  /** Takes the file off the question. */
+  remove(): void;
+}
+
 /** What a kind's editor part gets. */
 export interface KindEditorContext {
   readonly question: Question;
   readonly t: Translate;
+  readonly lang: Lang;
+  readonly files: QuestionFiles;
+  /** Ends when the editor is left: what a part listens to outside its own element hangs on it. */
+  readonly signal: AbortSignal;
 }
 
 /** The parts of a question kind that make it usable: its own editor fields and its area on the slide. */

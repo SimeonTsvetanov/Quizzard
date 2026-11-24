@@ -1,11 +1,11 @@
-// The menu (M): jump to the start, any round or the result; whether questions run by themselves;
-// the tools; starting again; and the keys.
-import { roundStart } from "../game/create.ts";
-import type { GameState } from "../game/state.ts";
+// The menu (M): every screen as a grid to jump to; whether questions run by themselves; the black
+// screen and a break; the tools; starting again; and the keys.
+import { BREAK_MINUTES, type GameState } from "../game/state.ts";
 import { h } from "../render/h.ts";
 import { icon, type StageIcon } from "../render/icons.ts";
 import type { PlayEnv } from "../views/context.ts";
 import type { Commands } from "./commands.ts";
+import { jumpGrid } from "./menu-jump.ts";
 
 /** What the menu needs. */
 export interface MenuOptions {
@@ -29,22 +29,17 @@ function menuButton(name: StageIcon | null, label: string, run: () => void, prop
   return button;
 }
 
-/** "Go to": the start, every round that has questions, the result. The place the game is in is marked. */
-function jumpList({ env, state, commands, close }: MenuOptions): HTMLElement {
-  const here = state.screens[state.index];
-  const go = (index: number): void => {
-    commands.dispatch({ type: "jump", index });
+/** The black screen and a break: what the room sees while nothing is asked. */
+function pauses({ env, state, commands, close }: MenuOptions): HTMLElement {
+  const then = (run: () => void) => (): void => {
+    run();
     close();
   };
-  const rounds = env.file.quiz.rounds.filter((round) => roundStart(state, round.id) !== -1).map((round, index) => {
-    const button = menuButton(null, `${String(index + 1)} · ${round.name}`, () => { go(roundStart(state, round.id)); }, { "data-jump-round": round.id });
-    if (here?.roundId === round.id) button.setAttribute("aria-current", "true");
-    return h("li", {}, button);
-  });
-  return h("ol", { class: "qp-menu-list" },
-    h("li", {}, menuButton(null, env.t("menu.start"), () => { go(0); }, { "data-jump": "start" })),
-    ...rounds,
-    h("li", {}, menuButton(null, env.t("menu.end"), () => { go(state.screens.length - 1); }, { "data-jump": "end" })));
+  const black = menuButton("black", env.t("control.black"), then(() => { commands.dispatch({ type: "black" }); }), { "data-menu": "black", "aria-pressed": String(state.curtain?.kind === "black") });
+  const breaks = BREAK_MINUTES.map((minutes) => menuButton("break", env.t("menu.breakMinutes", { n: minutes }), then(() => { commands.dispatch({ type: "break", minutes }); }), { "data-break": String(minutes) }));
+  const row = h("div", { class: "qp-menu-tools" }, black, ...breaks);
+  if (state.curtain?.kind === "break") row.append(menuButton("x", env.t("menu.breakEnd"), then(() => { commands.dispatch({ type: "uncover" }); }), { "data-break": "end" }));
+  return section(env.t("menu.pause"), row, h("p", { class: "qp-menu-note" }, env.t("menu.pauseHint")));
 }
 
 /** The switch "Questions run by themselves". */
@@ -71,8 +66,9 @@ function restartButton({ env, commands, close }: MenuOptions): HTMLButtonElement
   return button;
 }
 
-const KEY_LINES: readonly (readonly [string, "menu.keyNext" | "menu.keyBack" | "menu.keyTimer" | "menu.keyReset" | "menu.keyMenu" | "menu.keyScores" | "menu.keyFull"])[] = [
-  ["Space  →", "menu.keyNext"], ["←", "menu.keyBack"], ["T", "menu.keyTimer"], ["R", "menu.keyReset"], ["M", "menu.keyMenu"], ["S", "menu.keyScores"], ["F", "menu.keyFull"],
+const KEY_LINES: readonly (readonly [string, "menu.keyNext" | "menu.keyBack" | "menu.keyTimer" | "menu.keyReset" | "menu.keyClip" | "menu.keyZoom" | "menu.keyBlack" | "menu.keyMenu" | "menu.keyScores" | "menu.keyFull"])[] = [
+  ["Space  →  PgDn", "menu.keyNext"], ["←  PgUp", "menu.keyBack"], ["T", "menu.keyTimer"], ["R", "menu.keyReset"], ["P", "menu.keyClip"], ["Z", "menu.keyZoom"], ["B", "menu.keyBlack"],
+  ["M", "menu.keyMenu"], ["S", "menu.keyScores"], ["F", "menu.keyFull"],
 ];
 
 /**
@@ -92,5 +88,5 @@ export function menuContent(options: MenuOptions): readonly HTMLElement[] {
     restartButton(options));
   if (commands.exit) tools.append(menuButton("x", env.t("control.exit"), then(commands.exit), { "data-menu": "exit" }));
   const keys = h("dl", { class: "qp-keys" }, ...KEY_LINES.flatMap(([key, label]) => [h("dt", {}, h("kbd", {}, key)), h("dd", {}, env.t(label))]));
-  return [section(env.t("menu.jump"), jumpList(options)), autoSwitch(options), tools, section(env.t("menu.keys"), keys)];
+  return [section(env.t("menu.jump"), jumpGrid(options)), autoSwitch(options), pauses(options), tools, section(env.t("menu.keys"), keys)];
 }

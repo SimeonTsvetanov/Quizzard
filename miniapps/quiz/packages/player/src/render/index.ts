@@ -8,5 +8,6 @@ export * from "./answers/index.ts";
 export * from "./answers/open.ts";
 export * from "./answers/true-false.ts";
 export * from "./kinds/index.ts";
+export * from "./local-media.ts";
 export * from "./registry.ts";
 export * from "./slide.ts";

@@ -2,7 +2,7 @@
 // registered under the same id as its core entry, and the slide renderer looks them up — it never
 // switches on a name. The creator adds its editor parts to these same entries (its ui-registry.ts);
 // the player uses them as they are.
-import { type Answer, type Question, type Registry, type RegistryEntry, type RevealLabels, createRegistry } from "@simeonts/quizzard-quiz-core/play";
+import { type Answer, type MediaEntry, type Playback, type PlaybackCommand, type Question, type Registry, type RegistryEntry, type RevealLabels, createRegistry } from "@simeonts/quizzard-quiz-core/play";
 
 /** Every word a slide can show; the caller translates, the renderer has no dictionary of its own. */
 export interface SlideLabels extends RevealLabels {
@@ -18,6 +18,40 @@ export interface SlideLabels extends RevealLabels {
   readonly answer: string;
   /** Shown instead of a question this version cannot draw. */
   readonly unsupported: string;
+  /** The words of a picture, an audio clip and a video. */
+  readonly media: MediaLabels;
+}
+
+/** What a slide says about its media. */
+export interface MediaLabels {
+  /** Shown where a file should be and is not. */
+  readonly missing: string;
+  /** Names of the buttons on the slide. */
+  readonly zoom: string;
+  readonly play: string;
+  readonly pause: string;
+  readonly restart: string;
+  /** On the button that appears when the browser wants a tap before it plays sound. */
+  readonly tapToPlay: string;
+}
+
+/** What a kind drew of a question's media, for whoever drives it. */
+export interface DrawnMedia {
+  /** Makes the drawn media match the state: plays, pauses, rewinds, zooms. */
+  sync(state: Playback): void;
+  /** Stops it and lets its file go. */
+  destroy(): void;
+}
+
+/**
+ * The link between a slide's live media and its owner. The slide's buttons only ask (`command`);
+ * the owner — the game, or the creator's preview — decides and tells the drawn media what to show
+ * (`DrawnMedia.sync`), so the host's window, the audience's window and a key all do the same.
+ */
+export interface SlideMedia {
+  command(command: PlaybackCommand): void;
+  /** Called once by the kind's part with what it drew. */
+  mount(drawn: DrawnMedia): void;
 }
 
 /** How a slide is being shown: as the question, or with the answer revealed. */
@@ -30,6 +64,13 @@ export interface SlideView {
    * or `<video>` can load, or `null` when the file is not there. Left out where no media is shown.
    */
   readonly mediaUrl?: (id: string) => string | null;
+  /** Gives the description of a media file of the quiz: its shape, its length, its small still. */
+  readonly entryOf?: (id: string) => MediaEntry | undefined;
+  /**
+   * Present = the media is live: a picture can be zoomed, a clip gets its element and its buttons.
+   * Left out = a still (thumbnails, the host's small previews): nothing plays and nothing is focusable.
+   */
+  readonly media?: SlideMedia;
 }
 
 /** A question kind on the slide. Without `parts` the slide says "not supported in this version". */
@@ -85,3 +126,16 @@ export function createStageRegistries(kinds: readonly SlideKind[], answers: read
 export function canDraw(question: Question, ui: SlideRegistries): boolean {
   return ui.kinds.get(question.kind)?.parts !== undefined && ui.answers.get(question.answer.type)?.parts !== undefined;
 }
+
+/**
+ * A media file's small still as an address an `<img>` may load: only an inline image passes (the
+ * quiz may come from a file someone sent), anything else reads as "no still".
+ * @param entry - the file's description
+ */
+export function stillOf(entry: MediaEntry | undefined): string | null {
+  const poster = entry?.poster;
+  return poster !== undefined && /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(poster) ? poster : null;
+}
+
+/** From this width / height on a picture is a panorama: it wants the slide's whole width. */
+export const WIDE_RATIO = 2.2;

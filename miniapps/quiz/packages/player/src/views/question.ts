@@ -10,7 +10,7 @@ import { viewRoot } from "./parts.ts";
 export function hostAnswer({ env, round, question }: ViewContext): HostAnswer | null {
   if (!round || !question) return null;
   const text = env.parts.answers.get(question.answer.type)?.text(question.answer, env.labels) ?? "";
-  return { text, explanation: question.explanation?.trim() ?? "", points: pointsText(effectivePoints(round, question), env.labels) };
+  return { text, explanation: question.explanation?.trim() ?? "", points: pointsText(effectivePoints(round, question), env.labels), note: question.note?.trim() ?? "" };
 }
 
 /**
@@ -19,7 +19,7 @@ export function hostAnswer({ env, round, question }: ViewContext): HostAnswer | 
  * @param isRevealed - whether the answer shows
  * @param clock - what stands where the time is (see `SlideInput.clock`)
  */
-export function slideOf({ env, round, question }: ViewContext, isRevealed: boolean, clock: HTMLElement | null | undefined): HTMLElement | null {
+export function slideOf({ env, round, question, media }: ViewContext, isRevealed: boolean, clock: HTMLElement | null | undefined): HTMLElement | null {
   if (!round || !question) return null;
   return renderSlide({
     question,
@@ -30,6 +30,8 @@ export function slideOf({ env, round, question }: ViewContext, isRevealed: boole
     labels: env.labels,
     ...(clock === undefined ? {} : { clock }),
     ...(env.mediaUrl ? { mediaUrl: env.mediaUrl } : {}),
+    entryOf: env.entryOf,
+    ...(media ? { media } : {}),
   });
 }
 
@@ -68,10 +70,19 @@ export function slideView({ env, question }: ViewContext, slide: HTMLElement | n
   return { element: root, layout: () => { fitSlide(root); } };
 }
 
+/**
+ * The number of the context's question in its round, from 1; 0 when the screen has none.
+ * @param context - a question or answer screen
+ */
+export function questionNumber({ round, question }: ViewContext): number {
+  return round && question ? round.questions.indexOf(question) + 1 : 0;
+}
+
 /** A question with its timer: the shared slide, the running dial where the time chip is. */
 export const questionView: ViewEntry = {
   id: "question",
   // In a preview there is no dial: the slide shows the question's time as its chip.
   stage: (context) => slideView(context, slideOf(context, false, context.clock ?? undefined)),
   answer: hostAnswer,
+  tile: (context) => ({ mark: String(questionNumber(context)), name: context.env.t("question.name", { n: questionNumber(context) }), group: context.env.t("tile.questions") }),
 };

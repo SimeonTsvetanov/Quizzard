@@ -2,6 +2,7 @@
 // their scores, the timer and the reveal. Everything here is plain JSON — it is saved after every
 // move (save.ts) and sent as it is to the audience window (channel.ts). No DOM, no clock: time comes
 // in through the `tick` action.
+import type { Playback, PlaybackCommand } from "@simeonts/quizzard-quiz-core/play";
 
 /** The player's own screens around the rounds; a round's screens come from its round kind (core). */
 export const PLAYER_SCREENS = {
@@ -25,6 +26,10 @@ export interface GameScreen {
   readonly seconds: number;
   /** How many reveals the screen has before the game moves on; 0 = none. */
   readonly steps: number;
+  /** What the screen's question carries: a picture (`still`) or audio or video (`clip`); left out for none. */
+  readonly media?: "still" | "clip";
+  /** A clip's length in milliseconds; left out when it is not known. */
+  readonly clipMs?: number;
 }
 
 /** A team; its id never changes, its name is what the host typed. */
@@ -48,6 +53,12 @@ export interface Timer {
   readonly cueMs: number;
 }
 
+/**
+ * What covers the stage: a black screen ("eyes on the host"), or a break with its countdown.
+ * While one is up the question behind it rests: its timer and its clip are paused.
+ */
+export type Curtain = { readonly kind: "black" } | { readonly kind: "break"; readonly totalMs: number; readonly leftMs: number };
+
 /** The whole game. */
 export interface GameState {
   readonly screens: readonly GameScreen[];
@@ -67,12 +78,22 @@ export interface GameState {
   /** Questions run by themselves: the timer starts with the question and the game moves on when it ends. */
   readonly auto: boolean;
   readonly timer: Timer;
+  /** The picture or clip of the screen on show; at rest on every new screen. */
+  readonly media: Playback;
+  /** What covers the stage, or `null`. */
+  readonly curtain: Curtain | null;
 }
 
 /** How long the "next" cue shows between a finished timer and the next screen. */
 export const CUE_MS = 2500;
 /** The longest team name. */
 export const TEAM_NAME_MAX = 40;
+/** The lengths of a break the menu offers, in minutes. */
+export const BREAK_MINUTES: readonly number[] = [5, 10, 15];
+/** The longest break, in minutes. */
+export const MAX_BREAK_MINUTES = 60;
+/** A clip that never reported its end is taken as ended this long after its length has passed. */
+export const CLIP_END_GRACE_MS = 1500;
 /** The most points a team can get in one round (and at the tiebreak). */
 export const MAX_SCORE = 999;
 
@@ -94,6 +115,14 @@ export type GameAction =
   | { readonly type: "addBonus"; readonly teamId: string; readonly by: number }
   | { readonly type: "pickWinner"; readonly teamId: string | null }
   | { readonly type: "setAuto"; readonly value: boolean }
+  /** The question's picture or clip: play, pause, restart, zoom — and what the playing window reports. */
+  | { readonly type: "media"; readonly command: PlaybackCommand }
+  /** The black screen on or off. */
+  | { readonly type: "black" }
+  /** Starts a break of that many minutes. */
+  | { readonly type: "break"; readonly minutes: number }
+  /** Takes away whatever covers the stage. */
+  | { readonly type: "uncover" }
   | { readonly type: "restart" };
 
 /**

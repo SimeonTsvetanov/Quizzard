@@ -1,8 +1,9 @@
 // Everything one mounted creator needs: the host's services, the storage, the registries, the screen
 // on show and the quiz that is open. Screens read it and call its moves; they never touch storage.
-import type { Answer, Env, Quiz } from "@simeonts/quizzard-quiz-core";
+import type { Answer, Env, MediaEntry, Quiz } from "@simeonts/quizzard-quiz-core";
 import type { Lang, MiniAppContext } from "../contract.ts";
 import type { Translate } from "../i18n/translate.ts";
+import type { MediaUrls } from "../media/urls.ts";
 import type { Saver } from "../storage/saver.ts";
 import type { QuizStore, QuizSummary, StoredQuiz } from "../storage/store.ts";
 import type { UiRegistries } from "../ui-registry.ts";
@@ -28,6 +29,10 @@ export interface ViewState {
   cleanup: (() => void) | null;
   /** The last export of this visit: shown under the quiz's actions. */
   exported: { readonly quiz: string; readonly name: string; readonly bytes: number } | null;
+  /** The quizzes whose unused media files were already cleared in this visit (app/open-quiz.ts). */
+  readonly swept: Set<string>;
+  /** The browser was asked to keep this site's storage (once, with the first media file). */
+  hasAskedToKeep: boolean;
 }
 
 /** One mounted creator. */
@@ -37,6 +42,8 @@ export interface App {
   readonly signal: AbortSignal;
   readonly store: QuizStore;
   readonly saver: Saver;
+  /** The open quiz's media files as addresses the slide can load. */
+  readonly media: MediaUrls;
   /** Core's registries and id source: every edit goes through them. */
   readonly env: Env;
   readonly ui: UiRegistries;
@@ -53,6 +60,10 @@ export interface App {
   draw(focus?: string): void;
   /** Loads what a screen needs and shows it, on a new history entry or in the current one; then focuses `focus` (default: the screen's title). */
   go(route: Route, mode?: "push" | "replace", focus?: string | null): void;
-  /** Applies an edit of the open quiz and saves it soon; `false` when nothing changed. */
-  change(next: Quiz): boolean;
+  /**
+   * Applies an edit of the open quiz and saves it soon; `false` when nothing changed.
+   * @param next - the quiz after the edit
+   * @param media - the descriptions of its files, when the edit added one
+   */
+  change(next: Quiz, media?: readonly MediaEntry[]): boolean;
 }

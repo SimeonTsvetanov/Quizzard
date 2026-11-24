@@ -1,7 +1,7 @@
 // Builds a game from a quiz: the list of screens (title, teams, every round's own screens from its
 // round kind, tiebreak, podium) with what the reducer needs of each written next to it — so the
 // state carries no reference to the quiz and stays plain data.
-import { type Question, type QuizFile, type Registry, type Round, type RoundKind, MAX_TEAMS, MIN_TEAMS, clamp, createRoundKinds } from "@simeonts/quizzard-quiz-core/play";
+import { type MediaEntry, type Question, type QuizFile, type Registry, type Round, type RoundKind, MAX_TEAMS, MIN_TEAMS, RESTING_PLAYBACK, clamp, createRoundKinds } from "@simeonts/quizzard-quiz-core/play";
 import { type ScreenKind, screenKinds } from "./kinds.ts";
 import { PLAYER_SCREENS, type GameScreen, type GameState, type Team, freshTimer } from "./state.ts";
 
@@ -20,15 +20,25 @@ function own(screen: string): GameScreen {
   return { screen, seconds: 0, steps: 0 };
 }
 
-/** A round's screens with their timer and reveals; a round without questions has nothing to play. */
-function roundScreens(round: Round, rounds: Registry<RoundKind>, kinds: Registry<ScreenKind>): readonly GameScreen[] {
+/**
+ * What a question's file is to the game: a clip when it has a length (audio, video), else a still.
+ * @param entry - the file's description; `undefined` for a question without a file
+ */
+export function mediaOfScreen(entry: MediaEntry | undefined): Pick<GameScreen, "media" | "clipMs"> {
+  if (!entry) return {};
+  if (entry.seconds === undefined) return { media: "still" };
+  return entry.seconds > 0 ? { media: "clip", clipMs: Math.round(entry.seconds * 1000) } : { media: "clip" };
+}
+
+/** A round's screens with their timer, reveals and media; a round without questions has nothing to play. */
+function roundScreens(round: Round, media: ReadonlyMap<string, MediaEntry>, rounds: Registry<RoundKind>, kinds: Registry<ScreenKind>): readonly GameScreen[] {
   if (round.questions.length === 0) return [];
   const questions = new Map<string, Question>(round.questions.map((question) => [question.id, question]));
   return (rounds.get(round.kind)?.screens(round) ?? []).map((place) => {
     const kind = kinds.get(place.screen);
     const question = place.questionId === undefined ? undefined : questions.get(place.questionId);
     const seconds = question && kind?.seconds ? kind.seconds(round, question) : 0;
-    return { ...place, seconds, steps: kind?.steps ?? 0 };
+    return { ...place, seconds, steps: kind?.steps ?? 0, ...mediaOfScreen(question?.media ? media.get(question.media.id) : undefined) };
   });
 }
 
@@ -39,10 +49,11 @@ function roundScreens(round: Round, rounds: Registry<RoundKind>, kinds: Registry
  * @param kinds - the screen kinds
  */
 export function buildScreens(file: QuizFile, rounds: Registry<RoundKind> = defaultRounds, kinds: Registry<ScreenKind> = screenKinds): readonly GameScreen[] {
+  const media = new Map(file.media.map((entry) => [entry.id, entry]));
   return [
     own(PLAYER_SCREENS.title),
     own(PLAYER_SCREENS.teams),
-    ...file.quiz.rounds.flatMap((round) => roundScreens(round, rounds, kinds)),
+    ...file.quiz.rounds.flatMap((round) => roundScreens(round, media, rounds, kinds)),
     own(PLAYER_SCREENS.tie),
     own(PLAYER_SCREENS.final),
   ];
@@ -76,6 +87,8 @@ export function createGame(file: QuizFile, setup: GameSetup): GameState {
     winner: null,
     auto: true,
     timer: freshTimer(0),
+    media: RESTING_PLAYBACK,
+    curtain: null,
   };
 }
 

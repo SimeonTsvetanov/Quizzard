@@ -6,6 +6,7 @@ import { chip, heading, kicker, viewRoot } from "./parts.ts";
 /** The round's opening: its number and name, how it is played and, when it has them, its rules. */
 export const rulesView: ViewEntry = {
   id: "rules",
+  tile: ({ env }) => ({ mark: env.t("tile.rules"), name: env.t("tile.rules") }),
   stage: ({ env, round }) => {
     if (!round) return { element: viewRoot("rules") };
     const playable = env.file.quiz.rounds.filter((candidate) => candidate.questions.length > 0);

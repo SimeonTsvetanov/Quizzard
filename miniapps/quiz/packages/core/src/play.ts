@@ -10,6 +10,7 @@ export type * from "./rounds/round-kind.ts";
 export * from "./answers/shapes.ts";
 export * from "./effective.ts";
 export * from "./format.ts";
+export * from "./playback.ts";
 export * from "./registry.ts";
 export * from "./rounds/kinds.ts";
 export * from "./rounds/standard.ts";

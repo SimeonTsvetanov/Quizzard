@@ -1,9 +1,10 @@
 // "Play" (lazy: loaded when the Play screen opens, so the player and its stylesheet stay out of the
 // creator's first chunk): starts the player — the same code as in an exported page — on the open
 // quiz. The game is kept per quiz in the mini-app's storage area; the audience window is this app
-// again, opened at `#/quiz?audience=1` (audience.ts).
+// again, opened at `#/quiz?audience=1` (audience.ts). The quiz's media files are the ones the
+// creator already holds as addresses (media/urls.ts) — nothing is copied for a game.
 import "../styles/play.css";
-import { type MediaEntry, type Quiz, toFile } from "@simeonts/quizzard-quiz-core";
+import { type MediaEntry, type Quiz, toFile, usedMedia } from "@simeonts/quizzard-quiz-core";
 import { createPlayer, openAudienceWindow } from "@simeonts/quizzard-quiz-player";
 import { AUDIENCE_PARAM } from "../app/routes.ts";
 import type { App } from "../app/state.ts";
@@ -23,8 +24,9 @@ export function startPlay(app: App, quiz: Quiz, media: readonly MediaEntry[], ro
   shell.setBusy(true); // no update offer in the middle of a game
   const player = createPlayer({
     root,
-    file: toFile(quiz, media),
+    file: toFile(quiz, usedMedia(quiz, media)),
     storage: gameStorage(storage.prefs, quiz.id),
+    mediaUrl: app.media.url,
     openAudience: () => openAudienceWindow(`${location.href.split("#")[0] ?? ""}#/quiz?${AUDIENCE_PARAM}=1`),
     onExit: exit,
     notify: (message) => { shell.toast(message, { tone: "error" }); },

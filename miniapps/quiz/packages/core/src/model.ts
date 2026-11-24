@@ -34,8 +34,13 @@ export interface MediaEntry {
   readonly bytes: number;
   readonly width?: number;
   readonly height?: number;
-  /** Length of audio or video. */
+  /** Length of audio or video, in seconds. Set for every clip; a picture has none. */
   readonly seconds?: number;
+  /**
+   * A small still that stands for the file where it is not played: a picture's thumbnail, a frame of
+   * a video. A `data:image/…;base64,` address, so it travels inside the quiz itself.
+   */
+  readonly poster?: string;
 }
 
 /** An answer: `type` names its answer-type registry entry, the other fields are that type's own. */
@@ -57,6 +62,8 @@ export interface Question {
   readonly answer: Answer;
   /** Shown with the answer at the reveal. */
   readonly explanation?: string;
+  /** The host's own note: shown in the editor and on the host panel, never on the stage. */
+  readonly note?: string;
   /** The question's own time; absent = the round's. */
   readonly seconds?: number;
   /** The question's own points; absent = the round's. */
@@ -119,6 +126,7 @@ export const questionSchema = z.looseObject({
   media: z.looseObject({ id }).optional(),
   answer: answerSchema,
   explanation: z.string().optional(),
+  note: z.string().optional(),
   seconds: z.number().positive().optional(),
   points: pointsSchema.optional(),
   data: z.record(z.string(), z.unknown()).optional(),
@@ -155,6 +163,7 @@ export const mediaEntrySchema = z.looseObject({
   width: z.number().positive().optional(),
   height: z.number().positive().optional(),
   seconds: z.number().nonnegative().optional(),
+  poster: z.string().optional(),
 });
 
 /** Schema of the version-1 quiz file envelope. Kind and answer payloads are checked in validate.ts. */

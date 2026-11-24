@@ -35,6 +35,7 @@ function boardRow(env: PlayEnv, line: Standing, index: number, most: number): HT
 /** The leaderboard after a round: bars, totals and who moved up or down. */
 export const boardView: ViewEntry = {
   id: "board",
+  tile: ({ env }) => ({ mark: env.t("board.title"), name: env.t("board.title") }),
   structure: scoreDigest,
   stage: ({ env, state, round }) => {
     const lines = standings(state, round?.id);

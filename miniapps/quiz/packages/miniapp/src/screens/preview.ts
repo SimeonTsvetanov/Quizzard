@@ -5,9 +5,9 @@ import { type Question, type Quiz, type Round } from "@simeonts/quizzard-quiz-co
 import type { App } from "../app/state.ts";
 import { iconButton, labelButton } from "../dom/controls.ts";
 import { h } from "../dom/h.ts";
-import { slideLabels } from "../format.ts";
-import { renderSlide } from "../render/slide.ts";
+import { createLocalMedia } from "@simeonts/quizzard-quiz-player/render";
 import { emptyState, up } from "./common.ts";
+import { showLive, slideProps } from "./slide-props.ts";
 
 /** A swipe shorter than this many px is a tap. */
 const SWIPE_MIN_PX = 48;
@@ -74,7 +74,11 @@ export function previewScreen(app: App, quiz: Quiz): HTMLElement {
   }
   const where = t("preview.where", { round: stop.round.name, n: stop.number, total: stop.round.questions.length });
   const title = h("h2", { class: "quiz-preview-title", id: "quiz-preview-title", tabindex: "-1", "data-screen-title": "" }, where);
-  const stage = h("div", { class: "quiz-stage", "data-preview-slide": "" }, renderSlide({ question: stop.question, round: stop.round, number: stop.number, reveal: view.isRevealed, ui: app.ui, labels: slideLabels(t, app.lang) }));
+  // The preview's media is live: the picture zooms, the clip plays — and stops when the screen is left.
+  const media = createLocalMedia();
+  app.view.cleanup = () => { media.stop(); };
+  const stage = h("div", { class: "quiz-stage", "data-preview-slide": "" });
+  showLive(stage, { question: stop.question, round: stop.round, number: stop.number, reveal: view.isRevealed, ...slideProps(app) }, media);
   const reveal = h("button", { type: "button", class: "button quiz-toggle", "aria-pressed": String(view.isRevealed), "data-reveal-toggle": "", "data-focus": "reveal" }, t("preview.showAnswer"));
   reveal.addEventListener("click", () => {
     view.isRevealed = !view.isRevealed;

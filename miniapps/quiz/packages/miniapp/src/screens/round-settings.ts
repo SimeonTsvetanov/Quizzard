@@ -2,6 +2,7 @@
 // optional rules, and the round's own actions. Closed it is one line that says what the round gives;
 // changing a value never rebuilds the strip, so the caret stays where it is.
 import { MAX_ROUNDS, RULES_MAX, type Quiz, type Round, deleteRound, duplicateRound, setRoundDefaults, setRoundRules } from "@simeonts/quizzard-quiz-core";
+import { applyAllRow } from "./round-apply.ts";
 import type { App } from "../app/state.ts";
 import { chipPicker, labelButton, textField } from "../dom/controls.ts";
 import { h } from "../dom/h.ts";
@@ -98,6 +99,7 @@ export function roundSettings(app: App, round: Round, onChange: () => void): HTM
     h("div", { class: "quiz-settings-body" },
       h("div", { class: "quiz-group" }, h("span", { class: "quiz-label" }, t("round.time")), time.element),
       h("div", { class: "quiz-group" }, h("span", { class: "quiz-label" }, t("round.points")), points.element, h("p", { class: "quiz-hint" }, t("points.hint"))),
+      applyAllRow(app, round.id, () => gist(app, live(app, round.id)?.round ?? round), changed),
       ...defaultsPickers(app, round, changed),
       rules,
       h("div", { class: "quiz-settings-actions" }, copy, trash)));

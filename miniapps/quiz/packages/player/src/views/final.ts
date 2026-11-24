@@ -31,6 +31,7 @@ function restLine(env: PlayEnv, line: Standing): HTMLElement {
 /** The podium: the first three on their steps, the others listed beside it. */
 export const finalView: ViewEntry = {
   id: "final",
+  tile: ({ env }) => ({ mark: env.t("menu.end"), name: env.t("menu.end") }),
   structure: scoreDigest,
   stage: ({ env, state }) => {
     const lines = finalStandings(state);

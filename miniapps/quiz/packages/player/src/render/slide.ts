@@ -2,13 +2,14 @@
 // screen, and the player's question and answer screens draw a question with it. It knows nothing of
 // either: it gets the question, its round, the registries and the words, and returns the slide.
 // Layout top to bottom: number, round, time and points · the question text · the kind's media area
-// · the answer part · the explanation at the reveal.
+// · the answer part · the explanation at the reveal. With media the options may stand next to it
+// instead of under it (slide.css decides by `data-media` and the number of options).
 // Scaling: the slide is a size container and every size on its canvas is in `cqi` (slide.css), so
 // the same markup is a thumbnail or a projector slide with crisp text and no script.
-import { type Points, type Question, type Round, effectivePoints, effectiveSeconds } from "@simeonts/quizzard-quiz-core/play";
+import { type MediaEntry, type Points, type Question, type Round, effectivePoints, effectiveSeconds } from "@simeonts/quizzard-quiz-core/play";
 import { h } from "./h.ts";
 import { icon } from "./icons.ts";
-import { canDraw, type SlideLabels, type SlideRegistries, type SlideView } from "./registry.ts";
+import { canDraw, type SlideLabels, type SlideMedia, type SlideRegistries, type SlideView } from "./registry.ts";
 
 /** What one slide is drawn from. */
 export interface SlideInput {
@@ -28,6 +29,10 @@ export interface SlideInput {
   readonly clock?: HTMLElement | null;
   /** Gives the address of a media file of the quiz; see {@link SlideView.mediaUrl}. */
   readonly mediaUrl?: (id: string) => string | null;
+  /** Gives the description of a media file; see {@link SlideView.entryOf}. */
+  readonly entryOf?: (id: string) => MediaEntry | undefined;
+  /** Makes the media live; see {@link SlideView.media}. */
+  readonly media?: SlideMedia;
 }
 
 /** Text lengths at which the question text steps down a size. */
@@ -87,7 +92,12 @@ function parts({ question, ui }: SlideInput, view: SlideView): (HTMLElement | nu
  */
 export function renderSlide(input: SlideInput): HTMLElement {
   const { question, reveal, ui, labels } = input;
-  const view: SlideView = { reveal, labels, ...(input.mediaUrl ? { mediaUrl: input.mediaUrl } : {}) };
+  const view: SlideView = {
+    reveal, labels,
+    ...(input.mediaUrl ? { mediaUrl: input.mediaUrl } : {}),
+    ...(input.entryOf ? { entryOf: input.entryOf } : {}),
+    ...(input.media ? { media: input.media } : {}),
+  };
   const isEmpty = question.prompt.trim() === "";
   const canvas = h("div", { class: "quiz-slide-canvas" }, topLine(input));
   const slide = h("div", { class: "quiz-slide", "data-tone": ui.kinds.get(question.kind)?.tone ?? "none", "data-size": promptSize(question.prompt), ...(reveal ? { "data-reveal": "" } : {}) }, canvas);
@@ -96,7 +106,10 @@ export function renderSlide(input: SlideInput): HTMLElement {
     return slide;
   }
   canvas.append(h("p", { class: "quiz-slide-prompt", ...(isEmpty ? { "data-empty": "" } : {}) }, isEmpty ? labels.emptyPrompt : question.prompt));
-  for (const part of parts(input, view)) if (part !== null) canvas.append(part);
+  const [media, answer] = parts(input, view);
+  // A part that wants the slide's whole width (a panorama, an audio bar) says so; the others may share the row with the options.
+  if (media) slide.setAttribute("data-media", media.firstElementChild?.getAttribute("data-layout") ?? "side");
+  for (const part of [media, answer]) if (part) canvas.append(part);
   const explanation = question.explanation?.trim() ?? "";
   if (reveal && explanation !== "") canvas.append(h("p", { class: "quiz-slide-explanation" }, icon("hint", 16), h("span", {}, explanation)));
   return slide;

@@ -3,8 +3,10 @@
 // narrower with larger type) and is scaled as a whole to the box, so every screen keeps its
 // proportions on a projector, a laptop or a phone. It shows the view of the game's screen (looked
 // up in the views registry), the timer dial and the cue between questions.
+import { clockText } from "@simeonts/quizzard-quiz-core/play";
 import { CUE_MS, type GameState } from "../game/state.ts";
 import { h } from "../render/h.ts";
+import type { DrawnMedia, SlideMedia } from "../render/registry.ts";
 import { contextOf, type DrawnView, type PlayEnv } from "../views/context.ts";
 import { fallbackView } from "../views/index.ts";
 import { createDial } from "./dial.ts";
@@ -47,6 +49,7 @@ export interface Stage {
   readonly element: HTMLElement;
   /** Shows a game: draws its screen's view, or brings the one on show up to date. */
   show(state: GameState): void;
+  /** Stops whatever the stage plays and removes its observers. */
   destroy(): void;
 }
 
@@ -68,6 +71,30 @@ function showCue(cue: HTMLElement, env: PlayEnv, state: GameState): void {
   cue.firstElementChild?.replaceChildren(status === "cue" ? `${env.t("stage.timeUp")} · ${comes}` : env.t("stage.timeUp"));
   cue.style.setProperty("--qp-cue", String(status === "cue" ? 1 - cueMs / CUE_MS : 0));
   cue.setAttribute("data-status", status);
+}
+
+/** What covers the stage: the black screen, or the break with its countdown. Drawn again only when its words change. */
+function showCurtain(curtain: HTMLElement, env: PlayEnv, state: GameState): void {
+  const cover = state.curtain;
+  curtain.hidden = cover === null;
+  if (cover === null) {
+    curtain.removeAttribute("data-curtain");
+    return;
+  }
+  const isOver = cover.kind === "break" && cover.leftMs === 0;
+  const text = cover.kind === "break" ? clockText(Math.ceil(cover.leftMs / 1000)) : "";
+  const key = `${cover.kind}:${text}`;
+  if (curtain.getAttribute("data-shown") === key) return;
+  curtain.setAttribute("data-shown", key);
+  curtain.setAttribute("data-curtain", cover.kind);
+  if (cover.kind === "black") {
+    curtain.replaceChildren(h("span", { class: "qp-visually-hidden" }, env.t("black.on")));
+    return;
+  }
+  curtain.replaceChildren(
+    h("p", { class: "qp-kicker" }, env.t("break.title")),
+    h("p", { class: "qp-break-time", "data-break-time": "", ...(isOver ? { "data-over": "" } : {}) }, text),
+    h("p", { class: "qp-sub" }, env.t(isOver ? "break.over" : "break.sub")));
 }
 
 /** Below this scale a 44 px control takes so much of the canvas that the views switch to their compact layouts. */
@@ -96,11 +123,16 @@ function fit(element: HTMLElement, canvas: HTMLElement): void {
 export function createStage(env: PlayEnv, { canEdit, isLive }: StageOptions): Stage {
   const cue = h("div", { class: "qp-cue", role: "status" }, h("span", { class: "qp-cue-text" }), h("span", { class: "qp-cue-bar", "aria-hidden": "true" }));
   cue.hidden = true;
+  const curtain = h("div", { class: "qp-curtain", "data-curtain-box": "" });
+  curtain.hidden = true;
   const canvas = h("div", { class: "qp-canvas" });
   const element = h("div", { class: "qp-stage", role: "region", "aria-label": env.t("stage.label"), "data-stage": isLive ? "live" : "preview" }, canvas);
   if (!isLive) element.inert = true;
   const dial = isLive ? createDial(env.t) : null;
   let drawn: { key: string; index: number; view: DrawnView } | null = null;
+  // Only the live stage plays: its slide's picture and clip follow the game through this link.
+  let clip: DrawnMedia | null = null;
+  const media: SlideMedia = { command: (command) => { env.dispatch({ type: "media", command }); }, mount: (part) => { clip = part; } };
   const observer = new ResizeObserver(() => {
     fit(element, canvas);
     drawn?.view.layout?.();
@@ -109,7 +141,7 @@ export function createStage(env: PlayEnv, { canEdit, isLive }: StageOptions): St
   return {
     element,
     show(state) {
-      const context = contextOf(env, state, { canEdit, clock: dial && (state.screens[state.index]?.seconds ?? 0) > 0 ? dial.element : null });
+      const context = contextOf(env, state, { canEdit, clock: dial && (state.screens[state.index]?.seconds ?? 0) > 0 ? dial.element : null, ...(isLive ? { media } : {}) });
       const entry = env.views.get(context.screen.screen) ?? fallbackView;
       const key = `${String(state.index)}:${String(state.step)}:${entry.structure?.(state) ?? ""}`;
       dial?.update(state.timer);
@@ -117,17 +149,25 @@ export function createStage(env: PlayEnv, { canEdit, isLive }: StageOptions): St
         drawn.view.sync?.(state);
       } else {
         const focused = element.contains(document.activeElement) ? document.activeElement?.getAttribute("data-focus") : null;
+        clip?.destroy();
+        clip = null;
         const view = entry.stage(context);
         // Only a new screen comes in with its entrance; a redraw of the same one does not replay it.
         view.element.toggleAttribute("data-enter", drawn?.index !== state.index);
-        canvas.replaceChildren(view.element, cue);
+        canvas.replaceChildren(view.element, cue, curtain);
         if (focused != null) canvas.querySelector<HTMLElement>(`[data-focus="${CSS.escape(focused)}"]`)?.focus();
         drawn = { key, index: state.index, view };
         fit(element, canvas);
         view.layout?.();
       }
+      clip?.sync(state.media);
+      showCurtain(curtain, env, state);
       if (isLive) showCue(cue, env, state);
     },
-    destroy() { observer.disconnect(); },
+    destroy() {
+      observer.disconnect();
+      clip?.destroy();
+      clip = null;
+    },
   };
 }

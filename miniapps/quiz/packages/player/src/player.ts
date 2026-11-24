@@ -3,7 +3,7 @@
 // panel while the stage is sent to that window through a channel. The same code runs inside the
 // creator ("Play") and in the exported page.
 import type { QuizFile } from "@simeonts/quizzard-quiz-core/play";
-import { type Channel, type Transport, createChannel } from "./channel.ts";
+import { type Channel, type Transport, createChannel, forAudience } from "./channel.ts";
 import { createEnv } from "./env.ts";
 import { createGame } from "./game/create.ts";
 import { restore, toSaved } from "./game/save.ts";
@@ -120,6 +120,12 @@ function move(session: Session, action: GameAction): void {
   draw(session);
 }
 
+/** Whether time matters to the game right now: a running timer or cue, a playing clip, a break counting down. */
+function needsTicks(state: GameState): boolean {
+  if (state.curtain !== null) return state.curtain.kind === "break" && state.curtain.leftMs > 0;
+  return state.timer.status === "running" || state.timer.status === "cue" || state.media.status === "playing";
+}
+
 /** What a dialog shows and how it follows the game. */
 interface DialogContent {
   readonly content: readonly HTMLElement[];
@@ -143,6 +149,8 @@ function stopPresenting(session: Session): void {
   presenter.link.close();
   presenter.panel.destroy();
   presenter.panel.element.remove();
+  // The clip was playing in the window that is gone: it rests until the host plays it here.
+  move(session, { type: "media", command: "pause" });
   draw(session);
 }
 
@@ -153,10 +161,13 @@ function startPresenting(session: Session): void {
     options.notify?.(session.t("menu.popupBlocked"));
     return;
   }
+  // From here on the audience's window is the one that plays: a clip playing in this window stops.
+  move(session, { type: "media", command: "pause" });
   const channel = createChannel(link.transport);
   const panel = createPanel(env, commands);
+  const file = forAudience(options.file);
   channel.on((message) => {
-    if (message.kind === "hello") channel.send({ kind: "init", file: options.file, state: session.state });
+    if (message.kind === "hello") channel.send({ kind: "init", file, state: session.state });
     if (message.kind === "action") move(session, message.action);
     if (message.kind === "bye") stopPresenting(session);
   });
@@ -218,7 +229,7 @@ export function createPlayer(options: PlayerOptions): Player {
     const ms = now - lastTick;
     lastTick = now;
     if (session.presenter?.link.isClosed() === true) stopPresenting(session);
-    if (session.state.timer.status === "running" || session.state.timer.status === "cue") move(session, { type: "tick", ms });
+    if (needsTicks(session.state)) move(session, { type: "tick", ms });
   }, TICK_MS);
   window.addEventListener("pagehide", () => {
     save(session);

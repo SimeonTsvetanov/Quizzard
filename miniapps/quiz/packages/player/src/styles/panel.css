@@ -272,3 +272,70 @@
     font-size: 15px;
   }
 }
+
+/* || Media, the host's note and what covers the stage */
+.qp-card[hidden] {
+  display: none;
+}
+
+.qp-card[data-card="media"] .qp-bar-button[aria-pressed="true"] {
+  background: var(--qp-accent);
+  box-shadow: none;
+  color: var(--qp-on-accent);
+}
+
+.qp-host-clip {
+  font-family: var(--qp-display);
+  font-size: 22px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+
+  &[data-status="idle"] {
+    color: var(--qp-text-2);
+  }
+}
+
+.qp-host-warning,
+.qp-host-cover {
+  padding: 10px 12px;
+  border-radius: 12px;
+  box-shadow: inset 0 0 0 2px var(--qp-accent);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.qp-host-note {
+  display: grid;
+  gap: 2px;
+  padding-top: 8px;
+  border-top: 1px solid var(--qp-line);
+  font-size: 15px;
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+}
+
+.qp-host-note-label {
+  color: var(--qp-text-2);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.qp-panel-head .qp-bar-button[aria-pressed="true"],
+.qp-bar .qp-bar-button[aria-pressed="true"] {
+  background: var(--qp-gold);
+  box-shadow: none;
+  color: var(--qp-on-gold);
+}
+
+/* A phone: "Black screen" is its mark alone in the panel's head. */
+@media (width < 600px) {
+  .qp-panel-head [data-control="black"] {
+    padding-inline: 0;
+
+    & .qp-bar-words {
+      display: none;
+    }
+  }
+}

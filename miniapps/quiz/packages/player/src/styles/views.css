@@ -270,6 +270,42 @@
     margin-top: 0;
   }
 
+  /* With media the question stands on top and its picture or clip takes the room; the media keeps
+     at least this much, so a crowded slide is drawn smaller rather than its picture squeezed away. */
+  & .quiz-slide[data-media] .quiz-slide-prompt {
+    margin-block: 0;
+    font-size: 4.6cqi;
+  }
+
+  & .quiz-slide[data-media][data-size="m"] .quiz-slide-prompt {
+    font-size: 3.8cqi;
+  }
+
+  & .quiz-slide[data-media][data-size="s"] .quiz-slide-prompt {
+    font-size: 3.1cqi;
+  }
+
+  & .quiz-slide[data-media][data-size="xs"] .quiz-slide-prompt {
+    font-size: 2.6cqi;
+  }
+
+  & .quiz-slide-media {
+    min-height: 16cqi;
+  }
+
+  /* An upright screen has the height: the options go under the media again. */
+  [data-shape="tall"] & .quiz-slide[data-media] .quiz-slide-canvas {
+    display: flex;
+  }
+
+  [data-shape="tall"] & .quiz-slide[data-media] .quiz-slide-options {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  [data-shape="tall"] & .quiz-slide-media {
+    min-height: 30cqi;
+  }
+
   /* An upright screen: the slide's own sizes follow its width, so everything on it is enlarged, the
      options go under each other and long texts get more lines. */
   [data-shape="tall"] & .quiz-slide-canvas {

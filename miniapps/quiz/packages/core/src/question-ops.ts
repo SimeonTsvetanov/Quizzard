@@ -57,21 +57,27 @@ export function changeQuestion(quiz: Quiz, questionId: string, change: (question
   return changeRound(quiz, place.round.id, (round) => ({ ...round, questions: round.questions.map((question) => (question === place.question ? next : question)) }));
 }
 
-/** What the editor changes on a question. `null` removes the media; an empty explanation removes it. */
+/** What the editor changes on a question. `null` removes the media; an empty explanation or note removes it. */
 export interface QuestionEdit {
   readonly prompt?: string;
   readonly explanation?: string;
+  /** The host's own note (never on the stage). */
+  readonly note?: string;
   readonly answer?: Answer;
   readonly media?: MediaRef | null;
   readonly data?: QuestionData;
 }
 
-/** Applies the explanation and media parts of an edit, removing the field where the edit says so. */
+/** Applies the explanation, note and media parts of an edit, removing the field where the edit says so. */
 function applyOptional(question: Question, edit: QuestionEdit): Question {
   let next = question;
   if (edit.explanation !== undefined) {
     const explanation = limits.cut(edit.explanation, limits.EXPLANATION_MAX);
     next = explanation.trim() === "" ? without(next, "explanation") : { ...next, explanation };
+  }
+  if (edit.note !== undefined) {
+    const note = limits.cut(edit.note, limits.HOST_NOTE_MAX);
+    next = note.trim() === "" ? without(next, "note") : { ...next, note };
   }
   if (edit.media !== undefined) next = edit.media === null ? without(next, "media") : { ...next, media: edit.media };
   return next;
@@ -203,4 +209,25 @@ export function duplicateQuestion(quiz: Quiz, questionId: string, env: Env = def
   if (!place || !canAddQuestion(place.round)) return quiz;
   const copy: Question = { ...place.question, id: env.ids() };
   return changeRound(quiz, place.round.id, (round) => ({ ...round, questions: [...round.questions.slice(0, place.index + 1), copy, ...round.questions.slice(place.index + 1)] }));
+}
+
+/**
+ * How many questions of a round have a time or points of their own — what "apply to all" would change.
+ * @param round - the round
+ */
+export function ownValueCount(round: Round): number {
+  return round.questions.filter((question) => question.seconds !== undefined || question.points !== undefined).length;
+}
+
+/**
+ * Takes every question of a round back to the round's time and points: their own values are removed
+ * (SPEC F5 — a question without its own follows the round). The same quiz when none had its own.
+ * @param quiz - the quiz
+ * @param roundId - the round
+ */
+export function applyRoundDefaults(quiz: Quiz, roundId: string): Quiz {
+  return changeRound(quiz, roundId, (round) => {
+    if (ownValueCount(round) === 0) return round;
+    return { ...round, questions: round.questions.map((question) => without(without(question, "seconds"), "points")) };
+  });
 }

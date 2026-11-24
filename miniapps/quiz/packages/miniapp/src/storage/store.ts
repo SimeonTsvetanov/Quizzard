@@ -2,7 +2,7 @@
 // quiz is written as its `QuizFile` (core `toFile`) and read only through core `open()`, so every
 // stored quiz carries its version and an older one is migrated on the way in (PLAN §2 rule 4).
 import {
-  type Env, type MediaEntry, type OpenFailure, type Quiz, type QuizFile, defaultEnv, duplicateQuiz, open, toFile, totals, touch,
+  type Env, type MediaEntry, type OpenFailure, type Quiz, type QuizFile, defaultEnv, duplicateQuiz, open, toFile, totals, touch, usedMediaBytes,
 } from "@simeonts/quizzard-quiz-core";
 import { MEDIA, QUIZZES, finished, openDb, promised } from "./db.ts";
 
@@ -16,7 +16,7 @@ export interface QuizSummary {
   readonly seconds: number;
   /** ISO 8601 time of the last change. */
   readonly updatedAt: string;
-  /** Size on this device: the quiz data plus its media files. */
+  /** Size on this device: the quiz data plus the media files its questions use. */
   readonly bytes: number;
   /** Set when this version cannot open the quiz (made by a newer Quizzard, or damaged); it is kept, never dropped. */
   readonly problem?: OpenFailure;
@@ -27,6 +27,9 @@ export interface StoredQuiz {
   readonly quiz: Quiz;
   readonly media: readonly MediaEntry[];
 }
+
+/** The bytes of a quiz's media files, by the id of their `MediaEntry`. */
+export type MediaFiles = ReadonlyMap<string, Blob>;
 
 /** The result of {@link QuizStore.get}. */
 export type LoadResult = ({ readonly ok: true } & StoredQuiz) | { readonly ok: false; readonly reason: OpenFailure | "missing" };
@@ -42,6 +45,18 @@ export interface QuizStore {
   restore(stored: StoredQuiz): Promise<void>;
   /** Deletes the quiz and its media files. */
   delete(id: string): Promise<void>;
+  /** The media files of a quiz as they are stored. Reading them loads nothing: a Blob is a handle. */
+  media(quizId: string): Promise<MediaFiles>;
+  /** Stores one media file of a quiz (a file of the same id is replaced). */
+  putMedia(quizId: string, id: string, blob: Blob): Promise<void>;
+  /** Deletes media files of a quiz — only ever the ones no question uses (core `unusedMedia`). */
+  deleteMedia(quizId: string, ids: readonly string[]): Promise<void>;
+  /**
+   * Writes a quiz exactly as given together with its media files, in one step: the files it had
+   * before are replaced, so writing the same quiz twice never leaves two copies of a file (AC7).
+   * Used for a quiz file that was opened and for Undo of a delete.
+   */
+  bring(stored: StoredQuiz, files: MediaFiles): Promise<void>;
   /** Copies a quiz (new ids, its media files copied) under a new name; `undefined` when it cannot be read. */
   duplicate(id: string, name: string): Promise<Quiz | undefined>;
   /** Closes the database once pending writes are done; a later call opens it again. */
@@ -81,8 +96,21 @@ function summarize(key: string, record: unknown, env: Env): QuizSummary {
   }
   const { quiz, media } = result.file;
   const size = totals(quiz);
-  const mediaBytes = media.reduce((sum, entry) => sum + entry.bytes, 0);
-  return { id: quiz.id, name: quiz.name, rounds: size.rounds, questions: size.questions, seconds: size.seconds, updatedAt: quiz.updatedAt, bytes: bytes + mediaBytes };
+  return { id: quiz.id, name: quiz.name, rounds: size.rounds, questions: size.questions, seconds: size.seconds, updatedAt: quiz.updatedAt, bytes: bytes + usedMediaBytes(quiz, media) };
+}
+
+/** One record of the `media` store. */
+interface MediaRecord {
+  readonly quizId: string;
+  readonly id: string;
+  readonly blob: Blob;
+}
+
+/** Whether a stored value is a media record this version wrote. */
+function isMediaRecord(value: unknown): value is MediaRecord {
+  if (typeof value !== "object" || value === null) return false;
+  const record = value as Partial<MediaRecord>;
+  return typeof record.quizId === "string" && typeof record.id === "string" && record.blob instanceof Blob;
 }
 
 /** Runs one transaction over the given stores and resolves with `work`'s result once it is written. */
@@ -173,6 +201,23 @@ export function createQuizStore(options: StoreOptions = {}): QuizStore {
       });
       return copy;
     },
+    async media(quizId) {
+      const records = await run("readonly", (transaction) => promised<unknown[]>(transaction.objectStore(MEDIA).getAll(mediaOf(quizId))));
+      return new Map(records.filter(isMediaRecord).map((record) => [record.id, record.blob]));
+    },
+    putMedia: (quizId, id, blob) => run("readwrite", async (transaction) => { await promised(transaction.objectStore(MEDIA).put({ quizId, id, blob } satisfies MediaRecord)); }),
+    deleteMedia: (quizId, ids) => run("readwrite", async (transaction) => {
+      const files = transaction.objectStore(MEDIA);
+      await Promise.all(ids.map((id) => promised(files.delete([quizId, id]))));
+    }),
+    bring: ({ quiz, media }, blobs) => run("readwrite", async (transaction) => {
+      const files = transaction.objectStore(MEDIA);
+      const quizId = quiz.id;
+      // In the order they are asked: the old files go first, then the quiz and its files are written.
+      const cleared = promised(files.delete(mediaOf(quizId)));
+      const puts = [...blobs].map(([id, blob]) => promised(files.put({ quizId, id, blob } satisfies MediaRecord)));
+      await Promise.all([cleared, promised(transaction.objectStore(QUIZZES).put(toFile(quiz, media))), ...puts]);
+    }),
     close: () => { connection.close(); },
   };
 }

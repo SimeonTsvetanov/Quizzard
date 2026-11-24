@@ -1,15 +1,15 @@
-// The faces of the kinds that carry a file. They are known to the core and listed in the picker, but
-// have no slide part and no editor part yet (pictures: slice 3, audio and video: slice 4), so the
-// picker shows them as "coming soon". Giving the slide entry its `parts` (the player's render/kinds)
-// and passing the editor part here is all it takes to switch one on.
+// The faces of the kinds that carry a file. Each is usable because it has both halves: its slide
+// part (the player's render/kinds — the picture, the clip) and its editor part, the file picker.
+// The picker is one for all three: which files it takes comes from the core kind's `mediaType`.
 import { audioKindSlide, pictureKindSlide, videoKindSlide } from "@simeonts/quizzard-quiz-player/render";
 import { type KindUi, kindUi } from "../ui-registry.ts";
+import { mediaPicker } from "./media-picker.ts";
 
 /** Question kind `picture`: text on top, one picture below. */
-export const pictureKindUi: KindUi = kindUi(pictureKindSlide, { label: "kind.picture", icon: "picture" });
+export const pictureKindUi: KindUi = kindUi(pictureKindSlide, { label: "kind.picture", icon: "picture" }, mediaPicker);
 
 /** Question kind `audio`: text and one audio clip. */
-export const audioKindUi: KindUi = kindUi(audioKindSlide, { label: "kind.audio", icon: "audio" });
+export const audioKindUi: KindUi = kindUi(audioKindSlide, { label: "kind.audio", icon: "audio" }, mediaPicker);
 
 /** Question kind `video`: text and one video clip. */
-export const videoKindUi: KindUi = kindUi(videoKindSlide, { label: "kind.video", icon: "video" });
+export const videoKindUi: KindUi = kindUi(videoKindSlide, { label: "kind.video", icon: "video" }, mediaPicker);

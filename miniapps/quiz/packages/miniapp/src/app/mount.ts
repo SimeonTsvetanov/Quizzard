@@ -5,6 +5,7 @@ import { type Quiz, defaultEnv, findQuestion, findRound } from "@simeonts/quizza
 import { answerUis } from "../answers-ui/index.ts";
 import type { MiniAppContext, Unmount } from "../contract.ts";
 import { createTranslator } from "../i18n/translate.ts";
+import { createMediaUrls } from "../media/urls.ts";
 import { kindUis } from "../kinds-ui/index.ts";
 import { meta } from "../meta.ts";
 import { editorScreen } from "../screens/editor.ts";
@@ -16,6 +17,7 @@ import { keepUnsaved, restoreUnsaved } from "../storage/rescue.ts";
 import { createSaver } from "../storage/saver.ts";
 import { createQuizStore } from "../storage/store.ts";
 import { createUiRegistries } from "../ui-registry.ts";
+import { openQuiz } from "./open-quiz.ts";
 import { AUDIENCE_PARAM, LIBRARY, createNavigator, type Route } from "./routes.ts";
 import { createSavedTick } from "./saved-tick.ts";
 import type { App } from "./state.ts";
@@ -76,17 +78,6 @@ interface Shows {
   count: number;
 }
 
-/** Loads the quiz of a route unless it is the open one; `false` when it cannot be opened. */
-async function openQuiz(app: App, quizId: string): Promise<boolean> {
-  if (app.current?.quiz.id === quizId) return true;
-  await app.saver.flush();
-  const loaded = await app.store.get(quizId).catch(() => ({ ok: false as const }));
-  if (!loaded.ok) return false;
-  app.current = { quiz: loaded.quiz, media: loaded.media };
-  app.view.lastRound = null;
-  return true;
-}
-
 /** Shows a route: loads what it needs, draws it and puts the focus where a person expects it. */
 async function show(app: App, shows: Shows, route: Route, focus: string | null | undefined): Promise<void> {
   shows.count += 1;
@@ -117,6 +108,7 @@ async function show(app: App, shows: Shows, route: Route, focus: string | null |
   await app.saver.flush(); // the list must show the last change
   if (isStale()) return;
   app.current = null;
+  app.media.release();
   await loadLibrary(app, wanted);
   if (wanted !== undefined && !isStale() && !app.host.contains(document.activeElement)) app.host.querySelector<HTMLElement>("[data-screen-title]")?.focus();
 }
@@ -139,9 +131,9 @@ function createApp(element: HTMLElement, context: MiniAppContext, signal: AbortS
     },
   });
   const app: App = {
-    host: element, context, signal, store, saver, env: defaultEnv, ui: createUiRegistries(kindUis, answerUis), lang, t: createTranslator(lang),
+    host: element, context, signal, store, saver, media: createMediaUrls(), env: defaultEnv, ui: createUiRegistries(kindUis, answerUis), lang, t: createTranslator(lang),
     nav: createNavigator({ hash: `#/${meta.id}`, signal, onTraverse: (route) => { void show(app, shows, route, returnFocus(app.route, route)); } }),
-    view: { lastRound: null, isSettingsOpen: false, renaming: null, isLiveOpen: false, isRevealed: false, drafts: new Map(), isEntering: false, cleanup: null, exported: null },
+    view: { lastRound: null, isSettingsOpen: false, renaming: null, isLiveOpen: false, isRevealed: false, drafts: new Map(), isEntering: false, cleanup: null, exported: null, swept: new Set(), hasAskedToKeep: false },
     route: LIBRARY, library: null, current: null,
     draw: (focus) => { draw(app, focus); },
     go(route, mode = "push", focus = null) {
@@ -149,9 +141,9 @@ function createApp(element: HTMLElement, context: MiniAppContext, signal: AbortS
       window.scrollTo({ top: 0 });
       void show(app, shows, route, focus);
     },
-    change(next) {
-      if (app.current === null || next === app.current.quiz) return false;
-      app.current = { ...app.current, quiz: next };
+    change(next, media) {
+      if (app.current === null || (next === app.current.quiz && media === undefined)) return false;
+      app.current = { quiz: next, media: media ?? app.current.media };
       saver.soon(next, app.current.media);
       return true;
     },
@@ -166,6 +158,7 @@ function createApp(element: HTMLElement, context: MiniAppContext, signal: AbortS
   signal.addEventListener("abort", () => {
     leave(app);
     tick.remove();
+    app.media.release();
   });
   return app;
 }

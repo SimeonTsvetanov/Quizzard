@@ -5,6 +5,7 @@ import { heading, kicker, viewRoot } from "./parts.ts";
 /** The title screen: the quiz's name and its size, before anything starts. */
 export const titleView: ViewEntry = {
   id: "title",
+  tile: ({ env }) => ({ mark: env.t("menu.start"), name: env.t("menu.start") }),
   stage: ({ env, canEdit }) => {
     const { quiz } = env.file;
     const playable = quiz.rounds.filter((round) => round.questions.length > 0);

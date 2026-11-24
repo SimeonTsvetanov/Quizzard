@@ -2,9 +2,10 @@
 // host's window for the quiz and the game, draws every state it is sent, and passes key presses back
 // as moves for the host to make. It never draws a view with its controls, and it knows of an answer
 // only what the game's reveal step says.
+import type { QuizFile } from "@simeonts/quizzard-quiz-core/play";
 import { type Transport, createChannel } from "./channel.ts";
 import { createEnv } from "./env.ts";
-import type { GameAction } from "./game/state.ts";
+import type { GameAction, GameState } from "./game/state.ts";
 import { type Lang, createTranslator } from "./i18n/translate.ts";
 import { h } from "./render/h.ts";
 import { icon } from "./render/icons.ts";
@@ -21,6 +22,12 @@ export interface AudienceOptions {
   readonly lang: Lang;
   /** Gives the address of a media file of the quiz, or `null`. */
   readonly mediaUrl?: (id: string) => string | null;
+  /**
+   * Called with the quiz once the host has sent it, before the stage is drawn — for a window that
+   * only now learns which quiz it shows and has to fetch its media (the app's audience window reads
+   * them from the browser's storage). What it resolves to replaces `mediaUrl`.
+   */
+  readonly prepare?: (file: QuizFile) => Promise<((id: string) => string | null) | undefined>;
 }
 
 /** How often the window asks again while the host has not answered. */
@@ -48,23 +55,43 @@ export function createAudience(options: AudienceOptions): { destroy(): void } {
   root.classList.add("qp-player");
   root.setAttribute("data-role", "audience");
   root.replaceChildren(notice(waiting("audience.waiting")));
+  // The newest game the host sent; while the media of the quiz are being fetched it is only kept.
+  let latest: GameState | null = null;
+  let inits = 0;
+  const open = (file: QuizFile, mediaUrl: ((id: string) => string | null) | undefined): void => {
+    stage?.destroy();
+    const env = createEnv({ file, dispatch: send, mediaUrl });
+    stage = createStage(env, { canEdit: false, isLive: true });
+    const full = h("button", { type: "button", class: "qp-corner-button", "aria-label": env.t("control.fullscreen"), title: env.t("control.fullscreen") }, icon("fullscreen", 22));
+    full.addEventListener("click", commands.toggleFullscreen);
+    root.lang = env.lang;
+    root.replaceChildren(h("div", { class: "qp-stage-box" }, stage.element), full);
+    if (latest) stage.show(latest);
+  };
   channel.on((message) => {
     if (message.kind === "init") {
-      stage?.destroy();
-      const env = createEnv({ file: message.file, dispatch: send, mediaUrl: options.mediaUrl });
-      stage = createStage(env, { canEdit: false, isLive: true });
-      const full = h("button", { type: "button", class: "qp-corner-button", "aria-label": env.t("control.fullscreen"), title: env.t("control.fullscreen") }, icon("fullscreen", 22));
-      full.addEventListener("click", commands.toggleFullscreen);
-      root.lang = env.lang;
-      root.replaceChildren(h("div", { class: "qp-stage-box" }, stage.element), full);
-      stage.show(message.state);
+      inits += 1;
+      const mine = inits;
+      latest = message.state;
+      if (!options.prepare) {
+        open(message.file, options.mediaUrl);
+        return;
+      }
+      void options.prepare(message.file).catch(() => undefined).then((mediaUrl) => { if (mine === inits && !controller.signal.aborted) open(message.file, mediaUrl ?? options.mediaUrl); });
     }
-    if (message.kind === "state") stage?.show(message.state);
-    if (message.kind === "bye") root.replaceChildren(notice(waiting("audience.closed")));
+    if (message.kind === "state") {
+      latest = message.state;
+      stage?.show(message.state);
+    }
+    if (message.kind === "bye") {
+      stage?.destroy();
+      stage = null;
+      root.replaceChildren(notice(waiting("audience.closed")));
+    }
   });
   listenKeys(commands, controller.signal);
   channel.send({ kind: "hello" });
-  const asking = window.setInterval(() => { if (stage === null) channel.send({ kind: "hello" }); }, HELLO_EVERY_MS);
+  const asking = window.setInterval(() => { if (stage === null && inits === 0) channel.send({ kind: "hello" }); }, HELLO_EVERY_MS);
   window.addEventListener("pagehide", () => { channel.close(); }, { signal: controller.signal });
   return {
     destroy() {

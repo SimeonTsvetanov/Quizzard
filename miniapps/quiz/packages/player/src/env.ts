@@ -33,6 +33,7 @@ export function stageLabels(t: Translate, lang: Lang): SlideLabels {
     emptyAnswer: t("slide.emptyAnswer"),
     answer: t("slide.answer"),
     unsupported: t("slide.unsupported"),
+    media: { missing: t("media.missing"), zoom: t("media.zoom"), play: t("media.play"), pause: t("media.pause"), restart: t("media.restart"), tapToPlay: t("media.tap") },
   };
 }
 
@@ -50,8 +51,10 @@ export interface EnvOptions {
 export function createEnv({ file, dispatch, mediaUrl }: EnvOptions): PlayEnv {
   const lang = playerLang(file.quiz.language);
   const t = createTranslator(lang);
+  const entries = new Map(file.media.map((entry) => [entry.id, entry]));
   return {
     file,
+    entryOf: (id) => entries.get(id),
     lang,
     t,
     labels: stageLabels(t, lang),

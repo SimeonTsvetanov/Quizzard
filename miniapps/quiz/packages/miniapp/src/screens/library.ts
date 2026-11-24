@@ -1,9 +1,9 @@
 // The library (SPEC F1): every quiz on this device as a card — a little deck that is thicker the
 // more questions it holds — with "New quiz" on top. Open, rename in place, duplicate, delete (asks
 // when the quiz has something in it, then offers Undo). The first visit is an empty state, not a blank page.
-import { QUIZ_NAME_MAX, createQuiz, renameQuiz } from "@simeonts/quizzard-quiz-core";
+import { QUIZ_FILE_EXTENSION, QUIZ_FILE_MIME, QUIZ_NAME_MAX, createQuiz, renameQuiz } from "@simeonts/quizzard-quiz-core";
 import type { App } from "../app/state.ts";
-import { iconButton } from "../dom/controls.ts";
+import { iconButton, labelButton } from "../dom/controls.ts";
 import { h } from "../dom/h.ts";
 import { icon } from "../dom/icons.ts";
 import { bytesText, changedText, wholeMinutes } from "../format.ts";
@@ -73,13 +73,15 @@ async function remove(app: App, line: QuizSummary): Promise<void> {
     if (!isConfirmed || app.signal.aborted) return;
   }
   const before = await app.store.get(line.id);
+  // The quiz's media files are held as handles until the Undo offer is gone: Undo puts them back too.
+  const files = await app.store.media(line.id).catch(() => new Map<string, Blob>());
   const game = takeGame(app.context.storage.prefs, line.id);
   await app.store.delete(line.id);
   await loadLibrary(app, "[data-new-quiz]");
   const undo = (): void => {
     if (!before.ok) return;
     game.putBack();
-    void app.store.restore(before).then(() => loadLibrary(app, `[data-focus="quiz:${line.id}"]`));
+    void app.store.bring(before, files).then(() => loadLibrary(app, `[data-focus="quiz:${line.id}"]`));
   };
   const action = before.ok ? { action: { label: t("undo"), run: undo } } : {};
   app.context.shell.toast(t("library.deleted", { name: line.name }), action);
@@ -147,6 +149,43 @@ function card(app: App, line: QuizSummary): HTMLElement {
   return item;
 }
 
+/** Opens a picked or dropped quiz file; the quiz-file code is loaded with the first one. */
+function openFile(app: App, file: File): void {
+  void import("../quizfile/open.ts").then(({ openQuizFile }) => openQuizFile(app, file)).catch(() => {
+    if (!app.signal.aborted) app.context.shell.toast(app.t("file.openFailed"), { tone: "error" });
+  });
+}
+
+/** "Open a quiz file": the system's file picker behind a button. */
+function openFileButton(app: App): HTMLElement {
+  const input = h("input", { type: "file", class: "visually-hidden", accept: `${QUIZ_FILE_EXTENSION},${QUIZ_FILE_MIME},application/octet-stream`, tabindex: "-1", "aria-hidden": "true", "data-open-file-input": "" });
+  input.addEventListener("change", () => {
+    const [file] = input.files ?? [];
+    input.value = "";
+    if (file) openFile(app, file);
+  });
+  const button = labelButton("folder", app.t("file.open"), { class: "button", "data-open-file": "" });
+  button.addEventListener("click", () => { input.click(); });
+  return h("span", { class: "quiz-open-file" }, button, input);
+}
+
+/** A quiz file dropped anywhere on the library is opened (a computer's way). */
+function takeDrops(app: App, screen: HTMLElement): void {
+  const isFile = (event: DragEvent): boolean => event.dataTransfer?.types.includes("Files") ?? false;
+  screen.addEventListener("dragover", (event) => {
+    if (!isFile(event)) return;
+    event.preventDefault();
+    screen.setAttribute("data-over", "");
+  });
+  for (const name of ["dragleave", "dragend", "drop"]) screen.addEventListener(name, () => { screen.removeAttribute("data-over"); });
+  screen.addEventListener("drop", (event) => {
+    const file = event.dataTransfer?.files[0];
+    if (!file) return;
+    event.preventDefault();
+    openFile(app, file);
+  });
+}
+
 /**
  * Draws the library.
  * @param app - the mounted creator; `app.library` holds the lines (`null` while they load)
@@ -157,6 +196,7 @@ export function libraryScreen(app: App): HTMLElement {
   create.addEventListener("click", () => { void newQuiz(app); });
   const title = h("h2", { class: "quiz-title", id: "quiz-library-title", tabindex: "-1", "data-screen-title": "" }, t("library.title"));
   const screen = h("section", { class: "quiz-screen quiz-library", "aria-labelledby": "quiz-library-title", "data-screen": "library" });
+  takeDrops(app, screen);
   if (library === null) {
     screen.setAttribute("aria-busy", "true");
     screen.append(h("div", { class: "quiz-head" }, title));
@@ -167,11 +207,11 @@ export function libraryScreen(app: App): HTMLElement {
     return screen;
   }
   if (library.length === 0) {
-    screen.append(h("div", { class: "quiz-head" }, title), emptyState({ hasWizard: true, title: t("library.emptyTitle"), text: t("library.emptyText"), action: create }));
+    screen.append(h("div", { class: "quiz-head" }, title), emptyState({ hasWizard: true, title: t("library.emptyTitle"), text: t("library.emptyText"), action: h("div", { class: "quiz-head-actions" }, create, openFileButton(app)) }));
     return screen;
   }
   screen.append(
-    h("div", { class: "quiz-head" }, title, h("p", { class: "quiz-sub" }, t("library.sub", { count: library.length })), create),
+    h("div", { class: "quiz-head" }, title, h("p", { class: "quiz-sub" }, t("library.sub", { count: library.length })), h("div", { class: "quiz-head-actions" }, create, openFileButton(app))),
     h("ul", { class: "quiz-cards" }, ...library.map((line) => card(app, line))));
   return screen;
 }

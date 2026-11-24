@@ -38,6 +38,7 @@ function tieCards(context: ViewContext, isEditable: boolean): DrawnView {
 /** First place is shared: the host plays a tiebreak, then names the winner or adds points. */
 export const tieView: ViewEntry = {
   id: "tie",
+  tile: ({ env }) => ({ mark: env.t("tile.tie"), name: env.t("tile.tie") }),
   structure: scoreDigest,
   stage: (context) => {
     const { env, state, canEdit } = context;

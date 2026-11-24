@@ -9,6 +9,7 @@ import { h } from "../dom/h.ts";
 import { bytesText, wholeMinutes } from "../format.ts";
 import { addButton, backLink, emptyState, isWide, roundSummary, toLibrary } from "./common.ts";
 import { stackOf } from "./library.ts";
+import { exportControl, mediaMeter, quizFileRow } from "./quiz-files.ts";
 import { roundPane } from "./round.ts";
 
 /** Most kind dots on a round card; the rest is "+n". */
@@ -25,41 +26,21 @@ function stat(value: string, label: string, hook: string): HTMLElement {
   return h("div", { class: "quiz-stat" }, h("span", { class: "quiz-stat-value", [hook]: "" }, value), h("span", { class: "quiz-stat-label" }, label));
 }
 
-/** Runs "Export to play" from its button: the export code and the player template are loaded on the first use. */
-async function runExport(app: App, quiz: Quiz, button: HTMLButtonElement): Promise<void> {
-  const { t } = app;
-  button.disabled = true;
-  button.setAttribute("aria-busy", "true");
-  try {
-    const { exportQuiz } = await import("../export/run.ts");
-    const made = await exportQuiz(app, app.current?.quiz ?? quiz, app.current?.media ?? []);
-    if (made === null || app.signal.aborted) return;
-    app.view.exported = { quiz: quiz.id, ...made };
-    app.context.shell.toast(t("export.done", { name: made.name, size: bytesText(made.bytes, app.lang) }));
-  } catch {
-    if (!app.signal.aborted) app.context.shell.toast(t("export.failed"), { tone: "error" });
-  } finally {
-    button.disabled = false;
-    button.removeAttribute("aria-busy");
-    if (!app.signal.aborted && (app.route.screen === "quiz" || app.route.screen === "round")) app.draw('[data-focus="export"]');
-  }
-}
-
-/** Play, Preview and Export to play — and, after an export, what was saved. */
+/** Play, Preview and Export to play — and, after an export, what was saved; under them the quiz file. */
 function quizActions(app: App, quiz: Quiz): HTMLElement {
   const { t } = app;
   const first = quiz.rounds.flatMap((round) => round.questions)[0];
   const play = labelButton("play", t("quiz.play"), { class: "button button--primary", "data-play-quiz": "", "data-focus": "play" });
   const preview = labelButton("eye", t("quiz.preview"), { class: "button", "data-preview-quiz": "" });
-  const exportButton = labelButton("download", t("quiz.export"), { class: "button", "data-export": "", "data-focus": "export" });
+  const { button: exportButton, progress } = exportControl(app, quiz);
   for (const button of [play, preview, exportButton]) button.disabled = first === undefined;
   play.addEventListener("click", () => { app.go({ screen: "play", quiz: quiz.id }); });
   preview.addEventListener("click", () => { if (first) app.go({ screen: "preview", quiz: quiz.id, question: first.id }); });
-  exportButton.addEventListener("click", () => { void runExport(app, quiz, exportButton); });
-  const box = h("div", { class: "quiz-actions-box" }, h("div", { class: "quiz-actions" }, play, preview, exportButton));
+  const box = h("div", { class: "quiz-actions-box" }, h("div", { class: "quiz-actions" }, play, preview, exportButton), progress);
   const made = app.view.exported;
   if (made?.quiz === quiz.id) box.append(h("p", { class: "quiz-hint", "data-exported": "" }, t("export.saved", { name: made.name, size: bytesText(made.bytes, app.lang) })));
   else if (first === undefined) box.append(h("p", { class: "quiz-hint" }, t("quiz.playHint")));
+  if (first !== undefined) box.append(quizFileRow(app, quiz));
   return box;
 }
 
@@ -74,15 +55,18 @@ function quizHead(app: App, quiz: Quiz): HTMLElement {
     if (now && app.change(renameQuiz(now, name.value))) app.context.shell.setTitle(name.value.trim() === "" ? null : name.value);
   });
   name.addEventListener("keydown", (event) => { if (event.key === "Enter") name.blur(); });
-  return h("header", { class: "quiz-panel quiz-quiz-head" },
+  const head = h("header", { class: "quiz-panel quiz-quiz-head" },
     backLink(t("library.title"), () => { toLibrary(app); }),
     h("h2", { class: "visually-hidden", id: "quiz-quiz-title", tabindex: "-1", "data-screen-title": "" }, quiz.name === "" ? t("quiz.unnamed") : quiz.name),
     name,
     h("div", { class: "quiz-stats" },
       stat(String(size.rounds), t("count.roundsLabel", { count: size.rounds }), "data-total-rounds"),
       stat(String(size.questions), t("count.questionsLabel", { count: size.questions }), "data-total-questions"),
-      stat(String(wholeMinutes(size.seconds)), t("count.minutesLabel"), "data-total-minutes")),
-    quizActions(app, quiz));
+      stat(String(wholeMinutes(size.seconds)), t("count.minutesLabel"), "data-total-minutes")));
+  const meter = mediaMeter(app, quiz);
+  if (meter) head.append(meter);
+  head.append(quizActions(app, quiz));
+  return head;
 }
 
 /** One dot per question, in its kind's colour — a round read at a glance. */

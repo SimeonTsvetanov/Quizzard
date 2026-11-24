@@ -2,7 +2,9 @@
    preview, the Preview stage and, later, the player. The slide is a 16:9 size container; everything
    on its canvas is sized in cqi (1cqi = 1 % of the slide's width), so it scales like a slide with no
    script and stays sharp at any size. Its colours are the stage tokens (styles/tokens.css): the same
-   deep ground in light and dark, like a projector. */
+   deep ground in light and dark, like a projector. The media area: slide-media.css. */
+@import "./slide-media.css";
+
 @layer components {
   /* || Components: stage */
   .quiz-stage {

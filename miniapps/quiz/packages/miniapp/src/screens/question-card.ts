@@ -10,6 +10,7 @@ import { slideLabels } from "../format.ts";
 import { pointsText, renderSlide } from "../render/slide.ts";
 import { canShow } from "../ui-registry.ts";
 import { offerUndo, questionName, withQuestion } from "./common.ts";
+import { thumbProps } from "./slide-props.ts";
 
 /** What a card needs to know about its place. */
 export interface CardPlace {
@@ -90,7 +91,7 @@ function facts(app: App, { round, question, index }: CardPlace): HTMLElement {
  */
 export function questionCard(app: App, place: CardPlace): HTMLElement {
   const { quiz, round, question, index } = place;
-  const slide = renderSlide({ question, round, number: index + 1, reveal: false, ui: app.ui, labels: slideLabels(app.t, app.lang) });
+  const slide = renderSlide({ question, round, number: index + 1, reveal: false, ...thumbProps(app) });
   // The mini slide is a picture of the question: the button's name says it in words.
   const thumb = h("span", { class: "quiz-thumb", "aria-hidden": "true" }, slide);
   const open = h("button", { type: "button", class: "quiz-qcard-open", "data-focus": `question:${question.id}` }, h("span", { class: "visually-hidden" }, questionName(app, question, index + 1)), thumb);

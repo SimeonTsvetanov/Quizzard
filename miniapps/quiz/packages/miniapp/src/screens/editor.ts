@@ -3,16 +3,18 @@
 // the registries. It saves as you type; typing never rebuilds the form. The live preview is the
 // shared slide: next to the form on a wide screen, behind the "Preview" switch on a phone.
 import {
-  EXPLANATION_MAX, MAX_QUESTIONS_PER_ROUND, PROMPT_MAX, type Answer, type Question, type Quiz, type Round, editQuestion, findQuestion, moveQuestion, setAnswerType, setQuestionKind,
+  EXPLANATION_MAX, HOST_NOTE_MAX, MAX_QUESTIONS_PER_ROUND, PROMPT_MAX, type Answer, type Question, type Quiz, type Round, editQuestion, findQuestion, moveQuestion, setAnswerType,
+  setQuestionKind,
 } from "@simeonts/quizzard-quiz-core";
+import { type LocalMedia, createLocalMedia } from "@simeonts/quizzard-quiz-player/render";
 import type { App } from "../app/state.ts";
 import { chipPicker, labelButton, textField } from "../dom/controls.ts";
 import { h } from "../dom/h.ts";
-import { slideLabels } from "../format.ts";
-import { renderSlide } from "../render/slide.ts";
 import { answerChoices, canShow, kindChoices } from "../ui-registry.ts";
 import { backLink, emptyState, up } from "./common.ts";
+import { questionFiles } from "./editor-files.ts";
 import { timingFields } from "./editor-timing.ts";
+import { showLive, slideProps } from "./slide-props.ts";
 
 /** The question being edited, as it is in the quiz right now. */
 interface Place {
@@ -34,12 +36,12 @@ interface Live {
   readonly refresh: () => void;
 }
 
-function livePreview(app: App, questionId: string): Live {
+function livePreview(app: App, questionId: string, media: LocalMedia): Live {
   const { t } = app;
   const stage = h("div", { class: "quiz-stage", "data-live-slide": "" });
   const refresh = (): void => {
     const now = placeOf(app, questionId);
-    if (now) stage.replaceChildren(renderSlide({ question: now.question, round: now.round, number: now.index + 1, reveal: app.view.isRevealed, ui: app.ui, labels: slideLabels(t, app.lang) }));
+    if (now) showLive(stage, { question: now.question, round: now.round, number: now.index + 1, reveal: app.view.isRevealed, ...slideProps(app) }, media);
   };
   const reveal = h("button", { type: "button", class: "button quiz-toggle", "aria-pressed": String(app.view.isRevealed), "data-reveal-toggle": "" }, t("preview.showAnswer"));
   reveal.addEventListener("click", () => {
@@ -101,7 +103,7 @@ function roundPicker(app: App, { quiz, round, question }: Place): HTMLElement | 
 }
 
 /** The form: every part of the question, in the order it is thought of. */
-function form(app: App, place: Place, live: Live): HTMLElement {
+function form(app: App, place: Place, live: Live, signal: AbortSignal): HTMLElement {
   const { t, env, ui } = app;
   const { question } = place;
   const id = question.id;
@@ -111,10 +113,12 @@ function form(app: App, place: Place, live: Live): HTMLElement {
   };
   const picker = pickers(app, place);
   const prompt = textField({ label: t("editor.prompt"), value: question.prompt, max: PROMPT_MAX, rows: 3, placeholder: t("editor.promptPlaceholder"), props: { "data-prompt": "", "data-focus": "prompt" }, onInput: (value) => { edit((quiz) => editQuestion(quiz, id, { prompt: value })); } });
-  const kindPart = ui.kinds.get(question.kind)?.parts?.editor({ question, t }) ?? null;
+  const kindPart = ui.kinds.get(question.kind)?.parts?.editor({ question, t, lang: app.lang, files: questionFiles(app, id), signal }) ?? null;
   const answerPart = ui.answers.get(question.answer.type)?.parts?.editor({ answer: question.answer, t, ids: env.ids, change: (answer: Answer) => { edit((quiz) => editQuestion(quiz, id, { answer })); } }) ?? null;
   const explanation = textField({ label: t("editor.explanation"), value: question.explanation ?? "", max: EXPLANATION_MAX, rows: 2, placeholder: t("editor.explanationPlaceholder"), props: { "data-explanation": "" }, onInput: (value) => { edit((quiz) => editQuestion(quiz, id, { explanation: value })); } });
-  const parts = [picker.kind, prompt, kindPart, picker.answer, answerPart, timingFields(app, id, live.refresh), explanation, roundPicker(app, place)];
+  // The host's own note: saved with the question, shown on the host panel, never on the stage — so no preview to refresh.
+  const note = textField({ label: t("editor.note"), value: question.note ?? "", max: HOST_NOTE_MAX, rows: 2, placeholder: t("editor.notePlaceholder"), hint: t("editor.noteHint"), props: { "data-host-note": "" }, onInput: (value) => { edit((quiz) => editQuestion(quiz, id, { note: value })); } });
+  const parts = [picker.kind, prompt, kindPart, picker.answer, answerPart, timingFields(app, id, live.refresh), explanation, note, roundPicker(app, place)];
   const element = h("form", { class: "quiz-form quiz-panel", novalidate: "" }, ...parts.filter((part) => part !== null));
   element.addEventListener("submit", (event) => { event.preventDefault(); });
   return element;
@@ -155,8 +159,15 @@ export function editorScreen(app: App, quiz: Quiz): HTMLElement {
     screen.append(head, emptyState({ icon: "unknown", title: t("question.unsupported"), text: t("editor.unsupportedText") }), bar(app, { element: h("div"), refresh: () => undefined }));
     return screen;
   }
-  const live = livePreview(app, questionId);
+  // What the editor starts outside its own elements — a playing clip, the paste listener — ends with it.
+  const controller = new AbortController();
+  const media = createLocalMedia();
+  app.view.cleanup = () => {
+    controller.abort();
+    media.stop();
+  };
+  const live = livePreview(app, questionId, media);
   live.element.toggleAttribute("data-open", app.view.isLiveOpen);
-  screen.append(head, h("div", { class: "quiz-editor-body" }, form(app, place, live), live.element), bar(app, live));
+  screen.append(head, h("div", { class: "quiz-editor-body" }, form(app, place, live, controller.signal), live.element), bar(app, live));
   return screen;
 }

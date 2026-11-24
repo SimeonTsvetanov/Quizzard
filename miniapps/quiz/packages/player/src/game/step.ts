@@ -2,10 +2,10 @@
 // that cannot be made (back on the first screen, a thirteenth team, a score for an unknown round)
 // return the SAME state object, so callers can tell with `next === state`. Screens are asked from
 // the screen-kind registry; nothing here names one.
-import { type Registry, MAX_TEAMS, MIN_TEAMS, clamp, cut } from "@simeonts/quizzard-quiz-core/play";
+import { type PlaybackCommand, type Registry, MAX_TEAMS, MIN_TEAMS, RESTING_PLAYBACK, clamp, cut, playbackStep, playbackTick } from "@simeonts/quizzard-quiz-core/play";
 import { type ScreenKind, screenKinds } from "./kinds.ts";
 import { roundIds } from "./scores.ts";
-import { CUE_MS, MAX_SCORE, TEAM_NAME_MAX, type GameAction, type GameState, type Timer, freshTimer } from "./state.ts";
+import { CLIP_END_GRACE_MS, CUE_MS, MAX_BREAK_MINUTES, MAX_SCORE, TEAM_NAME_MAX, type GameAction, type GameState, type Timer, freshTimer } from "./state.ts";
 
 type Kinds = Registry<ScreenKind>;
 
@@ -25,13 +25,20 @@ function seek(state: GameState, from: number, direction: 1 | -1, kinds: Kinds): 
   return null;
 }
 
-/** Shows a screen: its reveals at `step`, its timer full — running only when the game got here by going on. */
+/**
+ * Shows a screen: its reveals at `step`, its media at rest, nothing covering the stage, its timer
+ * full — running only when the game got here by going on, and never on a screen with a clip: there
+ * the timer waits for the clip to end or for the host (the clip itself waits for the host too).
+ */
 function enter(state: GameState, index: number, step: number, isForward: boolean): GameState {
-  const seconds = state.screens[index]?.seconds ?? 0;
-  return { ...state, index, step, timer: freshTimer(seconds, isForward && state.auto) };
+  const screen = state.screens[index];
+  const isRunning = isForward && state.auto && screen?.media !== "clip";
+  return { ...state, index, step, timer: freshTimer(screen?.seconds ?? 0, isRunning), media: RESTING_PLAYBACK, curtain: null };
 }
 
 function next(state: GameState, kinds: Kinds): GameState {
+  // The first press on a covered stage only uncovers it.
+  if (state.curtain !== null) return { ...state, curtain: null };
   const steps = state.screens[state.index]?.steps ?? 0;
   if (state.step < steps) return { ...state, step: state.step + 1 };
   const index = seek(state, state.index + 1, 1, kinds);
@@ -39,6 +46,7 @@ function next(state: GameState, kinds: Kinds): GameState {
 }
 
 function back(state: GameState, kinds: Kinds): GameState {
+  if (state.curtain !== null) return { ...state, curtain: null };
   if (state.step > 0) return { ...state, step: state.step - 1 };
   const index = seek(state, state.index - 1, -1, kinds);
   // A screen gone back to is shown as it was left: with everything revealed.
@@ -70,10 +78,9 @@ function pauseTimer(state: GameState): GameState {
   return state;
 }
 
-function tick(state: GameState, ms: number, kinds: Kinds): GameState {
-  const elapsed = Number.isFinite(ms) && ms > 0 ? ms : 0;
+/** The question's timer after some time. */
+function tickTimer(state: GameState, elapsed: number, kinds: Kinds): GameState {
   const { status, leftMs, cueMs } = state.timer;
-  if (elapsed === 0) return state;
   if (status === "running") {
     const left = Math.max(0, leftMs - elapsed);
     if (left > 0) return withTimer(state, { leftMs: left });
@@ -85,6 +92,48 @@ function tick(state: GameState, ms: number, kinds: Kinds): GameState {
   const moved = next(state, kinds);
   return moved === state ? withTimer(state, { status: "done", cueMs: 0 }) : moved;
 }
+
+/** A command for the screen's picture or clip. When a clip ends, the timer that waited for it starts. */
+function media(state: GameState, command: PlaybackCommand): GameState {
+  const kind = state.screens[state.index]?.media;
+  if (kind === undefined || (command === "zoom") !== (kind === "still")) return state;
+  const moved = playbackStep(state.media, command);
+  if (moved === state.media) return state;
+  const hasEnded = moved.status === "ended" && state.media.status !== "ended";
+  const timer = hasEnded && state.auto && state.timer.status === "idle" && state.timer.totalMs > 0 ? { ...state.timer, status: "running" as const } : state.timer;
+  return { ...state, media: moved, timer };
+}
+
+/** The clip after some time; one whose window never said "ended" is taken as ended a moment after its length. */
+function tickMedia(state: GameState, elapsed: number): GameState {
+  const clipMs = state.screens[state.index]?.clipMs ?? 0;
+  const moved = playbackTick(state.media, elapsed);
+  if (moved === state.media) return state;
+  const ticked = { ...state, media: moved };
+  return clipMs > 0 && moved.ms >= clipMs + CLIP_END_GRACE_MS ? media(ticked, "ended") : ticked;
+}
+
+function tick(state: GameState, ms: number, kinds: Kinds): GameState {
+  const elapsed = Number.isFinite(ms) && ms > 0 ? ms : 0;
+  if (elapsed === 0) return state;
+  const { curtain } = state;
+  if (curtain !== null) {
+    // Behind a cover the question rests; only a break counts down, and stays at zero for the host.
+    if (curtain.kind !== "break" || curtain.leftMs === 0) return state;
+    return { ...state, curtain: { ...curtain, leftMs: Math.max(0, curtain.leftMs - elapsed) } };
+  }
+  return tickTimer(tickMedia(state, elapsed), elapsed, kinds);
+}
+
+/** Covers the stage: the question behind the cover rests — a running timer and a playing clip are paused. */
+function cover(state: GameState, curtain: NonNullable<GameState["curtain"]>): GameState {
+  return { ...pauseTimer(state), media: playbackStep(state.media, "pause"), curtain };
+}
+
+const startBreak: Handler<"break"> = (state, { minutes }) => {
+  const totalMs = clamp(Math.round(minutes), 1, MAX_BREAK_MINUTES) * 60_000;
+  return cover(state, { kind: "break", totalMs, leftMs: totalMs });
+};
 
 /** Points as the game keeps them: 0–999 in halves. */
 function cleanScore(value: number): number {
@@ -140,7 +189,7 @@ const pickWinner: Handler<"pickWinner"> = (state, { teamId }) => {
 
 /** A new game with the same teams: back to the title, every score cleared. */
 function restart(state: GameState): GameState {
-  return { ...state, index: 0, step: 0, scores: {}, bonus: {}, winner: null, timer: freshTimer(0) };
+  return { ...state, index: 0, step: 0, scores: {}, bonus: {}, winner: null, timer: freshTimer(0), media: RESTING_PLAYBACK, curtain: null };
 }
 
 const HANDLERS: { readonly [T in GameAction["type"]]: Handler<T> } = {
@@ -160,6 +209,10 @@ const HANDLERS: { readonly [T in GameAction["type"]]: Handler<T> } = {
   addBonus,
   pickWinner,
   setAuto: (state, action) => (state.auto === action.value ? state : { ...state, auto: action.value }),
+  media: (state, action) => media(state, action.command),
+  black: (state) => (state.curtain?.kind === "black" ? { ...state, curtain: null } : cover(state, { kind: "black" })),
+  break: startBreak,
+  uncover: (state) => (state.curtain === null ? state : { ...state, curtain: null }),
   restart,
 };
 

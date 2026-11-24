@@ -2,10 +2,10 @@
 // drawn half of the screen kind of the same id (game/kinds.ts). The stage and the host panel look a
 // view up by the screen's name and never switch on it — a later round kind registers the view of
 // its own screen here and nothing else changes.
-import type { Question, QuizFile, Registry, RegistryEntry, Round } from "@simeonts/quizzard-quiz-core/play";
+import type { MediaEntry, Question, QuizFile, Registry, RegistryEntry, Round } from "@simeonts/quizzard-quiz-core/play";
 import type { GameAction, GameScreen, GameState } from "../game/state.ts";
 import type { Lang, Translate } from "../i18n/translate.ts";
-import type { SlideLabels, StageRegistries } from "../render/registry.ts";
+import type { SlideLabels, SlideMedia, StageRegistries } from "../render/registry.ts";
 
 /** What stays the same for the whole game: the quiz, the words, the registries and how to make a move. */
 export interface PlayEnv {
@@ -21,6 +21,8 @@ export interface PlayEnv {
   readonly dispatch: (action: GameAction) => void;
   /** Gives the address of a media file of the quiz, or `null`; left out when the quiz has none to show. */
   readonly mediaUrl?: (id: string) => string | null;
+  /** Gives the description of a media file of the quiz. */
+  entryOf(id: string): MediaEntry | undefined;
   /** A number as people write it in the quiz's language. */
   number(value: number): string;
 }
@@ -41,6 +43,8 @@ export interface ViewContext {
   readonly canEdit: boolean;
   /** The running timer dial for a screen with a timer; `null` in previews. */
   readonly clock: HTMLElement | null;
+  /** The live stage's link to the question's picture or clip; left out in previews, where media is a still. */
+  readonly media?: SlideMedia;
 }
 
 /** A drawn view. */
@@ -57,6 +61,18 @@ export interface HostAnswer {
   readonly text: string;
   readonly explanation: string;
   readonly points: string;
+  /** The host's own note of the question; never drawn on a stage. */
+  readonly note: string;
+}
+
+/** How a screen shows in the menu's grid of screens. */
+export interface JumpTile {
+  /** What stands on the tile: a number, or a short word. */
+  readonly mark: string;
+  /** The tile's full name, for its tooltip and screen readers: "Question 3". */
+  readonly name: string;
+  /** Tiles of one round that share this heading stand in one row under it ("Questions"); left out = a tile of its own. */
+  readonly group?: string;
 }
 
 /** A screen's view. */
@@ -72,6 +88,8 @@ export interface ViewEntry extends RegistryEntry {
   structure?(state: GameState): string;
   /** The right answer of the screen, for the host. */
   answer?(context: ViewContext): HostAnswer | null;
+  /** The screen's tile in the menu's grid; a view without one is not listed there. */
+  tile?(context: ViewContext): JumpTile;
 }
 
 /**
@@ -90,7 +108,7 @@ export function placeOf(file: QuizFile, screen: GameScreen): { readonly round: R
  * @param state - the game
  * @param options - whether the view may carry controls, and the dial
  */
-export function contextOf(env: PlayEnv, state: GameState, options: { readonly canEdit: boolean; readonly clock: HTMLElement | null }): ViewContext {
+export function contextOf(env: PlayEnv, state: GameState, options: { readonly canEdit: boolean; readonly clock: HTMLElement | null; readonly media?: SlideMedia }): ViewContext {
   const screen = state.screens[state.index] ?? { screen: "", seconds: 0, steps: 0 };
   return { env, state, screen, ...placeOf(env.file, screen), ...options };
 }

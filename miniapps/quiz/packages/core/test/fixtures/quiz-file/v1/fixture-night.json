@@ -1,0 +1,99 @@
+{
+  "format": "quizzard-quiz",
+  "version": 1,
+  "quiz": {
+    "id": "fixture-quiz-file-v1",
+    "name": "Fixture night",
+    "createdAt": "2026-11-24T10:00:00.000Z",
+    "updatedAt": "2026-11-24T10:00:00.000Z",
+    "language": "en",
+    "settings": {
+      "teams": 4
+    },
+    "rounds": [
+      {
+        "id": "r1",
+        "kind": "standard",
+        "name": "Mixed",
+        "defaults": {
+          "seconds": 30,
+          "points": {
+            "value": 1
+          },
+          "questionKind": "text",
+          "answerType": "open"
+        },
+        "questions": [
+          {
+            "id": "q1",
+            "kind": "picture",
+            "prompt": "What is on the picture?",
+            "media": {
+              "id": "m-picture"
+            },
+            "answer": {
+              "type": "open",
+              "text": "A test card"
+            },
+            "note": "Accept “colour bars” too."
+          },
+          {
+            "id": "q2",
+            "kind": "audio",
+            "prompt": "Which note is this?",
+            "media": {
+              "id": "m-sound"
+            },
+            "answer": {
+              "type": "choice",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "A"
+                },
+                {
+                  "id": "b",
+                  "text": "C"
+                }
+              ],
+              "correct": [
+                "a"
+              ]
+            }
+          },
+          {
+            "id": "q3",
+            "kind": "picture",
+            "prompt": "The same picture again: true or false, it is upright?",
+            "media": {
+              "id": "m-picture"
+            },
+            "answer": {
+              "type": "trueFalse",
+              "correct": true
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "media": [
+    {
+      "id": "m-picture",
+      "type": "image",
+      "mime": "image/png",
+      "name": "tall.png",
+      "bytes": 17202,
+      "width": 240,
+      "height": 720
+    },
+    {
+      "id": "m-sound",
+      "type": "audio",
+      "mime": "audio/mpeg",
+      "name": "clip.mp3",
+      "bytes": 8482,
+      "seconds": 2
+    }
+  ]
+}

@@ -19,6 +19,8 @@ export const ANSWER_TEXT_MAX = 300;
 export const OPTION_TEXT_MAX = 120;
 /** Longest explanation shown with the answer, in characters. */
 export const EXPLANATION_MAX = 500;
+/** Longest host note of a question, in characters. */
+export const HOST_NOTE_MAX = 500;
 /** Longest points note ("1 for the band, 2 with the song"), in characters. */
 export const POINTS_NOTE_MAX = 80;
 
@@ -62,6 +64,11 @@ export const EXPORT_WARN_BYTES = 100 * MB;
 /** Long side large photos are scaled down to on import, in pixels (SPEC §5). */
 export const PICTURE_MAX_EDGE_PX = 1920;
 
+/** Long side of the small still kept with a file (a picture's thumbnail, a video's frame), in pixels. */
+export const POSTER_MAX_EDGE_PX = 480;
+/** Largest still kept with a file, as its `data:` address, in characters; a larger one is left out. */
+export const POSTER_MAX_CHARS = 120_000;
+
 /** What one media type accepts: its formats (MIME types) and the largest file. */
 export interface MediaRule {
   readonly mimes: readonly string[];
@@ -91,6 +98,40 @@ export function checkMedia(file: { readonly type: MediaType; readonly mime: stri
   if (file.bytes > rule.maxBytes) return { ok: false, reason: "too-big", rule };
   if (usedBytes + file.bytes > QUIZ_MEDIA_MAX_BYTES) return { ok: false, reason: "quiz-full", rule };
   return { ok: true };
+}
+
+/**
+ * The size a picture is stored at: its long side at most `maxEdge`, its shape kept, never enlarged.
+ * @param width - the picture's width in pixels
+ * @param height - the picture's height in pixels
+ * @param maxEdge - the longest side allowed
+ * @returns whole pixels, each at least 1; `isScaled` says whether anything changed
+ */
+export function fitWithin(width: number, height: number, maxEdge: number = PICTURE_MAX_EDGE_PX): { readonly width: number; readonly height: number; readonly isScaled: boolean } {
+  const w = Math.max(1, Math.round(width));
+  const h = Math.max(1, Math.round(height));
+  const long = Math.max(w, h);
+  if (!Number.isFinite(long) || long <= maxEdge) return { width: w, height: h, isScaled: false };
+  const scale = maxEdge / long;
+  return { width: Math.max(1, Math.round(w * scale)), height: Math.max(1, Math.round(h * scale)), isScaled: true };
+}
+
+const EXTENSION_MIMES: Readonly<Record<string, string>> = {
+  jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", webp: "image/webp", gif: "image/gif", heic: "image/heic", heif: "image/heif",
+  mp3: "audio/mpeg", m4a: "audio/mp4", mp4: "video/mp4", wav: "audio/wav", ogg: "audio/ogg", mov: "video/quicktime", webm: "video/webm", svg: "image/svg+xml",
+};
+
+/**
+ * The MIME type of a picked file: what the picker reported, or — when it reported nothing, as some
+ * phones do — the type its name's ending stands for; `""` when neither says.
+ * @param reported - `File.type`
+ * @param name - the file's name
+ */
+export function mimeOf(reported: string, name: string): string {
+  const mime = reported.trim().toLowerCase();
+  if (mime !== "") return mime;
+  const ending = /\.([a-z0-9]+)$/i.exec(name.trim())?.[1]?.toLowerCase() ?? "";
+  return EXTENSION_MIMES[ending] ?? "";
 }
 
 /**

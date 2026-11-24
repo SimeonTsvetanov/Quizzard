@@ -9,6 +9,7 @@ import { contextOf, type DrawnView, type PlayEnv } from "../views/context.ts";
 import { fallbackView } from "../views/index.ts";
 import { barButton } from "./bar.ts";
 import type { Commands } from "./commands.ts";
+import { createMediaCard } from "./panel-media.ts";
 import { createStage } from "./stage.ts";
 
 /** A host panel. */
@@ -37,6 +38,13 @@ function clockText(leftMs: number): string {
   return `${String(Math.floor(seconds / 60))}:${String(seconds % 60).padStart(2, "0")}`;
 }
 
+/** What the room sees instead of the quiz, in words; "" when nothing covers the stage. */
+function coverText(env: PlayEnv, state: GameState): string {
+  const cover = state.curtain;
+  if (cover === null) return "";
+  return cover.kind === "black" ? env.t("host.black") : env.t("host.break", { time: clockText(cover.leftMs) });
+}
+
 /** The answer card's content for the screen on show. */
 function answerLines(env: PlayEnv, state: GameState): readonly HTMLElement[] {
   const context = contextOf(env, state, { canEdit: false, clock: null });
@@ -44,6 +52,8 @@ function answerLines(env: PlayEnv, state: GameState): readonly HTMLElement[] {
   if (answer === null) return [h("p", { class: "qp-card-empty" }, env.t("host.noAnswer"))];
   const lines = [h("p", { class: "qp-host-answer", "data-host-answer": "" }, answer.text === "" ? env.labels.emptyAnswer : answer.text), h("p", { class: "qp-host-points" }, answer.points)];
   if (answer.explanation !== "") lines.push(h("p", { class: "qp-host-explanation" }, answer.explanation));
+  // The host's own note: only ever here, in the host's window.
+  if (answer.note !== "") lines.push(h("p", { class: "qp-host-note", "data-host-note": "" }, h("span", { class: "qp-host-note-label" }, env.t("host.note")), answer.note));
   return lines;
 }
 
@@ -84,6 +94,9 @@ export function createPanel(env: PlayEnv, commands: Commands): Panel {
   const clock = h("p", { class: "qp-host-clock", "data-host-clock": "" });
   const answer = card(t("host.answer"), "answer");
   const controls = createControls(env);
+  const media = createMediaCard(env, commands);
+  const black = barButton("black", t("control.black"), () => { commands.dispatch({ type: "black" }); }, { "data-control": "black", "data-words": "", "aria-pressed": "false" });
+  const cover = h("p", { class: "qp-host-cover", role: "status", "data-host-cover": "" });
   const back = barButton("left", t("control.back"), () => { commands.dispatch({ type: "back" }); }, { "data-control": "back", "data-words": "" });
   const forward = barButton("right", t("control.next"), () => { commands.dispatch({ type: "next" }); }, { "data-control": "next", "data-words": "", "data-primary": "" });
   const toggle = barButton("play", t("control.start"), () => { commands.dispatch({ type: "timerToggle" }); }, { "data-control": "timer", "data-words": "" });
@@ -92,11 +105,12 @@ export function createPanel(env: PlayEnv, commands: Commands): Panel {
     h("header", { class: "qp-panel-head" },
       h("div", { class: "qp-panel-titles" }, h("h2", { class: "qp-panel-title" }, env.file.quiz.name.trim() === "" ? t("title.unnamed") : env.file.quiz.name), where),
       h("div", { class: "qp-bar-group" },
+        black,
         barButton("scores", t("control.scores"), commands.openScores, { "data-control": "scores" }),
         barButton("menu", t("control.menu"), commands.openMenu, { "data-control": "menu" }),
         barButton("x", t("control.closeAudience"), commands.toggleAudience, { "data-control": "audience", "data-words": "" }))),
     h("div", { class: "qp-panel-screens" }, card(t("host.now"), "now", now.element), card(t("host.next"), "next", next.element)),
-    h("div", { class: "qp-panel-side" }, card(t("host.timer"), "timer", clock, h("div", { class: "qp-bar-group" }, toggle, reset)), answer),
+    h("div", { class: "qp-panel-side" }, cover, card(t("host.timer"), "timer", clock, h("div", { class: "qp-bar-group" }, toggle, reset)), media.element, answer),
     controls.element);
   // The way through the game stays in reach under the part that scrolls.
   const element = h("div", { class: "qp-panel", "data-panel": "" }, body, h("div", { class: "qp-panel-nav" }, back, forward));
@@ -115,6 +129,10 @@ export function createPanel(env: PlayEnv, commands: Commands): Panel {
       clock.setAttribute("data-status", hasTimer ? state.timer.status : "none");
       answer.replaceChildren(h("h3", { class: "qp-card-title" }, t("host.answer")), ...answerLines(env, state));
       controls.update(state);
+      media.update(state);
+      black.setAttribute("aria-pressed", String(state.curtain?.kind === "black"));
+      cover.hidden = state.curtain === null;
+      cover.textContent = coverText(env, state);
       back.disabled = state.index === 0 && state.step === 0;
       forward.disabled = upcoming === state;
       toggle.disabled = !hasTimer;

@@ -59,10 +59,65 @@ function attribute(value: string): string {
   return value.replace(/[&"<>]/g, (character) => ATTRIBUTE_ESCAPES[character] ?? character);
 }
 
-function mediaBlock(entry: ExportMedia): string {
+/** What closes a media block. */
+export const MEDIA_BLOCK_CLOSE = "</script>";
+
+/**
+ * The opening tag of a media block; the file's base64 text and {@link MEDIA_BLOCK_CLOSE} follow it.
+ * @param entry - the file's id in `QuizFile.media` and its type
+ * @throws {@link ExportError} `"media"` for an empty id or a broken type
+ */
+export function mediaBlockOpen(entry: Pick<ExportMedia, "id" | "mime">): string {
   if (entry.id === "" || !MIME.test(entry.mime)) throw new ExportError("media", `media "${entry.id}": not a media type: "${entry.mime}"`);
+  return `<script type="application/octet-stream" ${EXPORT_MEDIA_ATTR}="${attribute(entry.id)}" data-mime="${attribute(entry.mime)}">`;
+}
+
+function mediaBlock(entry: ExportMedia): string {
+  const open = mediaBlockOpen(entry);
   if (entry.base64.length % 4 !== 0 || !BASE64.test(entry.base64)) throw new ExportError("media", `media "${entry.id}": not base64`);
-  return `<script type="application/octet-stream" ${EXPORT_MEDIA_ATTR}="${attribute(entry.id)}" data-mime="${attribute(entry.mime)}">${entry.base64}</script>`;
+  return `${open}${entry.base64}${MEDIA_BLOCK_CLOSE}`;
+}
+
+/** The fixed pieces of an exported page; the media blocks go between `quiz` and `after`. */
+export interface ExportParts {
+  /** The template up to its data mark. */
+  readonly before: string;
+  /** The quiz as its JSON block. */
+  readonly quiz: string;
+  /** The template after its data mark. */
+  readonly after: string;
+}
+
+/**
+ * The pieces of a playable page, for a caller that writes the media blocks itself, piece by piece —
+ * so a page with hundreds of megabytes of media is never one string in memory.
+ * @param template - the player template
+ * @param file - the quiz as a versioned file
+ * @throws {@link ExportError} `"template"` when the data mark is missing or repeated
+ */
+export function exportParts(template: string, file: QuizFile): ExportParts {
+  const parts = template.split(EXPORT_DATA_MARK);
+  const [before, after] = parts;
+  if (parts.length !== 2 || before === undefined || after === undefined) throw new ExportError("template", "the player template needs its data mark exactly once");
+  return { before, quiz: `<script type="application/json" id="${EXPORT_QUIZ_ID}">${jsonForScript(file)}</script>`, after };
+}
+
+/**
+ * The length of a file's base64 text.
+ * @param bytes - the file's size
+ */
+export function base64Length(bytes: number): number {
+  return Math.ceil(Math.max(0, bytes) / 3) * 4;
+}
+
+/**
+ * About how large the exported page of a quiz will be, before it is built (SPEC §8: "the size shown
+ * before export"): the page without media plus each file as base64.
+ * @param pageBytes - the template and the quiz JSON together
+ * @param media - the sizes of the files that go in
+ */
+export function exportSize(pageBytes: number, media: readonly { readonly bytes: number }[]): number {
+  return media.reduce((sum, entry) => sum + base64Length(entry.bytes) + 120, Math.max(0, pageBytes));
 }
 
 /**
@@ -75,11 +130,8 @@ function mediaBlock(entry: ExportMedia): string {
  * file with a repeated id, a broken type or bytes that are not base64
  */
 export function assembleExport(template: string, file: QuizFile, media: readonly ExportMedia[] = []): string {
-  const parts = template.split(EXPORT_DATA_MARK);
-  const [before, after] = parts;
-  if (parts.length !== 2 || before === undefined || after === undefined) throw new ExportError("template", "the player template needs its data mark exactly once");
+  const { before, quiz, after } = exportParts(template, file);
   if (new Set(media.map((entry) => entry.id)).size !== media.length) throw new ExportError("media", "a media id repeats");
-  const quiz = `<script type="application/json" id="${EXPORT_QUIZ_ID}">${jsonForScript(file)}</script>`;
   return [before, quiz, ...media.map(mediaBlock), after].join("");
 }
 
@@ -93,15 +145,25 @@ function isNameCharacter(character: string): boolean {
 }
 
 /**
+ * A file name from a quiz's name: without the characters file systems refuse, with an ending.
+ * @param name - the quiz's name
+ * @param fallback - used when nothing of the name is left
+ * @param ending - the file's ending with its dot, e.g. `".html"`
+ */
+export function safeFileName(name: string, fallback: string, ending: string): string {
+  const kept = Array.from(name, (character) => (isNameCharacter(character) ? character : " ")).join("");
+  const cleaned = kept.replace(/\s+/g, " ").replace(/^[\s.]+|[\s.]+$/g, "").slice(0, 80).trim();
+  return `${cleaned === "" ? fallback : cleaned}${ending}`;
+}
+
+/**
  * The file name of an export: the quiz's name without the characters file systems refuse.
  * @param name - the quiz's name
  * @param fallback - used when nothing of the name is left
  * @returns e.g. `"Pub night.html"`
  */
 export function exportFileName(name: string, fallback = "quiz"): string {
-  const kept = Array.from(name, (character) => (isNameCharacter(character) ? character : " ")).join("");
-  const cleaned = kept.replace(/\s+/g, " ").replace(/^[\s.]+|[\s.]+$/g, "").slice(0, 80).trim();
-  return `${cleaned === "" ? fallback : cleaned}.html`;
+  return safeFileName(name, fallback, ".html");
 }
 
 function isRecord(value: unknown): value is Readonly<Record<string, unknown>> {
@@ -119,7 +181,7 @@ function isPoints(value: unknown): boolean {
 function isQuestion(value: unknown): boolean {
   if (!isRecord(value) || !isText(value["id"]) || !isText(value["kind"]) || !isText(value["prompt"])) return false;
   const { answer, media, seconds, points } = value;
-  if (!isRecord(answer) || !isText(answer["type"]) || !isOptionalText(value["explanation"])) return false;
+  if (!isRecord(answer) || !isText(answer["type"]) || !isOptionalText(value["explanation"]) || !isOptionalText(value["note"])) return false;
   if (media !== undefined && !(isRecord(media) && isText(media["id"]))) return false;
   return (seconds === undefined || (isAmount(seconds) && seconds > 0)) && (points === undefined || isPoints(points));
 }

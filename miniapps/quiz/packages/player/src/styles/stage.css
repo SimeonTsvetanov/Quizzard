@@ -207,3 +207,50 @@
   outline: 4px solid var(--qp-gold);
   outline-offset: 4px;
 }
+
+/* || Curtain: what covers the stage — the black screen, or the break with its countdown. It lies over
+   the view on the scaled canvas, so the room and the host's small preview show the same. */
+.qp-curtain {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: grid;
+  place-content: center;
+  place-items: center;
+  gap: 18px;
+  padding: 64px;
+  text-align: center;
+
+  &[data-curtain="black"] {
+    background: oklch(0% 0 0);
+  }
+
+  &[data-curtain="break"] {
+    background:
+      radial-gradient(70% 90% at 50% 0%, oklch(52% 0.22 305 / 0.45), transparent 62%),
+      linear-gradient(160deg, var(--quiz-stage-from), var(--quiz-stage-to));
+  }
+}
+
+.qp-break-time {
+  color: var(--qp-ink);
+  font-family: var(--qp-display);
+  font-size: 300px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+
+  &[data-over] {
+    color: var(--qp-gold);
+  }
+
+  [data-shape="tall"] & {
+    font-size: 220px;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .qp-curtain[data-curtain] {
+    animation: qp-fade 260ms ease-out both;
+  }
+}

@@ -1,0 +1,390 @@
+/* The slide's media area (render/kinds/picture.ts, clip.ts): a picture, an audio clip or a video
+   between the question and the answer. The rule of AC4: a picture or a video is shown whole, in its
+   own shape — never stretched, never cropped. Its frame is a size container and the picture takes
+   the largest size of its shape (`--quiz-ratio`, set from the file itself) that fits the frame, so
+   upright, wide and panorama pictures all sit right on a 16:9 stage and on a phone. Inside a frame
+   `cq*` units mean the frame; everything else on the slide keeps the slide's `cqi`. */
+@layer components {
+  /* || Components: slide with media */
+  .quiz-slide {
+    position: relative;
+  }
+
+  .quiz-slide-media {
+    display: flex;
+    flex: 1 1 0;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    min-height: 0;
+  }
+
+  .quiz-slide[data-media] {
+    & .quiz-slide-answer {
+      margin-top: 0;
+    }
+
+    /* The question gives room to its media: a size smaller, three lines at most. */
+    & .quiz-slide-prompt {
+      font-size: 4.2cqi;
+      -webkit-line-clamp: 3;
+      line-clamp: 3;
+    }
+
+    &[data-size="m"] .quiz-slide-prompt {
+      font-size: 3.6cqi;
+    }
+
+    &[data-size="s"] .quiz-slide-prompt {
+      font-size: 3cqi;
+    }
+
+    &[data-size="xs"] .quiz-slide-prompt {
+      font-size: 2.5cqi;
+      -webkit-line-clamp: 4;
+      line-clamp: 4;
+    }
+
+    /* The line "the teams write here" is the media's room; the answer comes at the reveal. */
+    & .quiz-slide-line {
+      display: none;
+    }
+
+    /* Many options under the media: one row more across, one row less down. */
+    & .quiz-slide-options:is([data-count="5"], [data-count="6"], [data-count="7"], [data-count="8"]) {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  /* Media that does not ask for the whole width stands next to three or four options, or next to
+     the revealed answer — the picture gets the slide's full height that way. */
+  .quiz-slide[data-media="side"]:has(.quiz-slide-options:is([data-count="3"], [data-count="4"]), .quiz-slide-right) .quiz-slide-canvas {
+    display: grid;
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+    column-gap: 3cqi;
+
+    & > :is(.quiz-slide-top, .quiz-slide-prompt, .quiz-slide-explanation) {
+      grid-column: 1 / -1;
+    }
+
+    & > .quiz-slide-media {
+      grid-row: 3;
+      grid-column: 1;
+    }
+
+    & > .quiz-slide-answer {
+      grid-row: 3;
+      grid-column: 2;
+      align-self: center;
+    }
+
+    & .quiz-slide-options {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  /* || Components: picture and video frame */
+  .quiz-slide-frame {
+    container-type: size;
+    display: grid;
+    flex: 1;
+    place-items: center;
+    width: 100%;
+    min-width: 0;
+    height: 100%;
+    min-height: 0;
+  }
+
+  .quiz-slide-picture,
+  .quiz-slide-video {
+    display: block;
+    width: min(100cqw, calc(100cqh * var(--quiz-ratio, 1.7778)));
+    height: auto;
+    aspect-ratio: var(--quiz-ratio, 1.7778);
+    border-radius: 2.4cqmin;
+    box-shadow: 0 1cqmin 5cqmin oklch(0% 0 0 / 0.35);
+
+    /* Until the file has said its shape there is nothing to show. */
+    &[data-loading] {
+      visibility: hidden;
+    }
+  }
+
+  .quiz-slide-video {
+    background: oklch(0% 0 0);
+  }
+
+  .quiz-slide-zoom {
+    display: block;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 2.4cqmin;
+    background: none;
+    cursor: zoom-in;
+
+    &:focus-visible {
+      outline: max(3px, 0.8cqmin) solid var(--quiz-stage-gold);
+      outline-offset: max(2px, 0.6cqmin);
+    }
+  }
+
+  /* Zoomed: the picture over the whole slide, still whole and in its shape. */
+  .quiz-slide-frame[data-zoom] {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    padding: 2cqi;
+    background: var(--quiz-stage-to);
+    animation: quiz-slide-zoom 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
+
+    & .quiz-slide-zoom {
+      cursor: zoom-out;
+    }
+  }
+
+  @keyframes quiz-slide-zoom {
+    from {
+      opacity: 0.4;
+      transform: scale(0.94);
+    }
+  }
+
+  /* || Components: no file */
+  .quiz-slide-nomedia {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 1.2cqi;
+    align-items: center;
+    align-self: stretch;
+    justify-content: center;
+    min-height: 0;
+    padding: 1.6cqi;
+    border: 0.3cqi dashed var(--quiz-stage-edge);
+    border-radius: 2.4cqi;
+    color: var(--quiz-stage-dim);
+    font-size: 2.4cqi;
+    font-weight: var(--weight-semibold);
+    text-align: center;
+
+    & svg {
+      width: 5cqi;
+      height: 5cqi;
+    }
+  }
+
+  /* || Components: clip (audio, video) */
+  .quiz-slide-clip {
+    position: relative;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 1.4cqi;
+    align-self: stretch;
+    justify-content: center;
+    min-width: 0;
+    min-height: 0;
+    /* A control is never smaller than a fingertip: 44 px, or what that is on the player's scaled stage. */
+    --quiz-clip-button: max(6.4cqi, var(--qp-touch, 44px));
+
+    /* A still has no buttons: its marks keep the slide's own scale, however small the slide. */
+    &[data-still] {
+      --quiz-clip-button: 6.4cqi;
+    }
+  }
+
+  .quiz-slide-clip-controls {
+    display: flex;
+    flex: none;
+    gap: 1.8cqi;
+    align-items: center;
+  }
+
+  .quiz-slide-clip-play,
+  .quiz-slide-clip-restart {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: var(--quiz-clip-button);
+    height: var(--quiz-clip-button);
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    font: inherit;
+
+    & svg {
+      width: 46%;
+      height: 46%;
+    }
+
+    &:is(button) {
+      cursor: pointer;
+    }
+
+    &:focus-visible {
+      outline: max(3px, 0.4cqi) solid var(--quiz-stage-ink);
+      outline-offset: max(2px, 0.4cqi);
+    }
+  }
+
+  .quiz-slide-clip-play {
+    background: var(--quiz-stage-gold);
+    color: oklch(24% 0.06 85);
+  }
+
+  .quiz-slide-clip-restart {
+    background: var(--quiz-stage-chip);
+    box-shadow: inset 0 0 0 0.15cqi var(--quiz-stage-edge);
+    color: var(--quiz-stage-ink);
+
+    [data-still] & {
+      display: none;
+    }
+  }
+
+  .quiz-slide-clip-track {
+    flex: 1;
+    min-width: 0;
+    height: max(0.8cqi, 3px);
+    overflow: hidden;
+    border-radius: 99cqi;
+    background: var(--quiz-stage-edge);
+
+    [data-still] & {
+      height: 0.8cqi;
+    }
+  }
+
+  .quiz-slide-clip-fill {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--quiz-stage-ink);
+    transform: scaleX(var(--quiz-progress, 0));
+    transform-origin: 0 50%;
+    transition: transform 250ms linear;
+  }
+
+  .quiz-slide-clip-time {
+    flex: none;
+    color: var(--quiz-stage-dim);
+    font-size: 2.3cqi;
+    font-weight: var(--weight-bold);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  /* Audio: one glass bar — play, the level bars over the progress line, the time, from the start. */
+  .quiz-slide-clip[data-clip="audio"] {
+    display: grid;
+    flex: 0 1 auto;
+    grid-template-rows: minmax(3cqi, 9cqi) auto;
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
+    gap: 1cqi 2.2cqi;
+    align-items: center;
+    align-self: center;
+    width: 100%;
+    max-height: 100%;
+    padding: 1.8cqi 2.6cqi;
+    border-radius: 3cqi;
+    background: var(--quiz-stage-chip);
+    box-shadow: inset 0 0 0 0.15cqi var(--quiz-stage-edge);
+
+    & .quiz-slide-clip-controls {
+      display: contents;
+    }
+
+    & .quiz-slide-bars {
+      grid-row: 1;
+      grid-column: 2;
+    }
+
+    & .quiz-slide-clip-track {
+      grid-row: 2;
+      grid-column: 2;
+    }
+
+    & :is(.quiz-slide-clip-play, .quiz-slide-clip-time, .quiz-slide-clip-restart) {
+      grid-row: 1 / 3;
+    }
+  }
+
+  .quiz-slide-bars {
+    display: flex;
+    gap: 0.7cqi;
+    align-items: center;
+    align-self: stretch;
+    min-height: 0;
+
+    & span {
+      flex: 1;
+      height: 100%;
+      border-radius: 99cqi;
+      background: var(--quiz-tone);
+      transform: scaleY(var(--quiz-bar, 0.2));
+      transition: transform 240ms ease-out;
+    }
+  }
+
+  .quiz-slide-noposter {
+    display: grid;
+    place-items: center;
+    width: min(100cqw, calc(100cqh * 1.7778));
+    aspect-ratio: 16 / 9;
+    border-radius: 2.4cqmin;
+    background: oklch(0% 0 0 / 0.35);
+    color: var(--quiz-stage-dim);
+
+    & svg {
+      width: 18cqmin;
+      height: 18cqmin;
+    }
+  }
+
+  /* The browser wants a tap in this window before it plays sound. */
+  .quiz-slide-clip-tap {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: inline-flex;
+    gap: 1.2cqi;
+    align-items: center;
+    width: fit-content;
+    height: fit-content;
+    min-height: var(--quiz-clip-button);
+    margin: auto;
+    padding: 1.2cqi 3.4cqi;
+    border: 0;
+    border-radius: 99cqi;
+    background: var(--quiz-stage-gold);
+    box-shadow: 0 1cqi 4cqi oklch(0% 0 0 / 0.45);
+    color: oklch(24% 0.06 85);
+    font: inherit;
+    font-size: 3cqi;
+    font-weight: var(--weight-bold);
+    cursor: pointer;
+
+    &[hidden] {
+      display: none;
+    }
+
+    &:focus-visible {
+      outline: max(3px, 0.4cqi) solid var(--quiz-stage-ink);
+      outline-offset: max(2px, 0.4cqi);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .quiz-slide-frame[data-zoom] {
+      animation: none;
+    }
+
+    .quiz-slide-bars span,
+    .quiz-slide-clip-fill {
+      transition: none;
+    }
+  }
+}
