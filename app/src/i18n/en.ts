@@ -35,6 +35,7 @@ export const en = {
       help: "Help",
       settings: "Settings",
       whatsNew: "What's new",
+      checkUpdate: "Check for updates",
       share: "Share app",
       install: "Install app",
       installed: "Installed ✓",
@@ -170,7 +171,7 @@ export const en = {
     },
     offline: "Offline — still works",
     linkCopied: "Link copied ✓",
-    update: { available: "New version available", reload: "Reload", offlineReady: "Ready to work offline ✓" },
+    update: { available: "New version available", reload: "Reload", offlineReady: "Ready to work offline ✓", checking: "Checking for updates…", latest: "You have the latest version ({{version}})", applying: "Updating to the new version…", offline: "No connection — try again when you are online", unavailable: "Updates are not available in this browser" },
     progress: { working: "Working…", of: "{{done}} of {{total}}", done: "✓ Done · {{name}}" },
     dropzone: {
       choose: "Choose file",

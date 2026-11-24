@@ -37,6 +37,7 @@ export const bg: Messages = {
       help: "Помощ",
       settings: "Настройки",
       whatsNew: "Какво ново",
+      checkUpdate: "Провери за обновяване",
       share: "Сподели приложението",
       install: "Инсталирай приложението",
       installed: "Инсталирано ✓",
@@ -172,7 +173,7 @@ export const bg: Messages = {
     },
     offline: "Без интернет — работи",
     linkCopied: "Линкът е копиран ✓",
-    update: { available: "Има нова версия", reload: "Презареди", offlineReady: "Готово за работа без интернет ✓" },
+    update: { available: "Има нова версия", reload: "Презареди", offlineReady: "Готово за работа без интернет ✓", checking: "Проверявам за обновяване…", latest: "Имаш последната версия ({{version}})", applying: "Обновявам до новата версия…", offline: "Няма връзка — опитай пак, когато си онлайн", unavailable: "В този браузър няма обновяване" },
     progress: { working: "Работя…", of: "{{done}} от {{total}}", done: "✓ Готово · {{name}}" },
     dropzone: {
       choose: "Избери файл",

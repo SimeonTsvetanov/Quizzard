@@ -248,3 +248,27 @@ test("icons: the tab shows the small mark, each shortcut has its own icon, the m
     expect((await request.get(`./${file}`)).status(), file).toBe(200);
   }
 });
+
+// "Check for updates" in the menu (Moni 2026-11-24): asks the server now and says what it found.
+const checkForUpdates = async (page: Page): Promise<void> => {
+  await page.click("[data-menu-open]");
+  await page.locator('dialog[data-menu] [data-action="update"]').click();
+};
+
+test("Check for updates says so when this is the latest version", async ({ page }) => {
+  await openControlled(page);
+  await checkForUpdates(page);
+  await expect(page.locator(".toast").filter({ hasText: `You have the latest version (${app.version})` })).toBeVisible();
+  await expect(page.locator("dialog[data-menu]")).not.toHaveAttribute("open"); // an action, not a place: the menu is closed
+});
+
+test("Check for updates finds a new deploy and applies it: the page reloads under the new worker", async ({ page }) => {
+  await openControlled(page);
+  await page.context().addCookies([{ name: "e2e-next-deploy", value: String(Date.now()), url: page.url() }]);
+  await page.evaluate(() => { (window as unknown as { beforeUpdate?: boolean }).beforeUpdate = true; });
+  await checkForUpdates(page);
+  // The reload takes the mark away; then nothing waits any more: the new worker is the active one.
+  await expect.poll(() => page.evaluate(() => (window as unknown as { beforeUpdate?: boolean }).beforeUpdate).catch(() => true), { timeout: 20_000 }).toBeUndefined();
+  await expect.poll(() => page.evaluate(async () => (await navigator.serviceWorker.getRegistration())?.waiting == null)).toBe(true);
+  await expect(page.locator(".toast").filter({ hasText: "New version available" })).toHaveCount(0);
+});

@@ -23,7 +23,7 @@ import { openAbout } from "./ui/about.ts";
 import { maybeShowWhatsNew, openWhatsNew } from "./ui/whats-new.ts";
 import { flushReportQueue, openReport } from "./ui/report.ts";
 import { initInstall, openInstall, updateMenuLabel } from "./ui/install.ts";
-import { initPwa } from "./pwa.ts";
+import { checkNow, initPwa } from "./pwa.ts";
 import { relocateToasts } from "./ui/toast.ts";
 import { returnToMenuAfter } from "./ui/menu-return.ts";
 import { trackKeyboardInset } from "./ui/keyboard-inset.ts";
@@ -62,7 +62,7 @@ document.querySelectorAll<HTMLAnchorElement>("[data-contact]").forEach((a) => {
 const menu = document.querySelector<HTMLDialogElement>("[data-menu]");
 const actions: Record<string, () => void> = {
   help: openHelp, settings: openSettings, about: openAbout, "whats-new": openWhatsNew, report: openReport,
-  install: openInstall, share: () => { void shareApp(); },
+  install: openInstall, share: () => { void shareApp(); }, update: () => { void checkNow(); },
 };
 /** Opens the menu. */
 function showMenu(): void {
@@ -79,11 +79,11 @@ document.addEventListener("click", (e) => {
   menu?.close();
   actions[name]?.();
   // Opened from the menu → closing it leads back to the menu, not two steps back to the screen.
-  if (isFromMenu && name !== "share") returnToMenuAfter(target, showMenu); // Share is an action, not a place
+  if (isFromMenu && name !== "share" && name !== "update") returnToMenuAfter(target, showMenu); // Share and the update check are actions, not places
 });
 const openFromHash = (): void => {
   const name = location.hash.slice(1);
-  if (name !== "share" && Object.hasOwn(actions, name)) actions[name]?.();
+  if (name !== "share" && name !== "update" && Object.hasOwn(actions, name)) actions[name]?.();
 };
 window.addEventListener("hashchange", openFromHash);
 
