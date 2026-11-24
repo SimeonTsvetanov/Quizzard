@@ -1,6 +1,6 @@
 # STATUS — Quizzard
 
-**Updated:** 2026-11-24 · **Phase:** 3 Build — v0.21.0: Teams, Scores, Answer sheet and the Quiz creator (make, play, export, presenter view, media, quiz files; UX pass with one control bar, n/total counters, drag, search, print) live in this repo with their own data; next T-17…T-25
+**Updated:** 2026-11-24 · **Phase:** 3 Build — v0.22.0: Teams, Scores, Answer sheet and the Quiz creator (make, play, export, presenter view, media, quiz files; UX pass with one control bar, n/total counters, drag, search, print) live in this repo with their own data; next T-17…T-25
 
 ## Done
 - Old code in branch `legacy-2025`. Spec and plan approved by Moni (2026-11-22). Brand in `brand/` (logo A, palette C Emerald).
@@ -18,7 +18,7 @@
 - T-12/T-13 GG Counter at `#/scores` from submodule `vendor/gg-counter` (a6745fb = 1.2.4), isolated CSS (Tailwind under Vite 8), header buttons in the slot, toasts inside its dialogs: Home 45.4 KB, Scores first open 92.3 KB of 125; its suite 74/76 in `scores` + `scores-mobile` (motion/keyboard ×5 green), scores-host.spec green ×5.
 
 ## Next
-- On branch `claude/eager-bardeen-t8t7b7` (not released): special rounds Golden pyramid and Safe (quiz-creator SPEC §10, PLAN slice 6) and the player restyle with the Quizzard logo. Waiting on Moni's look; WebKit/Firefox not run yet.
+- 0.22.0 (2026-11-24): special rounds Golden pyramid and Safe (quiz-creator SPEC §10, PLAN slice 6), the stage in the Home look with the Quizzard logo, docs refresh. Checked in Chromium only; WebKit/Firefox and real phones not yet.
 - Quiz creator: slices 1–5 + UX pass shipped (0.17.0–0.20.0). Fixes for the red five-browser run 45430916307 are on the branch (DECISIONS 2026-11-24: media as bytes where Blobs are refused, Home arrow/CLS, sky still under dialogs, 8 shards, traces uploaded); WebKit and Firefox are unproven until the next manual run — read its `e2e-results-*` artifacts first. Then: a large-file test (100–250 MB), Cast experiment, restore the e2e gate before 1.0.0, move the learnings into the forge.
 - Open after the move in: ESLint/Prettier/`tsc` still skip `miniapps/`; standalone-only code left in the two packages (theme storage, `./module` entry, standalone host in tests) can go.
 - Open from T-15: quota warning and `notifySaved` → persist. Then T-17 (new:miniapp + quiz card), T-18 icons, T-19 texts (Bulgarian tagline), T-20 SEO, T-21 shortcuts, T-22 a11y, T-23 perf/security, T-24 user docs, T-25 release 1.0.0.

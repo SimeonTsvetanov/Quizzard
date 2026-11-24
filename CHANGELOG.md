@@ -3,6 +3,8 @@
 All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
+
+## [0.22.0] - 2026-11-24
 ### Added
 - **Quiz creator — two special rounds: Golden pyramid and Safe.** "Add round" asks for the kind. A
   Golden pyramid has 4 questions that ask for 1, 2, 3 and 4 answers (10 points); you list every answer
@@ -18,6 +20,8 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 - **Quiz creator, while playing — a calmer, more polished stage** in the look of Quizzard's main screen: no
   more outlines around answers, chips, score rows and lists — soft fills and depth instead, a few stars over
   the stage, the same look in the menu, the scores table and the host panel.
+
+- **Help, the FAQ, the README and the user guide** describe the Quiz creator as it is today: media, playing on a big screen, export, the special rounds, and "Check for updates" in the menu.
 
 ## [0.21.0] - 2026-11-24
 ### Added
