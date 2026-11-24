@@ -71,6 +71,7 @@ export function createHome(list: HTMLElement, entries: readonly MiniAppEntry[]):
         return h("li", { class: classes.join(" ") }, card(entry, isFeatured));
       }));
       list.removeAttribute("aria-busy");
+      holdArrowsForFont(list);
       // Tiles rise in on the first drawing only (home.css): a redraw keeps them still under a screen change.
       requestAnimationFrame(() => { list.setAttribute("data-settled", ""); });
       if (focused !== undefined) cardOf(focused)?.focus();
@@ -85,6 +86,33 @@ export function createHome(list: HTMLElement, entries: readonly MiniAppEntry[]):
       leading = undefined;
     },
   };
+}
+
+/**
+ * Hides the arrow of every "Open" pill until the pill's font is there. The bold face is first asked for when the
+ * cards are drawn, and its words are narrower or wider than the fallback's: the arrow after them would move a few
+ * pixels when the font lands — a layout shift on every first visit (CI 2026-11-24; the size depends on the fallback
+ * font, so a machine whose fallback happens to match never shows it).
+ */
+function holdArrowsForFont(list: HTMLElement): void {
+  const pill = list.querySelector<HTMLElement>(".launcher-action");
+  const fonts = document.fonts as FontFaceSet | undefined;
+  if (pill === null || fonts === undefined) return;
+  const style = getComputedStyle(pill);
+  // Built from the longhands: the computed `font` shorthand is empty in some browsers.
+  const font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+  const text = pill.textContent;
+  let isReady: boolean;
+  try {
+    isReady = fonts.check(font, text);
+  } catch {
+    return; // a font string the browser does not take: leave the arrows as they are
+  }
+  if (isReady) return;
+  list.setAttribute("data-font", "loading");
+  const show = (): void => { list.removeAttribute("data-font"); };
+  // A font that fails to load leaves the fallback in place: nothing moves any more, so the arrows show.
+  fonts.load(font, text).then(show, show);
 }
 
 /** The saved last-used id; anything else in storage (hand-edited, older shape) counts as none. */

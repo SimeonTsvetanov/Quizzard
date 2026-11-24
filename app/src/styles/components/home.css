@@ -467,6 +467,13 @@
     }
   }
 
+  /* Until the pill's bold font is there (home.ts), its arrow is not shown: the words change width when the
+     font lands and the arrow after them would jump. Same safety net as the busy rules above. */
+  .launcher-list[data-font="loading"] .launcher-action svg {
+    visibility: hidden;
+    animation: reveal-anyway 0s 4s forwards;
+  }
+
   .launcher-soon {
     position: relative;
     padding: var(--space-1) var(--space-3);
