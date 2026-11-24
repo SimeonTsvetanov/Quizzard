@@ -88,6 +88,17 @@ async function offlineContext(browser: Browser, viewport = { width: 1280, height
 
 /** The stepper's "+" of a team on the stage or in the host panel. */
 const more = (scope: Locator, team: string) => scope.getByRole("button", { name: `One point more for ${team}` });
+/**
+ * The score screen's points entry. A wide stage shows it at once beside the round's answers; an upright
+ * or small one opens on the answers alone (all of them listed, 2026-11-24) and one Next brings the entry.
+ */
+const toPointsEntry = async (page: Page): Promise<void> => {
+  const score = view(page, "score");
+  await expect(score).toBeVisible();
+  await expect(score.locator("[data-recap-line]").first()).toBeAttached(); // the round's answers are on this screen
+  if ((await score.getAttribute("data-part")) === "answers" && !(await score.getByRole("button", { name: /^One point more for / }).first().isVisible())) await page.keyboard.press("Space");
+  await expect(score.getByRole("button", { name: /^One point more for / }).first()).toBeVisible();
+};
 
 test("AC9: Play runs a whole game in the app — teams, timer with auto-advance, reveal, scores, leaderboard, tie, podium — and a reload in the middle continues", async ({ page }) => {
   test.slow(); // one question runs its real 5 s timer and cue
@@ -144,6 +155,7 @@ test("AC9: Play runs a whole game in the app — teams, timer with auto-advance,
   // Score entry: a number per team; the question's points note is on the screen (AC3).
   await next(page);
   const score = view(page, "score");
+  await toPointsEntry(page);
   await expect(score.locator("[data-score-row]")).toHaveCount(3);
   await expect(score.locator(".qp-guide")).toContainText("2 points · 1 for each planet");
   await more(score, "Foxes").click();
@@ -167,6 +179,7 @@ test("AC9: Play runs a whole game in the app — teams, timer with auto-advance,
   await next(page, 3);
   await expect(stage(page).locator(".quiz-slide-option[data-correct]")).toHaveText("True");
   await next(page);
+  await toPointsEntry(page);
   await more(view(page, "score"), "Foxes").click();
   await more(view(page, "score"), "Team 3").click();
   await next(page);
@@ -401,6 +414,7 @@ test(`AC11: the stage, the menu and the host panel have no serious accessibility
   await next(page, 4);
   await check(page, "answer revealed");
   await next(page, 3);
+  await toPointsEntry(page);
   await more(view(page, "score"), "Team 1").click();
   await check(page, "score entry");
   await next(page);
@@ -494,6 +508,7 @@ for (const viewport of [{ width: 390, height: 844 }, { width: 1920, height: 1080
         const name = (await stage(page).locator("[data-view]").getAttribute("data-view")) ?? "";
         screens.push(name);
         if (name === "score") {
+          await toPointsEntry(page);
           await more(view(page, "score"), "Team 3").click();
           await more(view(page, "score"), "Team 12").click(); // the last row can be reached (scrolled to, on an upright phone)
           await expect(view(page, "score").locator('[data-score-total="t12"]')).toHaveText("1");
