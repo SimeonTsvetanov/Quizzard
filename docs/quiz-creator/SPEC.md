@@ -88,7 +88,8 @@ creator's lists, the preview, the export and the player all go through the regis
 ### 3.5 Storage
 
 - Quizzes and media in **IndexedDB** (database of the area `quizzard-quiz:v1`); media as files (Blobs), apart from
-  the quiz data, so a list opens fast. localStorage cannot hold media.
+  the quiz data, so a list opens fast. localStorage cannot hold media. Where the browser refuses a Blob in
+  IndexedDB (WebKit in a private window) the same file is kept as its bytes and type (DECISIONS 2026-11-24).
 - Shown in Settings → Your data with its size; Clear deletes it; the app-wide Export/Import does **not** include
   media (too large) — quizzes travel as quiz files (F10). Persistent storage is requested with the first media file.
 - Before adding a file the free space is checked; "not enough space" is a clear message, never a silent failure.
