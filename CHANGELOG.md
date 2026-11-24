@@ -3,6 +3,12 @@
 All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
+
+## [0.20.4] - 2026-11-24
+### Changed
+- **Quiz creator on a computer:** "Add another" and "Done" stand right under the live preview of the question
+  and stay in view while you fill in the form (they used to hang alone at the bottom of the page). Time and
+  Points are on one level.
 ### Fixed
 - **Quiz creator in a private Safari window:** pictures, audio and video can be added and quiz files with media
   open (Safari does not store files the usual way there).
