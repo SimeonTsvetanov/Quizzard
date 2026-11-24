@@ -84,6 +84,49 @@
     }
   }
 
+  /* Upright media (a phone's video, a portrait) on a wide slide: the whole height beside the question
+     and its answer, so it is as large as the slide lets it be. An upright screen stacks them again
+     (the player's views.css), and there the height is the media's anyway. */
+  .quiz-slide[data-media="tall"] .quiz-slide-canvas {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto auto;
+    grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
+    column-gap: 3.4cqi;
+
+    & > .quiz-slide-top {
+      grid-column: 1 / -1;
+    }
+
+    & > .quiz-slide-media {
+      grid-row: 2 / -1;
+      grid-column: 1;
+    }
+
+    & > .quiz-slide-prompt {
+      grid-row: 2;
+      grid-column: 2;
+      align-self: center;
+    }
+
+    & > .quiz-slide-answer {
+      grid-row: 3;
+      grid-column: 2;
+    }
+
+    & > .quiz-slide-explanation {
+      grid-row: 4;
+      grid-column: 2;
+    }
+
+    & .quiz-slide-options:is([data-count="3"], [data-count="4"]) {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    & .quiz-slide-options:is([data-count="5"], [data-count="6"], [data-count="7"], [data-count="8"]) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
   /* || Components: picture and video frame */
   .quiz-slide-frame {
     container-type: size;
@@ -115,7 +158,15 @@
     background: oklch(0% 0 0);
   }
 
+  /* A live video stands in a box of its own size, so its zoom button sits in the video's corner. */
+  .quiz-slide-shot {
+    position: relative;
+    display: block;
+    width: fit-content;
+  }
+
   .quiz-slide-zoom {
+    position: relative;
     display: block;
     margin: 0;
     padding: 0;
@@ -127,6 +178,53 @@
     &:focus-visible {
       outline: max(3px, 0.8cqmin) solid var(--quiz-stage-gold);
       outline-offset: max(2px, 0.6cqmin);
+    }
+  }
+
+  /* The zoom mark in the corner of a picture (the picture itself is the button) and of a video (the
+     mark is the button): a finger-sized disc that says "this can fill the screen". */
+  .quiz-slide-zoom-mark {
+    --quiz-zoom-button: max(7cqmin, var(--qp-touch, 44px));
+
+    position: absolute;
+    top: max(1.6cqmin, 6px);
+    right: max(1.6cqmin, 6px);
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: var(--quiz-zoom-button);
+    height: var(--quiz-zoom-button);
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: oklch(0% 0 0 / 0.62);
+    box-shadow: inset 0 0 0 max(1px, 0.25cqmin) oklch(100% 0 0 / 0.5);
+    color: oklch(100% 0 0);
+    font: inherit;
+
+    & svg {
+      width: 46%;
+      height: 46%;
+    }
+
+    &:is(button) {
+      cursor: zoom-in;
+
+      &[aria-pressed="true"] {
+        cursor: zoom-out;
+      }
+
+      &:focus-visible {
+        outline: max(3px, 0.8cqmin) solid var(--quiz-stage-gold);
+        outline-offset: max(2px, 0.6cqmin);
+      }
+    }
+  }
+
+  @media (hover: hover) {
+    :is(.quiz-slide-zoom:hover .quiz-slide-zoom-mark, button.quiz-slide-zoom-mark:hover) {
+      background: oklch(0% 0 0 / 0.82);
     }
   }
 
@@ -142,6 +240,16 @@
     & .quiz-slide-zoom {
       cursor: zoom-out;
     }
+  }
+
+  /* A zoomed video: the clip over the whole slide with its controls under it — it plays on. */
+  .quiz-slide-clip[data-zoom] {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    padding: 2cqi 2cqi 1.6cqi;
+    background: var(--quiz-stage-to);
+    animation: quiz-slide-zoom 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
   }
 
   @keyframes quiz-slide-zoom {
@@ -399,7 +507,7 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .quiz-slide-frame[data-zoom] {
+    :is(.quiz-slide-frame, .quiz-slide-clip)[data-zoom] {
       animation: none;
     }
 

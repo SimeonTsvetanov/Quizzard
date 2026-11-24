@@ -6,7 +6,7 @@
 import type { Question } from "@simeonts/quizzard-quiz-core/play";
 import { h, releaseAfterPointer } from "../h.ts";
 import { icon, type StageIcon } from "../icons.ts";
-import { WIDE_RATIO, type SlideKind, type SlideView } from "../registry.ts";
+import { type SlideKind, type SlideView, layoutOf, zoomFace } from "../registry.ts";
 
 /**
  * The tile shown where a file should be and is not (not picked yet, or lost).
@@ -42,17 +42,24 @@ function pictureSlide(question: Question, view: SlideView): HTMLElement {
   const image = shapedImage(url, "data-slide-picture");
   const { media } = view;
   const entry = id === undefined ? undefined : view.entryOf?.(id);
-  // A panorama takes the slide's whole width; every other shape may share the row with the options.
-  const layout = entry?.width !== undefined && entry.height !== undefined && entry.width / entry.height >= WIDE_RATIO ? { "data-layout": "wide" } : {};
+  // A panorama takes the slide's whole width, an upright picture its full height beside the text; every
+  // other shape may share the row with the options.
+  const layout = layoutOf(entry);
   if (!media) return h("div", { class: "quiz-slide-frame", ...layout }, image);
-  const zoom = h("button", { type: "button", class: "quiz-slide-zoom", "aria-label": view.labels.media.zoom, title: view.labels.media.zoom, "aria-pressed": "false", "data-slide-zoom": "" }, image);
+  // The whole picture is the button; the mark in its corner says so.
+  const mark = h("span", { class: "quiz-slide-zoom-mark", "aria-hidden": "true" }, icon("zoom", 16));
+  const zoom = h("button", { type: "button", class: "quiz-slide-zoom", ...zoomFace(view.labels.media).props }, image, mark);
   const frame = h("div", { class: "quiz-slide-frame", ...layout }, zoom);
   releaseAfterPointer(zoom);
   zoom.addEventListener("click", () => { media.command("zoom"); });
+  let isZoomed = false;
   media.mount({
     sync(state) {
+      if (state.zoom === isZoomed) return;
+      isZoomed = state.zoom;
       frame.toggleAttribute("data-zoom", state.zoom);
       zoom.setAttribute("aria-pressed", String(state.zoom));
+      mark.replaceChildren(icon(state.zoom ? "zoomOut" : "zoom", 16));
     },
     destroy: () => undefined,
   });

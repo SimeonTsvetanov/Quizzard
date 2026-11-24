@@ -1,5 +1,5 @@
 // The host panel's card for the media of the screen on show: play / pause and "from the start" for a
-// clip with about where it is, the zoom for a picture — and what to do when the audience's window
+// clip with about where it is, the zoom for a picture or a video — and what to do when the audience's window
 // wants a tap before it plays sound. The buttons make moves of the game, so the audience's window
 // (which is the one that plays) follows.
 import { clockText } from "@simeonts/quizzard-quiz-core/play";
@@ -40,9 +40,10 @@ export function createMediaCard(env: PlayEnv, commands: Commands): PanelCard {
       element.hidden = kind === undefined;
       clip.hidden = kind !== "clip";
       time.hidden = kind !== "clip";
-      zoom.hidden = kind !== "still";
+      zoom.hidden = screen?.zoom !== true;
       note.hidden = state.media.status !== "blocked";
       title.textContent = t(kind === "still" ? "host.picture" : "host.clip");
+      zoom.title = `${t("media.zoom")} (Z)`;
       setFace(play, isPlaying ? "pause" : "play", t(isPlaying ? "media.pause" : "media.play"));
       zoom.setAttribute("aria-pressed", String(state.media.zoom));
       const total = (screen?.clipMs ?? 0) / 1000;

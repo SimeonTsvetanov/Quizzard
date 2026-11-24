@@ -26,6 +26,14 @@ export interface GameScreen {
   readonly seconds: number;
   /** How many reveals the screen has before the game moves on; 0 = none. */
   readonly steps: number;
+  /**
+   * The reveals are parts of the screen that only an upright screen shows one after the other (the
+   * round's answers, then the points entry): a wide screen shows them at once, so a host on a wide
+   * screen passes over them (`next` and `back` with `wide`). Left out = real reveals.
+   */
+  readonly upright?: true;
+  /** The screen's media can fill the stage: a picture, a video (not a sound). Left out = it cannot. */
+  readonly zoom?: true;
   /** What the screen's question carries: a picture (`still`) or audio or video (`clip`); left out for none. */
   readonly media?: "still" | "clip";
   /** A clip's length in milliseconds; left out when it is not known. */
@@ -101,8 +109,9 @@ export const MAX_SCORE = 999;
 
 /** Every move of the game. */
 export type GameAction =
-  | { readonly type: "next" }
-  | { readonly type: "back" }
+  /** `wide` = the window that asks shows a wide stage: the parts an upright screen shows one by one are passed over. */
+  | { readonly type: "next"; readonly wide?: boolean }
+  | { readonly type: "back"; readonly wide?: boolean }
   | { readonly type: "jump"; readonly index: number }
   | { readonly type: "reveal" }
   | { readonly type: "timerStart" }
@@ -118,7 +127,7 @@ export type GameAction =
   | { readonly type: "pickWinner"; readonly teamId: string | null }
   | { readonly type: "setAuto"; readonly value: boolean }
   | { readonly type: "setSound"; readonly value: boolean }
-  /** The question's picture or clip: play, pause, restart, zoom — and what the playing window reports. */
+  /** The question's picture or clip: play, pause, restart, zoom (a picture, a video) — and what the playing window reports. */
   | { readonly type: "media"; readonly command: PlaybackCommand }
   /** The black screen on or off. */
   | { readonly type: "black" }

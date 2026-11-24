@@ -2,19 +2,209 @@
    share the height the stage has left, so two teams and twelve both fill it: `--qp-rows` is set from
    the number of rows (views/parts.ts `shareRows`). The leaderboard and the tiebreak: board.css. */
 
-/* || Score entry */
-.qp-score-body {
-  display: grid;
-  flex: 1;
-  grid-template-columns: minmax(0, 1fr) 400px;
-  gap: 40px;
-  min-height: 0;
+/* || Score entry: the round's answers, the points, what the questions are worth.
+   A wide stage: the answers beside the points entry, the points guide as one line under both.
+   An upright screen has no room for both: the answers are the screen's first part, the entry (with
+   the guide under it) its second — `data-part` on the view (views/score.ts). */
+.qp-score .qp-view-head {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 10px 32px;
 
   [data-shape="tall"] & {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: minmax(0, 1fr) auto;
-    gap: 24px;
   }
+}
+
+.qp-view-titles {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+/* The heading names what the screen shows: "Scores" — and on an upright screen's first part "Answers". */
+.qp-recap-heading,
+[data-shape="tall"] .qp-score[data-part="answers"] .qp-score-heading {
+  display: none;
+}
+
+[data-shape="tall"] .qp-score[data-part="answers"] .qp-recap-heading {
+  display: block;
+}
+
+.qp-score-body {
+  display: grid;
+  flex: 1;
+  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+  gap: 22px 40px;
+  min-height: 0;
+
+  & > .qp-recap {
+    grid-area: 1 / 1;
+  }
+
+  & > .qp-score-table {
+    grid-area: 1 / 2;
+  }
+
+  & > .qp-guide {
+    grid-area: 2 / 1 / auto / -1;
+  }
+
+  [data-shape="tall"] & {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+
+    & > :is(.qp-recap, .qp-score-table) {
+      grid-area: 1 / 1;
+    }
+
+    & > .qp-guide {
+      grid-area: 2 / 1;
+    }
+  }
+}
+
+[data-shape="tall"] .qp-score[data-part="answers"] :is(.qp-score-table, .qp-guide),
+[data-shape="tall"] .qp-score[data-part="points"] :is(.qp-recap, .qp-break-row) {
+  display: none;
+}
+
+/* || The round's answers in one list (views/recap.ts): beside the points entry, and under a break's
+   countdown. "1 — A: Caterpillar": the number quiet, the answer bold. The lines share the height the
+   list has (`--qp-recap-rows` a column); answers that still do not fit are drawn smaller
+   (`--qp-recap-fit`, views/recap.ts) and an upright screen scrolls. */
+.qp-recap,
+.qp-break-card {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 16px;
+  min-width: 0;
+  min-height: 0;
+  padding: 26px 30px;
+  border-radius: 30px;
+  background: oklch(0% 0 0 / 0.22);
+  box-shadow: inset 0 0 0 2px var(--qp-edge);
+  text-align: start;
+}
+
+.qp-recap-title {
+  overflow: hidden;
+  color: var(--qp-gold);
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.qp-recap-lines {
+  --qp-recap-row: min(var(--qp-recap-max, 66px), calc(var(--qp-recap-room, 410px) / var(--qp-recap-rows, 4)));
+
+  display: grid;
+  grid-template-rows: repeat(var(--qp-recap-rows, 4), auto);
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  align-content: start;
+  gap: calc(var(--qp-recap-row) * 0.2) 30px;
+  min-height: 0;
+  overflow: hidden;
+  font-size: calc(var(--qp-recap-row) * 0.62 * var(--qp-recap-fit, 1));
+  font-weight: 700;
+  line-height: 1.2;
+
+  [data-shape="tall"] & {
+    grid-template-rows: none;
+    grid-template-columns: minmax(0, 1fr);
+    grid-auto-flow: row;
+    gap: 18px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: none;
+    font-size: 38px;
+  }
+}
+
+/* More columns: narrower lines, so smaller type. */
+.qp-recap-lines[data-columns="2"] {
+  --qp-recap-max: 50px;
+}
+
+.qp-recap-lines[data-columns="3"] {
+  --qp-recap-max: 40px;
+}
+
+.qp-recap-line {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.5em;
+  align-items: baseline;
+  min-width: 0;
+}
+
+.qp-recap-number {
+  /* As wide as the list's longest number and its dash, so the answers start on one line. */
+  min-width: calc(var(--qp-recap-digits, 1) * 0.74em + 1.5em);
+  color: var(--qp-dim);
+  font-family: var(--qp-display);
+  font-size: 0.82em;
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+  white-space: nowrap;
+}
+
+.qp-recap-text {
+  display: -webkit-box;
+  min-width: 0;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+
+  [data-shape="tall"] & {
+    display: block;
+  }
+}
+
+/* || "Break · 5 min · 10 min · 15 min": the host starts a break from the score entry. */
+.qp-break-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: end;
+
+  & .qp-button {
+    min-height: max(54px, var(--qp-touch, 0px));
+    padding: 6px 22px;
+    font-size: max(24px, calc(var(--qp-touch, 0px) * 0.34));
+  }
+
+  /* An upright screen: the word and the three lengths on one line, the buttons sharing it evenly. */
+  [data-shape="tall"] & {
+    flex-wrap: nowrap;
+    gap: 10px;
+    justify-content: start;
+
+    & .qp-button {
+      flex: 1 1 0;
+      min-width: 0;
+      padding-inline: 8px;
+      white-space: nowrap;
+    }
+  }
+}
+
+.qp-break-label {
+  margin-inline-end: 6px;
+  color: var(--qp-dim);
+  font-size: max(22px, calc(var(--qp-touch, 0px) * 0.3));
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 
 /* The rows share the height the stage has left: `--qp-rows` (from the number of teams) says how many
@@ -22,7 +212,7 @@
    than a finger needs (`--qp-touch`), so on a low screen the teams go into more columns by themselves. */
 .qp-score-table {
   --qp-need: 0px;
-  --qp-row: max(var(--qp-need), min(108px, calc(560px / var(--qp-rows, 4))));
+  --qp-row: max(var(--qp-need), min(108px, calc(470px / var(--qp-rows, 4))));
 
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
@@ -72,23 +262,28 @@
   padding-block: 36px;
 
   & .qp-score-body {
-    grid-template-columns: minmax(0, 1fr) 280px;
-    gap: 20px;
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.5fr);
+    gap: 14px 20px;
+  }
+
+  & :is(.qp-recap, .qp-guide) {
+    padding: 16px 20px;
+    border-radius: 22px;
   }
 }
 
-/* Seven teams and more on a wide stage: the points guide is narrower. */
+/* Seven teams and more on a wide stage: two columns of teams need the width. */
 [data-shape="wide"] .qp-score-body:has([data-split]) {
-  grid-template-columns: minmax(0, 1fr) 300px;
-  gap: 28px;
+  grid-template-columns: minmax(0, 0.72fr) minmax(0, 1.6fr);
+  gap: 22px 28px;
 }
 
 .qp-score-head,
 .qp-score-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto 150px;
+  grid-template-columns: minmax(0, 1fr) auto 110px;
   align-items: center;
-  gap: 24px;
+  gap: 20px;
   padding-inline: 28px;
 
   [data-shape="tall"] & {
@@ -240,6 +435,44 @@
   [data-shape="tall"] & {
     max-height: 300px;
     padding: 20px 24px;
+  }
+}
+
+/* A wide stage: the guide is one line under the answers and the points — "Each question 1 point ·
+   Question 3 2 points · … · Up to 13 points". */
+[data-shape="wide"] .qp-score-body > .qp-guide {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 30px;
+  align-items: baseline;
+  max-height: 124px;
+  padding: 16px 30px;
+  overflow: hidden;
+  border-radius: 24px;
+
+  & .qp-guide-lines {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 30px;
+    overflow: visible;
+    font-size: 24px;
+  }
+
+  & .qp-guide-line {
+    display: flex;
+    gap: 10px;
+    align-items: baseline;
+  }
+
+  & .qp-guide-label {
+    font-size: 0.86em;
+  }
+
+  & .qp-guide-max {
+    margin-inline-start: auto;
+    padding-top: 0;
+    border-top: 0;
+    font-size: 24px;
   }
 }
 

@@ -19,7 +19,7 @@ export const bg: Messages = {
   },
   media: {
     missing: "Този файл липсва",
-    zoom: "Увеличи снимката",
+    zoom: "Увеличи",
     play: "Пусни",
     pause: "Пауза",
     restart: "Отначало",
@@ -91,6 +91,7 @@ export const bg: Messages = {
     max: "До {{points}}",
     question: "Въпрос {{n}}",
     each: "Всеки въпрос",
+    breakMinutes: "{{n}} мин",
   },
   board: {
     title: "Класиране",
@@ -155,7 +156,7 @@ export const bg: Messages = {
     keyTimer: "Пусни или спри таймера",
     keyReset: "Таймерът отначало",
     keyClip: "Пусни или спри клипа",
-    keyZoom: "Увеличи снимката",
+    keyZoom: "Увеличи снимката или видеото (Esc: назад)",
     keyBlack: "Черен екран",
     keyMenu: "Меню",
     keyScores: "Точки",

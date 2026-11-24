@@ -12,6 +12,8 @@ export interface ScreenKind extends RegistryEntry {
   seconds?(round: Round, question: Question): number;
   /** Reveals before the game moves on; none when left out. */
   readonly steps?: number;
+  /** The reveals are parts that a wide screen shows at once (see `GameScreen.upright`). */
+  readonly upright?: true;
   /** Whether the game passes over the screen as things stand. */
   isSkipped?(state: GameState): boolean;
 }
@@ -25,7 +27,8 @@ export function createScreenKinds(): Registry<ScreenKind> {
     { id: STANDARD_SCREENS.question, seconds: effectiveSeconds },
     { id: STANDARD_SCREENS.answers },
     { id: STANDARD_SCREENS.answer, steps: 1 },
-    { id: STANDARD_SCREENS.score },
+    // The round's answers in one list, then the points entry: two parts on an upright screen, one screen on a wide one.
+    { id: STANDARD_SCREENS.score, steps: 1, upright: true },
     { id: STANDARD_SCREENS.board },
     { id: PLAYER_SCREENS.tie, isSkipped: (state) => !isFirstShared(state) },
     { id: PLAYER_SCREENS.final },

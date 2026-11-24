@@ -36,18 +36,26 @@ function enter(state: GameState, index: number, step: number, isForward: boolean
   return { ...state, index, step, timer: freshTimer(screen?.seconds ?? 0, isRunning), media: RESTING_PLAYBACK, curtain: null };
 }
 
-function next(state: GameState, kinds: Kinds): GameState {
+/**
+ * Whether the screen on show has reveals to walk through for whoever asks: the parts of an `upright`
+ * screen are all on show on a wide stage, so there they are passed over in both directions.
+ */
+function walksSteps(state: GameState, isWide: boolean): boolean {
+  return !(isWide && state.screens[state.index]?.upright === true);
+}
+
+function next(state: GameState, kinds: Kinds, isWide = false): GameState {
   // The first press on a covered stage only uncovers it.
   if (state.curtain !== null) return { ...state, curtain: null };
   const steps = state.screens[state.index]?.steps ?? 0;
-  if (state.step < steps) return { ...state, step: state.step + 1 };
+  if (state.step < steps && walksSteps(state, isWide)) return { ...state, step: state.step + 1 };
   const index = seek(state, state.index + 1, 1, kinds);
   return index === null ? state : enter(state, index, 0, true);
 }
 
-function back(state: GameState, kinds: Kinds): GameState {
+function back(state: GameState, kinds: Kinds, isWide = false): GameState {
   if (state.curtain !== null) return { ...state, curtain: null };
-  if (state.step > 0) return { ...state, step: state.step - 1 };
+  if (state.step > 0 && walksSteps(state, isWide)) return { ...state, step: state.step - 1 };
   const index = seek(state, state.index - 1, -1, kinds);
   // A screen gone back to is shown as it was left: with everything revealed.
   return index === null ? state : enter(state, index, state.screens[index]?.steps ?? 0, false);
@@ -95,8 +103,11 @@ function tickTimer(state: GameState, elapsed: number, kinds: Kinds): GameState {
 
 /** A command for the screen's picture or clip. When a clip ends, the timer that waited for it starts. */
 function media(state: GameState, command: PlaybackCommand): GameState {
-  const kind = state.screens[state.index]?.media;
-  if (kind === undefined || (command === "zoom") !== (kind === "still")) return state;
+  const screen = state.screens[state.index];
+  const kind = screen?.media;
+  const isZoom = command === "zoom" || command === "unzoom";
+  // A picture only zooms; a clip plays, and zooms when it has a picture of its own (a video).
+  if (kind === undefined || (isZoom ? screen?.zoom !== true : kind !== "clip")) return state;
   const moved = playbackStep(state.media, command);
   if (moved === state.media) return state;
   const hasEnded = moved.status === "ended" && state.media.status !== "ended";
@@ -193,8 +204,8 @@ function restart(state: GameState): GameState {
 }
 
 const HANDLERS: { readonly [T in GameAction["type"]]: Handler<T> } = {
-  next: (state, _action, kinds) => next(state, kinds),
-  back: (state, _action, kinds) => back(state, kinds),
+  next: (state, action, kinds) => next(state, kinds, action.wide === true),
+  back: (state, action, kinds) => back(state, kinds, action.wide === true),
   jump: (state, action, kinds) => jump(state, action.index, kinds),
   reveal: (state) => (state.step < (state.screens[state.index]?.steps ?? 0) ? { ...state, step: state.step + 1 } : state),
   timerStart: startTimer,

@@ -28,6 +28,16 @@ export function toggleFullscreen(target: HTMLElement): void {
   void (target.requestFullscreen as (() => Promise<void>) | undefined)?.call(target).catch(() => undefined);
 }
 
+/**
+ * A move as the window that asks sees it: `next` and `back` say whether that window shows a wide
+ * stage, where the parts an upright screen walks through one by one are all on show (game/step.ts).
+ * @param action - the move
+ * @param isWide - whether the asking window's stage is wide (the host panel counts as wide)
+ */
+export function shaped(action: GameAction, isWide: boolean): GameAction {
+  return (action.type === "next" || action.type === "back") && action.wide === undefined ? { ...action, wide: isWide } : action;
+}
+
 /** The keys of the player by their place on the keyboard (`KeyboardEvent.code`), so they work in a Cyrillic layout too. */
 const KEYS: Readonly<Record<string, (commands: Commands) => void>> = {
   Space: (commands) => { commands.dispatch({ type: "next" }); },
@@ -39,6 +49,7 @@ const KEYS: Readonly<Record<string, (commands: Commands) => void>> = {
   KeyR: (commands) => { commands.dispatch({ type: "timerReset" }); },
   KeyP: (commands) => { commands.dispatch({ type: "media", command: "toggle" }); },
   KeyZ: (commands) => { commands.dispatch({ type: "media", command: "zoom" }); },
+  Escape: (commands) => { commands.dispatch({ type: "media", command: "unzoom" }); },
   KeyB: (commands) => { commands.dispatch({ type: "black" }); },
   KeyM: (commands) => { commands.openMenu(); },
   KeyS: (commands) => { commands.openScores(); },
@@ -60,8 +71,8 @@ function isTaken(event: KeyboardEvent): boolean {
 
 /**
  * Listens for the player's keys: Space/→/Page Down next, ←/Page Up back (a clicker sends the Page
- * keys), T timer, R restart the timer, P play or pause the clip, Z zoom the picture, B black
- * screen, M menu, S scores, F full screen.
+ * keys), T timer, R restart the timer, P play or pause the clip, Z zoom the picture or the video
+ * (Escape leaves the zoom), B black screen, M menu, S scores, F full screen.
  * @param commands - what the keys do
  * @param signal - stops listening
  */
@@ -70,7 +81,8 @@ export function listenKeys(commands: Commands, signal: AbortSignal): void {
     if (event.ctrlKey || event.metaKey || event.altKey || event.defaultPrevented || isTaken(event)) return;
     const run = KEYS[event.code];
     if (!run) return;
-    event.preventDefault();
+    // Escape only leaves the zoom, and stays whatever else it is to the page.
+    if (event.code !== "Escape") event.preventDefault();
     run(commands);
   }, { signal });
 }

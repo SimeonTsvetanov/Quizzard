@@ -72,7 +72,9 @@ function hinted(button: HTMLButtonElement): void {
 
 /** What the primary button says: "Start" on the first screen, "Show answer" while a reveal is left, else "Next". */
 function primaryFace(state: GameState): { readonly icon: StageIcon; readonly label: "control.begin" | "control.reveal" | "control.next" } {
-  const hasReveal = state.step < (state.screens[state.index]?.steps ?? 0);
+  const screen = state.screens[state.index];
+  // The parts of an upright screen are not answers to show: its button says "Next".
+  const hasReveal = state.step < (screen?.steps ?? 0) && screen?.upright !== true;
   if (hasReveal) return { icon: "eye", label: "control.reveal" };
   return state.index === 0 ? { icon: "play", label: "control.begin" } : { icon: "right", label: "control.next" };
 }

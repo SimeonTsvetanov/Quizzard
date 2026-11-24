@@ -24,7 +24,7 @@ export interface Playback {
  * What can be asked of the media: the host's `play`, `pause`, `toggle`, `restart` and `zoom`, and
  * what the playing window reports back — `ended` and `blocked`.
  */
-export type PlaybackCommand = "play" | "pause" | "toggle" | "restart" | "ended" | "blocked" | "zoom";
+export type PlaybackCommand = "play" | "pause" | "toggle" | "restart" | "ended" | "blocked" | "zoom" | "unzoom";
 
 /** Media at rest: every screen starts with it. */
 export const RESTING_PLAYBACK: Playback = { status: "idle", ms: 0, seq: 0, zoom: false };
@@ -48,6 +48,8 @@ const COMMANDS: Readonly<Record<PlaybackCommand, (state: Playback) => Playback>>
   ended: (state) => (state.status === "playing" || state.status === "blocked" ? { ...state, status: "ended" } : state),
   blocked: (state) => (state.status === "playing" ? { ...state, status: "blocked" } : state),
   zoom: (state) => ({ ...state, zoom: !state.zoom }),
+  // Escape: out of the zoom, and nothing when it is not zoomed.
+  unzoom: (state) => (state.zoom ? { ...state, zoom: false } : state),
 };
 
 /**

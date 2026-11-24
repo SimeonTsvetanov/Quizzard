@@ -32,6 +32,8 @@ export interface MediaLabels {
   readonly missing: string;
   /** Names of the buttons on the slide. */
   readonly zoom: string;
+  /** The key that zooms where the slide is shown, for the button's tooltip ("Zoom (Z)"); left out = no key there. */
+  readonly zoomKey?: string;
   readonly play: string;
   readonly pause: string;
   readonly restart: string;
@@ -105,6 +107,8 @@ export interface SlideRegistries {
 export interface StageAnswer extends SlideAnswer {
   /** The right answer in words. */
   text(answer: Answer, labels: RevealLabels): string;
+  /** The right answer as a list of the round's answers writes it, when that differs: a choice with its letters ("A: Mars · C: Venus"). */
+  line?(answer: Answer, labels: RevealLabels): string;
 }
 
 /** The player's registries. */
@@ -143,3 +147,28 @@ export function stillOf(entry: MediaEntry | undefined): string | null {
 
 /** From this width / height on a picture is a panorama: it wants the slide's whole width. */
 export const WIDE_RATIO = 2.2;
+/** Up to this width / height a picture or a video is upright: on a wide slide it stands beside the text at full height. */
+export const TALL_RATIO = 0.9;
+
+/**
+ * How a picture or a video of a known shape wants to stand on the slide (`data-layout`): `wide` = the
+ * whole width (a panorama), `tall` = beside the text at the slide's full height (upright), nothing =
+ * between the question and the answer, or beside the options.
+ * @param entry - the file's description; without its size nothing is asked for
+ */
+export function layoutOf(entry: MediaEntry | undefined): Readonly<Record<string, string>> {
+  if (entry?.width === undefined || entry.height === undefined || entry.width <= 0 || entry.height <= 0) return {};
+  const ratio = entry.width / entry.height;
+  if (ratio >= WIDE_RATIO) return { "data-layout": "wide" };
+  return ratio <= TALL_RATIO ? { "data-layout": "tall" } : {};
+}
+
+/**
+ * The zoom button of a picture or a video: its mark, its name, and its key in the tooltip.
+ * @param labels - the words
+ * @returns how to make an element that button, and how to show whether the media is zoomed
+ */
+export function zoomFace(labels: MediaLabels): { readonly props: Readonly<Record<string, string>>; readonly title: string } {
+  const title = labels.zoomKey === undefined ? labels.zoom : `${labels.zoom} (${labels.zoomKey})`;
+  return { title, props: { "aria-label": labels.zoom, title, "aria-pressed": "false", "data-slide-zoom": "", ...(labels.zoomKey === undefined ? {} : { "aria-keyshortcuts": labels.zoomKey }) } };
+}

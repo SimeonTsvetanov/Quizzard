@@ -24,5 +24,13 @@ function choiceSlide(answer: Answer, { reveal, labels }: SlideView): HTMLElement
   return h("ol", { class: "quiz-slide-options", "data-count": String(items.length) }, ...items);
 }
 
+/** The correct options with their letters: "A: Mars · C: Venus" (the letter alone for an option without text). */
+function choiceLine(answer: Answer): string {
+  if (!isChoiceAnswer(answer)) return "";
+  return answer.options
+    .flatMap((option, index) => (answer.correct.includes(option.id) ? [option.text.trim() === "" ? optionLetter(index) : `${optionLetter(index)}: ${option.text.trim()}`] : []))
+    .join(" · ");
+}
+
 /** Answer type `choice` on the slide: the options with their letters; at the reveal the correct ones are marked. */
-export const choiceAnswerSlide: StageAnswer = { id: "choice", text: choiceReveal, parts: { slide: choiceSlide } };
+export const choiceAnswerSlide: StageAnswer = { id: "choice", text: choiceReveal, line: choiceLine, parts: { slide: choiceSlide } };

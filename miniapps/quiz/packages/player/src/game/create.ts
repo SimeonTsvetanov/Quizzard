@@ -24,10 +24,12 @@ function own(screen: string): GameScreen {
  * What a question's file is to the game: a clip when it has a length (audio, video), else a still.
  * @param entry - the file's description; `undefined` for a question without a file
  */
-export function mediaOfScreen(entry: MediaEntry | undefined): Pick<GameScreen, "media" | "clipMs"> {
+export function mediaOfScreen(entry: MediaEntry | undefined): Pick<GameScreen, "media" | "clipMs" | "zoom"> {
   if (!entry) return {};
-  if (entry.seconds === undefined) return { media: "still" };
-  return entry.seconds > 0 ? { media: "clip", clipMs: Math.round(entry.seconds * 1000) } : { media: "clip" };
+  if (entry.seconds === undefined) return { media: "still", zoom: true };
+  // A video can fill the stage like a picture; a sound has nothing to enlarge.
+  const zoom = entry.type === "video" ? { zoom: true as const } : {};
+  return entry.seconds > 0 ? { media: "clip", clipMs: Math.round(entry.seconds * 1000), ...zoom } : { media: "clip", ...zoom };
 }
 
 /** A round's screens with their timer, reveals and media; a round without questions has nothing to play. */
@@ -38,7 +40,7 @@ function roundScreens(round: Round, media: ReadonlyMap<string, MediaEntry>, roun
     const kind = kinds.get(place.screen);
     const question = place.questionId === undefined ? undefined : questions.get(place.questionId);
     const seconds = question && kind?.seconds ? kind.seconds(round, question) : 0;
-    return { ...place, seconds, steps: kind?.steps ?? 0, ...mediaOfScreen(question?.media ? media.get(question.media.id) : undefined) };
+    return { ...place, seconds, steps: kind?.steps ?? 0, ...(kind?.upright ? { upright: true as const } : {}), ...mediaOfScreen(question?.media ? media.get(question.media.id) : undefined) };
   });
 }
 

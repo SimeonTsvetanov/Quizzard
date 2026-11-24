@@ -5,6 +5,7 @@ import { h } from "../render/h.ts";
 import { pointsText } from "../render/slide.ts";
 import type { DrawnView, PlayEnv, ViewContext, ViewEntry } from "./context.ts";
 import { heading, kicker, roundLine, shareRows, stepper, teamDigest, viewRoot, type Stepper } from "./parts.ts";
+import { answerList, breakRow, fitRecap } from "./recap.ts";
 
 /** From more teams than this the table has two columns on a wide stage. */
 const SPLIT_ABOVE = 6;
@@ -70,21 +71,32 @@ function pointsGuide({ env, round }: ViewContext): HTMLElement {
     h("p", { class: "qp-guide-max" }, env.t("score.max", { points: env.labels.points(most) })));
 }
 
-/** Score entry after a round: a number per team, the questions' points and notes next to it. */
+/**
+ * After a round's answers were shown one by one: all of them in one list, and the points entry — a
+ * number per team, the questions' points and notes with it. A wide stage shows the list beside the
+ * entry; an upright screen has no room for both, so there the list is the screen's first part and the
+ * entry its second (`data-part`, the game's reveal step: game/kinds.ts `upright`). The host can start
+ * a break from here.
+ */
 export const scoreView: ViewEntry = {
   id: "score",
   tile: ({ env }) => ({ mark: env.t("score.title"), name: env.t("score.title") }),
   structure: teamDigest,
   stage: (context) => {
-    const { env, round, canEdit } = context;
+    const { env, round, canEdit, state } = context;
     const table = scoreTable(context, canEdit);
+    const titles = h("div", { class: "qp-view-titles" }, kicker(...roundLine(env, round)),
+      heading(env.t("score.title"), "qp-score-heading"), heading(env.t("answers.title"), "qp-recap-heading"));
     const root = viewRoot("score",
-      h("header", { class: "qp-view-head" }, kicker(...roundLine(env, round)), heading(env.t("score.title"))),
-      h("div", { class: "qp-score-body" }, table.element, pointsGuide(context)));
-    return { element: root, ...(table.sync ? { sync: table.sync } : {}) };
+      h("header", { class: "qp-view-head" }, titles, ...(canEdit ? [breakRow(env)] : [])),
+      h("div", { class: "qp-score-body" }, ...(round ? [answerList(env, round, env.t("answers.title"))] : []), table.element, pointsGuide(context)));
+    root.setAttribute("data-part", state.step >= 1 ? "points" : "answers");
+    return { element: root, ...(table.sync ? { sync: table.sync } : {}), layout: () => { fitRecap(root); } };
   },
   panel: (context) => {
+    const { env, round } = context;
     const table = scoreTable(context, true);
-    return { element: h("div", { class: "qp-panel-score" }, table.element, pointsGuide(context)), ...(table.sync ? { sync: table.sync } : {}) };
+    const side = h("div", { class: "qp-panel-score-side" }, ...(round ? [answerList(env, round, env.t("answers.title"))] : []), pointsGuide(context), breakRow(env));
+    return { element: h("div", { class: "qp-panel-score" }, table.element, side), ...(table.sync ? { sync: table.sync } : {}) };
   },
 };

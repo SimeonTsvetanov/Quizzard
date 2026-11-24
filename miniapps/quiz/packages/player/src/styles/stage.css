@@ -249,6 +249,133 @@
   }
 }
 
+/* A break with something to read: the countdown on one side, the standings so far and the answers
+   of the round just played on the other (ui/curtain.ts). An upright screen stacks them and scrolls. */
+.qp-break-clock {
+  display: grid;
+  gap: 18px;
+  justify-items: center;
+  min-width: 0;
+  text-align: center;
+}
+
+.qp-curtain[data-curtain="break"]:not([data-plain]) {
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.7fr);
+  place-content: stretch;
+  place-items: center stretch;
+  gap: 40px;
+  padding: 56px 64px;
+
+  & .qp-break-time {
+    font-size: 150px;
+  }
+
+  & .qp-sub {
+    font-size: 32px;
+  }
+
+  [data-shape="tall"] & {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    padding: 48px 40px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: none;
+
+    & > * {
+      flex: none;
+    }
+
+    & .qp-break-time {
+      font-size: 180px;
+    }
+  }
+}
+
+.qp-break-cards {
+  --qp-recap-room: 580px;
+
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  gap: 28px;
+  align-self: stretch;
+  min-height: 0;
+
+  /* The answers in two or three columns take more of the width than the standings. */
+  &:has(.qp-recap-lines:not([data-columns="1"])) {
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.5fr);
+  }
+
+  &:has(> :only-child) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  [data-shape="tall"] & {
+    grid-template-columns: minmax(0, 1fr);
+    grid-auto-flow: row;
+    align-self: auto;
+
+    & .qp-recap-lines {
+      overflow: visible;
+    }
+  }
+}
+
+.qp-break-teams {
+  --qp-break-row: min(84px, calc(600px / var(--qp-break-rows, 4)));
+
+  display: grid;
+  grid-template-rows: repeat(var(--qp-break-rows, 4), auto);
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  align-content: start;
+  gap: calc(var(--qp-break-row) * 0.16) 28px;
+  min-height: 0;
+  font-size: calc(var(--qp-break-row) * 0.46);
+  font-weight: 700;
+
+  [data-shape="tall"] & {
+    --qp-break-row: 78px;
+
+    grid-template-rows: none;
+    grid-template-columns: minmax(0, 1fr);
+    grid-auto-flow: row;
+  }
+}
+
+.qp-break-team {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.6em;
+  align-items: center;
+  min-height: calc(var(--qp-break-row) * 0.84);
+  padding-inline: 0.7em;
+  border-radius: calc(var(--qp-break-row) * 0.3);
+  background: var(--qp-chip);
+  box-shadow: inset 0 0 0 2px var(--qp-edge);
+}
+
+.qp-break-rank {
+  min-width: 1.4em;
+  color: var(--qp-gold);
+  font-family: var(--qp-display);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.qp-break-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.qp-break-points {
+  font-family: var(--qp-display);
+  font-variant-numeric: tabular-nums;
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .qp-curtain[data-curtain] {
     animation: qp-fade 260ms ease-out both;

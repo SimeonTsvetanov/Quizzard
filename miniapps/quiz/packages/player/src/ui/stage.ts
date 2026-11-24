@@ -3,12 +3,12 @@
 // narrower with larger type) and is scaled as a whole to the box, so every screen keeps its
 // proportions on a projector, a laptop or a phone. It shows the view of the game's screen (looked
 // up in the views registry), the timer dial and the cue between questions.
-import { clockText } from "@simeonts/quizzard-quiz-core/play";
 import { CUE_MS, type GameState } from "../game/state.ts";
 import { h } from "../render/h.ts";
 import type { DrawnMedia, SlideMedia } from "../render/registry.ts";
 import { contextOf, type DrawnView, type PlayEnv } from "../views/context.ts";
 import { fallbackView } from "../views/index.ts";
+import { createCurtain } from "./curtain.ts";
 import { createDial } from "./dial.ts";
 
 /** The canvas of a box: its design size and which layout it gets. */
@@ -73,30 +73,6 @@ function showCue(cue: HTMLElement, env: PlayEnv, state: GameState): void {
   cue.setAttribute("data-status", status);
 }
 
-/** What covers the stage: the black screen, or the break with its countdown. Drawn again only when its words change. */
-function showCurtain(curtain: HTMLElement, env: PlayEnv, state: GameState): void {
-  const cover = state.curtain;
-  curtain.hidden = cover === null;
-  if (cover === null) {
-    curtain.removeAttribute("data-curtain");
-    return;
-  }
-  const isOver = cover.kind === "break" && cover.leftMs === 0;
-  const text = cover.kind === "break" ? clockText(Math.ceil(cover.leftMs / 1000)) : "";
-  const key = `${cover.kind}:${text}`;
-  if (curtain.getAttribute("data-shown") === key) return;
-  curtain.setAttribute("data-shown", key);
-  curtain.setAttribute("data-curtain", cover.kind);
-  if (cover.kind === "black") {
-    curtain.replaceChildren(h("span", { class: "qp-visually-hidden" }, env.t("black.on")));
-    return;
-  }
-  curtain.replaceChildren(
-    h("p", { class: "qp-kicker" }, env.t("break.title")),
-    h("p", { class: "qp-break-time", "data-break-time": "", ...(isOver ? { "data-over": "" } : {}) }, text),
-    h("p", { class: "qp-sub" }, env.t(isOver ? "break.over" : "break.sub")));
-}
-
 /** Below this scale a 44 px control takes so much of the canvas that the views switch to their compact layouts. */
 const COMPACT_BELOW = 0.46;
 
@@ -123,8 +99,7 @@ function fit(element: HTMLElement, canvas: HTMLElement): void {
 export function createStage(env: PlayEnv, { canEdit, isLive }: StageOptions): Stage {
   const cue = h("div", { class: "qp-cue", role: "status" }, h("span", { class: "qp-cue-text" }), h("span", { class: "qp-cue-bar", "aria-hidden": "true" }));
   cue.hidden = true;
-  const curtain = h("div", { class: "qp-curtain", "data-curtain-box": "" });
-  curtain.hidden = true;
+  const curtain = createCurtain(env, canEdit && isLive);
   const canvas = h("div", { class: "qp-canvas" });
   const element = h("div", { class: "qp-stage", role: "region", "aria-label": env.t("stage.label"), "data-stage": isLive ? "live" : "preview" }, canvas);
   if (!isLive) element.inert = true;
@@ -136,6 +111,7 @@ export function createStage(env: PlayEnv, { canEdit, isLive }: StageOptions): St
   const observer = new ResizeObserver(() => {
     fit(element, canvas);
     drawn?.view.layout?.();
+    curtain.layout();
   });
   observer.observe(element);
   return {
@@ -154,14 +130,14 @@ export function createStage(env: PlayEnv, { canEdit, isLive }: StageOptions): St
         const view = entry.stage(context);
         // Only a new screen comes in with its entrance; a redraw of the same one does not replay it.
         view.element.toggleAttribute("data-enter", drawn?.index !== state.index);
-        canvas.replaceChildren(view.element, cue, curtain);
+        canvas.replaceChildren(view.element, cue, curtain.element);
         if (focused != null) canvas.querySelector<HTMLElement>(`[data-focus="${CSS.escape(focused)}"]`)?.focus();
         drawn = { key, index: state.index, view };
         fit(element, canvas);
         view.layout?.();
       }
       clip?.sync(state.media);
-      showCurtain(curtain, env, state);
+      curtain.show(state);
       if (isLive) showCue(cue, env, state);
     },
     destroy() {

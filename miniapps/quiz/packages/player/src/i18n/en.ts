@@ -17,7 +17,7 @@ export const en = {
   },
   media: {
     missing: "This file is missing",
-    zoom: "Zoom the picture",
+    zoom: "Enlarge",
     play: "Play",
     pause: "Pause",
     restart: "From the start",
@@ -89,6 +89,7 @@ export const en = {
     max: "Up to {{points}}",
     question: "Question {{n}}",
     each: "Each question",
+    breakMinutes: "{{n}} min",
   },
   board: {
     title: "Leaderboard",
@@ -153,7 +154,7 @@ export const en = {
     keyTimer: "Start or pause the timer",
     keyReset: "Restart the timer",
     keyClip: "Play or pause the clip",
-    keyZoom: "Zoom the picture",
+    keyZoom: "Enlarge the picture or video (Esc: back)",
     keyBlack: "Black screen",
     keyMenu: "Menu",
     keyScores: "Scores",

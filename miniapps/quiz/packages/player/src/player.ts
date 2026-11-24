@@ -12,7 +12,7 @@ import { step } from "./game/step.ts";
 import { type Translate, createTranslator, playerLang } from "./i18n/translate.ts";
 import { h } from "./render/h.ts";
 import { type Bar, createBar } from "./ui/bar.ts";
-import { type Commands, listenKeys, toggleFullscreen } from "./ui/commands.ts";
+import { type Commands, listenKeys, shaped, toggleFullscreen } from "./ui/commands.ts";
 import { type Overlay, openDialog } from "./ui/dialog.ts";
 import { guarded } from "./ui/guards.ts";
 import { menuContent } from "./ui/menu.ts";
@@ -219,7 +219,8 @@ function createSession(options: PlayerOptions): Session {
   const undo = createUndoStrip(t("undo.action"));
   const commands: Commands = {
     // Moves that lose something ask first or offer Undo (ui/guards.ts); the audience's own reports go straight to `move`.
-    dispatch: (action) => { dispatch(action); },
+    // The host panel shows every part of a screen at once, like a wide stage.
+    dispatch: (action) => { dispatch(shaped(action, session.presenter !== null || session.stage.element.getAttribute("data-shape") !== "tall")); },
     openMenu: () => {
       toggleDialog(session, "menu", t("menu.title"), (close) => ({ content: menuContent({ env, state: session.state, commands, isPresenting: session.presenter !== null, close }) }));
     },
