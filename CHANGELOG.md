@@ -4,6 +4,12 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.20.4] - 2026-11-24
+### Changed
+- **Quiz creator on a computer:** "Add another" and "Done" stand right under the live preview of the question
+  and stay in view while you fill in the form (they used to hang alone at the bottom of the page). Time and
+  Points are on one level.
+
 ## [0.20.3] - 2026-11-24
 ### Added
 - **Menu → Check for updates:** asks for a new version right away. If there is one, the app updates itself and
