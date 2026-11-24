@@ -76,8 +76,24 @@ function showCue(cue: HTMLElement, env: PlayEnv, state: GameState): void {
 /** Below this scale a 44 px control takes so much of the canvas that the views switch to their compact layouts. */
 const COMPACT_BELOW = 0.46;
 
-/** Fits the canvas to its box. */
-function fit(element: HTMLElement, canvas: HTMLElement): void {
+/**
+ * Whether a stage shows one part of a screen at a time: upright, or so small that its controls are
+ * enlarged (a phone on its side). The game is told with every `next` and `back` (ui/commands.ts `shaped`).
+ */
+function isSplit(design: Design, scale: number): boolean {
+  return design.shape === "tall" || scale < COMPACT_BELOW;
+}
+
+/**
+ * Whether a stage shows every part of a screen at once (see {@link isSplit}); a stage not measured yet counts as wide.
+ * @param stage - a stage's element
+ */
+export function showsAllParts(stage: HTMLElement | undefined): boolean {
+  return stage?.hasAttribute("data-one-part") !== true;
+}
+
+/** Fits the canvas to its box; `isLive` = the stage people play on (a small preview always shows every part). */
+function fit(element: HTMLElement, canvas: HTMLElement, isLive: boolean): void {
   const { width, height } = element.getBoundingClientRect();
   if (width === 0 || height === 0) return;
   const design = designOf(width, height);
@@ -89,6 +105,8 @@ function fit(element: HTMLElement, canvas: HTMLElement): void {
   canvas.style.setProperty("--qp-touch", `${String(Math.ceil(44 / scale))}px`);
   element.setAttribute("data-shape", design.shape);
   element.toggleAttribute("data-compact", scale < COMPACT_BELOW);
+  // An upright or a small stage has no room for the parts a wide one shows side by side (views/score.ts).
+  element.toggleAttribute("data-one-part", isLive && isSplit(design, scale));
 }
 
 /**
@@ -109,7 +127,7 @@ export function createStage(env: PlayEnv, { canEdit, isLive }: StageOptions): St
   let clip: DrawnMedia | null = null;
   const media: SlideMedia = { command: (command) => { env.dispatch({ type: "media", command }); }, mount: (part) => { clip = part; } };
   const observer = new ResizeObserver(() => {
-    fit(element, canvas);
+    fit(element, canvas, isLive);
     drawn?.view.layout?.();
     curtain.layout();
   });
@@ -133,7 +151,7 @@ export function createStage(env: PlayEnv, { canEdit, isLive }: StageOptions): St
         canvas.replaceChildren(view.element, cue, curtain.element);
         if (focused != null) canvas.querySelector<HTMLElement>(`[data-focus="${CSS.escape(focused)}"]`)?.focus();
         drawn = { key, index: state.index, view };
-        fit(element, canvas);
+        fit(element, canvas, isLive);
         view.layout?.();
       }
       clip?.sync(state.media);

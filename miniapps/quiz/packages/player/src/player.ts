@@ -18,7 +18,7 @@ import { guarded } from "./ui/guards.ts";
 import { menuContent } from "./ui/menu.ts";
 import { type Panel, createPanel } from "./ui/panel.ts";
 import { createScoreboard } from "./ui/scoreboard.ts";
-import { type Stage, createStage } from "./ui/stage.ts";
+import { type Stage, createStage, showsAllParts } from "./ui/stage.ts";
 import { playTimeUp, ranOut } from "./ui/sound.ts";
 import { offerRestart } from "./ui/resume.ts";
 import { type UndoStrip, createUndoStrip } from "./ui/undo.ts";
@@ -220,7 +220,7 @@ function createSession(options: PlayerOptions): Session {
   const commands: Commands = {
     // Moves that lose something ask first or offer Undo (ui/guards.ts); the audience's own reports go straight to `move`.
     // The host panel shows every part of a screen at once, like a wide stage.
-    dispatch: (action) => { dispatch(shaped(action, session.presenter !== null || session.stage.element.getAttribute("data-shape") !== "tall")); },
+    dispatch: (action) => { dispatch(shaped(action, session.presenter !== null || showsAllParts(session.stage.element))); },
     openMenu: () => {
       toggleDialog(session, "menu", t("menu.title"), (close) => ({ content: menuContent({ env, state: session.state, commands, isPresenting: session.presenter !== null, close }) }));
     },

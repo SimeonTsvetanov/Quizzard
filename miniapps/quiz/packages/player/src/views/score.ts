@@ -85,8 +85,10 @@ export const scoreView: ViewEntry = {
   stage: (context) => {
     const { env, round, canEdit, state } = context;
     const table = scoreTable(context, canEdit);
-    const titles = h("div", { class: "qp-view-titles" }, kicker(...roundLine(env, round)),
-      heading(env.t("score.title"), "qp-score-heading"), heading(env.t("answers.title"), "qp-recap-heading"));
+    // One heading, two words: "Scores" — and "Answers" where the answers are a part of their own.
+    const title = heading(env.t("score.title"));
+    title.replaceChildren(h("span", { class: "qp-score-word" }, env.t("score.title")), h("span", { class: "qp-recap-word" }, env.t("answers.title")));
+    const titles = h("div", { class: "qp-view-titles" }, kicker(...roundLine(env, round)), title);
     const root = viewRoot("score",
       h("header", { class: "qp-view-head" }, titles, ...(canEdit ? [breakRow(env)] : [])),
       h("div", { class: "qp-score-body" }, ...(round ? [answerList(env, round, env.t("answers.title"))] : []), table.element, pointsGuide(context)));

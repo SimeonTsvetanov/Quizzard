@@ -10,7 +10,7 @@ import { type Lang, createTranslator } from "./i18n/translate.ts";
 import { h } from "./render/h.ts";
 import { icon } from "./render/icons.ts";
 import { type Commands, listenKeys, shaped, toggleFullscreen } from "./ui/commands.ts";
-import { type Stage, createStage } from "./ui/stage.ts";
+import { type Stage, createStage, showsAllParts } from "./ui/stage.ts";
 
 /** Inputs of {@link createAudience}. */
 export interface AudienceOptions {
@@ -49,7 +49,7 @@ export function createAudience(options: AudienceOptions): { destroy(): void } {
   const channel = createChannel(transport);
   const controller = new AbortController();
   let stage: Stage | null = null;
-  const send = (action: GameAction): void => { channel.send({ kind: "action", action: shaped(action, stage?.element.getAttribute("data-shape") !== "tall") }); };
+  const send = (action: GameAction): void => { channel.send({ kind: "action", action: shaped(action, showsAllParts(stage?.element)) }); };
   // The audience window has the stage alone: no menu, no scores dialog.
   const commands: Commands = { dispatch: send, openMenu: () => undefined, openScores: () => undefined, toggleFullscreen: () => { toggleFullscreen(root); }, toggleAudience: () => undefined, exit: null };
   root.classList.add("qp-player");

@@ -22,22 +22,23 @@
   min-width: 0;
 }
 
-/* The heading names what the screen shows: "Scores" — and on an upright screen's first part "Answers". */
-.qp-recap-heading,
-[data-shape="tall"] .qp-score[data-part="answers"] .qp-score-heading {
+/* The heading names what the screen shows: "Scores" — and "Answers" on the first part of a stage
+   that shows the parts one after the other (`data-one-part`: upright, or a phone on its side). */
+.qp-recap-word,
+[data-one-part] .qp-score[data-part="answers"] .qp-score-word {
   display: none;
 }
 
-[data-shape="tall"] .qp-score[data-part="answers"] .qp-recap-heading {
-  display: block;
+[data-one-part] .qp-score[data-part="answers"] .qp-recap-word {
+  display: inline;
 }
 
 .qp-score-body {
   display: grid;
   flex: 1;
   grid-template-rows: minmax(0, 1fr) auto;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
-  gap: 22px 40px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  gap: 22px 36px;
   min-height: 0;
 
   & > .qp-recap {
@@ -52,7 +53,8 @@
     grid-area: 2 / 1 / auto / -1;
   }
 
-  [data-shape="tall"] & {
+  /* One part at a time, upright: the list alone, then the points with the guide under them. */
+  [data-one-part][data-shape="tall"] & {
     grid-template-columns: minmax(0, 1fr);
     gap: 24px;
 
@@ -64,10 +66,29 @@
       grid-area: 2 / 1;
     }
   }
+
+  /* One part at a time on a phone on its side: the list alone, then the points with the guide beside them. */
+  [data-one-part][data-shape="wide"] & {
+    grid-template-rows: minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) 280px;
+    gap: 20px;
+
+    & > .qp-recap {
+      grid-area: 1 / 1 / auto / -1;
+    }
+
+    & > .qp-score-table {
+      grid-area: 1 / 1;
+    }
+
+    & > .qp-guide {
+      grid-area: 1 / 2;
+    }
+  }
 }
 
-[data-shape="tall"] .qp-score[data-part="answers"] :is(.qp-score-table, .qp-guide),
-[data-shape="tall"] .qp-score[data-part="points"] :is(.qp-recap, .qp-break-row) {
+[data-one-part] .qp-score[data-part="answers"] :is(.qp-score-table, .qp-guide),
+[data-one-part] .qp-score[data-part="points"] :is(.qp-recap, .qp-break-row) {
   display: none;
 }
 
@@ -127,9 +148,21 @@
   }
 }
 
+/* A phone on its side: the list has the whole width, so its lines go in three columns and scroll. */
+[data-one-part][data-shape="wide"] .qp-score .qp-recap-lines {
+  grid-template-rows: none;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-flow: row;
+  gap: 14px 28px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  font-size: 34px;
+}
+
 /* More columns: narrower lines, so smaller type. */
 .qp-recap-lines[data-columns="2"] {
-  --qp-recap-max: 50px;
+  --qp-recap-max: 46px;
 }
 
 .qp-recap-lines[data-columns="3"] {
@@ -161,8 +194,8 @@
   overflow: hidden;
   overflow-wrap: anywhere;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
 
   [data-shape="tall"] & {
     display: block;
@@ -261,11 +294,6 @@
   gap: 12px;
   padding-block: 36px;
 
-  & .qp-score-body {
-    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.5fr);
-    gap: 14px 20px;
-  }
-
   & :is(.qp-recap, .qp-guide) {
     padding: 16px 20px;
     border-radius: 22px;
@@ -273,7 +301,7 @@
 }
 
 /* Seven teams and more on a wide stage: two columns of teams need the width. */
-[data-shape="wide"] .qp-score-body:has([data-split]) {
+:not([data-one-part]) > .qp-canvas .qp-score-body:has(.qp-score-table[data-split]) {
   grid-template-columns: minmax(0, 0.72fr) minmax(0, 1.6fr);
   gap: 22px 28px;
 }
@@ -440,7 +468,7 @@
 
 /* A wide stage: the guide is one line under the answers and the points — "Each question 1 point ·
    Question 3 2 points · … · Up to 13 points". */
-[data-shape="wide"] .qp-score-body > .qp-guide {
+:not([data-one-part]) > .qp-canvas .qp-score-body > .qp-guide {
   display: flex;
   flex-wrap: wrap;
   gap: 6px 30px;
