@@ -4,6 +4,11 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.20.2] - 2026-11-24
+### Fixed
+- **Scores on iPhone and iPad:** "Adjust score" opens the keyboard that has a minus, so points can be taken away
+  (for example -8). Other phones keep the number pad.
+
 ## [0.20.1] - 2026-11-24
 ### Changed
 - **Quiz creator, while playing:** when the answer is shown it is the large text in the middle of the screen; the

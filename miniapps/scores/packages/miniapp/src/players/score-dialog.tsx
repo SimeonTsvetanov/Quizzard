@@ -17,6 +17,7 @@ import {
 import { Input } from "../components/ui/input";
 import { useTrend } from "../hooks/use-change";
 import { t } from "../i18n";
+import { signedNumberMode } from "../lib/keyboard-mode";
 import { limitMessage, type LimitCode } from "./limit-message";
 import { isLongScore } from "./score-size";
 
@@ -83,7 +84,7 @@ export function ScoreDialog({ player, onApply }: ScoreDialogProps): React.JSX.El
         <DialogBody>
           <Input
             type="number"
-            inputMode="numeric"
+            inputMode={signedNumberMode()}
             autoFocus
             value={customAmount}
             onChange={(event) => {
