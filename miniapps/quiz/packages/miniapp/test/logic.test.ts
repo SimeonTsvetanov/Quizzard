@@ -177,8 +177,8 @@ describe("texts and meta", () => {
     expect(help.bg.faq).toHaveLength(help.en.faq.length);
   });
   it("Help quotes the UI labels exactly", () => {
-    for (const label of [en.library.new, en.round.add, en.question.add, en.answer.open, en.answer.choice, en.answer.trueFalse, en.done, en.quiz.preview, en.preview.showAnswer, en.round.settings, en.timing.fromRound]) expect(JSON.stringify(help.en)).toContain(`“${label}”`);
-    for (const label of [bg.library.new, bg.round.add, bg.question.add, bg.answer.open, bg.answer.choice, bg.answer.trueFalse, bg.done, bg.quiz.preview, bg.preview.showAnswer, bg.round.settings, bg.timing.fromRound]) expect(JSON.stringify(help.bg)).toContain(`„${label}“`);
+    for (const label of [en.library.new, en.round.add, en.question.add, en.answer.open, en.answer.choice, en.answer.trueFalse, en.done, en.quiz.preview, en.preview.showAnswer, en.round.settings, en.timing.fromRound, en.quiz.play, en.quiz.export]) expect(JSON.stringify(help.en)).toContain(`“${label}”`);
+    for (const label of [bg.library.new, bg.round.add, bg.question.add, bg.answer.open, bg.answer.choice, bg.answer.trueFalse, bg.done, bg.quiz.preview, bg.preview.showAnswer, bg.round.settings, bg.timing.fromRound, bg.quiz.play, bg.quiz.export]) expect(JSON.stringify(help.bg)).toContain(`„${label}“`);
   });
   it("meta declares the database the storage module opens, so Settings can measure and clear it", () => {
     expect(meta).toMatchObject({ id: "quiz", status: "ready", contract: 1, languages: ["en", "bg"] });

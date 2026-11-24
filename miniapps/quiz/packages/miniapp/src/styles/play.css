@@ -1,0 +1,32 @@
+/* Quiz creator: Play — the player (its own stylesheet, class prefix `qp-`, imported here so the
+   build scopes it to the mini-app) in a screen that covers the window, over the host's header. */
+@import "../../../player/src/styles/index.css";
+
+@layer components {
+  /* || Components: play */
+  .quiz-play {
+    position: fixed;
+    inset: 0;
+    z-index: calc(var(--z-header) + 5);
+    background: var(--quiz-stage-to);
+  }
+
+  /* The window for the player; the player fills its own element inside (height 100 %). */
+  .quiz-play-root {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+  }
+
+  .quiz-play-wait {
+    display: grid;
+    place-items: center;
+    height: 100%;
+    margin: 0;
+    padding: var(--space-6);
+    color: var(--quiz-stage-ink);
+    font-weight: var(--weight-semibold);
+    text-align: center;
+  }
+}

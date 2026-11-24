@@ -9,6 +9,8 @@ import { describe, expect, it } from "vitest";
 import {
   HOME_JS_BUDGET_KB, MINIAPP_FIRST_OPEN_BUDGETS_KB, MINIAPP_JS_BUDGETS_KB, checkBudget, checkFirstOpenBudget, checkHomeHasNoMiniAppCode, checkMiniAppBudget, firstLoadScripts,
   measureFirstOpen, measureHomeScripts, measureMiniAppScripts, miniAppChunkPrefix, staticImports,
+  checkTemplateBudget,
+  PLAYER_TEMPLATE_BUDGET_KB,
 } from "./size-check.ts";
 
 const BASE = "/Quizzard/";
@@ -129,5 +131,36 @@ describe("first open of a mini-app (PLAN T-12)", () => {
   });
   it("Scores is held to SPEC §7's 125 KB, the quiz creator to its SPEC AC11's 60 KB", () => {
     expect(MINIAPP_FIRST_OPEN_BUDGETS_KB).toEqual({ scores: 125, quiz: 60 });
+  });
+});
+
+describe("the quiz player's template (quiz-creator SPEC AC11)", () => {
+  /** Text that gzip cannot shrink much: every chunk is different. */
+  const noise = (bytes: number): string => Array.from({ length: Math.ceil(bytes / 8) }, (_, index) => (index * 2654435761 % 4294967296).toString(36).padStart(8, "0")).join("");
+  const font = (bytes: number): string => `@font-face{src:url(data:font/woff2;base64,${"QUJD".repeat(Math.ceil(bytes / 4))}) format("woff2")}`;
+
+  it("budget is 80 KB gzip", () => {
+    expect(PLAYER_TEMPLATE_BUDGET_KB).toBe(80);
+  });
+
+  it("counts the page without its embedded fonts, and names the fonts and the whole page in the report", () => {
+    const code = noise(40 * 1024);
+    const withFonts = `<style>${font(50_000)}${font(70_000)}</style><script>${code}</script>`;
+    const withoutFonts = `<style>${font(0)}${font(0)}</style><script>${code}</script>`;
+    const result = checkTemplateBudget(withFonts);
+    expect(result.isWithinBudget).toBe(true);
+    expect(result.totalKb).toBeCloseTo(checkTemplateBudget(withoutFonts).totalKb, 1);
+    expect(result.report).toMatch(/^size-check PASS: Quiz player template [\d.]+ KB gzip without fonts \(budget 80 KB\) — 2 embedded fonts 117\.2 KB/);
+  });
+
+  it("fails when the code alone is over the budget", () => {
+    const result = checkTemplateBudget(`<script>${noise(200 * 1024)}</script>`, 80);
+    expect(result.isWithinBudget).toBe(false);
+    expect(result.report).toContain("size-check FAIL: Quiz player template");
+  });
+
+  it("media put into an exported page is not font and would count — the budget is for the template alone", () => {
+    const media = `<script type="application/octet-stream">${noise(100 * 1024)}</script>`;
+    expect(checkTemplateBudget(`<script>x</script>${media}`, 20).isWithinBudget).toBe(false);
   });
 });

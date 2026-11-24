@@ -1,0 +1,232 @@
+/* The leaderboard after a round and the tiebreak: display first, the tiebreak with its few controls.
+   Rows share the stage's height as in scores.css (`--qp-rows`). */
+
+/* || Leaderboard */
+.qp-board-rows {
+  --qp-row: min(124px, calc(610px / var(--qp-rows, 4)));
+
+  display: grid;
+  flex: 1;
+  align-content: center;
+  gap: calc(var(--qp-row) * 0.14);
+  min-height: 0;
+
+  [data-shape="tall"] & {
+    --qp-row: min(120px, calc(1250px / var(--qp-rows-all, 4)));
+  }
+
+  /* Eight teams and more on a wide stage: two columns, first to last down the left one first. */
+  [data-shape="wide"] &[data-split] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: repeat(var(--qp-rows), auto);
+    grid-auto-flow: column;
+    column-gap: 64px;
+
+    & .qp-board-row {
+      grid-template-columns: auto minmax(0, 1fr) 22% 4ch 2.6ch;
+    }
+
+    & .qp-board-gain {
+      display: none;
+    }
+  }
+}
+
+.qp-board-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 26%) minmax(0, 1fr) 3.2ch 4ch 2.6ch;
+  align-items: center;
+  gap: calc(var(--qp-row) * 0.26);
+  height: calc(var(--qp-row) * 0.86);
+  font-size: calc(var(--qp-row) * 0.4);
+  font-weight: 700;
+
+  [data-shape="tall"] & {
+    grid-template-columns: auto minmax(0, 1fr) 4ch 2.6ch;
+
+    & :is(.qp-board-bar, .qp-board-gain) {
+      display: none;
+    }
+  }
+}
+
+.qp-board-rank {
+  display: grid;
+  place-items: center;
+  width: calc(var(--qp-row) * 0.72);
+  height: calc(var(--qp-row) * 0.72);
+  border-radius: 50%;
+  background: var(--qp-chip);
+  box-shadow: inset 0 0 0 2px var(--qp-edge);
+  font-family: var(--qp-display);
+  font-size: 0.9em;
+
+  [data-rank="1"] > & {
+    background: var(--qp-gold);
+    box-shadow: none;
+    color: var(--qp-on-gold);
+  }
+}
+
+.qp-board-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.qp-board-bar {
+  height: calc(var(--qp-row) * 0.36);
+  overflow: hidden;
+  border-radius: 999px;
+  background: oklch(0% 0 0 / 0.24);
+}
+
+.qp-board-fill {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, oklch(66% 0.2 300), oklch(80% 0.13 300));
+  transform: scaleX(var(--qp-share, 0));
+  transform-origin: 0 50%;
+
+  [data-rank="1"] & {
+    background: linear-gradient(90deg, oklch(78% 0.15 75), var(--qp-gold));
+  }
+}
+
+.qp-board-gain {
+  color: var(--qp-dim);
+  font-size: 0.72em;
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+}
+
+.qp-board-total {
+  font-family: var(--qp-display);
+  font-size: 1.15em;
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+}
+
+.qp-board-move {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.1em;
+  color: var(--qp-dim);
+  font-size: 0.72em;
+  font-variant-numeric: tabular-nums;
+
+  & svg {
+    width: 1em;
+    height: 1em;
+  }
+
+  &[data-move="up"] {
+    color: var(--qp-right);
+  }
+
+  &[data-move="down"] {
+    color: var(--qp-warn);
+  }
+}
+
+/* || Tiebreak */
+.qp-tie-cards {
+  display: grid;
+  flex: 1;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  align-content: center;
+  gap: 24px;
+  min-height: 0;
+
+  &:is([data-count="2"], [data-count="3"]) {
+    font-size: 1.25em;
+  }
+
+  [data-shape="tall"] & {
+    grid-template-columns: minmax(0, 1fr);
+    font-size: 1em;
+  }
+}
+
+.qp-tie-card {
+  display: grid;
+  justify-items: center;
+  gap: 0.25em;
+  min-width: 0;
+  padding: 0.9em 0.7em;
+  border-radius: 1em;
+  background: var(--qp-chip);
+  box-shadow: inset 0 0 0 2px var(--qp-edge);
+  text-align: center;
+
+  &[data-winner] {
+    box-shadow: inset 0 0 0 4px var(--qp-gold);
+  }
+}
+
+.qp-tie-crown {
+  display: grid;
+  color: var(--qp-edge);
+
+  & svg {
+    width: 1.5em;
+    height: 1.5em;
+  }
+
+  [data-winner] > & {
+    color: var(--qp-gold);
+  }
+}
+
+.qp-tie-name {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 1.2em;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.qp-tie-points {
+  font-family: var(--qp-display);
+  font-size: 2.4em;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.qp-tie-bonus,
+.qp-tie-picked {
+  min-height: 1.3em;
+  color: var(--qp-gold);
+  font-size: 0.72em;
+  font-weight: 700;
+}
+
+.qp-tie-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+/* || Motion */
+@media (prefers-reduced-motion: no-preference) {
+  .qp-view[data-enter] .qp-board-fill {
+    animation: qp-grow 900ms var(--qp-ease) both;
+    animation-delay: calc(260ms + var(--qp-order, 0) * 80ms);
+  }
+
+  .qp-view[data-enter] :is(.qp-board-row, .qp-score-row, .qp-tie-card, .qp-team) {
+    animation: qp-rise 460ms var(--qp-ease) both;
+    animation-delay: calc(120ms + var(--qp-order, 0) * 60ms);
+  }
+}
+
+@keyframes qp-grow {
+  from {
+    transform: scaleX(0);
+  }
+}

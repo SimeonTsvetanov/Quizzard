@@ -1,18 +1,14 @@
 // Answer type `choice`: 2–8 options, one or several correct (SPEC F4). The editor part keeps its own
 // rows: typing and ticking never rebuild them; adding and removing do, and say where the limits are.
 import {
-  MAX_OPTIONS, MIN_OPTIONS, OPTION_TEXT_MAX, type Answer, type ChoiceAnswer, addOption, canAddOption, canRemoveOption, choiceAnswer,
+  MAX_OPTIONS, MIN_OPTIONS, OPTION_TEXT_MAX, type ChoiceAnswer, addOption, canAddOption, canRemoveOption, choiceAnswer,
   isChoiceAnswer, removeOption, setOptionText, toggleCorrect,
 } from "@simeonts/quizzard-quiz-core";
+import { choiceAnswerSlide, optionLetter } from "@simeonts/quizzard-quiz-player/render";
 import { iconButton, labelButton } from "../dom/controls.ts";
 import { h } from "../dom/h.ts";
 import { icon } from "../dom/icons.ts";
-import type { AnswerEditorContext, AnswerUi, SlideView } from "../ui-registry.ts";
-
-/** The letter of an option by its place: A, B, C … */
-export function optionLetter(index: number): string {
-  return String.fromCharCode(65 + index);
-}
+import { type AnswerEditorContext, type AnswerUi, answerUi } from "../ui-registry.ts";
 
 /** The editor's state: the answer as it is now, and where its rows are drawn. */
 interface ChoiceEditor {
@@ -85,18 +81,5 @@ function choiceEditor(context: AnswerEditorContext): HTMLElement {
     h("p", { class: "quiz-hint" }, t("choice.hint", { min: MIN_OPTIONS, max: MAX_OPTIONS })));
 }
 
-function choiceSlide(answer: Answer, { reveal, labels }: SlideView): HTMLElement | null {
-  if (!isChoiceAnswer(answer)) return null;
-  const items = answer.options.map((option, index) => {
-    const isCorrect = reveal && answer.correct.includes(option.id);
-    const item = h("li", { class: "quiz-slide-option", ...(isCorrect ? { "data-correct": "" } : {}) },
-      h("span", { class: "quiz-slide-letter" }, optionLetter(index)),
-      h("span", { class: "quiz-slide-option-text", ...(option.text.trim() === "" ? { "data-empty": "" } : {}) }, option.text.trim() === "" ? labels.emptyAnswer : option.text));
-    if (isCorrect) item.append(icon("check", 16));
-    return item;
-  });
-  return h("ol", { class: "quiz-slide-options", "data-count": String(items.length) }, ...items);
-}
-
 /** The UI entry of answer type `choice`. */
-export const choiceAnswerUi: AnswerUi = { id: "choice", label: "answer.choice", icon: "choice", parts: { editor: choiceEditor, slide: choiceSlide } };
+export const choiceAnswerUi: AnswerUi = answerUi(choiceAnswerSlide, { label: "answer.choice", icon: "choice" }, choiceEditor);

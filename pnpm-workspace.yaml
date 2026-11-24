@@ -6,6 +6,8 @@ packages:
   # never their standalone app/, mcp or root (their own workspace file and lockfile stay unused).
   - miniapps/*/packages/core
   - miniapps/*/packages/miniapp
+  # The quiz creator's player (docs/quiz-creator PLAN §2): built into one HTML template for "Export to play".
+  - miniapps/*/packages/player
 
 minimumReleaseAge: 1440
 minimumReleaseAgeExclude: []

@@ -3,20 +3,9 @@ import type { IdSource } from "../ids.ts";
 import { MAX_OPTIONS, MIN_OPTIONS, OPTION_TEXT_MAX, cut } from "../limits.ts";
 import type { Answer } from "../model.ts";
 import type { AnswerType } from "./answer-type.ts";
+import { type ChoiceAnswer, choiceReveal, isChoiceAnswer } from "./shapes.ts";
 
-/** One option of a multiple-choice answer; its id is unique inside the question. */
-export interface ChoiceOption {
-  readonly id: string;
-  readonly text: string;
-}
-
-/** A multiple-choice answer with one or several correct options (SPEC F4). */
-export interface ChoiceAnswer extends Answer {
-  readonly type: "choice";
-  readonly options: readonly ChoiceOption[];
-  /** Ids of the correct options. */
-  readonly correct: readonly string[];
-}
+export { isChoiceAnswer, type ChoiceAnswer, type ChoiceOption } from "./shapes.ts";
 
 const schema = z
   .looseObject({
@@ -27,29 +16,12 @@ const schema = z
   .refine((answer) => new Set(answer.options.map((option) => option.id)).size === answer.options.length, "option ids repeat")
   .refine((answer) => answer.correct.every((id) => answer.options.some((option) => option.id === id)), "a correct id has no option");
 
-/**
- * Narrows an answer to a multiple-choice answer (unique option ids, every correct id is an option).
- * @param answer - any answer
- */
-export function isChoiceAnswer(answer: Answer): answer is ChoiceAnswer {
-  return schema.safeParse(answer).success;
-}
-
 /** Whether there are 2–8 options, each with text, and at least one is correct. */
 function isComplete(answer: Answer): boolean {
   if (!isChoiceAnswer(answer)) return false;
   const count = answer.options.length;
   if (count < MIN_OPTIONS || count > MAX_OPTIONS) return false;
   return answer.correct.length > 0 && answer.options.every((option) => option.text.trim() !== "");
-}
-
-/** The texts of the correct options, in the order the options are shown. */
-function reveal(answer: Answer): string {
-  if (!isChoiceAnswer(answer)) return "";
-  return answer.options
-    .filter((option) => answer.correct.includes(option.id))
-    .map((option) => option.text)
-    .join(", ");
 }
 
 /** Answer type `choice`: starts with the fewest options allowed, none correct yet. */
@@ -62,7 +34,7 @@ export const choiceAnswer: AnswerType = {
     correct: [],
   }),
   isComplete,
-  revealText: reveal,
+  revealText: choiceReveal,
 };
 
 /**

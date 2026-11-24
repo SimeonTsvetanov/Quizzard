@@ -3,11 +3,9 @@
 // registry entry (validate.ts), so this file never names one. Every object is "loose": fields this
 // version does not know are kept, never stripped, so a quiz survives a round trip through older code.
 import { z } from "zod";
+import { QUIZ_FORMAT, QUIZ_VERSION } from "./format.ts";
 
-/** The `format` field of every quiz file: tells a quiz apart from any other JSON. */
-export const QUIZ_FORMAT = "quizzard-quiz";
-/** The format version this code writes; older files are migrated up to it, newer ones refused. */
-export const QUIZ_VERSION = 1;
+export { QUIZ_FORMAT, QUIZ_VERSION } from "./format.ts";
 
 /** The media types a file can have. A closed list: a new one is a new format version. */
 export type MediaType = "image" | "audio" | "video";

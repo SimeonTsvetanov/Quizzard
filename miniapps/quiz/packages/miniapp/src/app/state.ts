@@ -24,6 +24,10 @@ export interface ViewState {
   readonly drafts: Map<string, Answer>;
   /** The screen was just opened (cards deal in); a redraw of the same screen is not. */
   isEntering: boolean;
+  /** Stops what the screen on show started (the player of the Play screen); run before the next screen is drawn. */
+  cleanup: (() => void) | null;
+  /** The last export of this visit: shown under the quiz's actions. */
+  exported: { readonly quiz: string; readonly name: string; readonly bytes: number } | null;
 }
 
 /** One mounted creator. */

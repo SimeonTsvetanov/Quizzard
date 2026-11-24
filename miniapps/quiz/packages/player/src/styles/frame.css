@@ -1,0 +1,150 @@
+/* The player's frame: its own small reset (the exported page has no other stylesheet), its colours,
+   and the two layouts of the host's window — the stage over the control bar, or the host panel. */
+
+/* || Tokens: the stage is always the dark violet stage; the host's tools follow the page's theme —
+   Quizzard's tokens inside the app, the same pairs in the exported page. */
+.qp-player {
+  --qp-ink: var(--quiz-stage-ink);
+  --qp-dim: var(--quiz-stage-dim);
+  --qp-chip: var(--quiz-stage-chip);
+  --qp-edge: var(--quiz-stage-edge);
+  --qp-gold: var(--quiz-stage-gold);
+  --qp-on-gold: oklch(24% 0.06 85);
+  --qp-right: var(--quiz-stage-right);
+  --qp-warn: oklch(74% 0.17 30);
+  --qp-ground: oklch(13% 0.05 283);
+  --qp-page: var(--color-bg, light-dark(oklch(97.1% 0.003 286.4), oklch(0% 0 0)));
+  --qp-surface: var(--color-surface, light-dark(oklch(100% 0 0), oklch(22.7% 0.004 286.1)));
+  --qp-raised: var(--color-surface-raised, light-dark(oklch(100% 0 0), oklch(29.4% 0.004 286.2)));
+  --qp-text: var(--color-text, light-dark(oklch(23.2% 0.004 286.1), oklch(97.1% 0.003 286.4)));
+  --qp-text-2: var(--color-text-secondary, light-dark(oklch(45% 0.008 286.1), oklch(78% 0.007 286.2)));
+  --qp-line: light-dark(oklch(0% 0 0 / 0.14), oklch(100% 0 0 / 0.18));
+  --qp-accent: var(--color-accent, light-dark(oklch(49.1% 0.24 292.6), oklch(76% 0.14 295)));
+  --qp-on-accent: var(--color-on-accent, light-dark(oklch(100% 0 0), oklch(21% 0.004 286)));
+  --qp-danger: var(--color-danger-text, light-dark(oklch(55.3% 0.225 27.3), oklch(72% 0.19 28)));
+  --qp-display: var(--font-display, "Unbounded", sans-serif);
+  --qp-sans: var(--font-sans, "Manrope", system-ui, sans-serif);
+  --qp-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  position: relative;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--qp-ground);
+  color: var(--qp-text);
+  font-family: var(--qp-sans);
+  font-size: 16px;
+  line-height: 1.35;
+}
+
+/* || Reset */
+.qp-player,
+.qp-player *,
+.qp-player ::before,
+.qp-player ::after {
+  box-sizing: border-box;
+}
+
+.qp-player :where(h1, h2, h3, p, ol, ul, dl, dd) {
+  margin: 0;
+  padding: 0;
+}
+
+.qp-player :where(ol, ul) {
+  list-style: none;
+}
+
+.qp-player :where(button, input) {
+  margin: 0;
+  font: inherit;
+  color: inherit;
+}
+
+.qp-player :where(button) {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.qp-player :where(button:disabled) {
+  cursor: default;
+}
+
+.qp-player [hidden] {
+  display: none;
+}
+
+.qp-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* || Layout */
+.qp-stage-box {
+  min-width: 0;
+  min-height: 0;
+}
+
+.qp-player[data-mode="panel"] {
+  grid-template-rows: minmax(0, 1fr);
+  background: var(--qp-page);
+
+  & > :is(.qp-stage-box, .qp-bar) {
+    display: none;
+  }
+}
+
+.qp-player[data-role="audience"] {
+  grid-template-rows: minmax(0, 1fr);
+}
+
+/* || Notices: waiting for the host, a page without its quiz */
+.qp-notice {
+  display: grid;
+  place-content: center;
+  gap: 12px;
+  padding: 24px;
+  color: var(--quiz-stage-ink, oklch(98% 0.01 293));
+  font-size: clamp(18px, 2.4vw, 28px);
+  font-weight: 600;
+  text-align: center;
+
+  & h1 {
+    font-family: var(--qp-display);
+    font-size: 1.4em;
+  }
+}
+
+/* The audience window's own full-screen button: out of the way until the pointer or the focus finds it. */
+.qp-corner-button {
+  position: absolute;
+  inset: auto 12px 12px auto;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: oklch(0% 0 0 / 0.5);
+  color: oklch(98% 0.01 293);
+  opacity: 0;
+
+  .qp-player:hover > &,
+  &:focus-visible {
+    opacity: 1;
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--qp-gold);
+    outline-offset: 2px;
+  }
+}

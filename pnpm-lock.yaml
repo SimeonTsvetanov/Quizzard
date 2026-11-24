@@ -284,6 +284,9 @@ importers:
       '@simeonts/quizzard-quiz-core':
         specifier: workspace:^
         version: link:../core
+      '@simeonts/quizzard-quiz-player':
+        specifier: workspace:^
+        version: link:../player
       lucide:
         specifier: ^1.70.0
         version: 1.77.0
@@ -291,6 +294,25 @@ importers:
       fake-indexeddb:
         specifier: ^6.2.8
         version: 6.2.8
+
+  miniapps/quiz/packages/player:
+    dependencies:
+      '@simeonts/quizzard-quiz-core':
+        specifier: workspace:^
+        version: link:../core
+      lucide:
+        specifier: ^1.70.0
+        version: 1.77.0
+    devDependencies:
+      '@fontsource/manrope':
+        specifier: 5.3.0
+        version: 5.3.0
+      '@fontsource/unbounded':
+        specifier: 5.3.0
+        version: 5.3.0
+      vite:
+        specifier: ^8.3.0
+        version: 8.3.8(@types/node@24.19.2)(jiti@2.7.0)(terser@5.51.4)
 
   miniapps/scores/packages/core: {}
 

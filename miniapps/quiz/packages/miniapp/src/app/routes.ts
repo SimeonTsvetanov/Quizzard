@@ -12,12 +12,16 @@ export type Route =
   | { readonly screen: "quiz"; readonly quiz: string }
   | { readonly screen: "round"; readonly quiz: string; readonly round: string }
   | { readonly screen: "editor"; readonly quiz: string; readonly question: string }
-  | { readonly screen: "preview"; readonly quiz: string; readonly question: string };
+  | { readonly screen: "preview"; readonly quiz: string; readonly question: string }
+  | { readonly screen: "play"; readonly quiz: string };
 
 /** Where the creator keeps its screen in `history.state`. */
 export const ROUTE_KEY = "quizzardQuiz";
 /** How many of the tool's own history entries lie below this one (the shell's router reads it: app/src/router/history.ts). */
 export const SUB_KEY = "quizzardSub";
+
+/** The launch parameter (`#/quiz?audience=1`) with which a playing quiz opens its audience window. */
+export const AUDIENCE_PARAM = "audience";
 
 /** The first screen. */
 export const LIBRARY: Route = { screen: "library" };
@@ -39,7 +43,7 @@ export function readRoute(state: unknown): Route {
   const round = field(saved, "round");
   const question = field(saved, "question");
   if (quiz === undefined) return LIBRARY;
-  if (screen === "quiz") return { screen, quiz };
+  if (screen === "quiz" || screen === "play") return { screen, quiz };
   if (screen === "round" && round !== undefined) return { screen, quiz, round };
   if ((screen === "editor" || screen === "preview") && question !== undefined) return { screen, quiz, question };
   return LIBRARY;

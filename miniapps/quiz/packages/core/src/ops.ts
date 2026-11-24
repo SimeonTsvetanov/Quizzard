@@ -5,7 +5,10 @@
 import { type IdSource, randomId } from "./ids.ts";
 import * as limits from "./limits.ts";
 import { QUIZ_FORMAT, QUIZ_VERSION, type MediaEntry, type Points, type Question, type Quiz, type QuizFile, type Round, type RoundDefaults, makePoints } from "./model.ts";
+import { effectiveSeconds } from "./effective.ts";
 import { type Registries, defaultRegistries } from "./registries.ts";
+
+export { effectivePoints, effectiveSeconds } from "./effective.ts";
 
 /** What the ops need from outside: new ids and the registries. Passed last; tests pass their own. */
 export interface Env {
@@ -273,24 +276,6 @@ export function duplicateRound(quiz: Quiz, roundId: string, env: Env = defaultEn
   const round = quiz.rounds[index];
   if (!round || !canAddRound(quiz)) return quiz;
   return { ...quiz, rounds: [...quiz.rounds.slice(0, index + 1), copyRound(round, env.ids), ...quiz.rounds.slice(index + 1)] };
-}
-
-/**
- * The time a question is played with: its own, or the round's (SPEC F5).
- * @param round - the question's round
- * @param question - the question
- */
-export function effectiveSeconds(round: Round, question: Question): number {
-  return question.seconds ?? round.defaults.seconds;
-}
-
-/**
- * The points a question is played for: its own, or the round's (SPEC F5).
- * @param round - the question's round
- * @param question - the question
- */
-export function effectivePoints(round: Round, question: Question): Points {
-  return question.points ?? round.defaults.points;
 }
 
 /** The size of a round or a quiz: questions and the play time of their timers, in seconds. */

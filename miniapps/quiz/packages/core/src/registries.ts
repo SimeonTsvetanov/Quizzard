@@ -11,8 +11,8 @@ import { textKind } from "./kinds/text.ts";
 import { videoKind } from "./kinds/video.ts";
 import type { Question, Round } from "./model.ts";
 import { type Registry, createRegistry } from "./registry.ts";
+import { createRoundKinds } from "./rounds/kinds.ts";
 import type { PlayerScreen, RoundKind } from "./rounds/round-kind.ts";
-import { standardRound } from "./rounds/standard.ts";
 
 /** The three pure registries every op, check and reader works through. */
 export interface Registries {
@@ -26,7 +26,7 @@ export function createRegistries(): Registries {
   return {
     kinds: createRegistry<QuestionKind>([textKind, pictureKind, audioKind, videoKind]),
     answers: createRegistry<AnswerType>([openAnswer, choiceAnswer, trueFalseAnswer]),
-    rounds: createRegistry<RoundKind>([standardRound]),
+    rounds: createRoundKinds(),
   };
 }
 

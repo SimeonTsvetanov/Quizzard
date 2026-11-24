@@ -50,21 +50,31 @@ miniapps/quiz/
     src/limits.ts        every number of SPEC §5 and the model limits (names, counts)
     src/ops.ts           pure edits: addRound, moveQuestion, effectiveSeconds/Points, duplicate, totals …
     src/ids.ts           id generation (injectable for tests)
+    src/export.ts        "Export to play": template + quiz + media → one HTML page (pure); the hand check the player reads with
+    src/play.ts          the entry the player imports: no Zod (answers/shapes.ts, effective.ts, rounds/kinds.ts, format.ts)
     test/                unit + property tests; fixtures/v1/*.json (kept for good, AC8)
+  packages/player/     @simeonts/quizzard-quiz-player — the played quiz (slice 2); imports core's `play` entry only (no Zod)
+    src/render/          the shared slide renderer + the slide parts of kinds and answer types (`…-player/render`:
+                         the creator's thumbnails, live preview and Preview draw with it too)
+    src/game/            the pure state machine: screens from `screensOf`, `step(state, action)`, scores, saved game
+    src/views/           one view per screen name, in a registry (stage + host-panel part)
+    src/ui/              stage (scales like a slide), dial, control bar, host panel, menu, scores dialog
+    src/channel.ts       host window ↔ audience window (a `Transport`: today `postMessage`)
+    src/standalone.ts    entry of the exported page; build.ts → dist/template.html (one file, strict CSP)
   packages/miniapp/    @simeonts/quizzard-quiz-miniapp — the creator behind the mount contract
-    src/storage/         IndexedDB (quizzes, media); the only code that touches storage
-    src/kinds-ui/        per kind: editor part + slide renderer (registered next to core's entry)
-    src/answers-ui/      per answer type: editor part + slide/reveal renderer
-    src/screens/         library, quiz, round, editor, preview — one module each, a tiny router inside the tool
-    src/render/slide.ts  the shared slide renderer (thumbnail, preview, and later the player)
-    src/i18n, src/dom, src/styles (one file per component, `quiz-` prefix)
-  packages/player/     (slice 2) the played quiz, built into one template file
+    src/storage/         IndexedDB (quizzes, media) and the saved game; the only code that touches storage
+    src/kinds-ui/        per kind: editor part (+ the player's slide part, registered next to core's entry)
+    src/answers-ui/      per answer type: editor part (+ the player's slide part)
+    src/screens/         library, quiz, round, editor, preview, play — one module each, a tiny router inside the tool
+    src/play/, export/   lazy: the player in the app ("Play", audience window) and "Export to play"
+    src/i18n, src/dom, src/styles (one file per component, `quiz-` prefix; the player's is `qp-`)
 ```
 
 Rules that keep it extendable:
 1. **Nothing switches on `kind` or `type` outside the registries.** Screens ask the registry (label, icon, form,
    renderer). AC10 is a test: a fake kind registered in the test appears in the picker, edits, renders and saves.
-2. **Core never imports UI; UI never touches storage except through `storage/`; the player imports only core + render.**
+2. **Core never imports UI; UI never touches storage except through `storage/`; the player imports only core's
+   `play` entry and its own files; the creator loads the player lazily and only its `render` up front.**
 3. **Data in, data out:** `ops.ts` functions return new quizzes (no mutation), so Undo is "keep the previous value".
 4. **Every stored object carries `version`;** reading goes through `migrate.open()` only.
 5. **Per-kind payload** lives under the question (`question.data`) and is validated by that kind's schema; unknown

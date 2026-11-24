@@ -7,6 +7,7 @@ import { iconButton } from "../dom/controls.ts";
 import { h } from "../dom/h.ts";
 import { icon } from "../dom/icons.ts";
 import { bytesText, changedText, wholeMinutes } from "../format.ts";
+import { takeGame } from "../storage/game.ts";
 import type { QuizSummary } from "../storage/store.ts";
 import { addButton, emptyState } from "./common.ts";
 
@@ -64,7 +65,7 @@ async function duplicate(app: App, line: QuizSummary): Promise<void> {
   if (copy) app.context.shell.toast(app.t("library.duplicated", { name: copy.name }));
 }
 
-/** Deletes a quiz: asks first when it has rounds; Undo writes it back exactly as it was. */
+/** Deletes a quiz and the game that was being played with it: asks first when it has rounds; Undo writes both back exactly as they were. */
 async function remove(app: App, line: QuizSummary): Promise<void> {
   const { t } = app;
   if (line.rounds > 0 || line.problem !== undefined) {
@@ -72,11 +73,15 @@ async function remove(app: App, line: QuizSummary): Promise<void> {
     if (!isConfirmed || app.signal.aborted) return;
   }
   const before = await app.store.get(line.id);
+  const game = takeGame(app.context.storage.prefs, line.id);
   await app.store.delete(line.id);
   await loadLibrary(app, "[data-new-quiz]");
-  const action = before.ok
-    ? { action: { label: t("undo"), run: () => { void app.store.restore(before).then(() => loadLibrary(app, `[data-focus="quiz:${line.id}"]`)); } } }
-    : {};
+  const undo = (): void => {
+    if (!before.ok) return;
+    game.putBack();
+    void app.store.restore(before).then(() => loadLibrary(app, `[data-focus="quiz:${line.id}"]`));
+  };
+  const action = before.ok ? { action: { label: t("undo"), run: undo } } : {};
   app.context.shell.toast(t("library.deleted", { name: line.name }), action);
 }
 

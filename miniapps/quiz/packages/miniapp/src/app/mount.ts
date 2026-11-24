@@ -9,13 +9,14 @@ import { kindUis } from "../kinds-ui/index.ts";
 import { meta } from "../meta.ts";
 import { editorScreen } from "../screens/editor.ts";
 import { libraryScreen, loadLibrary } from "../screens/library.ts";
+import { playScreen } from "../screens/play.ts";
 import { previewScreen } from "../screens/preview.ts";
 import { quizScreen } from "../screens/quiz.ts";
 import { keepUnsaved, restoreUnsaved } from "../storage/rescue.ts";
 import { createSaver } from "../storage/saver.ts";
 import { createQuizStore } from "../storage/store.ts";
 import { createUiRegistries } from "../ui-registry.ts";
-import { LIBRARY, createNavigator, type Route } from "./routes.ts";
+import { AUDIENCE_PARAM, LIBRARY, createNavigator, type Route } from "./routes.ts";
 import { createSavedTick } from "./saved-tick.ts";
 import type { App } from "./state.ts";
 
@@ -25,6 +26,7 @@ const SCREENS: Readonly<Record<Exclude<Route["screen"], "library">, (app: App, q
   round: quizScreen,
   editor: editorScreen,
   preview: previewScreen,
+  play: playScreen,
 };
 
 /**
@@ -48,10 +50,19 @@ export function returnFocus(from: Route, to: Route): string | null {
   if (to.screen === "library" && from.screen !== "library") return `[data-focus="quiz:${from.quiz}"]`;
   if ((to.screen === "round" || to.screen === "quiz") && (from.screen === "editor" || from.screen === "preview")) return `[data-focus="question:${from.question}"]`;
   if (to.screen === "quiz" && from.screen === "round") return `[data-focus="round:${from.round}"]`;
+  if (from.screen === "play" && to.screen !== "library") return '[data-focus="play"]';
   return null;
 }
 
+/** Stops what the screen on show started, before another one replaces it. */
+function leave(app: App): void {
+  const { cleanup } = app.view;
+  app.view.cleanup = null;
+  cleanup?.();
+}
+
 function draw(app: App, focus?: string): void {
+  leave(app);
   const quiz = app.current?.quiz;
   const screen = app.route.screen === "library" || !quiz ? libraryScreen(app) : SCREENS[app.route.screen](app, quiz);
   screen.toggleAttribute("data-entering", app.view.isEntering);
@@ -130,7 +141,7 @@ function createApp(element: HTMLElement, context: MiniAppContext, signal: AbortS
   const app: App = {
     host: element, context, signal, store, saver, env: defaultEnv, ui: createUiRegistries(kindUis, answerUis), lang, t: createTranslator(lang),
     nav: createNavigator({ hash: `#/${meta.id}`, signal, onTraverse: (route) => { void show(app, shows, route, returnFocus(app.route, route)); } }),
-    view: { lastRound: null, isSettingsOpen: false, renaming: null, isLiveOpen: false, isRevealed: false, drafts: new Map(), isEntering: false },
+    view: { lastRound: null, isSettingsOpen: false, renaming: null, isLiveOpen: false, isRevealed: false, drafts: new Map(), isEntering: false, cleanup: null, exported: null },
     route: LIBRARY, library: null, current: null,
     draw: (focus) => { draw(app, focus); },
     go(route, mode = "push", focus = null) {
@@ -149,9 +160,13 @@ function createApp(element: HTMLElement, context: MiniAppContext, signal: AbortS
     app.lang = next;
     app.t = createTranslator(next);
     tick.translate(app.t);
-    draw(app);
+    // The player speaks the quiz's own language: a game in progress is not restarted for the app's.
+    if (app.route.screen !== "play") draw(app);
   });
-  signal.addEventListener("abort", () => { tick.remove(); });
+  signal.addEventListener("abort", () => {
+    leave(app);
+    tick.remove();
+  });
   return app;
 }
 
@@ -161,7 +176,16 @@ function createApp(element: HTMLElement, context: MiniAppContext, signal: AbortS
  * @param context - the host's services; quizzes live in the mini-app's own IndexedDB database
  * @returns the unmount: writes a pending save, closes the database, removes every listener and empties `element`
  */
-export function mountQuiz(element: HTMLElement, context: MiniAppContext): Unmount {
+export function mountQuiz(element: HTMLElement, context: MiniAppContext): Unmount | Promise<Unmount> {
+  // Opened by a playing quiz as its audience window: the stage alone (play/audience.ts).
+  if (context.query.has(AUDIENCE_PARAM) && window.opener !== null) {
+    return import("../play/audience.ts").then(({ mountAudience }) => mountAudience(element, context) ?? mountCreator(element, context));
+  }
+  return mountCreator(element, context);
+}
+
+/** Mounts the creator itself: the library and the screens of a quiz. */
+function mountCreator(element: HTMLElement, context: MiniAppContext): Unmount {
   const controller = new AbortController();
   const { signal } = controller;
   const shows: Shows = { count: 0 };

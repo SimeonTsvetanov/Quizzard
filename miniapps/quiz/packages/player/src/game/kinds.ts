@@ -1,0 +1,36 @@
+// The pure half of every screen (the views/ registry holds the drawn half under the same ids): what
+// the game needs to know to move through it — whether it has a timer, how many reveals, whether it
+// is left out right now. The reducer asks this registry and never switches on a screen's name, so a
+// later round kind adds its screen here (and its view) and nothing else changes.
+import { type Question, type Registry, type RegistryEntry, type Round, STANDARD_SCREENS, createRegistry, effectiveSeconds } from "@simeonts/quizzard-quiz-core/play";
+import { isFirstShared } from "./scores.ts";
+import { PLAYER_SCREENS, type GameState } from "./state.ts";
+
+/** A screen kind's rules. */
+export interface ScreenKind extends RegistryEntry {
+  /** The timer's length on this screen; no function = no timer. */
+  seconds?(round: Round, question: Question): number;
+  /** Reveals before the game moves on; none when left out. */
+  readonly steps?: number;
+  /** Whether the game passes over the screen as things stand. */
+  isSkipped?(state: GameState): boolean;
+}
+
+/** A fresh registry with the screens of a standard round and the player's own. */
+export function createScreenKinds(): Registry<ScreenKind> {
+  return createRegistry<ScreenKind>([
+    { id: PLAYER_SCREENS.title },
+    { id: PLAYER_SCREENS.teams },
+    { id: STANDARD_SCREENS.rules },
+    { id: STANDARD_SCREENS.question, seconds: effectiveSeconds },
+    { id: STANDARD_SCREENS.answers },
+    { id: STANDARD_SCREENS.answer, steps: 1 },
+    { id: STANDARD_SCREENS.score },
+    { id: STANDARD_SCREENS.board },
+    { id: PLAYER_SCREENS.tie, isSkipped: (state) => !isFirstShared(state) },
+    { id: PLAYER_SCREENS.final },
+  ]);
+}
+
+/** The player's shared screen kinds: the default of every function that needs them. */
+export const screenKinds: Registry<ScreenKind> = createScreenKinds();

@@ -20,7 +20,7 @@ describe("mini-app registry", () => {
     expect(miniApps.map(({ meta }) => [meta.id, meta.status])).toEqual([["teams", "ready"], ["scores", "ready"], ["sheet", "ready"], ["quiz", "ready"]]);
     expect(openableIds()).toEqual(["teams", "scores", "sheet", "quiz"]);
   });
-  it("quiz is its package's own meta, loads its body and Help lazily and gets no launch parameter", async () => {
+  it("quiz is its package's own meta, loads its body and Help lazily and gets only its `audience` launch parameter", async () => {
     const quiz = miniApps.find(({ meta }) => meta.id === "quiz");
     expect(quiz?.meta).toMatchObject({ name: { en: "Quiz creator", bg: "Създател на куизове" }, icon: "miniapps/quiz.svg", languages: ["en", "bg"] });
     expect(quiz?.load).toBeTypeOf("function");
@@ -28,6 +28,7 @@ describe("mini-app registry", () => {
     expect(help?.default.en.steps.length).toBeGreaterThan(0);
     expect(help?.default.bg?.steps).toHaveLength(help?.default.en.steps.length ?? -1);
     if (quiz) expect([...launchQuery(quiz, new URLSearchParams("quiz=x&lang=bg"))]).toEqual([]);
+    if (quiz) expect([...launchQuery(quiz, new URLSearchParams("audience=1&quiz=x"))]).toEqual([["audience", "1"]]);
   });
   it("teams is the vendored package's own meta (one source) and loads its body and Help lazily", async () => {
     const teams = miniApps.find(({ meta }) => meta.id === "teams");

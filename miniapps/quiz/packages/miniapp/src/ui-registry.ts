@@ -1,35 +1,14 @@
-// The UI halves of the registries (SPEC §3.2, PLAN §2 rule 1): what the creator and, later, the
-// player need to show a question kind or an answer type — registered under the same id as the core
-// entry. Screens and the slide renderer look entries up by id and never switch on a name. A kind or
+// The UI halves of the registries (SPEC §3.2, PLAN §2 rule 1): what the creator needs to show a
+// question kind or an answer type — registered under the same id as the core entry. The slide part
+// of each is the player's (`@simeonts/quizzard-quiz-player/render`, so a question looks the same in
+// a thumbnail and when played); the creator adds the face (name, icon) and the editor part. Screens and the slide renderer look entries up by id and never switch on a name. A kind or
 // answer type whose UI parts are not registered is "coming soon": listed, never selectable.
 import { type Answer, type IdSource, type Question, type Registry, type RegistryEntry, createRegistry } from "@simeonts/quizzard-quiz-core";
+import type { SlideAnswer, SlideKind, SlideView } from "@simeonts/quizzard-quiz-player/render";
 import type { IconName } from "./dom/icons.ts";
 import type { TextKey, Translate } from "./i18n/translate.ts";
 
-/** How a slide is being shown: as the question, or with the answer revealed. */
-export interface SlideView {
-  readonly reveal: boolean;
-  /** The words of the slide in the quiz's language. */
-  readonly labels: SlideLabels;
-}
-
-/** Every word a slide can show; the caller translates, the renderer has no dictionary of its own. */
-export interface SlideLabels {
-  readonly trueText: string;
-  readonly falseText: string;
-  /** "30 s" */
-  seconds(count: number): string;
-  /** "2 points" */
-  points(count: number): string;
-  /** Shown where the question text will be, while it is empty. */
-  readonly emptyPrompt: string;
-  /** Shown in place of an empty option or answer. */
-  readonly emptyAnswer: string;
-  /** Heading of the revealed answer of an open question. */
-  readonly answer: string;
-  /** Shown instead of a question this version cannot draw. */
-  readonly unsupported: string;
-}
+export type { SlideLabels, SlideView } from "@simeonts/quizzard-quiz-player/render";
 
 /** What an editor part gets: the value, the translator and how to report a change. */
 export interface AnswerEditorContext {
@@ -49,9 +28,9 @@ export interface KindEditorContext {
 /** The parts of a question kind that make it usable: its own editor fields and its area on the slide. */
 export interface KindParts {
   /** The kind's own fields in the editor (later: its media picker); `null` when it has none. */
-  editor(context: KindEditorContext): HTMLElement | null;
+  readonly editor: (context: KindEditorContext) => HTMLElement | null;
   /** The kind's media area on the slide, between the text and the options; `null` when it shows nothing. */
-  slide(question: Question, view: SlideView): HTMLElement | null;
+  readonly slide: (question: Question, view: SlideView) => HTMLElement | null;
 }
 
 /** A question kind's face in the UI. Without `parts` it is listed as "coming soon". */
@@ -65,8 +44,8 @@ export interface KindUi extends RegistryEntry {
 
 /** The parts of an answer type: its editor and how it shows on the slide, before and at the reveal. */
 export interface AnswerParts {
-  editor(context: AnswerEditorContext): HTMLElement;
-  slide(answer: Answer, view: SlideView): HTMLElement | null;
+  readonly editor: (context: AnswerEditorContext) => HTMLElement;
+  readonly slide: (answer: Answer, view: SlideView) => HTMLElement | null;
 }
 
 /** An answer type's face in the UI. Without `parts` it is listed as "coming soon". */
@@ -80,6 +59,35 @@ export interface AnswerUi extends RegistryEntry {
 export interface UiRegistries {
   readonly kinds: Registry<KindUi>;
   readonly answers: Registry<AnswerUi>;
+}
+
+/** A kind's name and icon in the creator. */
+export interface Face {
+  readonly label: TextKey;
+  readonly icon: IconName;
+}
+
+/**
+ * A question kind's creator entry from its slide entry: usable once the slide can draw it AND the
+ * creator has its editor part; until then it is listed as "coming soon".
+ * @param slide - the kind on the slide (the player's render registry)
+ * @param face - its name and icon
+ * @param editor - the kind's own fields in the editor; left out while the creator has none
+ */
+export function kindUi(slide: SlideKind, face: Face, editor?: KindParts["editor"]): KindUi {
+  const base: KindUi = { id: slide.id, tone: slide.tone, ...face };
+  return slide.parts && editor ? { ...base, parts: { editor, slide: slide.parts.slide } } : base;
+}
+
+/**
+ * An answer type's creator entry from its slide entry and its editor part.
+ * @param slide - the answer type on the slide (the player's render registry)
+ * @param face - its name and icon
+ * @param editor - the answer's editor
+ */
+export function answerUi(slide: SlideAnswer, face: Face, editor: AnswerParts["editor"]): AnswerUi {
+  const base: AnswerUi = { id: slide.id, ...face };
+  return slide.parts ? { ...base, parts: { editor, slide: slide.parts.slide } } : base;
 }
 
 /**

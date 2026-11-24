@@ -1,0 +1,107 @@
+// The played quiz as data (SPEC §6, AC9): where the game is in its list of screens, the teams and
+// their scores, the timer and the reveal. Everything here is plain JSON — it is saved after every
+// move (save.ts) and sent as it is to the audience window (channel.ts). No DOM, no clock: time comes
+// in through the `tick` action.
+
+/** The player's own screens around the rounds; a round's screens come from its round kind (core). */
+export const PLAYER_SCREENS = {
+  /** The quiz's name, before anything starts. */
+  title: "title",
+  /** Team names. */
+  teams: "teams",
+  /** First place is shared: the host picks the winner or adds points. Left out when nobody is level. */
+  tie: "tie",
+  /** The podium. */
+  final: "final",
+} as const;
+
+/** One step of the game: a round's screen (core `PlayerScreen`) or one of the player's own. */
+export interface GameScreen {
+  /** Names the screen kind (kinds.ts) and its view (views/); an open string like a question's `kind`. */
+  readonly screen: string;
+  readonly roundId?: string;
+  readonly questionId?: string;
+  /** The timer's length on this screen; 0 = no timer. */
+  readonly seconds: number;
+  /** How many reveals the screen has before the game moves on; 0 = none. */
+  readonly steps: number;
+}
+
+/** A team; its id never changes, its name is what the host typed. */
+export interface Team {
+  readonly id: string;
+  readonly name: string;
+}
+
+/**
+ * What the timer is doing: `idle` (full, waiting), `running`, `paused`, `done` (time is up and the
+ * game waits for the host) or `cue` (time is up and the game moves on by itself in a moment).
+ */
+export type TimerStatus = "idle" | "running" | "paused" | "done" | "cue";
+
+/** The timer of the screen on show, as data. Milliseconds, so ticks of any length add up. */
+export interface Timer {
+  readonly status: TimerStatus;
+  readonly totalMs: number;
+  readonly leftMs: number;
+  /** While `cue`: how long until the game moves on. */
+  readonly cueMs: number;
+}
+
+/** The whole game. */
+export interface GameState {
+  readonly screens: readonly GameScreen[];
+  /** The screen on show: an index into `screens`. */
+  readonly index: number;
+  /** Reveals done on this screen: 0 … its `steps`. */
+  readonly step: number;
+  readonly teams: readonly Team[];
+  /** The number the next added team's id gets. */
+  readonly nextTeam: number;
+  /** Points per round and team: `scores[roundId][teamId]`; missing = 0. */
+  readonly scores: Readonly<Record<string, Readonly<Record<string, number>>>>;
+  /** Extra points given at the tiebreak, per team. */
+  readonly bonus: Readonly<Record<string, number>>;
+  /** The team the host named the winner of a tie; `null` = not picked. */
+  readonly winner: string | null;
+  /** Questions run by themselves: the timer starts with the question and the game moves on when it ends. */
+  readonly auto: boolean;
+  readonly timer: Timer;
+}
+
+/** How long the "next" cue shows between a finished timer and the next screen. */
+export const CUE_MS = 2500;
+/** The longest team name. */
+export const TEAM_NAME_MAX = 40;
+/** The most points a team can get in one round (and at the tiebreak). */
+export const MAX_SCORE = 999;
+
+/** Every move of the game. */
+export type GameAction =
+  | { readonly type: "next" }
+  | { readonly type: "back" }
+  | { readonly type: "jump"; readonly index: number }
+  | { readonly type: "reveal" }
+  | { readonly type: "timerStart" }
+  | { readonly type: "timerPause" }
+  | { readonly type: "timerToggle" }
+  | { readonly type: "timerReset" }
+  | { readonly type: "tick"; readonly ms: number }
+  | { readonly type: "setTeamName"; readonly teamId: string; readonly name: string }
+  | { readonly type: "addTeam"; readonly name: string }
+  | { readonly type: "removeTeam"; readonly teamId: string }
+  | { readonly type: "setScore"; readonly roundId: string; readonly teamId: string; readonly value: number }
+  | { readonly type: "addBonus"; readonly teamId: string; readonly by: number }
+  | { readonly type: "pickWinner"; readonly teamId: string | null }
+  | { readonly type: "setAuto"; readonly value: boolean }
+  | { readonly type: "restart" };
+
+/**
+ * A timer at its start.
+ * @param seconds - its length; 0 for a screen without a timer
+ * @param isRunning - whether it starts at once
+ */
+export function freshTimer(seconds: number, isRunning = false): Timer {
+  const totalMs = Math.max(0, Math.round(seconds * 1000));
+  return { status: isRunning && totalMs > 0 ? "running" : "idle", totalMs, leftMs: totalMs, cueMs: 0 };
+}

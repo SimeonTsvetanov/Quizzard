@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@simeonts/quizzard-quiz-core": "workspace:^",
+    "@simeonts/quizzard-quiz-player": "workspace:^",
     "lucide": "^1.70.0"
   },
   "devDependencies": {

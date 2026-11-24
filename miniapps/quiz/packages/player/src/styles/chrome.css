@@ -1,0 +1,81 @@
+/* The control bar under the stage, in real px (44 px targets whatever the stage's scale). It is part
+   of the dark stage. The dialogs it opens: dialog.css. */
+
+/* || Control bar */
+.qp-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px max(12px, env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+  color-scheme: dark;
+  background: var(--qp-ground);
+  color: oklch(98% 0.01 293 / 0.82);
+}
+
+.qp-bar-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.qp-bar-button {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 12px;
+  background: oklch(100% 0 0 / 0.08);
+  color: inherit;
+  font-size: 15px;
+  font-weight: 700;
+
+  &:hover:not(:disabled) {
+    background: oklch(100% 0 0 / 0.16);
+  }
+
+  &:disabled {
+    opacity: 0.38;
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--qp-gold);
+    outline-offset: 2px;
+  }
+
+  &[data-words] {
+    padding-inline: 16px;
+  }
+
+  &[data-primary] {
+    min-width: 132px;
+    background: var(--qp-gold);
+    color: var(--qp-on-gold);
+
+    &:hover:not(:disabled) {
+      background: oklch(92% 0.13 92);
+    }
+  }
+}
+
+.qp-bar-words {
+  display: none;
+
+  [data-words] > & {
+    display: inline;
+  }
+}
+
+.qp-player[data-no-audience] :is([data-control="audience"], [data-menu="audience"]) {
+  display: none;
+}
+
+/* A phone: the tools that are also in the menu leave the bar. */
+@media (width < 600px) {
+  .qp-bar :is([data-control="reset"], [data-control="scores"], [data-control="audience"], [data-control="fullscreen"]) {
+    display: none;
+  }
+}

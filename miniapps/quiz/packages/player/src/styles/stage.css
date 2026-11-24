@@ -1,0 +1,209 @@
+/* The stage and what every view shares. The canvas has a design size in px (ui/stage.ts: 1600 × 900
+   on a 16:9 screen) and is scaled as a whole, so every size here is a size on that canvas. `--qp-touch`
+   is 44 real px in canvas px: the least size of a control on the stage. */
+
+/* || Stage */
+.qp-stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  /* The stage is the same deep violet in the app's light and dark theme and in the exported page:
+     the darker pair of the slide's colours (render/tokens.css). */
+  --quiz-stage-from: oklch(29% 0.13 293);
+  --quiz-stage-to: oklch(17% 0.07 283);
+
+  overflow: hidden;
+  color-scheme: dark;
+  background:
+    radial-gradient(70% 90% at 100% 0%, oklch(52% 0.22 305 / 0.5), transparent 62%),
+    radial-gradient(60% 80% at 0% 100%, oklch(46% 0.17 262 / 0.45), transparent 60%),
+    linear-gradient(140deg, var(--quiz-stage-from), var(--quiz-stage-to));
+  color: var(--qp-ink);
+  font-family: var(--qp-sans);
+}
+
+.qp-canvas {
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 1600px;
+  height: 900px;
+  transform-origin: 0 0;
+  font-size: 32px;
+  line-height: 1.25;
+}
+
+/* || View frame */
+.qp-view {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  padding: 64px 88px;
+
+  [data-shape="tall"] & {
+    gap: 24px;
+    padding: 56px 44px;
+  }
+}
+
+.qp-view-head {
+  display: grid;
+  flex: none;
+  gap: 10px;
+}
+
+.qp-kicker {
+  color: var(--qp-gold);
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  overflow-wrap: anywhere;
+  text-transform: uppercase;
+}
+
+.qp-heading {
+  font-family: var(--qp-display);
+  font-size: 132px;
+  font-weight: 700;
+  line-height: 1.04;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+
+  &[data-size="l"] {
+    font-size: 104px;
+  }
+
+  &[data-size="m"] {
+    font-size: 80px;
+  }
+
+  &[data-size="s"] {
+    font-size: 58px;
+  }
+
+  .qp-view-head & {
+    font-size: 76px;
+  }
+
+  [data-shape="tall"] & {
+    font-size: 84px;
+
+    &[data-size="l"] {
+      font-size: 68px;
+    }
+
+    &[data-size="m"] {
+      font-size: 54px;
+    }
+
+    &[data-size="s"] {
+      font-size: 42px;
+    }
+  }
+
+  [data-shape="tall"] .qp-view-head & {
+    font-size: 56px;
+  }
+}
+
+.qp-sub {
+  color: var(--qp-dim);
+  font-size: 40px;
+  font-weight: 600;
+  text-wrap: balance;
+
+  [data-shape="tall"] & {
+    font-size: 32px;
+  }
+}
+
+.qp-hint {
+  margin-top: auto;
+  color: var(--qp-dim);
+  font-size: 26px;
+  font-weight: 600;
+}
+
+.qp-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.qp-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 100%;
+  padding: 12px 26px;
+  border-radius: 999px;
+  background: var(--qp-chip);
+  box-shadow: inset 0 0 0 2px var(--qp-edge);
+  font-size: 32px;
+  font-weight: 700;
+
+  & svg {
+    flex: none;
+    width: 1.1em;
+    height: 1.1em;
+  }
+
+  &[data-tone="gold"] {
+    color: var(--qp-gold);
+  }
+}
+
+/* || Controls on the stage (the host plays in this window) */
+.qp-round-button {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: max(64px, var(--qp-touch, 0px));
+  height: max(64px, var(--qp-touch, 0px));
+  border-radius: 999px;
+  background: var(--qp-chip);
+  box-shadow: inset 0 0 0 2px var(--qp-edge);
+  color: var(--qp-ink);
+
+  & svg {
+    width: 44%;
+    height: 44%;
+  }
+
+  &:disabled {
+    opacity: 0.4;
+  }
+}
+
+.qp-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: max(64px, var(--qp-touch, 0px));
+  padding: 10px 30px;
+  border-radius: 999px;
+  background: var(--qp-chip);
+  box-shadow: inset 0 0 0 2px var(--qp-edge);
+  color: var(--qp-ink);
+  font-size: max(28px, calc(var(--qp-touch, 0px) * 0.36));
+  font-weight: 700;
+
+  & svg {
+    flex: none;
+    width: 1.1em;
+    height: 1.1em;
+  }
+
+  &[aria-pressed="true"] {
+    background: var(--qp-gold);
+    box-shadow: none;
+    color: var(--qp-on-gold);
+  }
+}
+
+.qp-stage :is(.qp-round-button, .qp-button, input):focus-visible {
+  outline: 4px solid var(--qp-gold);
+  outline-offset: 4px;
+}

@@ -33,7 +33,7 @@
 
     & > .quiz-title-input,
     & > .quiz-stats,
-    & > .quiz-actions {
+    & > .quiz-actions-box {
       justify-self: stretch;
     }
   }
@@ -65,10 +65,20 @@
     overflow-wrap: anywhere;
   }
 
+  .quiz-actions-box {
+    display: grid;
+    gap: var(--space-2);
+  }
+
   .quiz-actions {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--space-2);
+
+    /* Play is the main thing to do with a quiz: a row of its own; Preview and Export share the next. */
+    & > [data-play-quiz] {
+      grid-column: 1 / -1;
+    }
   }
 
   /* || Components: round card */

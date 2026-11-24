@@ -11,6 +11,9 @@
       "path": "./miniapps/quiz/packages/core"
     },
     {
+      "path": "./miniapps/quiz/packages/player"
+    },
+    {
       "path": "./miniapps/quiz/packages/miniapp"
     },
     {

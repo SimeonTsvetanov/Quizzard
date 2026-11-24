@@ -4,8 +4,9 @@
 // worker — and that none of it is mini-app code (React never reaches Home, PLAN §1.1 item 1). Then
 // each mini-app's lazy JavaScript (PLAN T-10): every `assets/miniapp-<id>-*.js` chunk (named by
 // app/build/miniapp-chunks.ts), and what its first open loads (PLAN T-12): the main chunk and every
-// chunk it imports statically. Counted like the forge perf-check: zlib's default gzip level,
-// 1 KB = 1024 bytes.
+// chunk it imports statically. Last, the quiz player's template (quiz-creator SPEC AC11): the one page
+// "Export to play" fills, without the fonts inside it. Counted like the forge perf-check: zlib's
+// default gzip level, 1 KB = 1024 bytes.
 import { readdirSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -29,6 +30,15 @@ export const MINIAPP_JS_BUDGETS_KB: Readonly<Record<string, number>> = { teams: 
  * budget with its own shell in it). Quiz creator SPEC AC11: "the creator's code ≤ 60 KB gzip on first open".
  */
 export const MINIAPP_FIRST_OPEN_BUDGETS_KB: Readonly<Record<string, number>> = { scores: 125, quiz: 60 };
+
+/**
+ * Budget of the quiz player's template in KB gzip, the embedded fonts not counted (quiz-creator SPEC
+ * AC11: "the player template ≤ 80 KB gzip without media"; the fonts are fixed files reported next to it).
+ */
+export const PLAYER_TEMPLATE_BUDGET_KB = 80;
+
+/** The built template, from the repo root (miniapps/quiz/packages/player/build.ts writes it). */
+export const PLAYER_TEMPLATE_FILE = "miniapps/quiz/packages/player/dist/template.html";
 
 /** The main chunk's name part (app/build/miniapp-chunks.ts `MAIN_CHUNK_NAME`). */
 const MAIN_CHUNK = "main";
@@ -186,6 +196,24 @@ export function checkHomeHasNoMiniAppCode(distDir: string, home: readonly string
   return { isWithinBudget, totalKb: 0, report };
 }
 
+/** A font embedded in the template's stylesheet as a data URL. */
+const EMBEDDED_FONT = /url\(data:font\/woff2;base64,([A-Za-z0-9+/=]+)\)/g;
+
+/**
+ * Compares the quiz player's template with its budget: the gzip size of the page with its embedded
+ * fonts taken out (they are counted apart and named in the report).
+ * @param html - the built template
+ * @param budgetKb - the budget in KB gzip
+ */
+export function checkTemplateBudget(html: string, budgetKb: number = PLAYER_TEMPLATE_BUDGET_KB): BudgetResult {
+  const fonts = [...html.matchAll(EMBEDDED_FONT)].map((match) => match[1] ?? "");
+  const fontBytes = fonts.reduce((sum, base64) => sum + base64.length, 0);
+  const totalKb = toKb(gzipSync(html.replace(EMBEDDED_FONT, "url()")).length);
+  const isWithinBudget = totalKb <= budgetKb;
+  const rest = `${String(fonts.length)} embedded fonts ${String(toKb(fontBytes))} KB (base64, not counted) · the whole page ${String(toKb(Buffer.byteLength(html)))} KB, ${String(toKb(gzipSync(html).length))} KB gzip`;
+  return { isWithinBudget, totalKb, report: `size-check ${isWithinBudget ? "PASS" : "FAIL"}: Quiz player template ${String(totalKb)} KB gzip without fonts (budget ${String(budgetKb)} KB) — ${rest}` };
+}
+
 /** Inputs of {@link budgetVerdict}. */
 interface BudgetInput {
   readonly label: string;
@@ -215,6 +243,7 @@ function main(): void {
     checkHomeHasNoMiniAppCode(distDir, home),
     ...Object.entries(MINIAPP_JS_BUDGETS_KB).map(([id, budgetKb]) => checkMiniAppBudget(id, measureMiniAppScripts(distDir, id), budgetKb)),
     ...Object.entries(MINIAPP_FIRST_OPEN_BUDGETS_KB).map(([id, budgetKb]) => checkFirstOpenBudget(id, measureFirstOpen(distDir, id, home), budgetKb)),
+    checkTemplateBudget(readFileSync(resolve(import.meta.dirname, "..", PLAYER_TEMPLATE_FILE), "utf8")),
   ];
   for (const result of results) console.log(result.report);
   if (results.some((result) => !result.isWithinBudget)) process.exitCode = 1;

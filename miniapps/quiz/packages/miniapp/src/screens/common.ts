@@ -47,6 +47,10 @@ export function up(app: App): void {
     app.nav.back();
     return;
   }
+  if (route.screen === "play") {
+    app.go({ screen: "quiz", quiz: route.quiz }, "replace");
+    return;
+  }
   const round = app.current ? findQuestion(app.current.quiz, route.question)?.round : undefined;
   app.go(round ? { screen: "round", quiz: route.quiz, round: round.id } : { screen: "quiz", quiz: route.quiz }, "replace");
 }

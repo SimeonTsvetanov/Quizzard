@@ -1,0 +1,166 @@
+/* What moves on the stage: the timer dial, the cue between questions, and every entrance — finite,
+   and none for people who asked for less. */
+
+/* || Timer dial (sits in the slide's top line, sized by the slide) */
+.qp-dial {
+  position: relative;
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 8.6cqi;
+  height: 8.6cqi;
+  margin-block: -1.1cqi;
+  color: var(--qp-ink);
+
+  /* The slide sizes its marks in em; the dial's ring fills the dial. */
+  .quiz-slide-canvas & svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+  }
+
+  &[data-low] {
+    color: var(--qp-warn);
+  }
+
+  &[data-status="paused"] .qp-dial-number {
+    opacity: 0.55;
+  }
+}
+
+.qp-dial-track,
+.qp-dial-progress {
+  fill: none;
+  stroke-width: 9;
+}
+
+.qp-dial-track {
+  fill: oklch(0% 0 0 / 0.28);
+  stroke: var(--qp-edge);
+}
+
+.qp-dial-progress {
+  stroke: currentColor;
+  stroke-linecap: round;
+}
+
+.qp-dial-number {
+  position: relative;
+  font-family: var(--qp-display);
+  font-size: 3.1cqi;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+/* || The cue between questions */
+.qp-cue {
+  position: absolute;
+  inset: auto 0 44px;
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  width: fit-content;
+  max-width: calc(100% - 96px);
+  margin-inline: auto;
+  padding: 18px 44px 20px;
+  border-radius: 999px;
+  background: var(--qp-gold);
+  box-shadow: 0 18px 50px oklch(0% 0 0 / 0.45);
+  color: var(--qp-on-gold);
+  font-size: 36px;
+  font-weight: 700;
+  text-align: center;
+
+  &[data-status="done"] .qp-cue-bar {
+    display: none;
+  }
+}
+
+.qp-cue-bar {
+  width: 100%;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: oklch(24% 0.06 85 / 0.22);
+
+  &::after {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--qp-on-gold);
+    content: "";
+    transform: scaleX(var(--qp-cue, 0));
+    transform-origin: 0 50%;
+  }
+}
+
+/* || Motion: finite, and none for people who asked for less */
+@media (prefers-reduced-motion: no-preference) {
+  .qp-view[data-enter] > * {
+    animation: qp-rise 520ms var(--qp-ease) both;
+
+    &:nth-child(2) {
+      animation-delay: 70ms;
+    }
+
+    &:nth-child(3) {
+      animation-delay: 140ms;
+    }
+
+    &:nth-child(n + 4) {
+      animation-delay: 210ms;
+    }
+  }
+
+  .qp-slide-view[data-enter] > * {
+    animation-name: qp-fade;
+  }
+
+  .qp-cue {
+    animation: qp-rise 320ms var(--qp-ease) both;
+  }
+
+  .qp-cue-bar::after {
+    transition: transform 220ms linear;
+  }
+
+  .qp-dial-progress {
+    transition: stroke-dashoffset 220ms linear, stroke 300ms;
+  }
+
+  .qp-slide-view .quiz-slide[data-reveal] :is(.quiz-slide-option[data-correct], .quiz-slide-right, .quiz-slide-kicker, .quiz-slide-explanation) {
+    animation: qp-pop 480ms var(--qp-ease) both;
+  }
+
+  .qp-slide-view .quiz-slide[data-reveal] .quiz-slide-explanation {
+    animation-name: qp-rise;
+    animation-delay: 260ms;
+  }
+}
+
+@keyframes qp-rise {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+}
+
+@keyframes qp-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes qp-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.86);
+  }
+
+  60% {
+    transform: scale(1.04);
+  }
+}

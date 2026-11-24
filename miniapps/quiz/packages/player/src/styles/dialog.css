@@ -1,0 +1,234 @@
+/* The dialogs (menu, scores) in real px, following the page's theme. */
+
+/* || Dialogs */
+.qp-dialog {
+  width: min(34rem, calc(100vw - 24px));
+  max-width: none;
+  max-height: calc(100dvh - 24px);
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 20px;
+  background: var(--qp-raised);
+  box-shadow: 0 24px 64px oklch(0% 0 0 / 0.4);
+  color: var(--qp-text);
+  font-family: var(--qp-sans);
+  font-size: 16px;
+
+  &[open] {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+
+  &::backdrop {
+    background: oklch(0% 0 0 / 0.6);
+  }
+
+  &[data-dialog="scores"] {
+    width: min(60rem, calc(100vw - 24px));
+  }
+}
+
+.qp-dialog-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 14px 10px 22px;
+}
+
+.qp-dialog-title {
+  font-family: var(--qp-display);
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.qp-dialog-body {
+  display: grid;
+  gap: 20px;
+  padding: 4px 22px 22px;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.qp-icon-button {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  color: var(--qp-text);
+
+  &:hover {
+    background: var(--qp-line);
+  }
+}
+
+.qp-dialog :is(button, input, [tabindex]):focus-visible,
+.qp-panel :is(button, input):focus-visible {
+  outline: 3px solid var(--qp-accent);
+  outline-offset: 2px;
+}
+
+/* || Menu */
+.qp-menu-section {
+  display: grid;
+  gap: 8px;
+}
+
+.qp-menu-heading {
+  color: var(--qp-text-2);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.qp-menu-list,
+.qp-menu-tools {
+  display: grid;
+  gap: 6px;
+}
+
+.qp-menu-button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 14px;
+  border-radius: 12px;
+  background: var(--qp-surface);
+  box-shadow: inset 0 0 0 1px var(--qp-line);
+  color: var(--qp-text);
+  font-weight: 600;
+  text-align: start;
+
+  & span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  &:hover {
+    box-shadow: inset 0 0 0 2px var(--qp-accent);
+  }
+
+  &[aria-current="true"] {
+    background: var(--qp-accent);
+    box-shadow: none;
+    color: var(--qp-on-accent);
+  }
+
+  &[data-danger] {
+    box-shadow: inset 0 0 0 2px var(--qp-danger);
+    color: var(--qp-danger);
+  }
+}
+
+.qp-menu-option {
+  display: grid;
+  gap: 4px;
+}
+
+.qp-switch {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.qp-switch-box {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  accent-color: var(--qp-accent);
+}
+
+.qp-menu-note {
+  color: var(--qp-text-2);
+  font-size: 14px;
+}
+
+.qp-keys {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 6px 14px;
+  color: var(--qp-text-2);
+  font-size: 14px;
+
+  & kbd {
+    display: inline-block;
+    min-width: 2em;
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: var(--qp-surface);
+    box-shadow: inset 0 0 0 1px var(--qp-line);
+    color: var(--qp-text);
+    font-family: inherit;
+    font-weight: 700;
+    text-align: center;
+    white-space: pre;
+  }
+}
+
+/* || Scores table */
+.qp-table-box {
+  max-width: 100%;
+  overflow: auto;
+  border-radius: 12px;
+  box-shadow: inset 0 0 0 1px var(--qp-line);
+}
+
+.qp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+
+  & :is(th, td) {
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--qp-line);
+    text-align: center;
+  }
+
+  & tbody tr:last-child :is(th, td) {
+    border-bottom: 0;
+  }
+
+  & thead th {
+    color: var(--qp-text-2);
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  & :is(th:first-child) {
+    position: sticky;
+    inset-inline-start: 0;
+    max-width: 11rem;
+    overflow: hidden;
+    background: var(--qp-raised);
+    text-align: start;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.qp-table-field {
+  width: 3.6rem;
+  min-height: 44px;
+  padding: 0 4px;
+  border: 1px solid var(--qp-line);
+  border-radius: 10px;
+  background: var(--qp-surface);
+  color: var(--qp-text);
+  font-size: 16px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.qp-table-total {
+  font-family: var(--qp-display);
+  font-weight: 700;
+}

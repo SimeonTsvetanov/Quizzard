@@ -1,0 +1,19 @@
+/* The stage's colours for the exported page (styles/standalone.css imports this file). Inside
+   Quizzard the creator declares the same properties itself (miniapp/src/styles/tokens.css — a mini-app
+   may only use tokens it declares or the shell's), and test/tokens.test.ts holds the two blocks to
+   each other. A slide is a projector slide: a deep violet ground with light text; the player's stage
+   always takes the darker pair. Text pairs: ink on the ground >= 11:1, dimmed ink >= 7:1, the dark ink
+   on the "right answer" green >= 9:1. */
+@layer components {
+  :root {
+    --quiz-stage-from: light-dark(oklch(37% 0.2 293), oklch(29% 0.13 293));
+    --quiz-stage-to: light-dark(oklch(23% 0.12 283), oklch(17% 0.07 283));
+    --quiz-stage-ink: oklch(98% 0.01 293);
+    --quiz-stage-dim: oklch(98% 0.01 293 / 0.76);
+    --quiz-stage-chip: oklch(100% 0 0 / 0.12);
+    --quiz-stage-edge: oklch(100% 0 0 / 0.2);
+    --quiz-stage-gold: oklch(87.9% 0.143 92);
+    --quiz-stage-right: oklch(80% 0.17 160);
+    --quiz-stage-on-right: oklch(22% 0.04 160);
+  }
+}
