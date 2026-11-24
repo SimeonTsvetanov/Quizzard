@@ -107,6 +107,18 @@ Rules that keep it extendable:
 ### Slice 5 — quiz files (0.21.0)
 - **Q-09:** save / open a quiz file with media, de-duplication, share target for the file (AC7); legal lines; release notes.
 
+### Slice 6 — special rounds: Golden pyramid and Safe (SPEC §10, 2026-11-24)
+- **SR-01 core:** round kinds `pyramid` and `safe` (fixed count, fixed answer type, order, points by
+  position, bonus in `Round.data`, the score entry's mapping), answer types `list` and `digit`, `addRound` with a
+  kind, guards in the question ops, completeness per position, fixtures and unit tests.
+- **SR-02 player:** the round's art on the slide (`render/rounds/`), the pyramid's answer area, the rules
+  intro, score entry and Scores dialog through the kind's mapping, the answer list and the code, styles with
+  reduced motion; unit tests.
+- **SR-03 creator:** the kind chooser, badges and accents, settings (fixed points line, bonus), editor parts
+  (accepted answers with the counter, digit picker), hidden controls with their reasons, EN + BG.
+- **SR-04 checks and docs:** e2e (create, edit, play both kinds; walk places), screenshots, user docs (make a
+  quiz, play a quiz, limits), Help, CHANGELOG, DECISIONS.
+
 ## 4. Definition of done (every task)
 `pnpm verify` green; the Chromium e2e suites green locally; screenshots looked at on 360, 412, 800 and 1280 px in
 light and dark, EN and BG; no `infinite` animation, no backdrop blur on repeated items; docs and CHANGELOG updated;

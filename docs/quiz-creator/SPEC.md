@@ -29,8 +29,8 @@ added later without touching what exists, and **a quiz made today opens and play
 | F11 | **Player:** title → teams → per round: rules → questions with the timer → answers revealed one by one → score entry → leaderboard → … → podium, tiebreak when level. Details: §6. |
 | F12 | **English and Bulgarian**, light and dark, phone and desktop, same look as the other tools (the `quiz` violet accent). Help section and user docs. |
 
-**Not in version 1** (designed for, built later): special question and round kinds ("golden pyramid", hints,
-wheel …); themed looks of the player; trimming or shrinking audio/video inside Quizzard; making a quiz with AI;
+**Not in version 1** (designed for, built later): special question and round kinds (hints,
+wheel … — Golden pyramid and Safe came in §10); themed looks of the player; trimming or shrinking audio/video inside Quizzard; making a quiz with AI;
 online sharing; several people editing one quiz.
 
 ## 3. Architecture — how it stays extendable
@@ -175,3 +175,73 @@ play; JPEG, PNG, GIF, SVG and WebP are listed for all versions of Chrome, Edge, 
 4. A quiz can be sent to another person and opened on their phone (quiz file).
 5. Multiple choice may have several correct options; points are a number and/or free text.
 6. Above all: easy and fast to collect questions; modular so that new kinds are added later and old quizzes keep working.
+
+## 10. Special rounds: Golden pyramid and Safe (2026-11-24)
+
+Moni's request of 2026-11-24 — the first round kinds after `standard` (§3.2: one registry entry each). Both
+are created ready-made, played with the same flow (rules → questions → "Answers" → reveals → score entry →
+leaderboard) and scored by the host per team per round, as every round (teams write on paper).
+
+### 10.1 Rules
+
+| | Golden pyramid (`pyramid`) | Safe (`safe`) |
+|---|---|---|
+| Questions | exactly 4 | exactly 5 |
+| What a team writes | question *n* asks for *n* answers (1, 2, 3, 4) | one digit 0–9 per question: the five digits are the safe's code |
+| Points | 1 per answer that is in the question's list of **accepted answers**, at most *n* — 10 in all | 1 per right digit; all 5 right adds the **bonus** (default 3, 0–20 in the round's settings) on top: 5 + 3 = 8 |
+| Over-answering | a team that writes more answers than asked scores 0 for that question | — |
+| Answer type (fixed) | `list`: accepted answers, at least *n* for question *n*, more allowed (e.g. 50 US states) | `digit`: one digit 0–9 |
+| Order | fixed: the position decides how many answers a question asks for | the questions may be reordered |
+| Default time | 60 s per question | 45 s per question |
+
+Question kinds text, picture, audio and video stay available in both. Questions cannot be added, deleted,
+duplicated or moved into or out of a special round: those controls are not shown, and where a control is
+expected a line says why ("A Golden pyramid round has exactly 4 questions").
+
+### 10.2 Format (still version 1 — optional fields only)
+
+- `Round.kind`: `"pyramid"` or `"safe"`; `Round.data` (new, optional, validated by the round kind): Safe
+  `{ bonus: number }`. Pyramid question *n* stores `points: { value: n }` (question 1 takes the round's 1), so
+  every reader adds the right numbers; the creator does not offer points in a special round.
+- New answer types: `{ type: "list", items: string[] }` and `{ type: "digit", digit?: number }` (absent = not
+  chosen yet). They are offered only in the round kind that fixes them.
+- An older Quizzard keeps such a quiz untouched: the round kind is unknown (no screens, the player passes over
+  it), its questions show as "not supported in this version" — nothing is lost on save (§3.3).
+- Saved games do not change: a round's points per team stay one number. The Safe's entry is "digits right
+  0–5"; the stored points are the digits plus the bonus at 5, so totals, the leaderboard, the Scores dialog,
+  saved games and Undo need nothing new.
+
+### 10.3 Screens
+
+- **Creator.** "Add round" opens a chooser with three cards — Standard, Golden pyramid, Safe — each with its
+  icon and one sentence. A special round arrives with its questions, points, answer type, default rules text
+  (EN or BG by the quiz's language, editable) and time. Its card and pane carry a badge with the kind's icon
+  and accent (gold pyramid, steel-and-brass safe). Settings: time and rules as usual; points as a fixed line
+  ("1 point per correct answer · 10 in all"); Safe: the bonus. Editor: Pyramid — "Accepted answers", a list
+  with the counter "asks for 3 · 7 accepted" (fewer than asked = not finished); Safe — ten big digit buttons.
+- **Player.** The rules screen shows a small animated explanation (pyramid tiers 1-2-3-4; five code windows
+  filling up and the bonus). Question and answer slides of a special round carry the round's picture on the
+  side of a wide slide (on top, smaller, on an upright one); the question text keeps its own area.
+  - Pyramid: four tiers of gold blocks (1, 2, 3, 4). The current question's tier glows; earlier tiers are
+    filled. Before the reveal the answer area shows *n* numbered lines and "Write 3 answers — more than 3
+    scores 0". At the reveal the tier's blocks flip one by one and the accepted answers appear as gold tiles:
+    the first 12, then "+N more" (the host panel and the printed answers have the whole list).
+  - Safe: a vault door with a dial (0–9), five lamps and five code windows. The current window glows; at each
+    reveal the dial turns to the digit and it clicks into its window; the code so far stays on later slides;
+    after the fifth digit the bolts slide back and the door swings open on the gold.
+  - Score entry: Pyramid — a stepper 0–10; Safe — digits right 0–5, at 5 "5 + 3 bonus = 8". The points guide
+    says the kind's rule. The round's answer list (score screen, break) shows Pyramid's accepted answers
+    shortened ("Ohio, Iowa, Utah … +47") and Safe's digits with the whole code under them.
+- Reduced motion: no turning, flipping or swinging; every state change is still visible at once. Animations
+  are CSS (finite) and SVG drawn by the player's own code: they work in the exported page under its CSP.
+
+### 10.4 Acceptance criteria
+
+| # | Criterion |
+|---|---|
+| SR1 | "Add round" → Golden pyramid gives a round of 4 questions (points 1–4, `list`, rules text, 60 s); → Safe gives 5 questions (`digit`, bonus 3, rules, 45 s). |
+| SR2 | In a special round there is no way to add, delete, duplicate or move a question in or out, nor to change its answer type or points; Pyramid questions do not move, Safe questions do. |
+| SR3 | A Pyramid question with fewer accepted answers than it asks for, and a Safe question without a digit, count as not finished. |
+| SR4 | The player plays both rounds start to end in the app, the audience window and the exported page; a reload keeps the game; the Safe's 5 digits store 5 + bonus points. |
+| SR5 | A quiz with special rounds survives the quiz file round trip; a version-1 file without them opens as before. |
+| SR6 | Phone 390 × 844 and 1280 × 800 / 1920 × 1080, light and dark, EN and BG: no clipped text, AA contrast, the question text never under the pyramid or the vault, also with a 500-character question. |
