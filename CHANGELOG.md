@@ -4,6 +4,11 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.20.3] - 2026-11-24
+### Added
+- **Menu → Check for updates:** asks for a new version right away. If there is one, the app updates itself and
+  reloads; if not, it tells you that you have the latest version.
+
 ## [0.20.2] - 2026-11-24
 ### Fixed
 - **Scores on iPhone and iPad:** "Adjust score" opens the keyboard that has a minus, so points can be taken away

@@ -7,6 +7,10 @@ import { showToast } from "./ui/toast.ts";
 import { IDLE_EVENT, isBusy } from "./state.ts";
 import { hasLegacyCaches } from "./legacy-caches.ts";
 import { t } from "./i18n/index.ts";
+import { type UpdatableRegistration, checkForUpdate } from "./pwa-check.ts";
+import { type ManualRegistration, findUpdate } from "./pwa-manual.ts";
+
+export { type UpdatableRegistration, type UpdateCheckOptions, checkForUpdate } from "./pwa-check.ts";
 
 /** How often an open app asks the server for a new service worker (pwa §5: every 60 min). */
 export const UPDATE_CHECK_INTERVAL_MS = 60 * 60 * 1000;
@@ -15,40 +19,6 @@ export const UPDATE_CHECK_MIN_GAP_MS = 5 * 60 * 1000;
 /** A second chunk-load failure within this window means the reload did not help: stop reloading. */
 export const PRELOAD_RELOAD_WINDOW_MS = 60 * 1000;
 const PRELOAD_RELOAD_KEY = `${app.id}:v1:preload-reload`;
-
-/** The part of a ServiceWorkerRegistration the update check needs. */
-export interface UpdatableRegistration {
-  readonly installing: ServiceWorker | null;
-  update(): Promise<unknown>;
-}
-
-/** Inputs of {@link checkForUpdate}; the browser globals are passed in so the check is testable. */
-export interface UpdateCheckOptions {
-  readonly swUrl: string;
-  readonly registration: UpdatableRegistration;
-  readonly isOnline: () => boolean;
-  readonly fetchScript: (url: string, init: RequestInit) => Promise<Pick<Response, "status">>;
-}
-
-/**
- * Asks the browser to look for a new service worker, unless one is already installing or the
- * device is offline. The script is fetched first, bypassing the HTTP cache, so `update()` only
- * runs when the server answers 200.
- * @returns true when `registration.update()` was called and resolved.
- */
-export async function checkForUpdate({ swUrl, registration, isOnline, fetchScript }: UpdateCheckOptions): Promise<boolean> {
-  if (registration.installing || !isOnline()) return false;
-  try {
-    const response = await fetchScript(swUrl, { cache: "no-store", headers: { "cache-control": "no-cache" } });
-    if (response.status !== 200) return false;
-    await registration.update();
-    return true;
-  } catch {
-    // because a failed check (flaky network, server hiccup) is harmless: the next one runs on
-    // the next visibility change or within the hour.
-    return false;
-  }
-}
 
 /** What a tab does when its service worker controller changes. */
 export type ControllerChangeAction = "reload" | "offer-reload" | "ignore";
@@ -167,6 +137,30 @@ function watchControllerChange(state: UpdateState): void {
   });
 }
 
+/** What the menu's "Check for updates" needs once the worker is registered. */
+let manual: { readonly swUrl: string; readonly registration: ManualRegistration; readonly apply: () => void } | null = null;
+
+/**
+ * "Check for updates" (menu): asks the server now. A new version is applied at once — the page
+ * reloads — unless a task is running; then the usual "Reload" offer waits for it to end.
+ */
+export async function checkNow(): Promise<void> {
+  if (manual === null) {
+    showToast({ message: t("shell.update.unavailable") });
+    return;
+  }
+  const { swUrl, registration, apply } = manual;
+  showToast({ message: t("shell.update.checking") });
+  const result = await findUpdate({ swUrl, registration, isOnline: () => navigator.onLine, fetchScript: (url, init) => fetch(url, init) });
+  if (result === "offline") showToast({ message: t("shell.update.offline"), tone: "error" });
+  else if (result === "latest") showToast({ message: t("shell.update.latest", { version: app.version }) });
+  else if (isBusy()) offerReload(apply);
+  else {
+    showToast({ message: t("shell.update.applying") });
+    apply();
+  }
+}
+
 /** Registers the service worker and wires update prompts, periodic checks and stale-chunk recovery. */
 export function initPwa(): void {
   handlePreloadErrors();
@@ -178,18 +172,19 @@ export function initPwa(): void {
       if (state.legacyTakeover === "checking") state.legacyTakeover = found ? "yes" : "no";
     });
   }
+  const apply = (): void => {
+    state.updateRequested = true;
+    // A tab without a controller (opened with a hard reload) gets no controllerchange: the
+    // new worker activates without it, so reload it directly once skip-waiting is sent.
+    const isControlled = navigator.serviceWorker.controller !== null;
+    void updateSW(true).then(() => {
+      if (!isControlled) location.reload();
+    });
+  };
   const updateSW = registerSW({
     immediate: true,
     onNeedRefresh() {
-      offerReload(() => {
-        state.updateRequested = true;
-        // A tab without a controller (opened with a hard reload) gets no controllerchange: the
-        // new worker activates without it, so reload it directly once skip-waiting is sent.
-        const isControlled = navigator.serviceWorker.controller !== null;
-        void updateSW(true).then(() => {
-          if (!isControlled) location.reload();
-        });
-      });
+      offerReload(apply);
     },
     onNeedReload() {
       // Intentionally empty: the default would reload EVERY open tab when one tab applies the
@@ -200,7 +195,9 @@ export function initPwa(): void {
       showToast({ message: t("shell.update.offlineReady"), background: true });
     },
     onRegisteredSW(swUrl, registration) {
-      if (registration) scheduleUpdateChecks(swUrl, registration);
+      if (!registration) return;
+      scheduleUpdateChecks(swUrl, registration);
+      manual = { swUrl, registration, apply };
     },
     onRegisterError(error: unknown) {
       console.warn("Service worker registration failed", error);
