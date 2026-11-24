@@ -306,3 +306,26 @@ test("T12 + T9 + P1: the time-up sound is off until switched on and is remembere
   await next(page);
   await expect(view(page, "teams-view").locator(".qp-team-field").first()).toHaveValue("The Quizzy Rascals");
 });
+
+test("a game that is opened again says it continues and offers Start again; the answer at the reveal stands in the middle", async ({ page }) => {
+  await play(page);
+  const strip = page.locator("[data-undo-strip]");
+  await expect(strip).toBeHidden(); // a first game: nothing to continue
+  await next(page, 3);
+  await control(page, "exit").click();
+  await root(page).locator("[data-play-quiz]").click();
+  await expect(strip).toContainText("Continuing your last game");
+  await strip.getByRole("button", { name: "Start again" }).click();
+  await expect(view(page, "title")).toBeVisible();
+  // The reveal: the question steps back to the top, the answer is the larger text and stands lower than it.
+  for (let n = 0; n < 30 && (await stage(page).locator(".quiz-slide[data-reveal]").count()) === 0; n += 1) await next(page);
+  const slide = stage(page).locator(".quiz-slide[data-reveal]");
+  const size = (selector: string): Promise<number> => slide.locator(selector).evaluate((element) => Number.parseFloat(getComputedStyle(element).fontSize));
+  expect(await size(".quiz-slide-right")).toBeGreaterThan(1.5 * (await size(".quiz-slide-prompt")));
+  const middle = await slide.evaluate((element) => {
+    const box = element.getBoundingClientRect();
+    const answer = element.querySelector(".quiz-slide-answer")?.getBoundingClientRect();
+    return answer ? Math.abs((answer.top + answer.bottom) / 2 - (box.top + box.bottom) / 2) / box.height : 1;
+  });
+  expect(middle).toBeLessThan(0.2);
+});

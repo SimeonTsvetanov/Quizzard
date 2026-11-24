@@ -4,6 +4,15 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.20.1] - 2026-11-24
+### Changed
+- **Quiz creator, while playing:** when the answer is shown it is the large text in the middle of the screen; the
+  question steps back to the top, smaller.
+- A game you open again says "Continuing your last game" and offers "Start again" right there — it clears the
+  points and goes back to the first screen (still in the menu as "Start the game again").
+### Fixed
+- An empty round no longer shows a plus sign that looked like a button; "Add question" is the one button.
+
 ## [0.20.0] - 2026-11-24
 ### Added
 - **Quiz creator, easier to use.** A new quiz asks for its name first. Rounds and questions have the same row of

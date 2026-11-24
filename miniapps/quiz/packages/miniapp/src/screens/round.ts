@@ -29,7 +29,7 @@ export function newQuestion(app: App, roundId: string, mode: "push" | "replace" 
 /** The questions of the round as cards or rows, sortable by their handles — or the round's empty state. */
 function questionList(app: App, quiz: Quiz, round: Round, mode: ListMode): HTMLElement {
   const { t } = app;
-  if (round.questions.length === 0) return emptyState({ icon: "plus", title: t("round.emptyTitle"), text: t("round.emptyText") });
+  if (round.questions.length === 0) return emptyState({ icon: null, title: t("round.emptyTitle"), text: t("round.emptyText") });
   const draw = mode === "list" ? questionRow : questionCard;
   const list = h("ol", { class: mode === "list" ? "quiz-qrows" : "quiz-questions", "data-question-list": mode }, ...round.questions.map((question, index) => draw(app, { quiz, round, question, index })));
   makeSortable({ list, attribute: QUESTION_ATTRIBUTE, onMove: (id, to) => { moveTo(app, id, to); } });

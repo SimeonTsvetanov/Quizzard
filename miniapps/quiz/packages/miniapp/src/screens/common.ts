@@ -146,7 +146,8 @@ export function syncCounts(app: App): void {
 export interface EmptyStateOptions {
   readonly title: string;
   readonly text: string;
-  readonly icon?: IconName;
+  /** `null` = no mark: where a real button with the same sign stands right under the box. */
+  readonly icon?: IconName | null;
   /** The wizard instead of an icon (the library's first visit). */
   readonly hasWizard?: boolean;
   readonly action?: HTMLElement;
@@ -161,7 +162,7 @@ export function emptyState(options: EmptyStateOptions): HTMLElement {
   const mark = options.hasWizard === true
     ? h("img", { class: "quiz-empty-wizard", src: "logo.svg", alt: "", width: "96", height: "96" })
     : h("span", { class: "quiz-empty-mark" }, icon(options.icon ?? "deck", 28));
-  const box = h("div", { class: "quiz-empty" }, mark, h("p", { class: "quiz-empty-title" }, options.title), h("p", { class: "quiz-empty-text" }, options.text));
+  const box = h("div", { class: "quiz-empty" }, ...(options.icon === null ? [] : [mark]), h("p", { class: "quiz-empty-title" }, options.title), h("p", { class: "quiz-empty-text" }, options.text));
   if (options.action) box.append(options.action);
   return box;
 }

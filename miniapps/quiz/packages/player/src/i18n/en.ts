@@ -214,6 +214,10 @@ export const en = {
     cleared: "Scores cleared",
     restarted: "The game starts again",
   },
+  resume: {
+    note: "Continuing your last game",
+    restart: "Start again",
+  },
   count: {
     of: "{{n}} of {{total}}",
   },

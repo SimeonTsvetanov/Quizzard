@@ -10,7 +10,8 @@ export const UNDO_MS = 10_000;
 export interface UndoStrip {
   readonly element: HTMLElement;
   /** Shows a message with the Undo button; `run` is called once if it is pressed in time. */
-  offer(message: string, run: () => void): void;
+  /** `label` = the button's word for this offer, when it is not an Undo. */
+  offer(message: string, run: () => void, label?: string): void;
   /** Takes the offer away (the player closes). */
   clear(): void;
 }
@@ -45,8 +46,9 @@ export function createUndoStrip(undoLabel: string): UndoStrip {
   for (const name of ["pointerleave", "focusout"]) element.addEventListener(name, () => { if (pending) wait(); });
   return {
     element,
-    offer(message, run) {
+    offer(message, run, label) {
       words.textContent = message;
+      button.textContent = label ?? undoLabel;
       pending = run;
       element.hidden = false;
       wait();

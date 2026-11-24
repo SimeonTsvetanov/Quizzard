@@ -216,6 +216,10 @@ export const bg: Messages = {
     cleared: "Точките са изчистени",
     restarted: "Играта започва отначало",
   },
+  resume: {
+    note: "Продължаваш последната игра",
+    restart: "Започни отначало",
+  },
   count: {
     of: "{{n}} от {{total}}",
   },

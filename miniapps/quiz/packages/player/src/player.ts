@@ -20,6 +20,7 @@ import { type Panel, createPanel } from "./ui/panel.ts";
 import { createScoreboard } from "./ui/scoreboard.ts";
 import { type Stage, createStage } from "./ui/stage.ts";
 import { playTimeUp, ranOut } from "./ui/sound.ts";
+import { offerRestart } from "./ui/resume.ts";
 import { type UndoStrip, createUndoStrip } from "./ui/undo.ts";
 import { keepAwake } from "./ui/wake.ts";
 import type { PlayEnv } from "./views/context.ts";
@@ -275,6 +276,7 @@ export function createPlayer(options: PlayerOptions): Player {
     session.presenter?.channel.send({ kind: "bye" });
   }, { signal: controller.signal });
   draw(session);
+  offerRestart({ state: session.state, saved: readSaved(options.storage), undo: session.undo, t: session.t, dispatch: session.commands.dispatch });
   return {
     getState: () => session.state,
     dispatch: session.commands.dispatch,

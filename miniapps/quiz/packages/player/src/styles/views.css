@@ -281,6 +281,44 @@
     margin-top: 0;
   }
 
+  /* At the reveal the answer is what the room looks at: the question steps back to the top, smaller
+     and quieter, and the answer takes the middle, large (Moni 2026-11-24). With media the picture
+     or clip keeps the middle and the answer its place beside or under it. */
+  & .quiz-slide[data-reveal]:not([data-media]) .quiz-slide-prompt {
+    margin-block: 0;
+    color: var(--quiz-stage-dim);
+  }
+
+  & .quiz-slide[data-reveal]:not([data-media]):is([data-size="l"], [data-size="m"]) .quiz-slide-prompt {
+    font-size: 3.4cqi;
+  }
+
+  & .quiz-slide[data-reveal]:not([data-media]) .quiz-slide-answer {
+    margin-block: auto;
+
+    &:has(+ .quiz-slide-explanation) {
+      margin-block-end: 0;
+    }
+  }
+
+  & .quiz-slide[data-reveal]:not([data-media]) .quiz-slide-explanation {
+    margin-block-end: auto;
+  }
+
+  & .quiz-slide[data-reveal]:not([data-media]) .quiz-slide-kicker {
+    font-size: 2.4cqi;
+  }
+
+  & .quiz-slide[data-reveal]:not([data-media]) .quiz-slide-right {
+    font-size: 7cqi;
+    -webkit-line-clamp: 4;
+    line-clamp: 4;
+  }
+
+  [data-shape="tall"] & .quiz-slide[data-reveal]:not([data-media]) .quiz-slide-right {
+    font-size: 5.6cqi;
+  }
+
   /* With media the question stands on top and its picture or clip takes the room; the media keeps
      at least this much, so a crowded slide is drawn smaller rather than its picture squeezed away. */
   & .quiz-slide[data-media] .quiz-slide-prompt {
