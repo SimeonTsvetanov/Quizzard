@@ -37,9 +37,12 @@ const onQuestion = (n: number): GameState => run(fresh(), ...Array.from({ length
 describe("what a question's file is to the game", () => {
   it("a picture is a still, audio and video are clips with their length when known", () => {
     expect(mediaOfScreen(undefined)).toEqual({});
-    expect(mediaOfScreen(MEDIA[0])).toEqual({ media: "still" });
+    // A picture and a video can fill the stage (`zoom`); a sound has nothing to enlarge.
+    expect(mediaOfScreen(MEDIA[0])).toEqual({ media: "still", zoom: true });
     expect(mediaOfScreen(MEDIA[1])).toEqual({ media: "clip", clipMs: 4000 });
-    expect(mediaOfScreen(MEDIA[2])).toEqual({ media: "clip" });
+    expect(mediaOfScreen(MEDIA[2])).toEqual({ media: "clip", zoom: true });
+    const timed: MediaEntry = { id: "film", type: "video", mime: "video/mp4", name: "f.mp4", bytes: 10, seconds: 3 };
+    expect(mediaOfScreen(timed)).toEqual({ media: "clip", clipMs: 3000, zoom: true });
     const screens = fresh().screens.filter((screen) => screen.questionId !== undefined);
     expect(screens.map((screen) => [screen.screen, screen.media ?? "none"])).toEqual([
       ["question", "none"], ["question", "still"], ["question", "clip"], ["question", "clip"],
@@ -103,6 +106,29 @@ describe("clips and the timer", () => {
     // A clip of unknown length only ends when its window says so.
     const unknown = run(onQuestion(4), media("play"), tick(600_000));
     expect(unknown.media).toMatchObject({ status: "playing", ms: 600_000 });
+  });
+
+  it("a video zooms like a picture and plays on: the clip, its timer and the zoom do not touch each other; Escape only leaves", () => {
+    const video = onQuestion(4);
+    const zoomed = run(video, media("play"), tick(700), media("zoom"));
+    expect(zoomed.media).toMatchObject({ status: "playing", ms: 700, zoom: true });
+    expect(run(zoomed, tick(300)).media).toMatchObject({ status: "playing", ms: 1000, zoom: true });
+    expect(run(zoomed, media("pause")).media).toMatchObject({ status: "paused", zoom: true });
+    // The clip's end starts the waiting timer while zoomed, and the timer runs under the zoom.
+    const ended = run(zoomed, media("ended"));
+    expect(ended.media).toMatchObject({ status: "ended", zoom: true });
+    expect(ended.timer.status).toBe("running");
+    expect(run(ended, tick(1000)).timer.leftMs).toBe(9000);
+    // Escape (`unzoom`) leaves the zoom and does nothing when there is none; Z (`zoom`) goes both ways.
+    expect(run(zoomed, media("unzoom")).media).toMatchObject({ status: "playing", zoom: false });
+    expect(step(video, media("unzoom"))).toBe(video);
+    expect(run(zoomed, media("zoom")).media.zoom).toBe(false);
+    // A sound has no zoom at all.
+    const song = onQuestion(3);
+    expect(step(song, media("zoom"))).toBe(song);
+    expect(step(song, media("unzoom"))).toBe(song);
+    // The audience gets the zoom with the state, and a saved game comes back unzoomed.
+    expect(restore(fresh(), toSaved(zoomed)).media.zoom).toBe(false);
   });
 
   it("zoom is for pictures, play for clips, and neither for a question without media", () => {

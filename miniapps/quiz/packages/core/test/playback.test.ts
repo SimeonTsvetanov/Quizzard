@@ -45,6 +45,9 @@ describe("playbackStep", () => {
     expect(run(["zoom"])).toEqual({ ...RESTING_PLAYBACK, zoom: true });
     expect(run(["zoom", "zoom"])).toEqual(RESTING_PLAYBACK);
     expect(run(["play", "zoom"])).toMatchObject({ status: "playing", zoom: true });
+    // "unzoom" (Escape) only ever leaves the zoom: the same object when there is none, the clip untouched.
+    expect(run(["play", "zoom", "unzoom"])).toMatchObject({ status: "playing", zoom: false });
+    expect(playbackStep(RESTING_PLAYBACK, "unzoom")).toBe(RESTING_PLAYBACK);
   });
 });
 

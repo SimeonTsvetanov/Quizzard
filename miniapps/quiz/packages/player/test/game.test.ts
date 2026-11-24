@@ -6,7 +6,7 @@ import { type ScreenKind, createScreenKinds } from "../src/game/kinds.ts";
 import { total } from "../src/game/scores.ts";
 import { CUE_MS, MAX_SCORE, TEAM_NAME_MAX, type GameAction, type GameState, freshTimer } from "../src/game/state.ts";
 import { peekNext, step } from "../src/game/step.ts";
-import { at, newGame, quizFile, screenNames } from "./helpers.ts";
+import { at, deepFreeze, newGame, quizFile, screenNames } from "./helpers.ts";
 
 /** The moves that need nothing but their name. */
 type PlainMove = "next" | "back" | "reveal" | "timerStart" | "timerPause" | "timerToggle" | "timerReset" | "restart";
@@ -74,8 +74,34 @@ describe("next, back and jump", () => {
     }
     expect(walk).toEqual([
       "title", "teams", "rules r1", "question q1.1", "question q1.2", "answers r1",
-      "answer q1.1", "answer q1.1 revealed", "answer q1.2", "answer q1.2 revealed", "score r1", "board r1", "final",
+      // An upright screen (no `wide`): the score entry has two parts — the round's answers, then the points.
+      "answer q1.1", "answer q1.1 revealed", "answer q1.2", "answer q1.2 revealed", "score r1", "score r1 revealed", "board r1", "final",
     ]);
+  });
+
+  it("the score entry is one screen on a wide stage and two parts on an upright one, in both directions", () => {
+    const onScore = (game: GameState): GameState => step(game, { type: "jump", index: game.screens.findIndex((screen) => screen.screen === "score") });
+    const score = onScore(newGame([2]));
+    expect(score.screens[score.index]).toMatchObject({ screen: "score", steps: 1, upright: true });
+    expect(at(score)).toBe("score r1");
+    // Wide: Next goes straight to the leaderboard; Back from there shows the entry with both parts, and Back again leaves it.
+    const board = deepFreeze(step(score, { type: "next", wide: true }));
+    expect(at(board)).toBe("board r1");
+    const again = deepFreeze(step(board, { type: "back", wide: true }));
+    expect(at(again)).toBe("score r1 revealed");
+    expect(at(step(again, { type: "back", wide: true }))).toBe("answer q1.2 revealed");
+    expect(at(step(again, { type: "next", wide: true }))).toBe("board r1");
+    // Upright: the answers, then the points, then the leaderboard — and the same way back.
+    const points = deepFreeze(step(score, { type: "next", wide: false }));
+    expect(at(points)).toBe("score r1 revealed");
+    expect(at(step(points, { type: "next" }))).toBe("board r1");
+    expect(at(step(points, { type: "back" }))).toBe("score r1");
+    expect(at(step(step(points, { type: "back" }), { type: "back" }))).toBe("answer q1.2 revealed");
+    // A real reveal is never passed over, whoever asks.
+    const answer = step(score, { type: "back", wide: true });
+    expect(at(step(step(answer, { type: "back", wide: true }), { type: "next", wide: true }))).toBe("answer q1.2 revealed");
+    // Points are entered on either part.
+    expect(step(score, { type: "setScore", roundId: "r1", teamId: "t1", value: 3 }).scores).toEqual({ r1: { t1: 3 } });
   });
 
   it("stays put at both ends: back on the title and next on the podium return the same game", () => {
