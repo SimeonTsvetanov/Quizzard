@@ -190,7 +190,8 @@ test("AC2: a question shows the round's time until changed, then keeps its own w
   await expect(questions(page).nth(0).locator("[data-slide-time]")).toHaveText("45 s");
   await expect(questions(page).nth(1).locator("[data-slide-time]")).toHaveText("60 s");
   await expect.poll(async () => (await stored(page))[0]?.quiz.rounds[0]?.questions.map((question) => question.seconds)).toEqual([45, undefined]);
-  expect((await stored(page))[0]?.quiz.rounds[0]?.defaults.seconds).toBe(60);
+  // Polled: the save is debounced, and the questions above already matched before this change was written.
+  await expect.poll(async () => (await stored(page))[0]?.quiz.rounds[0]?.defaults.seconds).toBe(60);
   // The way back to the round's value.
   await questions(page).nth(0).getByRole("button", { name: /^Question 1/ }).click();
   await time.getByRole("button", { name: "Back to the round's: 60 s" }).click();

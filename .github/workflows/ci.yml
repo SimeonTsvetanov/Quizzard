@@ -40,13 +40,13 @@ jobs:
     # Before 1.0.0: remove this line, so every push is again tested on all five browsers before Deploy.
     if: github.event_name != 'push'
     # 15 Playwright projects (the shell on five browsers + the vendored Teams and Scores suites on five
-    # each) are about 800 tests: one runner needed 12.5 minutes. Four shards run side by side
+    # each) are about 800 tests: one runner needed 12.5 minutes. Six shards run side by side (four timed out at 15 minutes once the quiz creator's suites were added, 2026-11-24)
     # (Playwright --shard splits by test file); every shard must be green for Deploy to start.
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4]
-    name: e2e (${{ matrix.shard }}/4)
+        shard: [1, 2, 3, 4, 5, 6]
+    name: e2e (${{ matrix.shard }}/6)
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -85,8 +85,8 @@ jobs:
       # A test that passes on a retry is reported as flaky but does not block the deploy (DECISIONS
       # 2026-11-22): the vendored suites run on emulated mobile WebKit and Firefox, where two harness
       # flakes kept a working build off the site for hours. Real failures (all retries red) still block.
-      - run: pnpm e2e --shard=${{ matrix.shard }}/4
-        timeout-minutes: 15
+      - run: pnpm e2e --shard=${{ matrix.shard }}/6
+        timeout-minutes: 20
       # Lighthouse budgets (lighthouserc.json). Moni's decision 2026-11-05: run the pinned CLI in CI only,
       # outside the project lockfile (its chromium-bidi dep fails our trustPolicy; it never ships to users).
       - name: Lighthouse budgets (LCP < 2.5 s, CLS < 0.1, scores ≥ 0.9/0.95)

@@ -74,7 +74,7 @@ async function exportFile(page: Page, testInfo: TestInfo): Promise<string> {
   const download = page.waitForEvent("download");
   await root(page).locator("[data-export]").click();
   const file = await download;
-  expect(file.suggestedFilename()).toBe("Pub night.html");
+  expect(file.suggestedFilename()).toMatch(/^Pub[ _]night\.html$/); // WebKit writes the space as "_"
   const path = testInfo.outputPath("Pub night.html");
   await file.saveAs(path);
   return path;

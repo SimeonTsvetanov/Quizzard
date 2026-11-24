@@ -168,7 +168,7 @@ async function exportFile(page: Page, testInfo: TestInfo): Promise<string> {
   const download = page.waitForEvent("download");
   await root(page).locator("[data-export]").click();
   const saved = await download;
-  expect(saved.suggestedFilename()).toBe("Media night.html");
+  expect(saved.suggestedFilename()).toMatch(/^Media[ _]night\.html$/); // WebKit writes the space as "_"
   const path = testInfo.outputPath("Media night.html");
   await saved.saveAs(path);
   return path;
@@ -550,7 +550,7 @@ test("AC7: a quiz file saved in one browser opens in another with the same quiz 
   const download = page.waitForEvent("download");
   await root(page).locator("[data-save-file]").click();
   const saved = await download;
-  expect(saved.suggestedFilename()).toBe("Media night.quizzard");
+  expect(saved.suggestedFilename()).toMatch(/^Media[ _]night\.quizzard$/);
   const path = testInfo.outputPath("Media night.quizzard");
   await saved.saveAs(path);
   const bytes = readFileSync(path);
