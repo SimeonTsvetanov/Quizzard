@@ -57,6 +57,11 @@ let waitingToast: ToastOptions | null = null;
 let live: LiveToast | null = null;
 let isWatchingDialogs = false;
 
+/** Whether the page still waits for a font (never true where the browser has no font loading API). */
+function isLoadingFonts(): boolean {
+  return (document.fonts as FontFaceSet | undefined)?.status === "loading";
+}
+
 /** Returns a new, empty polite toast region; dialog.ts puts one in every sheet. */
 export function createToastRegion(): HTMLDivElement {
   return h("div", { class: "toast-region", role: "status", "aria-live": "polite", "data-toasts": "" });
@@ -214,6 +219,14 @@ export function relocateToasts(): void {
  * ones, a `background` toast waits while any time-boxed toast is showing.
  */
 export function showToast(options: ToastOptions): void {
+  // A background note that arrives while the page's fonts are still loading waits for them: its
+  // words would be measured in the fallback font and the note would change width — and so place —
+  // when the real one lands (a tiny layout shift on Home when the app finished saving itself for
+  // offline use in the first second; CI saw 0.0000129).
+  if (options.background && isLoadingFonts()) {
+    void document.fonts.ready.then(() => { showToast(options); });
+    return;
+  }
   const region = currentRegion();
   if (!region) return;
   if (options.pinned) pinnedToast = options;

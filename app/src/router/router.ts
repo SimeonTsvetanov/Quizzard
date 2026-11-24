@@ -131,8 +131,20 @@ function onHashChange(state: RouterState, event: HashChangeEvent): void {
   }
 }
 
-/** Shows the screen the address names after a history traversal (see `start`). */
+/**
+ * Shows the screen the address names after a history traversal (see `start`) — now, and once more
+ * when the browser has finished the traversal: an engine may fire `popstate` before the address is
+ * the new entry's and send no `hashchange` after it (seen in WebKit after a mini-app's own
+ * `history.go(-n)` followed by Back: the tool's library stayed up over Home). The second look costs
+ * nothing when the first was right, and it never depends on which event came first.
+ */
 function onPopState(state: RouterState): void {
+  reconcile(state);
+  setTimeout(() => { reconcile(state); }, 0);
+}
+
+/** Makes the screen on show the one the address names; nothing happens when it already is. */
+function reconcile(state: RouterState): void {
   const route = parseRoute(location.hash, state.ids);
   if (route.kind !== "home" && route.kind !== "miniapp") return; // dialogs and unknown: hashchange path
   // A traversal has landed, also one between a mini-app's own sub-screen entries (same address, so

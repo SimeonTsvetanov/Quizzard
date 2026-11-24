@@ -164,10 +164,11 @@
     }
   }
 
+  /* Opacity only: a row never moves once the menu is open, so a tap (or a test's click) that lands
+     while the rows arrive always meets the row where it will stay. */
   @keyframes menu-row-in {
     from {
       opacity: 0;
-      transform: translateX(var(--space-4));
     }
   }
 }

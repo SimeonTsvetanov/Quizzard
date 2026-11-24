@@ -102,8 +102,14 @@ export interface NavigatorOptions {
  * @param options - the tool's hash, the mount's abort signal and the traversal listener
  */
 export function createNavigator({ hash, signal, onTraverse }: NavigatorOptions): Navigator {
+  // A traversal that stays in the tool shows the entry's screen. It is looked at one task later:
+  // when the traversal left the tool, the shell has unmounted it by then (the signal has ended) —
+  // also in an engine that fires `popstate` before the address is the new entry's, where the tool
+  // would otherwise take Home's entry for its own library and draw it over Home.
   window.addEventListener("popstate", () => {
-    if (location.hash.split("?")[0] === hash) onTraverse(readRoute(history.state));
+    setTimeout(() => {
+      if (!signal.aborted && location.hash.split("?")[0] === hash) onTraverse(readRoute(history.state));
+    }, 0);
   }, { signal });
   return {
     route: () => readRoute(history.state),
