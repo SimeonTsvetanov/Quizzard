@@ -158,6 +158,13 @@ function toggleDialog(session: Session, name: string, title: string, build: (clo
   session.overlay = openDialog({ root: session.options.root, name, title, t: session.t, ...built, onClose: () => { session.overlay = null; } });
 }
 
+/** Moves the control bar to another place of the player; the button that had the focus keeps it (a moved element loses it). */
+function moveBar(session: Session, parent: HTMLElement, before: HTMLElement | null): void {
+  const focused = document.activeElement;
+  parent.insertBefore(session.bar.element, before);
+  if (focused instanceof HTMLElement && session.bar.element.contains(focused)) focused.focus();
+}
+
 function stopPresenting(session: Session): void {
   const { presenter } = session;
   if (!presenter) return;
@@ -166,7 +173,7 @@ function stopPresenting(session: Session): void {
   presenter.link.close();
   presenter.panel.destroy();
   // The one control bar goes back under the stage.
-  session.options.root.insertBefore(session.bar.element, session.undo.element);
+  moveBar(session, session.options.root, session.undo.element);
   presenter.panel.element.remove();
   // The clip was playing in the window that is gone: it rests until the host plays it here.
   move(session, { type: "media", command: "pause" });
@@ -191,7 +198,7 @@ function startPresenting(session: Session): void {
     if (message.kind === "bye") stopPresenting(session);
   });
   options.root.append(panel.element);
-  panel.element.append(session.bar.element); // the same bar, now under the host panel
+  moveBar(session, panel.element, null); // the same bar, now under the host panel
   session.presenter = { link, channel, panel };
   draw(session);
 }

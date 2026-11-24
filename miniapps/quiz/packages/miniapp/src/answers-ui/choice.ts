@@ -30,7 +30,7 @@ function row(editor: ChoiceEditor, index: number): HTMLElement {
   const option = editor.answer.options[index];
   if (option === undefined) return h("li");
   const letter = optionLetter(index);
-  const correct = h("input", { type: "checkbox", class: "visually-hidden", "aria-label": t("choice.correct", { letter }) });
+  const correct = h("input", { type: "checkbox", "aria-label": t("choice.correct", { letter }) });
   correct.checked = editor.answer.correct.includes(option.id);
   correct.addEventListener("change", () => { report(editor, toggleCorrect(editor.answer, option.id)); });
   const tick = h("label", { class: "quiz-option-tick", title: t("choice.correct", { letter }) }, correct, h("span", { class: "quiz-option-mark" }, icon("check", 18)));
