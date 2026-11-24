@@ -2,9 +2,18 @@
    the content; upright: above it, smaller), the opening's picture with its short rules, the Safe's code
    under the round's answers and the bonus beside a team's digits. The slide's own parts: render/rounds.css. */
 
-/* || The slide on the stage */
+/* || The slide on the stage: the content beside the picture is drawn at two thirds (views/question.ts
+   fits from this size down); an upright stage keeps its own larger size. */
 .qp-slide-view .quiz-slide[data-art] > .quiz-slide-art {
   padding-inline-start: 5cqi;
+}
+
+.qp-slide-view .quiz-slide[data-art] > .quiz-slide-canvas {
+  --qp-zoom: 0.68;
+}
+
+[data-shape="tall"] .qp-slide-view .quiz-slide[data-art] > .quiz-slide-canvas {
+  --qp-zoom: 1.75;
 }
 
 [data-shape="tall"] .qp-slide-view .quiz-slide[data-art] {

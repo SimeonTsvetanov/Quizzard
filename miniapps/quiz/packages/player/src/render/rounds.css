@@ -1,7 +1,7 @@
 /* The special rounds on the slide (render/rounds/, SPEC §10): the round's picture beside the content —
    the Golden pyramid and the Safe's vault — and their answer areas. Sizes in cqi of the slide (the
-   picture) or of the content beside it, which is a size container of its own, so the content reads as
-   a slide of its own width. Every motion is a finite CSS animation from a start to the element's own
+   picture) and of the slide drawn smaller beside it (`zoom`), so the content reads as a slide of its
+   own width. Every motion is a finite CSS animation from a start to the element's own
    style: with reduced motion the end state shows at once. The vault's colours are its own (steel,
    brass, gold, a green that says "right"): the stage is dark in every theme. */
 @layer components {
@@ -10,10 +10,11 @@
     display: flex;
     align-items: stretch;
 
+    /* The content has about two thirds of the slide's width: drawn at that size, it reads as a slide of its own. */
     & > .quiz-slide-canvas {
       flex: 1;
       min-width: 0;
-      container-type: inline-size;
+      zoom: 0.68;
     }
   }
 
