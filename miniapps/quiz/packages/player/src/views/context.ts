@@ -25,6 +25,8 @@ export interface PlayEnv {
   readonly entryOf: (id: string) => MediaEntry | undefined;
   /** A number as people write it in the quiz's language. */
   number(value: number): string;
+  /** Where Quizzard's logo on the stage leads: the site, in the exported page; left out inside the app (ui/brand.ts). */
+  readonly homeUrl?: string;
 }
 
 /** What one view is drawn from. */

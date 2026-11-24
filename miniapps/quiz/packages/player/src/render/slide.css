@@ -137,7 +137,7 @@
     padding: 0.9cqi 1.8cqi;
     border-radius: 99cqi;
     background: var(--quiz-stage-chip);
-    box-shadow: inset 0 0 0 0.15cqi var(--quiz-stage-edge);
+    box-shadow: var(--quiz-stage-lift);
     font-size: 2.3cqi;
     font-weight: var(--weight-bold);
     white-space: nowrap;
@@ -238,7 +238,7 @@
     padding: 1.1cqi 1.6cqi;
     border-radius: 1.8cqi;
     background: var(--quiz-stage-chip);
-    box-shadow: inset 0 0 0 0.15cqi var(--quiz-stage-edge);
+    box-shadow: var(--quiz-stage-lift);
     font-weight: var(--weight-semibold);
 
     &[data-correct] {
@@ -337,5 +337,13 @@
       -webkit-line-clamp: 2;
       line-clamp: 2;
     }
+  }
+}
+
+/* Forced colours take the fills and shadows away: the raised parts get the system's line instead. */
+@media (forced-colors: active) {
+  :is(.quiz-slide-chip, .quiz-slide-option, .quiz-slide-clip-restart, .quiz-tile, .quiz-pyramid-face, .quiz-digit-box) {
+    outline: 1px solid transparent;
+    outline-offset: -1px;
   }
 }

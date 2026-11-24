@@ -28,6 +28,8 @@ export interface AudienceOptions {
    * them from the browser's storage). What it resolves to replaces `mediaUrl`.
    */
   readonly prepare?: (file: QuizFile) => Promise<((id: string) => string | null) | undefined>;
+  /** Where the logo on the stage leads (the exported page); left out = no link (inside the app). */
+  readonly homeUrl?: string;
 }
 
 /** How often the window asks again while the host has not answered. */
@@ -60,7 +62,7 @@ export function createAudience(options: AudienceOptions): { destroy(): void } {
   let inits = 0;
   const open = (file: QuizFile, mediaUrl: ((id: string) => string | null) | undefined): void => {
     stage?.destroy();
-    const env = createEnv({ file, dispatch: send, mediaUrl });
+    const env = createEnv({ file, dispatch: send, mediaUrl, homeUrl: options.homeUrl });
     stage = createStage(env, { canEdit: false, isLive: true });
     const full = h("button", { type: "button", class: "qp-corner-button", "aria-label": env.t("control.fullscreen"), title: env.t("control.fullscreen") }, icon("fullscreen", 22));
     full.addEventListener("click", commands.toggleFullscreen);

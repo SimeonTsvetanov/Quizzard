@@ -54,6 +54,8 @@ export interface PlayerOptions {
   readonly startAt?: string;
   /** Shows a short message to the host (the app's toast); the exported page uses its own line. */
   readonly notify?: (message: string) => void;
+  /** Where the logo on the stage leads (the exported page); left out = no link (inside the app, ui/brand.ts). */
+  readonly homeUrl?: string;
 }
 
 /** A running player. */
@@ -234,7 +236,7 @@ function createSession(options: PlayerOptions): Session {
     toggleAudience: () => { if (session.presenter) stopPresenting(session); else startPresenting(session); },
     exit: options.onExit ?? null,
   };
-  const env = createEnv({ file, dispatch: commands.dispatch, mediaUrl: options.mediaUrl });
+  const env = createEnv({ file, dispatch: commands.dispatch, mediaUrl: options.mediaUrl, homeUrl: options.homeUrl });
   const fresh = createGame(file, { teamName: (n) => t("teamName", { n }) });
   const dispatch = guarded({ root, env, undo, getState: () => session.state, move: (action) => { move(session, action); }, replace: (state) => { replace(session, state); } });
   const session: Session = {

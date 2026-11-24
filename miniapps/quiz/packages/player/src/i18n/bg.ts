@@ -93,6 +93,10 @@ export const bg: Messages = {
     each: "Всеки въпрос",
     breakMinutes: "{{n}} мин",
   },
+  brand: {
+    link: "Quizzard — направете свой куиз",
+    line: "Направете свой куиз",
+  },
   special: {
     write_one: "Напишете {{count}} отговор",
     write_other: "Напишете {{count}} отговора",

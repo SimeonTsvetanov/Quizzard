@@ -55,13 +55,15 @@ export interface EnvOptions {
   readonly file: QuizFile;
   readonly dispatch: (action: GameAction) => void;
   readonly mediaUrl?: ((id: string) => string | null) | undefined;
+  /** Where the logo on the stage leads; left out = it is no link (inside the app). */
+  readonly homeUrl?: string | undefined;
 }
 
 /**
  * The fixed parts of a game of a quiz, in the quiz's language (English when the player lacks it).
  * @param options - the quiz, how a move is made and where its media files are
  */
-export function createEnv({ file, dispatch, mediaUrl }: EnvOptions): PlayEnv {
+export function createEnv({ file, dispatch, mediaUrl, homeUrl }: EnvOptions): PlayEnv {
   const lang = playerLang(file.quiz.language);
   const t = createTranslator(lang);
   const entries = new Map(file.media.map((entry) => [entry.id, entry]));
@@ -76,5 +78,6 @@ export function createEnv({ file, dispatch, mediaUrl }: EnvOptions): PlayEnv {
     dispatch,
     number: (value) => numberText(value, lang),
     ...(mediaUrl ? { mediaUrl } : {}),
+    ...(homeUrl === undefined ? {} : { homeUrl }),
   };
 }

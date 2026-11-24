@@ -1,5 +1,6 @@
 import { h } from "../render/h.ts";
 import type { ViewEntry } from "./context.ts";
+import { brand } from "../ui/brand.ts";
 import { heading, kicker, viewRoot } from "./parts.ts";
 
 /** The title screen: the quiz's name and its size, before anything starts. */
@@ -15,6 +16,7 @@ export const titleView: ViewEntry = {
       : env.t("title.summary", { rounds: env.t("title.rounds", { count: playable.length }), questions: env.t("title.questions", { count: questions }) });
     const root = viewRoot("title",
       h("div", { class: "qp-title-glow", "aria-hidden": "true" }),
+      brand(env, "hero"),
       kicker(env.t("title.kicker")),
       heading(quiz.name.trim() === "" ? env.t("title.unnamed") : quiz.name, "qp-title-name"),
       h("p", { class: "qp-title-summary" }, summary));

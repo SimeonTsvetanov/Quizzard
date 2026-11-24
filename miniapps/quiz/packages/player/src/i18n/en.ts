@@ -91,6 +91,10 @@ export const en = {
     each: "Each question",
     breakMinutes: "{{n}} min",
   },
+  brand: {
+    link: "Quizzard — make your own quiz",
+    line: "Make your own quiz",
+  },
   special: {
     write_one: "Write {{count}} answer",
     write_other: "Write {{count}} answers",

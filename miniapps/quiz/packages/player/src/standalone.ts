@@ -2,6 +2,7 @@
 // into the page and starts the player — the host's, or, in the window the host opened for the room
 // (`#audience`), the audience's stage. The game is saved in this browser under the quiz's id; a page
 // opened from a file may have no storage, and then the game simply is not saved.
+import { QUIZZARD_URL } from "./ui/brand.ts";
 import "./styles/standalone.css";
 import "./render/slide.css";
 import "./styles/index.css";
@@ -48,7 +49,7 @@ function start(): void {
     // The audience's window takes the quiz from the host's (without the host's notes): its own copy,
     // answers and notes included, is taken out of the page.
     block?.remove();
-    createAudience({ root, transport, lang, mediaUrl });
+    createAudience({ root, transport, lang, mediaUrl, homeUrl: QUIZZARD_URL });
     return;
   }
   const line = h("p", { class: "qp-toast", role: "status" });
@@ -58,6 +59,7 @@ function start(): void {
     file,
     storage: browserStorage(file.quiz.id),
     mediaUrl,
+    homeUrl: QUIZZARD_URL,
     openAudience: () => openAudienceWindow(`${location.href.split("#")[0] ?? ""}${AUDIENCE_HASH}`),
     notify: (message) => {
       line.textContent = message;

@@ -105,6 +105,9 @@ test("AC9: Play runs a whole game in the app — teams, timer with auto-advance,
   await play(page);
   await expect(view(page, "title")).toContainText("Pub night");
   await expect(view(page, "title")).toContainText("2 rounds · 3 questions");
+  // Inside the app the logo is the mark alone: no link that could take the host out of the game.
+  await expect(view(page, "title").locator(".qp-brand")).toBeVisible();
+  await expect(stage(page).locator("a[data-brand-link]")).toHaveCount(0);
   await expect(control(page, "back")).toBeDisabled();
 
   await next(page);
@@ -274,6 +277,12 @@ test("AC6: Export to play saves one HTML file that opens from disk with the netw
   await file.goto(pathToFileURL(path).href);
   await expect(view(file, "title")).toContainText("Pub night");
   await expect(file).toHaveTitle("Pub night");
+  // Quizzard's logo leads to the site, in a new tab — the game stays where it is.
+  const brand = view(file, "title").locator("a[data-brand-link]");
+  await expect(brand).toHaveAttribute("href", "https://simeontsvetanov.github.io/Quizzard/");
+  await expect(brand).toHaveAttribute("target", "_blank");
+  await expect(brand).toHaveAttribute("rel", "noopener");
+  await expect(brand).toHaveAccessibleName("Quizzard — make your own quiz");
   // The fonts are inside the file.
   expect(await file.evaluate(async () => {
     await document.fonts.ready;

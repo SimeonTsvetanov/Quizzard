@@ -3,6 +3,13 @@
 All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
+### Changed
+- **Quiz creator, while playing — a calmer, more polished stage** in the look of Quizzard's main screen: no
+  more outlines around answers, chips, score rows and lists — soft fills and depth instead, a few stars over
+  the stage, the same look in the menu, the scores table and the host panel.
+### Added
+- **The Quizzard logo on the stage:** large on the title and the final screen, small in a corner on the
+  others. In an exported quiz it links to Quizzard, so whoever gets the file finds where to make their own.
 
 ## [0.21.0] - 2026-11-24
 ### Added

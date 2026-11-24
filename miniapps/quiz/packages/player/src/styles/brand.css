@@ -1,0 +1,140 @@
+/* Quizzard's logo and name on the stage (ui/brand.ts): large on the title and the final screen, small
+   and quiet in the bottom corner on the others — never over the content, the timer or zoomed media,
+   gone on the black screen. In the exported page it is a link to the site. */
+.qp-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 18px;
+  color: var(--qp-ink);
+  text-decoration: none;
+
+  &:is(a):focus-visible {
+    border-radius: var(--qp-r-sm);
+    outline: 4px solid var(--qp-gold);
+    outline-offset: 6px;
+  }
+}
+
+.qp-brand-mark {
+  flex: none;
+  width: 96px;
+  height: 96px;
+  filter: drop-shadow(0 8px 20px oklch(5% 0.05 283 / 0.45));
+}
+
+.qp-brand-words {
+  display: grid;
+  gap: 4px;
+  text-align: start;
+}
+
+.qp-brand-name {
+  font-family: var(--qp-display);
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.qp-brand-line {
+  color: var(--qp-gold);
+  font-size: 22px;
+  font-weight: 700;
+}
+
+/* || The corner: a small mark and the name, quiet, under everything that matters. */
+.qp-brand[data-brand="corner"] {
+  position: absolute;
+  inset: auto auto 14px 24px;
+  z-index: 1;
+  gap: 10px;
+  opacity: 0.78;
+
+  /* The wizard's dark outline needs a light ground to read at this size: a small cream disc, as on the app's icon. */
+  & .qp-brand-mark {
+    width: 40px;
+    height: 40px;
+    padding: 3px;
+    border-radius: 50%;
+    background: oklch(93% 0.04 88);
+    box-shadow: 0 4px 12px oklch(5% 0.05 283 / 0.4);
+    filter: none;
+  }
+
+  & .qp-brand-name {
+    font-size: 15px;
+  }
+
+  &:is(a) {
+    @media (hover: hover) {
+      transition: opacity 160ms var(--qp-ease);
+
+      &:hover {
+        opacity: 1;
+      }
+    }
+  }
+}
+
+/* Not where the screen has its own, large one; not over a zoomed picture or a black screen; not on an
+   upright stage's slides and scores, whose content reaches its bottom edge. */
+.qp-canvas:has(> :is(.qp-title, .qp-final)) > .qp-brand[data-brand="corner"],
+.qp-canvas:has([data-zoom]) > .qp-brand[data-brand="corner"],
+.qp-canvas:has(> .qp-curtain:not([hidden])) > .qp-brand[data-brand="corner"],
+[data-shape="tall"] .qp-canvas:has(> :is(.qp-slide-view, .qp-score, .qp-teams-view)) > .qp-brand[data-brand="corner"] {
+  display: none;
+}
+
+/* || The title: the logo and the name above the quiz's name. */
+.qp-title > .qp-brand {
+  position: relative;
+  margin-bottom: 36px;
+
+  [data-shape="tall"] & {
+    flex-direction: column;
+    gap: 14px;
+    text-align: center;
+
+    & .qp-brand-mark {
+      width: 150px;
+      height: 150px;
+    }
+
+    & .qp-brand-name {
+      font-size: 40px;
+    }
+
+    & .qp-brand-line {
+      font-size: 28px;
+    }
+
+    & .qp-brand-words {
+      justify-items: center;
+      text-align: center;
+    }
+  }
+}
+
+/* || The final screen: thanks, then the logo with "Make your own quiz". */
+.qp-final-foot {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 20px 56px;
+
+  & .qp-brand-mark {
+    width: 72px;
+    height: 72px;
+  }
+
+  & .qp-brand-name {
+    font-size: 24px;
+  }
+
+  & .qp-brand-line {
+    font-size: 20px;
+  }
+}

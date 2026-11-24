@@ -9,6 +9,7 @@ import type { DrawnMedia, SlideMedia } from "../render/registry.ts";
 import { contextOf, type DrawnView, type PlayEnv } from "../views/context.ts";
 import { fallbackView } from "../views/index.ts";
 import { createCurtain } from "./curtain.ts";
+import { brand } from "./brand.ts";
 import { createDial } from "./dial.ts";
 
 /** The canvas of a box: its design size and which layout it gets. */
@@ -119,6 +120,8 @@ export function createStage(env: PlayEnv, { canEdit, isLive }: StageOptions): St
   cue.hidden = true;
   const curtain = createCurtain(env, canEdit && isLive);
   const canvas = h("div", { class: "qp-canvas" });
+  // The logo in a corner; the title and the final screen carry their own, large one (styles/brand.css).
+  const corner = brand(env, "corner");
   const element = h("div", { class: "qp-stage", role: "region", "aria-label": env.t("stage.label"), "data-stage": isLive ? "live" : "preview" }, canvas);
   if (!isLive) element.inert = true;
   const dial = isLive ? createDial(env.t) : null;
@@ -148,7 +151,7 @@ export function createStage(env: PlayEnv, { canEdit, isLive }: StageOptions): St
         const view = entry.stage(context);
         // Only a new screen comes in with its entrance; a redraw of the same one does not replay it.
         view.element.toggleAttribute("data-enter", drawn?.index !== state.index);
-        canvas.replaceChildren(view.element, cue, curtain.element);
+        canvas.replaceChildren(view.element, corner, cue, curtain.element);
         if (focused != null) canvas.querySelector<HTMLElement>(`[data-focus="${CSS.escape(focused)}"]`)?.focus();
         drawn = { key, index: state.index, view };
         fit(element, canvas, isLive);

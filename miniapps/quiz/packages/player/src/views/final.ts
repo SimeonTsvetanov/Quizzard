@@ -1,4 +1,5 @@
 import { finalStandings, type Standing } from "../game/scores.ts";
+import { brand } from "../ui/brand.ts";
 import { h } from "../render/h.ts";
 import { icon } from "../render/icons.ts";
 import type { PlayEnv, ViewEntry } from "./context.ts";
@@ -49,7 +50,7 @@ export const finalView: ViewEntry = {
         // Document order is 1st, 2nd, 3rd (for reading); the stylesheet puts the first in the middle.
         h("ol", { class: "qp-podium", "data-count": String(top.length), ...(hasPoints ? {} : { "data-empty": "" }) }, ...top.map((line) => podiumStep(env, line))),
         ...(rest.length > 0 ? [others] : [])),
-      h("p", { class: "qp-sub" }, env.t("final.thanks")));
+      h("footer", { class: "qp-final-foot" }, h("p", { class: "qp-sub" }, env.t("final.thanks")), brand(env, "hero")));
     return { element: root };
   },
 };

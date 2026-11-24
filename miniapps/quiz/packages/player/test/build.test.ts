@@ -101,7 +101,7 @@ describe("the stage's colours", () => {
   it("are the same in the exported page and in the creator, which must declare its own (mini-app token rule)", () => {
     const player = stageTokens(join(SRC, "render/tokens.css"));
     const creator = stageTokens(join(SRC, "../../miniapp/src/styles/tokens.css"));
-    expect(Object.keys(player)).toHaveLength(9);
+    expect(Object.keys(player)).toHaveLength(10);
     expect(creator).toEqual(player);
   });
 

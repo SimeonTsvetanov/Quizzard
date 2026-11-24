@@ -24,6 +24,8 @@
     --quiz-stage-dim: oklch(98% 0.01 293 / 0.76);
     --quiz-stage-chip: oklch(100% 0 0 / 0.12);
     --quiz-stage-edge: oklch(100% 0 0 / 0.2);
+    /* A raised part of the slide (a chip, an option): a faint top light and a soft shadow, never an outline. */
+    --quiz-stage-lift: inset 0 0.12cqi 0 oklch(100% 0 0 / 0.12), 0 0.7cqi 2cqi oklch(8% 0.06 283 / 0.32);
     --quiz-stage-gold: oklch(87.9% 0.143 92);
     --quiz-stage-right: oklch(80% 0.17 160);
     --quiz-stage-on-right: oklch(22% 0.04 160);

@@ -25,7 +25,8 @@ function graph(entry: string): { files: Set<string>; packages: Set<string> } {
     if (files.has(file)) continue;
     files.add(file);
     for (const target of valueImports(file)) {
-      if (target.endsWith(".css")) continue;
+      // Stylesheets and raw files (the logo) carry no code.
+      if (target.endsWith(".css") || target.endsWith("?raw")) continue;
       if (target.startsWith(".")) queue.push(join(dirname(file), target));
       else if (target === "@simeonts/quizzard-quiz-core/play") queue.push(join(CORE, "play.ts"));
       else packages.add(target);

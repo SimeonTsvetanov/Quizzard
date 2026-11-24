@@ -11,11 +11,14 @@
 /* The media card's own buttons follow the page's theme; the control bar under the panel is the stage's bar, unchanged. */
 .qp-panel-body .qp-bar-button {
   background: var(--qp-surface);
-  box-shadow: inset 0 0 0 1px var(--qp-line);
+  box-shadow: var(--qp-page-lift);
   color: var(--qp-text);
 
-  &:hover:not([aria-disabled="true"]) {
-    box-shadow: inset 0 0 0 2px var(--qp-accent);
+  @media (hover: hover) {
+    &:hover:not([aria-disabled="true"]) {
+      box-shadow: var(--qp-page-lift), var(--shadow-2, 0 6px 16px light-dark(oklch(0% 0 0 / 0.1), oklch(0% 0 0 / 0.5)));
+      translate: 0 -1px;
+    }
   }
 }
 
@@ -115,7 +118,7 @@
   padding: 12px;
   border-radius: 16px;
   background: var(--qp-surface);
-  box-shadow: inset 0 0 0 1px var(--qp-line);
+  box-shadow: var(--qp-page-lift);
 
   & .qp-stage {
     height: auto;
@@ -189,6 +192,12 @@
     grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
     gap: 10px;
     font-size: 13px;
+  }
+
+  /* Fields on the page's own surface: a tint of the page, the page's text. */
+  & :is(.qp-team-field, .qp-stepper-field) {
+    background: var(--qp-page-tint);
+    box-shadow: none;
   }
 
   & .qp-team-field {
@@ -328,7 +337,7 @@
 .qp-host-cover {
   padding: 10px 12px;
   border-radius: 12px;
-  box-shadow: inset 0 0 0 2px var(--qp-accent);
+  background: color-mix(in oklch, var(--qp-accent) 14%, transparent);
   font-size: 15px;
   font-weight: 700;
 }
@@ -336,8 +345,7 @@
 .qp-host-note {
   display: grid;
   gap: 2px;
-  padding-top: 8px;
-  border-top: 1px solid var(--qp-line);
+  padding-top: 10px;
   font-size: 15px;
   overflow-wrap: anywhere;
   white-space: pre-line;

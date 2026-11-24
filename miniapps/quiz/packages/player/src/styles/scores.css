@@ -106,7 +106,7 @@
   padding: 26px 30px;
   border-radius: 30px;
   background: oklch(0% 0 0 / 0.22);
-  box-shadow: inset 0 0 0 2px var(--qp-edge);
+  box-shadow: var(--qp-lift);
   text-align: start;
 }
 
@@ -375,7 +375,7 @@
   height: var(--qp-row);
   border-radius: calc(var(--qp-row) * 0.3);
   background: var(--qp-chip);
-  box-shadow: inset 0 0 0 2px var(--qp-edge);
+  box-shadow: var(--qp-lift);
   font-size: calc(var(--qp-row) * 0.4);
 
   [data-shape="wide"] & {
@@ -437,9 +437,9 @@
   min-height: max(calc(var(--qp-row, 96px) * 0.6), var(--qp-touch, 0px));
   padding: 0;
   border: 0;
-  border-bottom: 3px solid var(--qp-edge);
-  border-radius: 0;
-  background: none;
+  border-radius: var(--qp-r-sm);
+  background: oklch(0% 0 0 / 0.26);
+  box-shadow: inset 0 2px 6px oklch(0% 0 0 / 0.25);
   color: var(--qp-gold);
   font-family: var(--qp-display);
   font-size: max(1.1em, calc(var(--qp-touch, 0px) * 0.37));
@@ -458,7 +458,7 @@
   padding: 26px 28px;
   border-radius: 30px;
   background: oklch(0% 0 0 / 0.22);
-  box-shadow: inset 0 0 0 2px var(--qp-edge);
+  box-shadow: var(--qp-lift);
 
   [data-shape="tall"] & {
     max-height: 300px;
@@ -537,8 +537,7 @@
 }
 
 .qp-guide-max {
-  padding-top: 14px;
-  border-top: 2px solid var(--qp-edge);
+  padding-top: 10px;
   color: var(--qp-dim);
   font-size: 26px;
   font-weight: 700;

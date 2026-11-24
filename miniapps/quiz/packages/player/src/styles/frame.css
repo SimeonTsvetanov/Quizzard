@@ -8,6 +8,18 @@
   --qp-dim: var(--quiz-stage-dim);
   --qp-chip: var(--quiz-stage-chip);
   --qp-edge: var(--quiz-stage-edge);
+  /* Depth instead of outlines (Moni 2026-11-24: "without borderlines", like Home): a surface on the
+     stage is a soft translucent fill with a faint top light and a soft shadow under it. */
+  --qp-lift: inset 0 1px 0 oklch(100% 0 0 / 0.1), 0 14px 36px oklch(8% 0.06 283 / 0.38);
+  --qp-lift-strong: inset 0 1px 0 oklch(100% 0 0 / 0.14), 0 20px 48px oklch(6% 0.06 283 / 0.5);
+  --qp-chip-strong: oklch(100% 0 0 / 0.17);
+  /* The same on the host's page (its own theme): a resting card and a dialog. */
+  --qp-page-lift: var(--glass-edge, inset 0 1px 0 light-dark(oklch(100% 0 0 / 0.7), oklch(100% 0 0 / 0.08))), var(--shadow-1, 0 1px 3px light-dark(oklch(0% 0 0 / 0.08), oklch(0% 0 0 / 0.5)));
+  --qp-page-tint: light-dark(oklch(0% 0 0 / 0.045), oklch(100% 0 0 / 0.06));
+  /* One radius scale on the stage (canvas px) and one on the host's page. */
+  --qp-r-sm: 16px;
+  --qp-r-md: 24px;
+  --qp-r-lg: 32px;
   --qp-gold: var(--quiz-stage-gold);
   --qp-on-gold: oklch(24% 0.06 85);
   --qp-right: var(--quiz-stage-right);
@@ -148,5 +160,18 @@
   &:focus-visible {
     outline: 3px solid var(--qp-gold);
     outline-offset: 2px;
+  }
+}
+
+/* || Forced colours: the surfaces above are told apart by fills and shadows, which forced colours take
+   away — there each of them gets the system's line instead (a transparent outline is drawn in it). */
+@media (forced-colors: active) {
+  .qp-player :is(
+    .qp-chip, .qp-button, .qp-round-button, .qp-team, .qp-team-field, .qp-score-row, .qp-stepper-field, .qp-guide, .qp-recap,
+    .qp-tie-card, .qp-board-rank, .qp-podium-block, .qp-break-card, .qp-break-team, .qp-card, .qp-bar-button,
+    .qp-menu-button, .qp-jump-part, .qp-tile, .qp-table-box, .qp-table-field, .qp-confirm-button, kbd
+  ) {
+    outline: 1px solid transparent;
+    outline-offset: -1px;
   }
 }
