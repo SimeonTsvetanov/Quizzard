@@ -1,5 +1,5 @@
 // The menu (M): every screen as a grid to jump to; whether questions run by themselves; the black
-// screen and a break; the tools; starting again; and the keys.
+// screen and a break; the tools; the keys; and, apart at the end, starting again.
 import { BREAK_MINUTES, type GameState } from "../game/state.ts";
 import { h } from "../render/h.ts";
 import { icon, type StageIcon } from "../render/icons.ts";
@@ -50,20 +50,13 @@ function autoSwitch({ env, state, commands }: MenuOptions): HTMLElement {
   return h("div", { class: "qp-menu-option" }, h("label", { class: "qp-switch" }, box, h("span", {}, env.t("menu.auto"))), h("p", { class: "qp-menu-note" }, env.t("menu.autoHint")));
 }
 
-/** "Start the game again": the first press asks, the second does it. */
-function restartButton({ env, commands, close }: MenuOptions): HTMLButtonElement {
-  let isAsked = false;
+/** "Start the game again", in a part of its own at the end: it asks before any points are cleared (ui/guards.ts). */
+function restartSection({ env, commands, close }: MenuOptions): HTMLElement {
   const button = menuButton("reset", env.t("menu.restart"), () => {
-    if (!isAsked) {
-      isAsked = true;
-      button.setAttribute("data-danger", "");
-      button.lastElementChild?.replaceChildren(env.t("menu.restartConfirm"));
-      return;
-    }
-    commands.dispatch({ type: "restart" });
     close();
-  }, { "data-restart": "" });
-  return button;
+    commands.dispatch({ type: "restart" });
+  }, { "data-restart": "", "data-danger": "" });
+  return h("section", { class: "qp-menu-section qp-menu-end" }, button, h("p", { class: "qp-menu-note" }, env.t("menu.restartHint")));
 }
 
 const KEY_LINES: readonly (readonly [string, "menu.keyNext" | "menu.keyBack" | "menu.keyTimer" | "menu.keyReset" | "menu.keyClip" | "menu.keyZoom" | "menu.keyBlack" | "menu.keyMenu" | "menu.keyScores" | "menu.keyFull"])[] = [
@@ -84,9 +77,8 @@ export function menuContent(options: MenuOptions): readonly HTMLElement[] {
   const tools = h("div", { class: "qp-menu-tools" },
     menuButton("scores", env.t("control.scores"), then(commands.openScores), { "data-menu": "scores" }),
     menuButton("audience", env.t(isPresenting ? "control.closeAudience" : "control.audience"), then(commands.toggleAudience), { "data-menu": "audience" }),
-    menuButton("fullscreen", env.t("control.fullscreen"), then(commands.toggleFullscreen), { "data-menu": "fullscreen" }),
-    restartButton(options));
+    menuButton("fullscreen", env.t("control.fullscreen"), then(commands.toggleFullscreen), { "data-menu": "fullscreen" }));
   if (commands.exit) tools.append(menuButton("x", env.t("control.exit"), then(commands.exit), { "data-menu": "exit" }));
   const keys = h("dl", { class: "qp-keys" }, ...KEY_LINES.flatMap(([key, label]) => [h("dt", {}, h("kbd", {}, key)), h("dd", {}, env.t(label))]));
-  return [section(env.t("menu.jump"), jumpGrid(options)), autoSwitch(options), pauses(options), tools, section(env.t("menu.keys"), keys)];
+  return [section(env.t("menu.jump"), jumpGrid(options)), autoSwitch(options), pauses(options), tools, section(env.t("menu.keys"), keys), restartSection(options)];
 }

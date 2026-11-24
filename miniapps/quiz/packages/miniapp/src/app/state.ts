@@ -31,6 +31,8 @@ export interface ViewState {
   exported: { readonly quiz: string; readonly name: string; readonly bytes: number } | null;
   /** The quizzes whose unused media files were already cleared in this visit (app/open-quiz.ts). */
   readonly swept: Set<string>;
+  /** The field the next screen focuses is selected whole (a new round's name: typing replaces it). */
+  selectNext: boolean;
   /** The browser was asked to keep this site's storage (once, with the first media file). */
   hasAskedToKeep: boolean;
 }

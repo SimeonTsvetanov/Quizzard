@@ -90,7 +90,7 @@ export interface ChipPickerOptions {
 
 function chip(options: ChipPickerOptions, option: ChipOption): HTMLLabelElement {
   const isAvailable = option.isAvailable !== false;
-  const radio = h("input", { type: "radio", class: "visually-hidden", name: options.name, value: option.id });
+  const radio = h("input", { type: "radio", name: options.name, value: option.id });
   radio.checked = option.id === options.value;
   radio.disabled = !isAvailable;
   radio.addEventListener("change", () => { if (radio.checked) options.onPick(option.id); });

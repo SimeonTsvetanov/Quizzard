@@ -56,6 +56,15 @@ export function returnFocus(from: Route, to: Route): string | null {
   return null;
 }
 
+/**
+ * Puts the focus on the title of the screen on show — the first one a person can see: on a phone the
+ * quiz's own title is hidden while one of its rounds is open, and a hidden element cannot take the focus.
+ */
+function focusTitle(app: App): void {
+  const titles = [...app.host.querySelectorAll<HTMLElement>("[data-screen-title]")];
+  (titles.find((title) => title.getClientRects().length > 0) ?? titles[0])?.focus();
+}
+
 /** Stops what the screen on show started, before another one replaces it. */
 function leave(app: App): void {
   const { cleanup } = app.view;
@@ -70,7 +79,11 @@ function draw(app: App, focus?: string): void {
   screen.toggleAttribute("data-entering", app.view.isEntering);
   app.view.isEntering = false;
   app.host.replaceChildren(screen);
-  if (focus !== undefined) app.host.querySelector<HTMLElement>(focus)?.focus();
+  if (focus === undefined) return;
+  const target = app.host.querySelector<HTMLElement>(focus);
+  target?.focus();
+  if (app.view.selectNext && (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement)) target.select();
+  app.view.selectNext = false;
 }
 
 /** One mount's "which show is the newest": a slow load for a screen already left is dropped. */
@@ -102,7 +115,7 @@ async function show(app: App, shows: Shows, route: Route, focus: string | null |
   const wanted = focus === undefined ? undefined : (focus ?? "[data-screen-title]");
   if (target.screen !== "library") {
     draw(app, wanted);
-    if (wanted !== undefined && !app.host.contains(document.activeElement)) app.host.querySelector<HTMLElement>("[data-screen-title]")?.focus();
+    if (wanted !== undefined && !app.host.contains(document.activeElement)) focusTitle(app);
     return;
   }
   await app.saver.flush(); // the list must show the last change
@@ -110,7 +123,7 @@ async function show(app: App, shows: Shows, route: Route, focus: string | null |
   app.current = null;
   app.media.release();
   await loadLibrary(app, wanted);
-  if (wanted !== undefined && !isStale() && !app.host.contains(document.activeElement)) app.host.querySelector<HTMLElement>("[data-screen-title]")?.focus();
+  if (wanted !== undefined && !isStale() && !app.host.contains(document.activeElement)) focusTitle(app);
 }
 
 /** Builds the state of one mount; its moves are filled in by {@link mountQuiz}. */
@@ -133,7 +146,7 @@ function createApp(element: HTMLElement, context: MiniAppContext, signal: AbortS
   const app: App = {
     host: element, context, signal, store, saver, media: createMediaUrls(), env: defaultEnv, ui: createUiRegistries(kindUis, answerUis), lang, t: createTranslator(lang),
     nav: createNavigator({ hash: `#/${meta.id}`, signal, onTraverse: (route) => { void show(app, shows, route, returnFocus(app.route, route)); } }),
-    view: { lastRound: null, isSettingsOpen: false, renaming: null, isLiveOpen: false, isRevealed: false, drafts: new Map(), isEntering: false, cleanup: null, exported: null, swept: new Set(), hasAskedToKeep: false },
+    view: { lastRound: null, isSettingsOpen: false, renaming: null, isLiveOpen: false, isRevealed: false, drafts: new Map(), isEntering: false, cleanup: null, exported: null, swept: new Set(), selectNext: false, hasAskedToKeep: false },
     route: LIBRARY, library: null, current: null,
     draw: (focus) => { draw(app, focus); },
     go(route, mode = "push", focus = null) {

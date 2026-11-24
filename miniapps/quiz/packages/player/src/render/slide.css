@@ -42,10 +42,13 @@
     }
   }
 
+  /* Number, round and the time and points chips on one line — until a long points note needs the
+     room: then the chips take a line of their own under the round's name, and nothing is cut. */
   .quiz-slide-top {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 1.8cqi;
+    gap: 1.2cqi 1.8cqi;
     min-width: 0;
   }
 
@@ -63,22 +66,29 @@
     font-weight: var(--weight-bold);
   }
 
+  /* A long round name takes a second line before it is cut: the room reads it from the back. */
   .quiz-slide-round {
-    flex: 1;
+    display: -webkit-box;
+    flex: 1 1 14cqi;
     min-width: 0;
     overflow: hidden;
     color: var(--quiz-stage-dim);
     font-size: 2.3cqi;
     font-weight: var(--weight-semibold);
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
   }
 
   .quiz-slide-meta {
     display: flex;
-    flex: none;
+    flex: 0 1 auto;
     gap: 1.2cqi;
-    max-width: 62%;
+    min-width: 0;
+    max-width: 100%;
+    margin-inline-start: auto;
   }
 
   .quiz-slide-chip {
@@ -105,8 +115,21 @@
     flex: none;
   }
 
+  /* The points note is what the teams must read (SPEC F6): it wraps to a second line instead of
+     ending in "…" — 80 characters, the longest note, fit in two. */
   .quiz-slide-chip--points {
+    border-radius: 3.2cqi;
     color: var(--quiz-stage-gold);
+    white-space: normal;
+
+    & span {
+      display: -webkit-box;
+      line-height: 1.2;
+      overflow-wrap: anywhere;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+    }
   }
 
   .quiz-slide-prompt {

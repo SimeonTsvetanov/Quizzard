@@ -12,14 +12,17 @@ import { stackOf } from "./library.ts";
 import { exportControl, mediaMeter, quizFileRow } from "./quiz-files.ts";
 import { roundPane } from "./round.ts";
 
+/** The open round's title: where the focus goes when a round opens, so it is announced on every width. */
+export const ROUND_TITLE = "#quiz-round-title";
+
 /** Most kind dots on a round card; the rest is "+n". */
 const MAX_DOTS = 14;
 
 /** Opens a round: a page of its own on a phone, the right pane on a wide screen (no new history entry there). */
-function openRound(app: App, quiz: Quiz, roundId: string): void {
+function openRound(app: App, quiz: Quiz, roundId: string, focus = ROUND_TITLE): void {
   app.view.lastRound = roundId;
   const isPane = isWide() || app.route.screen === "round";
-  app.go({ screen: "round", quiz: quiz.id, round: roundId }, isPane && app.nav.depth() >= 1 ? "replace" : "push");
+  app.go({ screen: "round", quiz: quiz.id, round: roundId }, isPane && app.nav.depth() >= 1 ? "replace" : "push", focus);
 }
 
 function stat(value: string, label: string, hook: string): HTMLElement {
@@ -113,7 +116,10 @@ function addRoundControl(app: App): HTMLElement {
     if (!now) return;
     const next = addRound(now, t("round.defaultName", { n: now.rounds.length + 1 }), app.env);
     const added = next.rounds.at(-1);
-    if (app.change(next) && added) openRound(app, next, added.id);
+    if (!app.change(next) || !added) return;
+    // The new round's name is the next thing to type: focused with its text selected.
+    app.view.selectNext = true;
+    openRound(app, next, added.id, "[data-round-name]");
   });
   return add;
 }

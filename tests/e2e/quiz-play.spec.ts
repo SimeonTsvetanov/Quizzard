@@ -232,13 +232,31 @@ test("AC9: the menu jumps to a round, switches auto-advance off and starts the g
   await page.keyboard.press("Escape");
   await expect(scores).toHaveCount(0);
 
+  // "Start the game again" (UX review M6): a real question with the numbers, Cancel first; then an Undo strip.
+  const confirm = page.locator('[data-dialog="confirm"]');
   await page.keyboard.press("KeyM");
   await menu.locator("[data-restart]").click();
-  await expect(menu.locator("[data-restart]")).toContainText("Clear all scores");
+  await expect(menu).toHaveCount(0);
+  await expect(confirm).toContainText("Start the game again?");
+  await expect(confirm).toContainText("This clears 4 points of 1 team");
+  await expect(confirm.locator('[data-confirm="cancel"]')).toBeFocused();
+  await page.keyboard.press("Escape");
+  await expect(confirm).toHaveCount(0);
+  await expect(view(page, "rules")).toBeVisible(); // nothing happened
+  await page.keyboard.press("KeyM");
   await menu.locator("[data-restart]").click();
+  await confirm.locator('[data-confirm="ok"]').click();
   await expect(view(page, "title")).toBeVisible();
+  const strip = page.locator("[data-undo-strip]");
+  await expect(strip).toContainText("Scores cleared");
   await page.keyboard.press("KeyS");
   await expect(scores.locator('[data-table-total="t2"]')).toHaveText("0");
+  await page.keyboard.press("Escape");
+  await strip.locator("[data-undo]").click();
+  await expect(strip).toBeHidden();
+  await expect(view(page, "rules")).toBeVisible(); // the game is back where it was, with its points
+  await page.keyboard.press("KeyS");
+  await expect(scores.locator('[data-table-total="t2"]')).toHaveText("4");
 });
 
 test("AC6: Export to play saves one HTML file that opens from disk with the network off and plays, saves its game and loads nothing", async ({ page, browser }, testInfo) => {

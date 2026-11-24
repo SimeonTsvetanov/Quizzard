@@ -25,8 +25,23 @@ export function barButton(name: StageIcon, label: string, run: () => void, props
   const button = h("button", { type: "button", class: "qp-bar-button", "aria-label": label, title: label, ...props }, icon(name, 22), h("span", { class: "qp-bar-words", "aria-hidden": "true" }, label));
   // Before the command runs: a dialog it opens gives the focus back to where it was when it closes.
   releaseAfterPointer(button);
-  button.addEventListener("click", run);
+  button.addEventListener("click", () => { if (!isOff(button)) run(); });
   return button;
+}
+
+/** Whether a bar button is switched off (`aria-disabled`): it stays focusable, a press does nothing. */
+function isOff(button: HTMLElement): boolean {
+  return button.getAttribute("aria-disabled") === "true";
+}
+
+/**
+ * Switches a bar button off or on without taking the focus from it: a focused button that became
+ * `disabled` would drop the keyboard's place to the page (WCAG 2.4.3).
+ * @param button - a button made by {@link barButton}
+ * @param off - whether it has nothing to do right now
+ */
+export function setOff(button: HTMLButtonElement, off: boolean): void {
+  if (off) button.setAttribute("aria-disabled", "true"); else button.removeAttribute("aria-disabled");
 }
 
 /**
@@ -71,10 +86,10 @@ export function createBar(t: Translate, commands: Commands): Bar {
       const isRunning = state.timer.status === "running" || state.timer.status === "cue";
       const hasTimer = state.timer.totalMs > 0;
       const hasReveal = state.step < (screen?.steps ?? 0);
-      back.disabled = state.index === 0 && state.step === 0;
-      next.disabled = state.index === state.screens.length - 1 && !hasReveal;
-      timer.disabled = !hasTimer;
-      reset.disabled = !hasTimer;
+      setOff(back, state.index === 0 && state.step === 0);
+      setOff(next, state.index === state.screens.length - 1 && !hasReveal);
+      setOff(timer, !hasTimer);
+      setOff(reset, !hasTimer);
       black.setAttribute("aria-pressed", String(state.curtain?.kind === "black"));
       setFace(timer, isRunning ? "pause" : "play", isRunning ? t("control.pause") : t("control.start"));
       setFace(next, hasReveal ? "eye" : "right", hasReveal ? t("control.reveal") : t("control.next"));

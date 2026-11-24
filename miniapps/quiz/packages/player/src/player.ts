@@ -14,10 +14,12 @@ import { h } from "./render/h.ts";
 import { type Bar, createBar } from "./ui/bar.ts";
 import { type Commands, listenKeys, toggleFullscreen } from "./ui/commands.ts";
 import { type Overlay, openDialog } from "./ui/dialog.ts";
+import { guarded } from "./ui/guards.ts";
 import { menuContent } from "./ui/menu.ts";
 import { type Panel, createPanel } from "./ui/panel.ts";
 import { createScoreboard } from "./ui/scoreboard.ts";
 import { type Stage, createStage } from "./ui/stage.ts";
+import { type UndoStrip, createUndoStrip } from "./ui/undo.ts";
 import type { PlayEnv } from "./views/context.ts";
 
 /** Where the game is kept between sessions; both calls may fail silently (a page opened from a file may have no storage). */
@@ -77,6 +79,7 @@ interface Session {
   readonly stage: Stage;
   readonly bar: Bar;
   readonly commands: Commands;
+  readonly undo: UndoStrip;
   state: GameState;
   overlay: Overlay | null;
   presenter: Presenter | null;
@@ -117,6 +120,14 @@ function move(session: Session, action: GameAction): void {
   session.state = next;
   if (isMove || performance.now() - session.lastSave >= SAVE_EVERY_MS) save(session);
   session.presenter?.channel.send({ kind: "state", state: next });
+  draw(session);
+}
+
+/** Puts a whole game back (Undo of "Start the game again"): storage, the audience window and the screen follow. */
+function replace(session: Session, state: GameState): void {
+  session.state = state;
+  save(session);
+  session.presenter?.channel.send({ kind: "state", state });
   draw(session);
 }
 
@@ -180,8 +191,10 @@ function startPresenting(session: Session): void {
 function createSession(options: PlayerOptions): Session {
   const { root, file } = options;
   const t = createTranslator(playerLang(file.quiz.language));
+  const undo = createUndoStrip(t("undo.action"));
   const commands: Commands = {
-    dispatch: (action) => { move(session, action); },
+    // Moves that lose something ask first or offer Undo (ui/guards.ts); the audience's own reports go straight to `move`.
+    dispatch: (action) => { dispatch(action); },
     openMenu: () => {
       toggleDialog(session, "menu", t("menu.title"), (close) => ({ content: menuContent({ env, state: session.state, commands, isPresenting: session.presenter !== null, close }) }));
     },
@@ -197,8 +210,9 @@ function createSession(options: PlayerOptions): Session {
   };
   const env = createEnv({ file, dispatch: commands.dispatch, mediaUrl: options.mediaUrl });
   const fresh = createGame(file, { teamName: (n) => t("teamName", { n }) });
+  const dispatch = guarded({ root, env, undo, getState: () => session.state, move: (action) => { move(session, action); }, replace: (state) => { replace(session, state); } });
   const session: Session = {
-    options, t, env, commands,
+    options, t, env, commands, undo,
     stage: createStage(env, { canEdit: true, isLive: true }),
     bar: createBar(t, commands),
     state: restore(fresh, readSaved(options.storage)),
@@ -222,7 +236,7 @@ export function createPlayer(options: PlayerOptions): Player {
   root.setAttribute("data-role", "host");
   root.lang = session.env.lang;
   root.toggleAttribute("data-no-audience", !options.openAudience);
-  root.replaceChildren(h("div", { class: "qp-stage-box" }, session.stage.element), session.bar.element);
+  root.replaceChildren(h("div", { class: "qp-stage-box" }, session.stage.element), session.bar.element, session.undo.element);
   listenKeys(session.commands, controller.signal);
   const ticker = window.setInterval(() => {
     const now = performance.now();
@@ -245,6 +259,7 @@ export function createPlayer(options: PlayerOptions): Player {
       controller.abort();
       window.clearInterval(ticker);
       session.overlay?.close();
+      session.undo.clear();
       stopPresenting(session);
       session.stage.destroy();
       if (document.fullscreenElement === root) void document.exitFullscreen().catch(() => undefined);

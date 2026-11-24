@@ -33,12 +33,15 @@
   font-size: 15px;
   font-weight: 700;
 
-  &:hover:not(:disabled) {
+  &:hover:not(:disabled, [aria-disabled="true"]) {
     background: oklch(100% 0 0 / 0.16);
   }
 
-  &:disabled {
+  /* Off, not gone: Back at the start, Next at the end and the timer's buttons on a screen without
+     one keep the focus they have (ui/bar.ts `setOff`). */
+  &:is(:disabled, [aria-disabled="true"]) {
     opacity: 0.38;
+    cursor: default;
   }
 
   &:focus-visible {
@@ -55,7 +58,7 @@
     background: var(--qp-gold);
     color: var(--qp-on-gold);
 
-    &:hover:not(:disabled) {
+    &:hover:not(:disabled, [aria-disabled="true"]) {
       background: oklch(92% 0.13 92);
     }
   }

@@ -1,0 +1,105 @@
+/* The player's confirm dialog and its Undo strip (ui/confirm.ts, ui/undo.ts): real px, the page's theme. */
+
+/* || Confirm */
+.qp-dialog.qp-confirm {
+  width: min(24rem, calc(100vw - 32px));
+  padding: 22px;
+  text-align: center;
+
+  &[open] {
+    grid-template-rows: none;
+    gap: 8px;
+  }
+}
+
+.qp-confirm-text {
+  color: var(--qp-text-2);
+  line-height: 1.45;
+}
+
+.qp-confirm-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.qp-confirm-button {
+  flex: 1 1 8rem;
+  min-height: 44px;
+  padding: 8px 16px;
+  border-radius: 12px;
+  background: var(--qp-surface);
+  box-shadow: inset 0 0 0 1px var(--qp-line);
+  color: var(--qp-text);
+  font-weight: 700;
+  /* A label that does not fit beside the other moves both buttons to rows of their own. */
+  white-space: nowrap;
+
+  &:hover {
+    box-shadow: inset 0 0 0 2px var(--qp-accent);
+  }
+
+  /* The one red button: solid, so its label passes AA on the raised surface in both themes. */
+  &[data-danger] {
+    background: var(--qp-danger-fill);
+    box-shadow: none;
+    color: oklch(100% 0 0);
+
+    &:hover {
+      background: color-mix(in oklch, var(--qp-danger-fill) 88%, black);
+    }
+  }
+}
+
+/* || Undo strip: over the control bar (or the host panel's way through the game), in the middle. */
+.qp-undo {
+  position: absolute;
+  inset-block-end: calc(72px + env(safe-area-inset-bottom));
+  inset-inline: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: fit-content;
+  max-width: calc(100% - 24px);
+  min-height: 52px;
+  margin-inline: auto;
+  padding: 4px 4px 4px 18px;
+  border-radius: 999px;
+  background: var(--qp-raised);
+  box-shadow: 0 12px 32px oklch(0% 0 0 / 0.4), inset 0 0 0 1px var(--qp-line);
+  color: var(--qp-text);
+  font-family: var(--qp-sans);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.qp-undo-button {
+  flex: none;
+  min-width: 44px;
+  min-height: 44px;
+  padding-inline: 16px;
+  border-radius: 999px;
+  background: var(--qp-accent);
+  color: var(--qp-on-accent);
+  font-weight: 700;
+
+  &:focus-visible {
+    outline: 3px solid var(--qp-accent);
+    outline-offset: 2px;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .qp-undo:not([hidden]) {
+    animation: qp-undo-in 220ms var(--qp-ease) both;
+  }
+
+  @keyframes qp-undo-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+  }
+}

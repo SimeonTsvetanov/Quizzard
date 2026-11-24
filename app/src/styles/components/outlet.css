@@ -25,6 +25,14 @@
     }
   }
 
+  /* A mini-app screen that takes the whole window (the quiz player during Play) marks its own
+     element `data-immersive`. What the shell keeps around the outlet lies under that screen: hidden
+     for good while it is up, so neither Tab nor a screen reader lands on a control nobody can see
+     (WCAG 2.4.11). Toasts and dialogs are not part of these and stay. */
+  :root:has(.outlet [data-immersive]) :is(.skip-link, .app-header, .app-footer) {
+    visibility: hidden;
+  }
+
   /* || Components: outlet skeleton */
   /* Holds the screen while a chunk loads, so the mini-app replaces it without a jump; shown only
      after the loading delay of ui-patterns ("spinner after 300 ms") so a fast load never flickers. */

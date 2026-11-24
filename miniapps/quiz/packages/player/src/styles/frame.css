@@ -22,6 +22,8 @@
   --qp-accent: var(--color-accent, light-dark(oklch(49.1% 0.24 292.6), oklch(76% 0.14 295)));
   --qp-on-accent: var(--color-on-accent, light-dark(oklch(100% 0 0), oklch(21% 0.004 286)));
   --qp-danger: var(--color-danger-text, light-dark(oklch(55.3% 0.225 27.3), oklch(72% 0.19 28)));
+  /* A solid red under white words (the confirm's one red button): 4.9:1 and more in both themes. */
+  --qp-danger-fill: var(--color-danger, light-dark(oklch(52% 0.215 27.3), oklch(54% 0.21 27.5)));
   --qp-display: var(--font-display, "Unbounded", sans-serif);
   --qp-sans: var(--font-sans, "Manrope", system-ui, sans-serif);
   --qp-ease: cubic-bezier(0.2, 0.8, 0.2, 1);

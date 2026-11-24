@@ -94,12 +94,23 @@
     font-size: 1em;
   }
 
-  /* An upright screen with seven teams and more: two across, so twelve finger-sized rows still fit. */
-  [data-shape="tall"] &:is([data-count="7"], [data-count="8"], [data-count="9"], [data-count="10"], [data-count="11"], [data-count="12"]) {
+  /* An upright screen with seven teams and more, as the audience sees it (names only): two across,
+     so twelve rows fit. The host's own list keeps one column — a name field half a phone wide shows
+     "Team" of "Team 10" — and scrolls inside the stage instead (.qp-teams-box below). */
+  [data-shape="tall"] &:is([data-count="7"], [data-count="8"], [data-count="9"], [data-count="10"], [data-count="11"], [data-count="12"]):not(:has(.qp-team-field)) {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
     font-size: 0.8em;
   }
+}
+
+[data-shape="tall"] .qp-teams-view .qp-teams-box:has(.qp-team-field) {
+  align-content: start;
+  justify-items: stretch;
+  margin-inline: -8px;
+  padding: 4px 8px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .qp-team {

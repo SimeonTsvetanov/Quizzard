@@ -16,7 +16,7 @@ export function playScreen(app: App, quiz: Quiz): HTMLElement {
   const name = quiz.name.trim() === "" ? t("quiz.unnamed") : quiz.name;
   // The player makes this element its own (classes, layout); the box around it gives it the window.
   const root = h("div", {}, h("p", { class: "quiz-play-wait", role: "status" }, t("play.loading")));
-  const screen = h("section", { class: "quiz-play", "aria-labelledby": "quiz-play-title", "data-screen": "play" },
+  const screen = h("section", { class: "quiz-play", "aria-labelledby": "quiz-play-title", "data-screen": "play", "data-immersive": "" },
     h("h2", { class: "visually-hidden", id: "quiz-play-title", tabindex: "-1", "data-screen-title": "" }, t("play.title", { name })),
     h("div", { class: "quiz-play-root" }, root));
   let stop: (() => void) | null = null;

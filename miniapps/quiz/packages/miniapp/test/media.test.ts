@@ -131,12 +131,12 @@ describe("room on the device", () => {
 
 describe("AC5: the message of a refused file names the file, what it is and the limit", () => {
   const t = createTranslator("en");
-  const refused = (reason: Parameters<typeof refusalText>[2]["reason"], more: Partial<Parameters<typeof refusalText>[2]> = {}) => refusalText(t, "en", { reason, type: "image", name: "holiday.jpg", bytes: 16.4 * 1e6, mime: "image/jpeg", ...more }, 240 * 1e6);
+  const refused = (reason: Parameters<typeof refusalText>[2]["reason"], more: Partial<Parameters<typeof refusalText>[2]> = {}) => refusalText(t, "en", { reason, type: "image", name: "holiday.jpg", bytes: 16.4 * MB, mime: "image/jpeg", ...more }, 240 * MB);
 
   it("too big, quiz full, wrong format, unplayable, no space", () => {
-    expect(refused("too-big")).toBe("“holiday.jpg” is 16.4 MB. The most for one file of this kind is 15.7 MB.");
-    expect(refused("too-big", { type: "video", name: "clip.mp4" })).toContain("52.4 MB");
-    expect(refused("quiz-full")).toBe("“holiday.jpg” (16.4 MB) does not fit: this quiz already has 240 MB of media and the most is 262.1 MB.");
+    expect(refused("too-big")).toBe("“holiday.jpg” is 16.4 MB. The most for one file of this kind is 15 MB.");
+    expect(refused("too-big", { type: "video", name: "clip.mp4" })).toContain("is 50 MB.");
+    expect(refused("quiz-full")).toBe("“holiday.jpg” (16.4 MB) does not fit: this quiz already has 240 MB of media and the most is 250 MB.");
     expect(refused("format", { name: "notes.txt", mime: "text/plain" })).toBe("“notes.txt” is a TXT file. A picture must be JPEG, PNG, WebP or GIF.");
     expect(refused("format", { type: "audio", name: "song.wav", mime: "audio/wav" })).toBe("“song.wav” is a WAV file. Audio must be MP3 or M4A (AAC).");
     expect(refused("format", { type: "video", name: "clip.mov", mime: "video/quicktime" })).toBe("“clip.mov” is a MOV file. A video must be MP4 with H.264 picture and AAC sound.");
@@ -147,7 +147,7 @@ describe("AC5: the message of a refused file names the file, what it is and the 
   });
 
   it("in Bulgarian too, and the format's name comes from the ending or the type", () => {
-    expect(refusalText(createTranslator("bg"), "bg", { reason: "too-big", type: "image", name: "море.jpg", bytes: 16.4 * 1e6, mime: "image/jpeg" }, 0)).toBe("„море.jpg“ е 16,4 MB. Най-много за един файл от този вид е 15,7 MB.");
+    expect(refusalText(createTranslator("bg"), "bg", { reason: "too-big", type: "image", name: "море.jpg", bytes: 16.4 * MB, mime: "image/jpeg" }, 0)).toBe("„море.jpg“ е 16,4 MB. Най-много за един файл от този вид е 15 MB.");
     expect([formatName("a.JPeG", ""), formatName("noending", "audio/x-wav"), formatName("noending", ""), formatName("archive.tar.gz", "")]).toEqual(["JPEG", "WAV", "", "GZ"]);
   });
 
@@ -156,9 +156,9 @@ describe("AC5: the message of a refused file names the file, what it is and the 
     expect(refusedText(app, "x.html", { ok: false, reason: "not-a-quiz" })).toContain("“x.html” is not a Quizzard quiz file");
     expect(refusedText(app, "x.quizzard", { ok: false, reason: "newer" })).toContain("newer Quizzard");
     expect(refusedText(app, "x.quizzard", { ok: false, reason: "damaged" })).toBe(refusedText(app, "x.quizzard", { ok: false, reason: "invalid" }));
-    expect(refusedText(app, "x.quizzard", { ok: false, reason: "media-too-big", entry: { ...MEDIA[1], id: "s", type: "audio", mime: "audio/mpeg", name: "long.mp3", bytes: 1 } })).toBe("“x.quizzard” cannot be opened: its file “long.mp3” is over the limit of 15.7 MB.");
+    expect(refusedText(app, "x.quizzard", { ok: false, reason: "media-too-big", entry: { ...MEDIA[1], id: "s", type: "audio", mime: "audio/mpeg", name: "long.mp3", bytes: 1 } })).toBe("“x.quizzard” cannot be opened: its file “long.mp3” is over the limit of 15 MB.");
     expect(refusedText(app, "x.quizzard", { ok: false, reason: "media-format", entry: { id: "s", type: "image", mime: "image/svg+xml", name: "logo.svg", bytes: 1 } })).toContain("“logo.svg”");
-    expect(refusedText(app, "x.quizzard", { ok: false, reason: "quiz-too-big" })).toContain("262.1 MB");
+    expect(refusedText(app, "x.quizzard", { ok: false, reason: "quiz-too-big" })).toContain("of 250 MB");
   });
 });
 

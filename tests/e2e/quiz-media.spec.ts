@@ -185,14 +185,14 @@ test("AC4 + AC5: a picture is picked, scaled, stored and shown whole in the edit
   await newQuestion(page, "Picture");
   const picker = root(page).locator("[data-media-picker]");
   await expect(picker.locator("[data-media-choose]")).toContainText("Choose a picture");
-  await expect(picker).toContainText("JPEG, PNG, WebP or GIF · up to 15.7 MB");
+  await expect(picker).toContainText("JPEG, PNG, WebP or GIF · up to 15 MB");
   await axe(page, "editor, no picture yet");
 
   // Refused: another format, then a file over the limit — each named, with what is allowed; nothing is stored.
   await pick(page, { name: "notes.txt", mimeType: "text/plain", buffer: Buffer.from("not a picture") });
   await expect(picker.locator("[data-media-error]")).toHaveText("“notes.txt” is a TXT file. A picture must be JPEG, PNG, WebP or GIF.");
   await pick(page, { name: "huge.jpg", mimeType: "image/jpeg", buffer: Buffer.alloc(16 * 1024 * 1024, 1) });
-  await expect(picker.locator("[data-media-error]")).toHaveText("“huge.jpg” is 16.8 MB. The most for one file of this kind is 15.7 MB.");
+  await expect(picker.locator("[data-media-error]")).toHaveText("“huge.jpg” is 16 MB. The most for one file of this kind is 15 MB.");
   await pick(page, { name: "broken.png", mimeType: "image/png", buffer: Buffer.from("this is not a png at all") });
   await expect(picker.locator("[data-media-error]")).toHaveText("“broken.png” cannot be opened in this browser. A picture must be JPEG, PNG, WebP or GIF.");
   expect(await storedMedia(page)).toEqual([]);
@@ -247,7 +247,7 @@ test("reference counting: a duplicated question shares its file; the file goes o
   expect(await storedMedia(page)).toHaveLength(1); // one file, two questions
 
   // The quiz screen says how much media the quiz carries: one file, counted once.
-  await expect(root(page).locator("[data-media-size]")).toContainText(/Media: [\d.]+ kB of 262\.1 MB/);
+  await expect(root(page).locator("[data-media-size]")).toContainText(/Media: [\d.]+ kB of 250 MB/);
 
   // Delete one: the other still shows the picture. Delete both and undo the last: the picture is back.
   await cards.first().locator("[data-delete-question]").click();
@@ -274,7 +274,7 @@ test("audio and video are tried on import, kept as they are and play in the prev
   await newQuizWithRound(page);
   await newQuestion(page, "Audio");
   const picker = root(page).locator("[data-media-picker]");
-  await expect(picker).toContainText("MP3 or M4A · up to 15.7 MB");
+  await expect(picker).toContainText("MP3 or M4A · up to 15 MB");
   await pick(page, { name: "song.wav", mimeType: "audio/wav", buffer: Buffer.from("RIFF") });
   await expect(picker.locator("[data-media-error]")).toHaveText("“song.wav” is a WAV file. Audio must be MP3 or M4A (AAC).");
   await pick(page, { name: "fake.mp3", mimeType: "audio/mpeg", buffer: Buffer.from("these bytes are no sound") });
@@ -289,7 +289,7 @@ test("audio and video are tried on import, kept as they are and play in the prev
   await root(page).locator("[data-done]").click();
 
   await newQuestion(page, "Video");
-  await expect(root(page).locator("[data-media-picker]")).toContainText("MP4 (H.264 + AAC) · up to 52.4 MB");
+  await expect(root(page).locator("[data-media-picker]")).toContainText("MP4 (H.264 + AAC) · up to 50 MB");
   await pick(page, { name: "clip.mov", mimeType: "video/quicktime", buffer: Buffer.from("moov") });
   await expect(root(page).locator("[data-media-error]")).toHaveText("“clip.mov” is a MOV file. A video must be MP4 with H.264 picture and AAC sound.");
   await pick(page, { name: "fake.mp4", mimeType: "video/mp4", buffer: Buffer.from("no video in here") });
@@ -546,7 +546,7 @@ test("presenter mode of the exported file, offline: the audience window plays fr
 
 test("AC7: a quiz file saved in one browser opens in another with the same quiz and media; opening it twice duplicates nothing; another version asks", async ({ page, browser }, testInfo) => {
   await openMediaQuiz(page);
-  await expect(root(page).locator("[data-media-size]")).toContainText("Media: 94.6 kB of 262.1 MB");
+  await expect(root(page).locator("[data-media-size]")).toContainText("Media: 92.4 kB of 250 MB");
   const download = page.waitForEvent("download");
   await root(page).locator("[data-save-file]").click();
   const saved = await download;
@@ -565,7 +565,7 @@ test("AC7: a quiz file saved in one browser opens in another with the same quiz 
   await axe(other, "library, empty, with Open a quiz file");
   await root(other).locator("[data-open-file-input]").setInputFiles(path);
   await expect(root(other).locator("[data-quiz-name]")).toHaveValue("Media night");
-  await expect(root(other).locator("[data-media-size]")).toContainText("Media: 94.6 kB of 262.1 MB");
+  await expect(root(other).locator("[data-media-size]")).toContainText("Media: 92.4 kB of 250 MB");
   expect(await storedMedia(other)).toEqual(BLOBS.map(([id]) => `media-quiz/${id}`).sort());
   await root(other).locator('[data-focus="round:r1"]').click();
   const cards = root(other).locator("[data-question]");

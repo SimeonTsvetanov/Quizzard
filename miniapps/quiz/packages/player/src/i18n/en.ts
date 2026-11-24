@@ -140,7 +140,6 @@ export const en = {
     auto: "Questions run by themselves",
     autoHint: "The timer starts with each question and the next one follows when time is up.",
     restart: "Start the game again",
-    restartConfirm: "Clear all scores and start again",
     pause: "Pause the room",
     pauseHint: "A black screen takes the eyes off the stage; a break counts down on it. The timer and the clip wait. Next, Back or B brings the quiz back.",
     breakMinutes: "Break · {{n}} min",
@@ -157,6 +156,7 @@ export const en = {
     keyScores: "Scores",
     keyFull: "Full screen",
     popupBlocked: "The browser blocked the audience window. Allow pop-ups for this page and try again.",
+    restartHint: "Clears every team's points and goes back to the first screen. It asks first, and “Undo” brings the game back for a few seconds.",
   },
   scores: {
     title: "Scores",
@@ -190,6 +190,22 @@ export const en = {
   error: {
     title: "This file cannot be played",
     text: "The quiz inside it is missing or damaged. Export it again from Quizzard.",
+  },
+  confirm: {
+    removeTeamTitle: "Remove {{team}}?",
+    removeTeamText_one: "Its {{points}} in {{count}} round will be lost.",
+    removeTeamText_other: "Its {{points}} in {{count}} rounds will be lost.",
+    remove: "Remove",
+    cancel: "Cancel",
+    restartTitle: "Start the game again?",
+    restartText_one: "This clears {{points}} of {{count}} team and goes back to the start.",
+    restartText_other: "This clears {{points}} of {{count}} teams and goes back to the start.",
+    restart: "Start again",
+  },
+  undo: {
+    action: "Undo",
+    cleared: "Scores cleared",
+    restarted: "The game starts again",
   },
 } as const;
 

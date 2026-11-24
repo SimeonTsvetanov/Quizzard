@@ -405,7 +405,7 @@ test("Bulgarian: every screen speaks it, with the decimal comma", async ({ page 
   await root(page).getByRole("button", { name: "Добави въпрос" }).click();
   await root(page).getByLabel("Въпрос", { exact: true }).fill("Коя река минава през Париж?");
   await root(page).getByRole("group", { name: "Вид на въпроса" }).locator("label", { hasText: "Снимка" }).click();
-  await expect(root(page).getByRole("button", { name: /^Изберете снимка/ })).toContainText("JPEG, PNG, WebP или GIF · до 15,7 MB");
+  await expect(root(page).getByRole("button", { name: /^Изберете снимка/ })).toContainText("JPEG, PNG, WebP или GIF · до 15 MB");
   await root(page).getByRole("group", { name: "Вид на въпроса" }).locator("label", { hasText: "Текст" }).click();
   await form(page).getByText("Избор от няколко", { exact: true }).click();
   await expect(root(page).getByText("От 2 до 8 възможности. Отбележете всяка вярна — може да са няколко.")).toBeVisible();

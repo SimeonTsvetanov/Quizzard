@@ -38,9 +38,11 @@ async function removeRound(app: App, roundId: string): Promise<void> {
   }
   const index = quiz.rounds.indexOf(round);
   if (!app.change(deleteRound(quiz, roundId))) return;
-  app.view.lastRound = null;
+  // The round that took its place is shown (wide) and gets the focus; with none left, "Add round".
+  const neighbour = quiz.rounds[index + 1] ?? quiz.rounds[index - 1];
+  app.view.lastRound = neighbour?.id ?? null;
   if (app.route.screen === "round" && app.nav.depth() >= 2) up(app);
-  else app.go({ screen: "quiz", quiz: quiz.id }, "replace");
+  else app.go({ screen: "quiz", quiz: quiz.id }, "replace", neighbour ? `[data-focus="round:${neighbour.id}"]` : "[data-add-round]");
   offerUndo(app, t("round.deleted", { name: round.name }), (later) => withRound(later, round, index), () => { app.go({ screen: "round", quiz: quiz.id, round: roundId }, "replace"); });
 }
 
@@ -53,7 +55,7 @@ function copyRound(app: App, roundId: string): void {
     return;
   }
   const copy = next.rounds[next.rounds.findIndex((round) => round.id === roundId) + 1];
-  if (copy) app.go({ screen: "round", quiz: next.id, round: copy.id }, "replace");
+  if (copy) app.go({ screen: "round", quiz: next.id, round: copy.id }, "replace", "#quiz-round-title");
 }
 
 /** The pickers of what a new question starts as. */

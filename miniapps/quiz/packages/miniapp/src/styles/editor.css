@@ -3,6 +3,17 @@
    Wide: the form on the left, the live slide on the right, always in view. */
 @layer components {
   /* || Components: editor */
+  /* The way back names the round: a long name is cut inside the screen, never by its edge. */
+  .quiz-editor .quiz-head {
+    grid-template-columns: minmax(0, 1fr);
+    min-width: 0;
+
+    & .quiz-back {
+      min-width: 0;
+      max-width: 100%;
+    }
+  }
+
   .quiz-editor-body {
     display: grid;
     grid-template-columns: minmax(0, 1fr);

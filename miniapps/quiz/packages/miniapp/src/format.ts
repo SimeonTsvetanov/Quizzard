@@ -31,7 +31,8 @@ export function parseNumber(text: string): number | null {
   return Number(cleaned);
 }
 
-const BYTE_UNITS = [["megabyte", 1e6], ["kilobyte", 1e3]] as const;
+/** 1024-based, like core's limits (15 MB = 15 × 1024 × 1024 bytes): a limit reads as the round number it is. */
+const BYTE_UNITS = [["megabyte", 1024 * 1024], ["kilobyte", 1024]] as const;
 
 /**
  * A size on the device, like the shell's Settings writes it: "1.2 MB", "3 kB".
@@ -54,6 +55,17 @@ export function changedText(iso: string, lang: Lang, now: Date = new Date()): st
   if (Number.isNaN(date.getTime())) return "";
   const isToday = date.toDateString() === now.toDateString();
   return new Intl.DateTimeFormat(lang, isToday ? { hour: "2-digit", minute: "2-digit" } : { day: "numeric", month: "short", year: "numeric" }).format(date);
+}
+
+/**
+ * A stored time as a date with its time of day, e.g. "23 Nov 2026, 14:05" — two of them can be compared.
+ * @param iso - the stored time (ISO 8601); anything unreadable gives ""
+ * @param lang - the UI language
+ */
+export function dateTimeText(iso: string, lang: Lang): string {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+  return new Intl.DateTimeFormat(lang, { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }).format(date);
 }
 
 /**

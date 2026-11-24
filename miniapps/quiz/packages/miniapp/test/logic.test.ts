@@ -1,11 +1,11 @@
 // The creator's pure logic: routes in `history.state`, where the focus returns, formats, the Undo
 // helpers, the deck's thickness, the registries' pickers (AC10 on the UI side), Help and meta.
 import { beforeAll, describe, expect, it } from "vitest";
-import { addQuestion, addRound, createQuiz, createRegistries, defineBasicKind, deleteQuestion, deleteRound, sequentialIds, type Env, type Quiz } from "@simeonts/quizzard-quiz-core";
+import { PICTURE_MAX_BYTES, QUIZ_MEDIA_MAX_BYTES, VIDEO_MAX_BYTES, addQuestion, addRound, createQuiz, createRegistries, defineBasicKind, deleteQuestion, deleteRound, sequentialIds, type Env, type Quiz } from "@simeonts/quizzard-quiz-core";
 import { answerUis } from "../src/answers-ui/index.ts";
 import { returnFocus, settle } from "../src/app/mount.ts";
 import { LIBRARY, ROUTE_KEY, SUB_KEY, entryState, readDepth, readRoute, type Route } from "../src/app/routes.ts";
-import { bytesText, changedText, numberText, parseNumber, slideLabels, wholeMinutes } from "../src/format.ts";
+import { bytesText, changedText, dateTimeText, numberText, parseNumber, slideLabels, wholeMinutes } from "../src/format.ts";
 import { help } from "../src/help.ts";
 import { bg } from "../src/i18n/bg.ts";
 import { en } from "../src/i18n/en.ts";
@@ -91,7 +91,13 @@ describe("formats", () => {
   });
   it("sizes and dates never throw on odd input", () => {
     expect(bytesText(2048, "en")).toMatch(/2/);
-    expect(bytesText(3_500_000, "en")).toMatch(/3\.5/);
+    expect(bytesText(3.5 * 1024 * 1024, "en")).toBe("3.5 MB");
+    // The limits are 1024-based (core limits.ts): they read as the round numbers of the SPEC, never "15.7 MB".
+    expect(bytesText(PICTURE_MAX_BYTES, "en")).toBe("15 MB");
+    expect(bytesText(VIDEO_MAX_BYTES, "en")).toBe("50 MB");
+    expect(bytesText(QUIZ_MEDIA_MAX_BYTES, "bg")).toBe("250 MB");
+    expect(dateTimeText("2026-11-23T10:05:00.000Z", "en")).toMatch(/2026.*\d{2}:\d{2}/);
+    expect(dateTimeText("nope", "en")).toBe("");
     expect(changedText("not a date", "en")).toBe("");
     expect(changedText("2026-11-23T10:00:00.000Z", "en", new Date("2026-11-25T10:00:00.000Z"))).toMatch(/2026/);
   });

@@ -2,12 +2,40 @@
 // here — the checks and the preparation (media/import.ts, loaded with the first file), the room on
 // the device, the storing, and the question's pointer to the file. The file is stored first and the
 // question changed after: a refused file leaves nothing behind (AC5).
-import { type MediaEntry, editQuestion, findQuestion, mediaOf, mediaUses, usedMediaBytes, withMedia } from "@simeonts/quizzard-quiz-core";
+import { type MediaEntry, type MediaType, type Question, type Quiz, changeQuestion, editQuestion, findQuestion, mediaOf, mediaUses, usedMediaBytes, withMedia, without } from "@simeonts/quizzard-quiz-core";
 import { stillOf } from "@simeonts/quizzard-quiz-player/render";
 import type { App } from "../app/state.ts";
 import { refusalText } from "../media/refusal-text.ts";
 import { hasRoomFor, keepOnDevice } from "../storage/space.ts";
 import type { QuestionFiles } from "../ui-registry.ts";
+import { offerUndo } from "./common.ts";
+
+/** How a question lost its file: taken off, swapped for another, or dropped by a change of kind. */
+export type MediaLoss = "removed" | "replaced";
+
+/**
+ * After a question lost its file: a toast with Undo that gives the question its kind and its file
+ * back. The file itself is still on the device — unused files are only cleared when the quiz is
+ * opened in a later visit (app/open-quiz.ts) — so Undo has nothing to load.
+ * @param app - the mounted creator
+ * @param before - the question as it was, with its file
+ * @param entry - the description of that file
+ * @param how - what happened to it
+ */
+export function offerMediaUndo(app: App, before: Question, entry: MediaEntry, how: MediaLoss): void {
+  const type: MediaType = entry.type;
+  const restore = (quiz: Quiz): Quiz => changeQuestion(quiz, before.id, (question) => ({
+    ...without(question, "data"),
+    kind: before.kind,
+    ...(before.media ? { media: before.media } : {}),
+    ...(before.data === undefined ? {} : { data: before.data }),
+  }));
+  offerUndo(app, app.t(`media.${how}.${type}`), restore, () => {
+    const now = app.current;
+    if (now) app.change(now.quiz, withMedia(now.media, entry));
+    if (app.route.screen === "editor" && app.route.question === before.id) app.draw('[data-focus="media"]');
+  });
+}
 
 /** With the first media file the browser is asked, once, to keep this site's storage (SPEC §3.5). */
 function askToKeep(app: App): void {
@@ -56,7 +84,10 @@ export function questionFiles(app: App, questionId: string): QuestionFiles {
       const result = await importMedia(file, { type, usedBytes, id: app.env.ids(), hasRoomFor });
       if (!result.ok) return refusalText(t, app.lang, result, usedBytes);
       try {
-        if (await attach(app, questionId, result.entry, result.blob)) redraw();
+        if (!(await attach(app, questionId, result.entry, result.blob))) return null;
+        redraw();
+        // The file that was there is not lost: Undo points the question back at it.
+        if (question && entry) offerMediaUndo(app, question, entry, "replaced");
         return null;
       } catch {
         return refusalText(t, app.lang, { reason: "no-space", type, name: file.name, bytes: result.blob.size, mime: result.entry.mime }, usedBytes);
@@ -64,7 +95,9 @@ export function questionFiles(app: App, questionId: string): QuestionFiles {
     },
     remove() {
       const now = app.current?.quiz;
-      if (now && app.change(editQuestion(now, questionId, { media: null }))) redraw();
+      if (!now || !app.change(editQuestion(now, questionId, { media: null }))) return;
+      redraw();
+      if (question && entry) offerMediaUndo(app, question, entry, "removed");
     },
   };
 }

@@ -289,10 +289,34 @@
   }
 
   .quiz-chip {
-    /* Holds its visually hidden radio, so it never widens the page. */
+    /* Holds its radio: the real control lies over the whole chip, transparent, so a tap, the
+       keyboard and a checker all meet the element that is focused. */
     position: relative;
     display: inline-flex;
+    border-radius: var(--radius-full);
     cursor: pointer;
+
+    & input {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      opacity: 0;
+      /* A press goes to the label around it (which picks the radio): the face under it stays the thing pressed. */
+      pointer-events: none;
+    }
+
+    /* The ring is the chip's own, a step away from it, in the focus colour — never the colour of
+       the selected chip's fill. */
+    &:has(input:focus-visible) {
+      outline: var(--focus-ring-width) solid var(--color-focus);
+      outline-offset: 3px;
+    }
+
+    &:has(input:checked:focus-visible) {
+      outline-color: var(--color-text);
+    }
 
     &[data-soon] {
       cursor: default;
@@ -324,11 +348,6 @@
       & svg {
         color: inherit;
       }
-    }
-
-    input:focus-visible + & {
-      outline: var(--focus-ring-width) solid var(--color-focus);
-      outline-offset: var(--focus-ring-offset);
     }
 
     [data-soon] > & {

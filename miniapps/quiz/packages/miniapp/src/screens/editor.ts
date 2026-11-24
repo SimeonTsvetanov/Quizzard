@@ -3,7 +3,7 @@
 // the registries. It saves as you type; typing never rebuilds the form. The live preview is the
 // shared slide: next to the form on a wide screen, behind the "Preview" switch on a phone.
 import {
-  EXPLANATION_MAX, HOST_NOTE_MAX, MAX_QUESTIONS_PER_ROUND, PROMPT_MAX, type Answer, type Question, type Quiz, type Round, editQuestion, findQuestion, moveQuestion, setAnswerType,
+  EXPLANATION_MAX, HOST_NOTE_MAX, MAX_QUESTIONS_PER_ROUND, PROMPT_MAX, type Answer, type Question, type Quiz, type Round, editQuestion, findQuestion, mediaOf, moveQuestion, setAnswerType,
   setQuestionKind,
 } from "@simeonts/quizzard-quiz-core";
 import { type LocalMedia, createLocalMedia } from "@simeonts/quizzard-quiz-player/render";
@@ -12,7 +12,7 @@ import { chipPicker, labelButton, textField } from "../dom/controls.ts";
 import { h } from "../dom/h.ts";
 import { answerChoices, canShow, kindChoices } from "../ui-registry.ts";
 import { backLink, emptyState, up } from "./common.ts";
-import { questionFiles } from "./editor-files.ts";
+import { offerMediaUndo, questionFiles } from "./editor-files.ts";
 import { timingFields } from "./editor-timing.ts";
 import { showLive, slideProps } from "./slide-props.ts";
 
@@ -63,7 +63,11 @@ function pickers(app: App, { question }: Place): { kind: HTMLElement; answer: HT
     options: kindChoices(env.registries.kinds.list().map((entry) => entry.id), ui, t),
     onPick: (kindId) => {
       const now = placeOf(app, id);
-      if (now && app.change(setQuestionKind(now.quiz, id, kindId, env))) app.draw('input[name="quiz-kind"]:checked');
+      if (!now || !app.change(setQuestionKind(now.quiz, id, kindId, env))) return;
+      app.draw('input[name="quiz-kind"]:checked');
+      // A kind that takes another file (or none) lets the question's file go: said, with Undo.
+      const lost = app.current ? mediaOf(now.question, app.current.media) : undefined;
+      if (lost && placeOf(app, id)?.question.media === undefined) offerMediaUndo(app, now.question, lost, "removed");
     },
   });
   const answer = chipPicker({
