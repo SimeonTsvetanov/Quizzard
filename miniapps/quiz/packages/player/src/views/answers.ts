@@ -15,7 +15,7 @@ export const answersView: ViewEntry = {
 /** One answer: the question again, then — at the reveal step — its answer and explanation. */
 export const answerView: ViewEntry = {
   id: "answer",
-  stage: (context) => slideView(context, slideOf(context, context.state.step >= 1, null)),
+  stage: (context) => slideView(context, slideOf(context, context.state.step >= 1, null, "answer")),
   answer: hostAnswer,
   tile: (context) => ({ mark: String(questionNumber(context)), name: context.env.t("tile.answer", { n: questionNumber(context) }), group: context.env.t("answers.title") }),
 };

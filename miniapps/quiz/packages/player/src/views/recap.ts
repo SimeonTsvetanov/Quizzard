@@ -8,6 +8,7 @@ import { BREAK_MINUTES, type GameState } from "../game/state.ts";
 import { h } from "../render/h.ts";
 import type { PlayEnv } from "./context.ts";
 import { pillButton } from "./parts.ts";
+import { roundStages } from "./special.ts";
 
 /** Up to this many answers stand in one column on a wide stage, up to the second number in two; more go in three. */
 export const RECAP_STEPS: readonly number[] = [10, 24];
@@ -51,7 +52,9 @@ export function answerList(env: PlayEnv, round: Round, title: string, steps: rea
   const list = h("ol", { class: "qp-recap-lines", "data-columns": String(columns) }, ...items);
   list.style.setProperty("--qp-recap-digits", String(String(count).length));
   list.style.setProperty("--qp-recap-rows", String(Math.max(1, Math.ceil(count / columns))));
-  return h("section", { class: "qp-recap", "data-recap": round.id }, h("h2", { class: "qp-recap-title" }, title), list);
+  // A special round may add a line under its answers: the Safe's whole code.
+  const extra = roundStages.get(round.kind)?.recap?.(env, round) ?? null;
+  return h("section", { class: "qp-recap", "data-recap": round.id }, h("h2", { class: "qp-recap-title" }, title), list, ...(extra ? [extra] : []));
 }
 
 /** The smallest a crowded list is drawn at, against its normal size. */

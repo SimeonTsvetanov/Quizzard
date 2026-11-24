@@ -10,7 +10,7 @@ import { type MediaEntry, type Points, type Question, type Round, effectivePoint
 import { countMark } from "./count.ts";
 import { h } from "./h.ts";
 import { icon } from "./icons.ts";
-import { canDraw, type SlideLabels, type SlideMedia, type SlideRegistries, type SlideView } from "./registry.ts";
+import { canDraw, type RoundSlideView, type SlideLabels, type SlideMedia, type SlidePhase, type SlideRegistries, type SlideView } from "./registry.ts";
 
 /** What one slide is drawn from. */
 export interface SlideInput {
@@ -36,6 +36,8 @@ export interface SlideInput {
   readonly media?: SlideMedia;
   /** The round's place among the quiz's rounds ("Round 2/5" before its name); left out = the name alone. */
   readonly roundPlace?: { readonly n: number; readonly total: number };
+  /** A special round's picture follows the game: shown with the question (the default) or with its answer. */
+  readonly phase?: SlidePhase;
 }
 
 /** Text lengths at which the question text steps down a size. */
@@ -86,10 +88,11 @@ function topLine(input: SlideInput): HTMLElement {
     meta);
 }
 
-/** The middle of a slide this version can draw: the kind's and the answer type's own parts. */
-function parts({ question, ui }: SlideInput, view: SlideView): (HTMLElement | null)[] {
+/** The middle of a slide this version can draw: the kind's part and the answer type's — or the special round's answer area. */
+function parts({ question, ui, round }: SlideInput, view: SlideView, special: RoundSlideView | null): (HTMLElement | null)[] {
   const media = ui.kinds.get(question.kind)?.parts?.slide(question, view) ?? null;
-  const answer = ui.answers.get(question.answer.type)?.parts?.slide(question.answer, view) ?? null;
+  const own = special ? ui.rounds?.get(round.kind)?.parts.answer : undefined;
+  const answer = own && special ? own(question, special) : (ui.answers.get(question.answer.type)?.parts?.slide(question.answer, view) ?? null);
   return [media === null ? null : h("div", { class: "quiz-slide-media" }, media), answer === null ? null : h("div", { class: "quiz-slide-answer" }, answer)];
 }
 
@@ -109,12 +112,19 @@ export function renderSlide(input: SlideInput): HTMLElement {
   const isEmpty = question.prompt.trim() === "";
   const canvas = h("div", { class: "quiz-slide-canvas" }, topLine(input));
   const slide = h("div", { class: "quiz-slide", "data-tone": ui.kinds.get(question.kind)?.tone ?? "none", "data-size": promptSize(question.prompt), ...(reveal ? { "data-reveal": "" } : {}) }, canvas);
+  // A special round's picture stands beside the content (above it on an upright stage).
+  const round = ui.rounds?.get(input.round.kind);
+  const special: RoundSlideView | null = round ? { ...view, round: input.round, index: input.number - 1, phase: input.phase ?? "question" } : null;
+  if (round && special) {
+    slide.setAttribute("data-art", round.id);
+    slide.prepend(round.parts.art(question, special));
+  }
   if (!canDraw(question, ui)) {
     canvas.append(h("p", { class: "quiz-slide-prompt", "data-empty": "" }, labels.unsupported));
     return slide;
   }
   canvas.append(h("p", { class: "quiz-slide-prompt", ...(isEmpty ? { "data-empty": "" } : {}) }, isEmpty ? labels.emptyPrompt : question.prompt));
-  const [media, answer] = parts(input, view);
+  const [media, answer] = parts(input, view, special);
   // A part that wants the slide's whole width (a panorama, an audio bar) says so; the others may share the row with the options.
   if (media) slide.setAttribute("data-media", media.firstElementChild?.getAttribute("data-layout") ?? "side");
   for (const part of [media, answer]) if (part) canvas.append(part);

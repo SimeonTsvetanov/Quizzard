@@ -4,10 +4,13 @@
  * nothing of the player's game, views or windows, so the creator's first open stays small.
  */
 export * from "./answers/choice.ts";
+export * from "./answers/digit.ts";
 export * from "./answers/index.ts";
+export * from "./answers/list.ts";
 export * from "./answers/open.ts";
 export * from "./answers/true-false.ts";
 export * from "./kinds/index.ts";
 export * from "./local-media.ts";
 export * from "./registry.ts";
+export * from "./rounds/index.ts";
 export * from "./slide.ts";

@@ -86,5 +86,15 @@ export function slideLabels(t: Translate, lang: Lang): SlideLabels {
     round: t("slide.round"),
     of: (now, total) => t("slide.of", { n: now, total }),
     media: { missing: t("slide.noFile"), zoom: t("slide.zoom"), play: t("slide.play"), pause: t("slide.pause"), restart: t("slide.restart"), tapToPlay: t("slide.tap") },
+    special: {
+      write: (count) => t("slide.write", { count }),
+      over: (count) => t("slide.over", { count }),
+      accepted: t("slide.accepted"),
+      more: (count) => t("slide.more", { n: numberText(count, lang) }),
+      oneDigit: t("slide.oneDigit"),
+      codeDigit: (n) => t("slide.codeDigit", { n }),
+      pyramid: (n, total) => t("slide.pyramid", { n, total }),
+      safe: (n, total) => t("slide.safe", { n, total }),
+    },
   };
 }

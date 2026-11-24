@@ -1,4 +1,5 @@
 import { type Round, effectivePoints } from "@simeonts/quizzard-quiz-core/play";
+import type { SlidePhase } from "../render/registry.ts";
 import { pointsText, renderSlide } from "../render/slide.ts";
 import type { DrawnView, HostAnswer, ViewContext, ViewEntry } from "./context.ts";
 import { viewRoot } from "./parts.ts";
@@ -24,8 +25,9 @@ function roundPlace(env: ViewContext["env"], round: Round): { n: number; total: 
  * @param context - a question or answer screen
  * @param isRevealed - whether the answer shows
  * @param clock - what stands where the time is (see `SlideInput.clock`)
+ * @param phase - a question screen or an answer screen (a special round's picture follows it)
  */
-export function slideOf({ env, round, question, media }: ViewContext, isRevealed: boolean, clock: HTMLElement | null | undefined): HTMLElement | null {
+export function slideOf({ env, round, question, media }: ViewContext, isRevealed: boolean, clock: HTMLElement | null | undefined, phase: SlidePhase = "question"): HTMLElement | null {
   if (!round || !question) return null;
   return renderSlide({
     question,
@@ -33,6 +35,7 @@ export function slideOf({ env, round, question, media }: ViewContext, isRevealed
     number: round.questions.indexOf(question) + 1,
     roundPlace: roundPlace(env, round),
     reveal: isRevealed,
+    phase,
     ui: env.parts,
     labels: env.labels,
     ...(clock === undefined ? {} : { clock }),

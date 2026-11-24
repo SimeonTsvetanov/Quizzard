@@ -1,4 +1,4 @@
-import { type Round, effectivePoints } from "@simeonts/quizzard-quiz-core/play";
+import { type Round, roundMaxPoints, scoreCap, scoreEntryOf } from "@simeonts/quizzard-quiz-core/play";
 import { roundScore, roundsTotal } from "../game/scores.ts";
 import { MAX_SCORE, type GameState, type Team } from "../game/state.ts";
 import { h } from "../render/h.ts";
@@ -6,6 +6,7 @@ import { pointsText } from "../render/slide.ts";
 import type { DrawnView, PlayEnv, ViewContext, ViewEntry } from "./context.ts";
 import { heading, kicker, roundLine, shareRows, stepper, teamDigest, viewRoot, type Stepper } from "./parts.ts";
 import { answerList, breakRow, fitRecap } from "./recap.ts";
+import { type EntryWords, roundStages } from "./special.ts";
 
 /** From more teams than this the table has two columns on a wide stage. */
 const SPLIT_ABOVE = 6;
@@ -16,21 +17,31 @@ interface ScoreRow {
   readonly sync: (state: GameState) => void;
 }
 
-/** A team's line: name, this round's points (a stepper for the host) and the total so far. */
+/** The stepper's words: points, or the round kind's own ("Digits right for Team 1"). */
+function entryWords(env: PlayEnv, round: Round, team: string): EntryWords {
+  return roundStages.get(round.kind)?.entry?.(env, team) ?? { label: env.t("score.points", { team }), less: env.t("score.less", { team }), more: env.t("score.more", { team }) };
+}
+
+/**
+ * A team's line: name, this round's points (a stepper for the host) and the total so far. A round that
+ * is entered as something else than points (the Safe's digits) shows the points the entry gives beside it.
+ */
 function scoreRow(env: PlayEnv, state: GameState, round: Round, team: Team, isEditable: boolean): ScoreRow {
+  const entry = scoreEntryOf(round);
+  const toShown = (points: number): number => (entry ? entry.fromPoints(round, points) : points);
   const name = h("span", { class: "qp-score-name" }, team.name);
   const total = h("span", { class: "qp-score-total", "data-score-total": team.id });
   const shown = h("span", { class: "qp-score-value", "data-score-value": team.id });
+  const gives = h("span", { class: "qp-score-gives", "data-score-gives": team.id });
   let field: Stepper | null = null;
   if (isEditable) {
+    const words = entryWords(env, round, team.name);
     field = stepper({
-      label: env.t("score.points", { team: team.name }),
-      less: env.t("score.less", { team: team.name }),
-      more: env.t("score.more", { team: team.name }),
-      value: roundScore(state, round.id, team.id),
-      max: MAX_SCORE,
+      ...words,
+      value: toShown(roundScore(state, round.id, team.id)),
+      max: entry ? entry.max(round) : scoreCap(round, MAX_SCORE),
       focusKey: `score:${team.id}`,
-      onChange: (value) => { env.dispatch({ type: "setScore", roundId: round.id, teamId: team.id, value }); },
+      onChange: (value) => { env.dispatch({ type: "setScore", roundId: round.id, teamId: team.id, value: entry ? entry.toPoints(round, value) : value }); },
     });
   }
   const sync = (next: GameState): void => {
@@ -38,10 +49,13 @@ function scoreRow(env: PlayEnv, state: GameState, round: Round, team: Team, isEd
     name.textContent = next.teams.find((candidate) => candidate.id === team.id)?.name ?? team.name;
     shown.textContent = env.number(points);
     total.textContent = env.number(roundsTotal(next, team.id, round.id));
-    field?.set(points);
+    const extra = entry ? points - entry.fromPoints(round, points) : 0;
+    gives.textContent = extra > 0 ? env.t("special.withBonus", { digits: env.number(points - extra), bonus: env.number(extra) }) : "";
+    field?.set(toShown(points));
   };
   sync(state);
-  const element = h("li", { class: "qp-score-row", "data-score-row": team.id }, name, field ? field.element : shown, total);
+  const value = field ? h("span", { class: "qp-score-entry" }, field.element, gives) : shown;
+  const element = h("li", { class: "qp-score-row", "data-score-row": team.id }, name, value, total);
   return { element, sync };
 }
 
@@ -62,13 +76,14 @@ function scoreTable({ env, state, round }: ViewContext, isEditable: boolean): Dr
  */
 function pointsGuide({ env, round }: ViewContext): HTMLElement {
   if (!round) return h("div");
-  const most = round.questions.reduce((sum, question) => sum + effectivePoints(round, question).value, 0);
   const line = (label: string, text: string): HTMLElement => h("li", { class: "qp-guide-line" }, h("span", { class: "qp-guide-label" }, label), h("span", { class: "qp-guide-points" }, text));
+  const special = roundStages.get(round.kind)?.guide(env, round).map((one) => line(one.label, one.text));
   const own = round.questions.flatMap((question, index) => (question.points === undefined ? [] : [line(env.t("score.question", { n: index + 1 }), pointsText(question.points, env.labels))]));
-  return h("aside", { class: "qp-guide" },
+  const lines = special ?? [line(env.t("score.each"), pointsText(round.defaults.points, env.labels)), ...own];
+  return h("aside", { class: "qp-guide", ...(special ? { "data-guide": round.kind } : {}) },
     h("p", { class: "qp-guide-title" }, env.t("score.guide")),
-    h("ol", { class: "qp-guide-lines" }, line(env.t("score.each"), pointsText(round.defaults.points, env.labels)), ...own),
-    h("p", { class: "qp-guide-max" }, env.t("score.max", { points: env.labels.points(most) })));
+    h("ol", { class: "qp-guide-lines" }, ...lines),
+    h("p", { class: "qp-guide-max" }, env.t("score.max", { points: env.labels.points(roundMaxPoints(round)) })));
 }
 
 /**

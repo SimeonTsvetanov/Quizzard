@@ -1,5 +1,6 @@
 // The scores dialog (S): every team's points per round in one table, each one a field — to look at
 // the standings at any time and to correct a number of an earlier round.
+import { cleanRoundPoints } from "@simeonts/quizzard-quiz-core/play";
 import { roundIds, roundScore, total } from "../game/scores.ts";
 import { MAX_SCORE, type GameState } from "../game/state.ts";
 import { h } from "../render/h.ts";
@@ -11,13 +12,19 @@ export interface Scoreboard {
   readonly sync: (state: GameState) => void;
 }
 
-/** A points field of one team in one round (`roundId` `null` = the tiebreak's points, shown only). */
+/**
+ * A points field of one team in one round. A special round keeps what it can give: a Safe's 6 is its
+ * five digits with the bonus, a Golden pyramid stops at 10 (core `cleanRoundPoints`).
+ */
 function cell(env: PlayEnv, state: GameState, teamId: string, roundId: string, label: string): HTMLInputElement {
+  const round = env.file.quiz.rounds.find((candidate) => candidate.id === roundId);
   const field = h("input", { type: "text", inputmode: "decimal", class: "qp-table-field", autocomplete: "off", "aria-label": label, "data-cell": `${teamId}:${roundId}` });
   field.value = String(roundScore(state, roundId, teamId));
   field.addEventListener("input", () => {
     const typed = Number(field.value.trim().replace(",", "."));
-    if (field.value.trim() !== "" && Number.isFinite(typed)) env.dispatch({ type: "setScore", roundId, teamId, value: Math.min(MAX_SCORE, Math.max(0, typed)) });
+    if (field.value.trim() === "" || !Number.isFinite(typed)) return;
+    const value = Math.min(MAX_SCORE, Math.max(0, typed));
+    env.dispatch({ type: "setScore", roundId, teamId, value: round ? cleanRoundPoints(round, value, MAX_SCORE) : value });
   });
   field.addEventListener("focus", () => { field.select(); });
   return field;

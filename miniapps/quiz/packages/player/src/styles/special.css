@@ -1,0 +1,237 @@
+/* The special rounds in the player (SPEC §10): the round's picture on the stage's slide (wide: beside
+   the content; upright: above it, smaller), the opening's picture with its short rules, the Safe's code
+   under the round's answers and the bonus beside a team's digits. The slide's own parts: render/rounds.css. */
+
+/* || The slide on the stage */
+.qp-slide-view .quiz-slide[data-art] > .quiz-slide-art {
+  padding-inline-start: 5cqi;
+}
+
+[data-shape="tall"] .qp-slide-view .quiz-slide[data-art] {
+  flex-direction: column;
+
+  & > .quiz-slide-art {
+    width: auto;
+    padding: 5cqi 3cqi 0;
+  }
+
+  & > .quiz-slide-canvas {
+    min-height: 0;
+  }
+
+  & .quiz-vault {
+    width: 50cqi;
+  }
+
+  & .quiz-pyramid {
+    --quiz-block: 10.5cqi;
+  }
+}
+
+/* || A special round's opening: the picture beside the chips and the rules */
+.qp-intro {
+  display: grid;
+  grid-template-columns: 440px minmax(0, 1fr);
+  align-items: center;
+  gap: 64px;
+  min-height: 0;
+
+  [data-shape="tall"] & {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    gap: 36px;
+  }
+}
+
+.qp-intro-figure {
+  display: grid;
+  place-items: center;
+  width: 440px;
+  container-type: inline-size;
+
+  [data-shape="tall"] & {
+    width: 380px;
+  }
+
+  & .quiz-vault {
+    width: 100%;
+  }
+
+  /* The tiers build up from the top, each with how many answers it asks for beside it. */
+  & .quiz-pyramid {
+    --quiz-block: 15cqi;
+
+    justify-items: start;
+  }
+
+  & .quiz-pyramid-tiers {
+    justify-items: start;
+    gap: 2.4cqi;
+  }
+
+  & .quiz-pyramid-tier {
+    position: relative;
+    gap: 2.4cqi;
+    margin-inline-start: calc((3 - var(--qp-tier, 0)) * (var(--quiz-block) + 2.4cqi) / 2);
+    animation: qp-tier-in 0.5s cubic-bezier(0.2, 0.8, 0.3, 1.2) calc(0.3s + var(--qp-tier, 0) * 0.35s) both;
+
+    &::after {
+      content: attr(data-label);
+      position: absolute;
+      inset-block: 0;
+      inset-inline-start: calc(100% + 4cqi);
+      display: flex;
+      align-items: center;
+      color: var(--qp-gold);
+      font-size: 6cqi;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+  }
+
+  & .quiz-pyramid-face {
+    font-size: 5cqi;
+  }
+
+  & .quiz-pyramid-base {
+    display: none;
+  }
+
+  /* The Safe: each code window clicks to green in turn. */
+  & :is(.quiz-vault-window text, .quiz-vault-lamp) {
+    animation-delay: calc(0.6s + var(--quiz-i, 0) * 0.45s);
+  }
+}
+
+/* The pyramid's labels stand to its right: the picture leaves room for them. */
+[data-intro="pyramid"] .qp-intro-figure {
+  padding-inline-end: 150px;
+  width: 590px;
+
+  [data-shape="tall"] & {
+    width: 520px;
+  }
+}
+
+[data-intro="pyramid"] {
+  grid-template-columns: 590px minmax(0, 1fr);
+
+  [data-shape="tall"] & {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.qp-intro-text {
+  display: grid;
+  align-content: center;
+  gap: 24px;
+  min-width: 0;
+
+  [data-shape="tall"] & {
+    justify-items: start;
+    width: 100%;
+  }
+
+  & .qp-rules-text {
+    font-size: 32px;
+    -webkit-line-clamp: 5;
+    line-clamp: 5;
+  }
+}
+
+.qp-intro-rules {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.qp-intro-rule {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 1.2;
+
+  &::before {
+    content: "";
+    flex: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+    background: var(--qp-gold);
+    translate: 0 -4px;
+  }
+
+  [data-shape="tall"] & {
+    font-size: 30px;
+  }
+}
+
+/* || The Safe's code under the round's answers */
+.qp-code {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin: 14px 0 0;
+}
+
+.qp-code-label {
+  color: var(--qp-gold);
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.qp-code-digits {
+  display: flex;
+  gap: 8px;
+}
+
+.qp-code-digit {
+  display: grid;
+  place-items: center;
+  width: 1.3em;
+  height: 1.5em;
+  border-radius: 10px;
+  background: #0a0c0f;
+  box-shadow: inset 0 0 0 3px #3fbf6b;
+  color: #7dffa6;
+  font-family: var(--qp-display);
+  font-size: 40px;
+  font-weight: 700;
+}
+
+/* || A team's digits and what they give */
+.qp-score-entry {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.qp-score-gives {
+  color: var(--qp-gold);
+  font-size: 0.62em;
+  font-weight: 700;
+  white-space: nowrap;
+
+  &:empty {
+    display: none;
+  }
+}
+
+@keyframes qp-tier-in {
+  from {
+    opacity: 0;
+    transform: translateY(-30%) scale(0.8);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qp-intro-figure .quiz-pyramid-tier {
+    animation: none;
+  }
+}

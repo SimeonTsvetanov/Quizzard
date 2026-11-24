@@ -4,6 +4,7 @@ import type { QuizFile } from "@simeonts/quizzard-quiz-core/play";
 import type { GameAction } from "./game/state.ts";
 import { type Lang, type Translate, createTranslator, playerLang } from "./i18n/translate.ts";
 import { answerSlides } from "./render/answers/index.ts";
+import { roundSlides } from "./render/rounds/index.ts";
 import { kindSlides } from "./render/kinds/index.ts";
 import { type SlideLabels, createStageRegistries } from "./render/registry.ts";
 import type { PlayEnv } from "./views/context.ts";
@@ -36,6 +37,16 @@ export function stageLabels(t: Translate, lang: Lang): SlideLabels {
     round: t("round.word"),
     of: (now, total) => t("count.of", { n: now, total }),
     media: { missing: t("media.missing"), zoom: t("media.zoom"), zoomKey: "Z", play: t("media.play"), pause: t("media.pause"), restart: t("media.restart"), tapToPlay: t("media.tap") },
+    special: {
+      write: (count) => t("special.write", { count }),
+      over: (count) => t("special.over", { count }),
+      accepted: t("special.accepted"),
+      more: (count) => t("special.more", { n: numberText(count, lang) }),
+      oneDigit: t("special.oneDigit"),
+      codeDigit: (n) => t("special.codeDigit", { n }),
+      pyramid: (n, total) => t("special.pyramid", { n, total }),
+      safe: (n, total) => t("special.safe", { n, total }),
+    },
   };
 }
 
@@ -60,7 +71,7 @@ export function createEnv({ file, dispatch, mediaUrl }: EnvOptions): PlayEnv {
     lang,
     t,
     labels: stageLabels(t, lang),
-    parts: createStageRegistries(kindSlides, answerSlides),
+    parts: createStageRegistries(kindSlides, answerSlides, roundSlides),
     views: createViews(),
     dispatch,
     number: (value) => numberText(value, lang),

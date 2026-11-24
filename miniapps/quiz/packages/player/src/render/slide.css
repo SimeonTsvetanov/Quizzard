@@ -4,6 +4,7 @@
    script and stays sharp at any size. Its colours are the stage tokens (styles/tokens.css): the same
    deep ground in light and dark, like a projector. The media area: slide-media.css. */
 @import "./slide-media.css";
+@import "./rounds.css";
 
 @layer components {
   /* || Components: stage */

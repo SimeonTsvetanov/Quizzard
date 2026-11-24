@@ -2,7 +2,7 @@
 // registered under the same id as its core entry, and the slide renderer looks them up — it never
 // switches on a name. The creator adds its editor parts to these same entries (its ui-registry.ts);
 // the player uses them as they are.
-import { type Answer, type MediaEntry, type Playback, type PlaybackCommand, type Question, type Registry, type RegistryEntry, type RevealLabels, createRegistry } from "@simeonts/quizzard-quiz-core/play";
+import { type Answer, type MediaEntry, type Playback, type PlaybackCommand, type Question, type Registry, type RegistryEntry, type RevealLabels, type Round, createRegistry } from "@simeonts/quizzard-quiz-core/play";
 
 /** Every word a slide can show; the caller translates, the renderer has no dictionary of its own. */
 export interface SlideLabels extends RevealLabels {
@@ -24,6 +24,27 @@ export interface SlideLabels extends RevealLabels {
   of(now: number, total: number): string;
   /** The words of a picture, an audio clip and a video. */
   readonly media: MediaLabels;
+  /** The words of the special rounds' parts of a slide. */
+  readonly special: SpecialLabels;
+}
+
+/** What the special rounds' parts of a slide say (SPEC §10). */
+export interface SpecialLabels {
+  /** "Write 3 answers" */
+  write(count: number): string;
+  /** "More than 3 answers: 0 points" */
+  over(count: number): string;
+  /** "Accepted answers" */
+  readonly accepted: string;
+  /** "+38 more" */
+  more(count: number): string;
+  /** "Answer with one digit: 0–9" */
+  readonly oneDigit: string;
+  /** "Digit 3 of the code" */
+  codeDigit(n: number): string;
+  /** The pyramid's and the vault's name for screen readers: "Golden pyramid, question 3 of 4" */
+  pyramid(n: number, total: number): string;
+  safe(n: number, total: number): string;
 }
 
 /** What a slide says about its media. */
@@ -97,10 +118,36 @@ export interface SlideAnswer extends RegistryEntry {
   };
 }
 
-/** The two registries the slide renderer reads; the creator's richer registries fit as they are. */
+/** Where a special round's slide is shown: with a question, or with its answer (SPEC §10). */
+export type SlidePhase = "question" | "answer";
+
+/** What a round kind's slide parts get besides the view. */
+export interface RoundSlideView extends SlideView {
+  /** The question's round and its place in it, from 0. */
+  readonly round: Round;
+  readonly index: number;
+  readonly phase: SlidePhase;
+}
+
+/**
+ * A round kind on the slide (SPEC §10): its picture beside the question (the pyramid, the vault) and,
+ * when it says more than the answer type does, its own answer area. A standard round has no entry.
+ */
+export interface SlideRound extends RegistryEntry {
+  readonly parts: {
+    /** The round's picture: beside the slide's content on a wide slide, above it on an upright one. */
+    readonly art: (question: Question, view: RoundSlideView) => HTMLElement;
+    /** The answer area instead of the answer type's own; left out = the answer type's. */
+    readonly answer?: (question: Question, view: RoundSlideView) => HTMLElement | null;
+  };
+}
+
+/** The registries the slide renderer reads; the creator's richer registries fit as they are. */
 export interface SlideRegistries {
   readonly kinds: Pick<Registry<SlideKind>, "get">;
   readonly answers: Pick<Registry<SlideAnswer>, "get">;
+  /** The special rounds; left out = every round is drawn as a standard one. */
+  readonly rounds?: Pick<Registry<SlideRound>, "get">;
 }
 
 /** An answer type in the player: its slide part and its answer as one line, for the host. */
@@ -115,15 +162,17 @@ export interface StageAnswer extends SlideAnswer {
 export interface StageRegistries {
   readonly kinds: Registry<SlideKind>;
   readonly answers: Registry<StageAnswer>;
+  readonly rounds: Registry<SlideRound>;
 }
 
 /**
  * Creates the player's registries.
  * @param kinds - the question kinds
  * @param answers - the answer types
+ * @param rounds - the special round kinds
  */
-export function createStageRegistries(kinds: readonly SlideKind[], answers: readonly StageAnswer[]): StageRegistries {
-  return { kinds: createRegistry<SlideKind>(kinds), answers: createRegistry<StageAnswer>(answers) };
+export function createStageRegistries(kinds: readonly SlideKind[], answers: readonly StageAnswer[], rounds: readonly SlideRound[] = []): StageRegistries {
+  return { kinds: createRegistry<SlideKind>(kinds), answers: createRegistry<StageAnswer>(answers), rounds: createRegistry<SlideRound>(rounds) };
 }
 
 /**
