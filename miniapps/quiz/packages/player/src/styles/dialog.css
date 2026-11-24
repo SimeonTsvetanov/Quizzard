@@ -134,10 +134,25 @@
 }
 
 /* || Menu: the grid of every screen */
-.qp-jump,
-.qp-tile-rows {
+.qp-jump {
   display: grid;
   gap: 10px;
+}
+
+/* Named tiles stand next to each other; a numbered run takes a line of its own. */
+.qp-tile-rows {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 6px;
+}
+
+.qp-tile-run {
+  flex: 1 1 100%;
+}
+
+.qp-jump > div.qp-jump-part + div.qp-jump-part,
+.qp-jump > div.qp-jump-part {
+  display: flex;
 }
 
 .qp-jump-part {

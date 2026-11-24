@@ -369,3 +369,19 @@
   outline: 4px solid var(--qp-ink);
   outline-offset: 4px;
 }
+
+/* An upright stage: the audio clip's time moves under "from the start", so the level bars keep their room. */
+[data-shape="tall"] .quiz-slide-clip[data-clip="audio"]:not([data-still]) {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+
+  & .quiz-slide-clip-restart {
+    grid-row: 1;
+    grid-column: 3;
+  }
+
+  & .quiz-slide-clip-time {
+    grid-row: 2;
+    grid-column: 3;
+    justify-self: center;
+  }
+}
