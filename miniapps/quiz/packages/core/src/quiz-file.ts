@@ -127,7 +127,7 @@ function place(file: QuizFile, parts: readonly QuizFilePart[], firstByte: number
   let start = firstByte;
   for (const part of parts) {
     const entry = entries.get(part.id);
-    if (!entry || entry.bytes !== part.bytes) return { ok: false, reason: "damaged" };
+    if (entry?.bytes !== part.bytes) return { ok: false, reason: "damaged" };
     const check = checkMedia({ type: entry.type, mime: entry.mime, bytes: part.bytes }, start - firstByte);
     if (!check.ok) return { ok: false, reason: reasons[check.reason], entry };
     slices.push({ id: part.id, mime: entry.mime.toLowerCase(), start, end: start + part.bytes });
@@ -150,12 +150,13 @@ export function readQuizFileHeader(header: Uint8Array, totalBytes: number, regis
   } catch {
     return { ok: false, reason: "damaged" };
   }
-  if (!isRecord(parsed) || typeof parsed["container"] !== "number") return { ok: false, reason: "damaged" };
+  if (!isRecord(parsed)) return { ok: false, reason: "damaged" };
+  if (typeof parsed["container"] !== "number") return { ok: false, reason: "damaged" };
   if (parsed["container"] > QUIZ_FILE_CONTAINER) return { ok: false, reason: "newer" };
   const opened = open(parsed["file"], registries);
   if (!opened.ok) return { ok: false, reason: opened.reason === "not-a-quiz" ? "damaged" : opened.reason };
   const parts = readParts(parsed["parts"]);
-  if (parts === null || parts.length !== opened.file.media.length) return { ok: false, reason: "damaged" };
+  if (parts?.length !== opened.file.media.length) return { ok: false, reason: "damaged" };
   const firstByte = QUIZ_FILE_PREFIX_BYTES + header.length;
   if (firstByte + parts.reduce((sum, part) => sum + part.bytes, 0) !== totalBytes) return { ok: false, reason: "damaged" };
   const slices = place(opened.file, parts, firstByte);

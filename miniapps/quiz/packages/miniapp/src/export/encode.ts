@@ -18,8 +18,8 @@ type WithBase64 = Uint8Array & { toBase64?: () => string };
  * @param bytes - the bytes
  */
 export function bytesToBase64(bytes: Uint8Array): string {
-  const native = (bytes as WithBase64).toBase64;
-  if (typeof native === "function") return native.call(bytes);
+  const withNative = bytes as WithBase64;
+  if (typeof withNative.toBase64 === "function") return withNative.toBase64();
   let binary = "";
   for (let start = 0; start < bytes.length; start += CODE_BLOCK) binary += String.fromCharCode(...bytes.subarray(start, start + CODE_BLOCK));
   return btoa(binary);

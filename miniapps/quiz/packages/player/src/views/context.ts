@@ -22,7 +22,7 @@ export interface PlayEnv {
   /** Gives the address of a media file of the quiz, or `null`; left out when the quiz has none to show. */
   readonly mediaUrl?: (id: string) => string | null;
   /** Gives the description of a media file of the quiz. */
-  entryOf(id: string): MediaEntry | undefined;
+  readonly entryOf: (id: string) => MediaEntry | undefined;
   /** A number as people write it in the quiz's language. */
   number(value: number): string;
 }

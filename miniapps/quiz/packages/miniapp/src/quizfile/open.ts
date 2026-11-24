@@ -41,8 +41,16 @@ function askReplace(app: App, mine: StoredQuiz, theirs: StoredQuiz): Promise<boo
   return app.context.shell.confirm({ title: t("file.existsTitle", values), text: t("file.existsText", values), confirm: t("file.replace"), cancel: t("file.keepBoth") });
 }
 
-/** Puts a read quiz into the library; returns the id it has there, or `null` when it was not stored. */
-async function store(app: App, read: ReadQuizFile): Promise<string | null> {
+/** Undo of "Keep both": the copy goes, and the library is what is shown. */
+async function removeCopy(app: App, id: string): Promise<void> {
+  await app.store.delete(id);
+  if (app.signal.aborted) return;
+  if (app.route.screen === "library") await loadLibrary(app);
+  else app.go({ screen: "library" }, "replace");
+}
+
+/** Puts a read quiz into the library; returns the id it has there. */
+async function store(app: App, read: ReadQuizFile): Promise<string> {
   const { t } = app;
   const { stored, files } = read;
   const existing = await app.store.get(stored.quiz.id);
@@ -64,7 +72,7 @@ async function store(app: App, read: ReadQuizFile): Promise<string | null> {
   // Kept both: the file's quiz comes in as a copy with ids of its own.
   const copy = duplicateQuiz(stored.quiz, { name: t("library.copyName", { name: stored.quiz.name }), now: stored.quiz.updatedAt }, app.env);
   await app.store.bring({ quiz: copy, media: stored.media }, files);
-  app.context.shell.toast(t("file.addedCopy", { name: copy.name }), { action: { label: t("undo"), run: () => { void app.store.delete(copy.id).then(() => { if (app.route.screen === "library") return loadLibrary(app); app.go({ screen: "library" }, "replace"); return undefined; }); } } });
+  app.context.shell.toast(t("file.addedCopy", { name: copy.name }), { action: { label: t("undo"), run: () => { void removeCopy(app, copy.id); } } });
   return copy.id;
 }
 
@@ -77,7 +85,8 @@ export async function openQuizFile(app: App, file: File): Promise<void> {
   const { t } = app;
   const fail = (message: string): void => { app.context.shell.toast(message, { tone: "error" }); };
   const read = await readQuizFile(file, app.env.registries).catch((): RefusedQuizFile => ({ ok: false, reason: "damaged" }));
-  if (app.signal.aborted) return;
+  const isGone = (): boolean => app.signal.aborted;
+  if (isGone()) return;
   if (!read.ok) {
     fail(refusedText(app, file.name, read));
     return;
@@ -88,7 +97,7 @@ export async function openQuizFile(app: App, file: File): Promise<void> {
   }
   try {
     const id = await store(app, read);
-    if (id === null || app.signal.aborted) return;
+    if (isGone()) return;
     app.context.storage.notifySaved();
     if (read.files.size > 0) void keepOnDevice();
     app.go({ screen: "quiz", quiz: id });

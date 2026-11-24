@@ -147,7 +147,7 @@ describe("quiz file: what is refused", () => {
   });
 
   it("media this version does not take: another format, a file over its limit, a quiz over the whole limit — with the entry named", () => {
-    const svg = withHeader(good, (header) => { ((header["file"] as { media: Record<string, unknown>[] }).media[0] ?? {})["mime"] = "image/svg+xml"; });
+    const svg = withHeader(good, (header) => { Object.assign((header["file"] as { media: object[] }).media[0] ?? {}, { mime: "image/svg+xml" }); });
     expect(read(svg)).toMatchObject({ ok: false, reason: "media-format", entry: { id: "m-image" } });
     const big = (id: string, bytes: number) => (header: Record<string, unknown>): void => {
       for (const entry of (header["file"] as { media: { id: string; bytes: number }[] }).media) if (entry.id === id) entry.bytes = bytes;

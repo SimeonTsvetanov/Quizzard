@@ -117,9 +117,10 @@ describe("list", () => {
     expect(lines[1]?.bytes).toBeGreaterThan(lines[0]?.bytes ?? Infinity);
   });
 
-  it("adds the size of the media files to the quiz data", async () => {
-    const quiz = quizWith("With a picture", 1);
-    const media = [{ id: "m1", type: "image" as const, mime: "image/png", name: "cat.png", bytes: 5000 }];
+  it("adds the size of the media files its questions use to the quiz data", async () => {
+    const empty = quizWith("With a picture", 1);
+    const quiz = editQuestion(empty, empty.rounds[0]?.questions[0]?.id ?? "", { media: { id: "m1" } });
+    const media = [{ id: "m1", type: "image" as const, mime: "image/png", name: "cat.png", bytes: 5000 }, { id: "unused", type: "image" as const, mime: "image/png", name: "old.png", bytes: 70_000 }];
     const stored = await store.put(quiz, media);
     const [line] = await store.list();
     expect(line?.bytes).toBe(new TextEncoder().encode(JSON.stringify(toFile(stored, media))).length + 5000);

@@ -51,3 +51,25 @@ export function createMediaCard(env: PlayEnv, commands: Commands): PanelCard {
     },
   };
 }
+
+/**
+ * The "Black screen" button and the line that says what covers the stage right now.
+ * @param env - the game's fixed parts
+ * @param commands - what the button does
+ */
+export function createCover(env: PlayEnv, commands: Commands): PanelCard & { readonly button: HTMLButtonElement } {
+  const { t } = env;
+  const button = barButton("black", t("control.black"), () => { commands.dispatch({ type: "black" }); }, { "data-control": "black", "data-words": "", "aria-pressed": "false" });
+  const element = h("p", { class: "qp-host-cover", role: "status", "data-host-cover": "" });
+  return {
+    element,
+    button,
+    update(state) {
+      const cover = state.curtain;
+      button.setAttribute("aria-pressed", String(cover?.kind === "black"));
+      element.hidden = cover === null;
+      if (cover === null) element.textContent = "";
+      else element.textContent = cover.kind === "black" ? t("host.black") : t("host.break", { time: clockText(Math.ceil(cover.leftMs / 1000)) });
+    },
+  };
+}

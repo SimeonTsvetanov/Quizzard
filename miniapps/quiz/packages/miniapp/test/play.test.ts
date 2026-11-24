@@ -99,10 +99,12 @@ describe("creator entries on the player's slide parts", () => {
   it("a kind is usable only when the slide can draw it AND the creator has its editor", () => {
     const face = { label: "kind.audio", icon: "audio" } as const;
     const editor = (): null => null;
-    expect(kindUi(audioKindSlide, face).parts).toBeUndefined(); // neither yet
-    expect(kindUi(audioKindSlide, face, editor).parts).toBeUndefined(); // an editor, but nothing draws it
+    const undrawn = { id: audioKindSlide.id, tone: audioKindSlide.tone }; // a kind the slide knows by name only
+    expect(kindUi(undrawn, face).parts).toBeUndefined(); // neither yet
+    expect(kindUi(undrawn, face, editor).parts).toBeUndefined(); // an editor, but nothing draws it
     expect(kindUi(textKindSlide, face).parts).toBeUndefined(); // drawn, but no editor
-    const ready = kindUi({ ...audioKindSlide, parts: { slide: () => null } }, face, editor);
+    expect(kindUi(audioKindSlide, face).parts).toBeUndefined(); // the audio clip is drawn; without an editor it is still "soon"
+    const ready = kindUi({ ...undrawn, parts: { slide: () => null } }, face, editor);
     expect(ready.parts?.editor).toBe(editor);
     expect(ready).toMatchObject({ id: "audio", tone: "audio", label: "kind.audio", icon: "audio" });
   });

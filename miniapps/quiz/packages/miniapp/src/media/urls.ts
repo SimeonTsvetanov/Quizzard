@@ -12,9 +12,9 @@ export interface MediaUrls {
   /** One more file of the quiz held (it was just added). */
   add(id: string, blob: Blob): void;
   /** The address of a file, or `null` when the quiz has no such file. */
-  url(id: string): string | null;
+  readonly url: (id: string) => string | null;
   /** The file itself, for the export and the quiz file. */
-  blob(id: string): Blob | undefined;
+  readonly blob: (id: string) => Blob | undefined;
   /** Lets every address go. */
   release(): void;
 }

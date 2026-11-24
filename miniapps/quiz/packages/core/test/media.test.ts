@@ -164,7 +164,7 @@ describe("applyRoundDefaults", () => {
     expect(applied.rounds[0]?.questions.map((question) => [question.seconds, question.points])).toEqual([[undefined, undefined], [undefined, undefined], [undefined, undefined]]);
     expect(applied.rounds[0]?.questions.map((question) => question.id)).toEqual([a, b, c]);
     expect(questionAt(applied, 1, 0).seconds).toBe(120);
-    expect(core.roundTotals(applied.rounds[0] ?? frozen.rounds[1]!).seconds).toBe(3 * 30);
+    expect(applied.rounds.slice(0, 1).map((first) => core.roundTotals(first).seconds)[0]).toBe(3 * 30);
   });
 
   it("returns the same quiz when no question has its own values or the round is unknown", () => {

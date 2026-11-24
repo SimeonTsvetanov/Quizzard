@@ -148,6 +148,32 @@ function connect(factory: IDBFactory | undefined): Connection {
   };
 }
 
+/** Runs one transaction of a store. */
+type Run = <T>(mode: IDBTransactionMode, work: (transaction: IDBTransaction) => Promise<T>) => Promise<T>;
+
+/** The media half of the library: the files of a quiz, kept apart from its data. */
+function mediaApi(run: Run, mediaOf: (quizId: string) => IDBKeyRange): Pick<QuizStore, "media" | "putMedia" | "deleteMedia" | "bring"> {
+  return {
+    async media(quizId) {
+      const records = await run("readonly", (transaction) => promised<unknown[]>(transaction.objectStore(MEDIA).getAll(mediaOf(quizId))));
+      return new Map(records.filter(isMediaRecord).map((record) => [record.id, record.blob]));
+    },
+    putMedia: (quizId, id, blob) => run("readwrite", async (transaction) => { await promised(transaction.objectStore(MEDIA).put({ quizId, id, blob } satisfies MediaRecord)); }),
+    deleteMedia: (quizId, ids) => run("readwrite", async (transaction) => {
+      const files = transaction.objectStore(MEDIA);
+      await Promise.all(ids.map((id) => promised(files.delete([quizId, id]))));
+    }),
+    bring: ({ quiz, media }, blobs) => run("readwrite", async (transaction) => {
+      const files = transaction.objectStore(MEDIA);
+      const quizId = quiz.id;
+      // In the order they are asked: the old files go first, then the quiz and its files are written.
+      const cleared = promised(files.delete(mediaOf(quizId)));
+      const puts = [...blobs].map(([id, blob]) => promised(files.put({ quizId, id, blob } satisfies MediaRecord)));
+      await Promise.all([cleared, promised(transaction.objectStore(QUIZZES).put(toFile(quiz, media))), ...puts]);
+    }),
+  };
+}
+
 /**
  * Creates the library over the browser's IndexedDB.
  * @param options - the database factory, the clock and the id source (defaults: the browser's)
@@ -158,7 +184,7 @@ export function createQuizStore(options: StoreOptions = {}): QuizStore {
   const connection = connect(options.factory);
   /** The key range of one quiz's media files. */
   const mediaOf = (quizId: string): IDBKeyRange => (options.keyRange ?? IDBKeyRange).bound([quizId], [quizId, []]);
-  const run = async <T>(mode: IDBTransactionMode, work: (transaction: IDBTransaction) => Promise<T>): Promise<T> => transact(await connection.database(), mode, work);
+  const run: Run = async <T>(mode: IDBTransactionMode, work: (transaction: IDBTransaction) => Promise<T>): Promise<T> => transact(await connection.database(), mode, work);
   const write = (file: QuizFile): Promise<void> => run("readwrite", async (transaction) => { await promised(transaction.objectStore(QUIZZES).put(file)); });
   const read = async (id: string): Promise<LoadResult> => {
     const record: unknown = await run("readonly", (transaction) => promised<unknown>(transaction.objectStore(QUIZZES).get(id)));
@@ -201,23 +227,7 @@ export function createQuizStore(options: StoreOptions = {}): QuizStore {
       });
       return copy;
     },
-    async media(quizId) {
-      const records = await run("readonly", (transaction) => promised<unknown[]>(transaction.objectStore(MEDIA).getAll(mediaOf(quizId))));
-      return new Map(records.filter(isMediaRecord).map((record) => [record.id, record.blob]));
-    },
-    putMedia: (quizId, id, blob) => run("readwrite", async (transaction) => { await promised(transaction.objectStore(MEDIA).put({ quizId, id, blob } satisfies MediaRecord)); }),
-    deleteMedia: (quizId, ids) => run("readwrite", async (transaction) => {
-      const files = transaction.objectStore(MEDIA);
-      await Promise.all(ids.map((id) => promised(files.delete([quizId, id]))));
-    }),
-    bring: ({ quiz, media }, blobs) => run("readwrite", async (transaction) => {
-      const files = transaction.objectStore(MEDIA);
-      const quizId = quiz.id;
-      // In the order they are asked: the old files go first, then the quiz and its files are written.
-      const cleared = promised(files.delete(mediaOf(quizId)));
-      const puts = [...blobs].map(([id, blob]) => promised(files.put({ quizId, id, blob } satisfies MediaRecord)));
-      await Promise.all([cleared, promised(transaction.objectStore(QUIZZES).put(toFile(quiz, media))), ...puts]);
-    }),
+    ...mediaApi(run, mediaOf),
     close: () => { connection.close(); },
   };
 }

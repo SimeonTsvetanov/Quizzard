@@ -140,8 +140,8 @@ describe("pickers come from the registries (PLAN §2 rule 1)", () => {
   const registries = createRegistries();
   const ui = createUiRegistries(kindUis, answerUis);
   const kindIds = (): string[] => registries.kinds.list().map((kind) => kind.id);
-  it("text can be chosen; picture, audio and video are listed as coming soon — they have no UI parts yet", () => {
-    expect(kindChoices(kindIds(), ui, t).map((choice) => [choice.label, choice.isAvailable])).toEqual([["Text", true], ["Picture", false], ["Audio", false], ["Video", false]]);
+  it("text, picture, audio and video can all be chosen: each has its slide part and its editor part", () => {
+    expect(kindChoices(kindIds(), ui, t).map((choice) => [choice.label, choice.isAvailable])).toEqual([["Text", true], ["Picture", true], ["Audio", true], ["Video", true]]);
   });
   it("all three answer types can be chosen", () => {
     expect(answerChoices(registries.answers.list().map((answer) => answer.id), ui, t).map((choice) => [choice.label, choice.isAvailable])).toEqual([["Open answer", true], ["Multiple choice", true], ["True / false", true]]);
