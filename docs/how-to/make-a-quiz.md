@@ -24,11 +24,32 @@ The buttons on a quiz's card rename it, make a copy or delete it. A deleted quiz
 
 ## Add rounds
 
-1. Select **Add round**. The round opens with its name selected.
+1. Select **Add round** and choose its kind: **Standard**, **Golden pyramid** or **Safe**. A standard round opens with its name selected.
 2. Enter the name of the round, for example "History".
 3. Optional: select **Round settings** to set **Time per question** and **Points per question**, what new questions start as, and the rules shown before the round.
 
 A quiz can have up to 20 rounds.
+
+## Add a Golden pyramid or a Safe
+
+Two special rounds come ready to fill in: their questions are already there, with their answer kind,
+points, time and a rules text in the quiz's language (you can change the text and the time).
+
+- **Golden pyramid** — 4 questions. Question 1 asks for 1 answer, question 2 for 2, question 3 for 3,
+  question 4 for 4: 10 points in all. Under **Accepted answers** list every answer that counts; you can
+  list more than the question asks for, for example all 50 states for "Name 4 US states". **Enter**
+  adds the next answer, and a list pasted with one answer per line is split. The counter says
+  "asks for 3 · 7 accepted"; a question with fewer accepted answers than it asks for is not finished.
+  A team scores 1 point for each of its answers on the list. A team that writes more answers than
+  asked scores 0 for that question.
+- **Safe** — 5 questions, each answered with one digit from 0 to 9; the five digits are the code of
+  the safe. Pick the digit on the ten keys. A team scores 1 point per right digit, and all five add the
+  bonus set in **Round settings** — 3 unless you change it (0 to 20), so 5 + 3 = 8.
+
+A special round always has its number of questions: there is no **Add question**, and its questions
+can't be duplicated, deleted or moved to another round — a line in the round says why. The questions
+of a Safe can change places; those of a Golden pyramid can't, because the place says how many answers
+a question asks for. Each question can still be text, a picture, audio or video.
 
 ## Add questions
 

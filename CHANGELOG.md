@@ -3,13 +3,21 @@
 All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
+### Added
+- **Quiz creator — two special rounds: Golden pyramid and Safe.** "Add round" asks for the kind. A
+  Golden pyramid has 4 questions that ask for 1, 2, 3 and 4 answers (10 points); you list every answer
+  that counts, as many as you like. A Safe has 5 questions answered with one digit each — the code of a
+  safe; all five win a bonus (3 unless you change it). Both arrive ready to fill in, with their rules.
+- **While playing:** a pyramid of gold blocks fills tier by tier and its blocks turn over at each answer;
+  a vault door turns its dial to each digit and opens after the fifth. Each round opens with a short
+  animated explanation of how it scores; at score entry of a Safe you count the right digits and the
+  bonus is added for you.
+- **The Quizzard logo on the stage:** large on the title and the final screen, small in a corner on the
+  others. In an exported quiz it links to Quizzard, so whoever gets the file finds where to make their own.
 ### Changed
 - **Quiz creator, while playing — a calmer, more polished stage** in the look of Quizzard's main screen: no
   more outlines around answers, chips, score rows and lists — soft fills and depth instead, a few stars over
   the stage, the same look in the menu, the scores table and the host panel.
-### Added
-- **The Quizzard logo on the stage:** large on the title and the final screen, small in a corner on the
-  others. In an exported quiz it links to Quizzard, so whoever gets the file finds where to make their own.
 
 ## [0.21.0] - 2026-11-24
 ### Added

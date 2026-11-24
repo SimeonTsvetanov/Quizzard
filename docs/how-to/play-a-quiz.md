@@ -15,6 +15,12 @@ This guide shows you how to run a quiz you made with **Quiz creator**: in Quizza
 4. Select **Next** to go on. The game shows each round's rules, its questions with their timer, the answers one by one (**Show answer**), score entry and the **Leaderboard**, and ends with the podium.
 5. To leave, select the cross (**Back to the quiz**). The game is saved: **Play** continues where you left.
 
+A **Golden pyramid** shows a pyramid of gold blocks beside each question: the question's tier glows,
+and at each answer its blocks turn over and the accepted answers appear (the first 12, then "+N
+more"). A **Safe** shows a vault door: at each answer the dial turns to the digit and it clicks into
+its window; after the fifth digit the door opens. At score entry of a Safe you enter each team's right
+digits (0 to 5); five add the bonus, shown as "5 + 3 bonus".
+
 The stage shows where you are as "3/10": the question you are on, and out of how many. The round is shown the same way. The screen stays awake while you play.
 
 ## The control bar

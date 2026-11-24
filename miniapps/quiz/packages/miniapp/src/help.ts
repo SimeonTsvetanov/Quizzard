@@ -13,7 +13,7 @@ export const help: QuizHelp = {
   en: {
     steps: [
       "Tap “New quiz”, type its name and tap “Create quiz”.",
-      "Tap “Add round”. A round has a name and, in “Round settings”, the time and points every question in it gets.",
+      "Tap “Add round” and pick its kind: Standard, Golden pyramid or Safe. A round has a name and, in “Round settings”, the time and points every question in it gets.",
       "Tap “Add question”, choose its kind — “Text”, “Picture”, “Audio” or “Video” — type the question, add the file if it has one, and choose how it is answered: “Open answer”, “Multiple choice” or “True / false”.",
       "Tap “Done” to go back to the round, or “Add another” to go straight on to the next question. Each question is a small slide; tap one to change it.",
       "Tap “Preview” to see the questions as they will be played, and “Show answer” to see the reveal.",
@@ -23,6 +23,8 @@ export const help: QuizHelp = {
     features: [
       { name: "Your quizzes", text: "Every quiz you make is a card in “Your quizzes” with its rounds, questions, play time and size. The buttons on the card rename it, make a copy or delete it." },
       { name: "Rounds", text: "A quiz can have up to 20 rounds. A round's card and a question's card have the same row of buttons: a handle to drag the card to another place, arrows that move it one place, duplicate, delete and “More” — preview, “Play from here”, to the top or the bottom and, for a question, “Move to round…”." },
+      { name: "Golden pyramid", text: "A special round of 4 questions: question 1 asks for 1 answer, question 4 for 4 — 10 points. List every answer that counts under “Accepted answers” (more than asked is fine: all 50 states); a team scores 1 point for each of its answers on the list, and 0 for a question where it wrote more answers than asked. On the stage a pyramid of gold blocks fills tier by tier." },
+      { name: "Safe", text: "A special round of 5 questions, each answered with one digit 0–9: together the code of a safe. 1 point per right digit; all 5 add the bonus from “Round settings” (3 unless you change it), so 5 + 3 = 8. At score entry you count a team's right digits and the bonus is added for you. On the stage the dial turns to each digit and the door opens after the fifth." },
       { name: "Time and points", text: "A question takes the time and points of its round and shows “From the round”. Change them in the question and it keeps its own; “Back to the round's” takes them back." },
       { name: "Points with a note", text: "Points are a number, a note for the teams such as “1 for the band, 2 with the song”, or both. The note is shown on the slide." },
       { name: "Multiple choice", text: "2 to 8 options. Tick every correct one — several may be correct." },
@@ -58,7 +60,7 @@ export const help: QuizHelp = {
   bg: {
     steps: [
       "Докоснете „Нов куиз“, напишете името му и докоснете „Създай куиза“.",
-      "Докоснете „Добави рунд“. Рундът има име, а в „Настройки на рунда“ са времето и точките за всеки въпрос в него.",
+      "Докоснете „Добави рунд“ и изберете вида му: обикновен, златна пирамида или сейф. Рундът има име, а в „Настройки на рунда“ са времето и точките за всеки въпрос в него.",
       "Докоснете „Добави въпрос“, изберете вида му — „Текст“, „Снимка“, „Аудио“ или „Видео“ — напишете въпроса, добавете файла, ако има такъв, и изберете как се отговаря: „Отворен отговор“, „Избор от няколко“ или „Вярно / невярно“.",
       "Докоснете „Готово“, за да се върнете към рунда, или „Още един“, за да продължите направо със следващия въпрос. Всеки въпрос е малък слайд; докоснете го, за да го промените.",
       "Докоснете „Преглед“, за да видите въпросите така, както ще се играят, и „Покажи отговора“ за разкриването.",
@@ -68,6 +70,8 @@ export const help: QuizHelp = {
     features: [
       { name: "Вашите куизове", text: "Всеки куиз е карта във „Вашите куизове“ с рундовете, въпросите, времето за игра и размера му. Бутоните на картата го преименуват, правят копие или го изтриват." },
       { name: "Рундове", text: "Един куиз може да има до 20 рунда. Картата на рунда и картата на въпроса имат един и същ ред бутони: дръжка за влачене на картата на друго място, стрелки, които я местят с едно място, копие, изтриване и „Още“ — преглед, „Играй оттук“, най-горе или най-долу, а за въпрос и „Премести в рунд…“." },
+      { name: "Златна пирамида", text: "Специален рунд от 4 въпроса: въпрос 1 иска 1 отговор, въпрос 4 — 4. Общо 10 точки. В „Приети отговори“ изредете всеки отговор, който се зачита (може повече от исканите: всички 50 щата); отборът получава 1 точка за всеки свой отговор от списъка и 0 за въпрос, на който е написал повече отговори от исканите. На екрана пирамида от златни блокове се пълни ред по ред." },
+      { name: "Сейф", text: "Специален рунд от 5 въпроса с отговор една цифра от 0 до 9: заедно кодът на сейф. 1 точка за всяка вярна цифра; всичките 5 добавят бонуса от „Настройки на рунда“ (3, ако не го смените), т.е. 5 + 3 = 8. При въвеждането на точките броите верните цифри на отбора, а бонусът се добавя сам. На екрана шайбата се завърта към всяка цифра и вратата се отваря след петата." },
       { name: "Време и точки", text: "Въпросът взима времето и точките на рунда си и показва „От рунда“. Сменете ги във въпроса и той пази своите; „Обратно към рунда“ ги връща." },
       { name: "Точки с бележка", text: "Точките са число, бележка за отборите като „1 за групата, 2 с песента“ или и двете. Бележката се показва на слайда." },
       { name: "Избор от няколко", text: "От 2 до 8 възможности. Отбележете всяка вярна — може да са няколко." },

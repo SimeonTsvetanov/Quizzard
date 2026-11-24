@@ -77,13 +77,17 @@ Other rules:
 | Pictures, audio and video of one quiz | 250 MB together |
 | Teams in a game | 2 to 12; a game starts with 4 |
 | Characters in a team name | 40 |
-| Points of a team in one round | 0 to 999 |
+| Points of a team in one round | 0 to 999; a Golden pyramid 0 to 10, a Safe 0 to 5 digits plus the bonus |
+| Golden pyramid | 4 questions; question n asks for n answers; up to 60 accepted answers each; 10 points; 60 seconds per question to start with |
+| Safe | 5 questions with one digit 0–9 each; bonus 0 to 20 (3 to start with); 45 seconds per question to start with |
 
 Other rules:
 
 - Sizes are shown in MB of 1,024 × 1,024 bytes, the same unit as the limits.
 - A file of another kind, a file over its limit, or a clip your browser can't play is refused with a message that names the file and the limit. Nothing is saved then.
 - At a limit, the button that adds more is replaced by the reason, for example "20 rounds at most — this quiz is full."
+- A Golden pyramid and a Safe keep their number of questions: instead of **Add question** a line says why.
+- On the stage a Golden pyramid answer shows its first 12 accepted answers and "+N more"; the host panel and **Print answers** show all of them.
 - An export over 100 MB asks first: large files may not open on a phone.
 - **Play** and **Export** ask first while questions are not finished.
 - The search field in **Your quizzes** shows from 6 quizzes.

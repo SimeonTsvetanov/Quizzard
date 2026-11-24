@@ -8,6 +8,7 @@ import { putInLibrary } from "./support/quiz-db.ts";
 // app ("Play"), exported to one HTML file and played from disk with the network off, the audience
 // window, and the stage on a phone and a projector. The game's reducer, the export assembler and
 // the channel are unit tested (miniapps/quiz/packages/{player,core}/test).
+const SPECIAL = JSON.parse(readFileSync(new URL("../../miniapps/quiz/packages/core/test/fixtures/v1/special-rounds.quiz.json", import.meta.url), "utf8")) as { quiz: { rounds: { questions: { prompt: string }[] }[] } };
 const root = (page: Page) => page.locator('[data-miniapp="quiz"]');
 const stage = (page: Page) => page.locator('.qp-stage[data-stage="live"]');
 const view = (page: Page, name: string) => stage(page).locator(`[data-view="${name}"]`);
@@ -457,6 +458,7 @@ for (const viewport of [{ width: 390, height: 844 }, { width: 1920, height: 1080
     test.use({ viewport });
 
     test("nothing of any screen of the game leaves the stage, with twelve teams and long texts", async ({ page }) => {
+      test.slow(); // every screen of four rounds, the special rounds' included
       const long = "Which of these long statements about the history of the world is the one that is actually true, according to most historians?";
       const crowded = {
         ...QUIZ,
@@ -471,7 +473,9 @@ for (const viewport of [{ width: 390, height: 844 }, { width: 1920, height: 1080
               { id: "q1", kind: "text", prompt: long, answer: { type: "choice", options: ["a", "b", "c", "d", "e", "f", "g", "h"].map((id) => ({ id, text: `A rather long option ${id.toUpperCase()} that needs room` })), correct: ["b", "g"] }, explanation: "An explanation that is long enough to wrap onto a second line on most screens, so its clamp is tested too.", points: { value: 3, note: "1 for each right one, and a bonus for all" } },
               { id: "q2", kind: "text", prompt: "Short?", answer: { type: "open", text: "A long answer that names three different things at once" } },
             ],
-          }],
+          },
+          // The special rounds (SPEC §10) with the longest question text: the pyramid and the vault keep their place beside it.
+          ...SPECIAL.quiz.rounds.map((round) => ({ ...round, questions: round.questions.map((question, index) => (index === 1 ? { ...question, prompt: long.repeat(3).slice(0, 500) } : question)) }))],
         },
       };
       await play(page, crowded);
@@ -513,10 +517,11 @@ for (const viewport of [{ width: 390, height: 844 }, { width: 1920, height: 1080
         return { outside, covered };
       });
       const screens: string[] = [];
-      for (let moves = 0; moves < 40; moves += 1) {
+      for (let moves = 0; moves < 100; moves += 1) {
         const name = (await stage(page).locator("[data-view]").getAttribute("data-view")) ?? "";
         screens.push(name);
-        if (name === "score") {
+        // Points only in the first round; the special rounds' score screens are only looked at, as they open.
+        if (name === "score" && screens.indexOf("score") === screens.length - 1) {
           await toPointsEntry(page);
           await more(view(page, "score"), "Team 3").click();
           await more(view(page, "score"), "Team 12").click(); // the last row can be reached (scrolled to, on an upright phone)
