@@ -3,6 +3,17 @@
 All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
+
+## [0.21.0] - 2026-11-24
+### Added
+- **Quiz creator, while playing — all answers of the round on one screen.** After the answers were shown one by
+  one, the score screen lists them all, short ("1 — A: Caterpillar", "2 — True", "3 — A cow"). On a computer or
+  TV the list stands beside the points entry; on a phone it comes first and "Next" brings the points.
+- **A break from the score screen:** 5, 10 or 15 minutes. During the break the room sees the countdown, the
+  standings so far and the answers of the round just played.
+- **Pictures and video get the room:** they are as large as the slide allows — an upright picture or clip stands
+  beside the question at full height. A button on the picture or clip (or the key Z) shows it over the whole
+  stage; a video keeps playing. The host panel has the same button for the audience window.
 ### Fixed
 - **Quiz creator in a private Safari window:** pictures, audio and video can be added and quiz files with media
   open (Safari does not store files the usual way there).
