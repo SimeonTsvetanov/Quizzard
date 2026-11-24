@@ -274,6 +274,13 @@
   }
 
   /* || Components: editor bar */
+  /* The bar floats over the end of the form. A control that takes the focus — Tab, a tap on its label, a
+     script — is scrolled to where the bar does not cover it (WCAG 2.4.11 Focus Not Obscured): on a short
+     phone "Option A" used to land under the bar's buttons. The room is the bar's height and its gap. */
+  .quiz-editor :is(input, textarea, select, button, summary, a, [tabindex]) {
+    scroll-margin-bottom: calc(var(--tap-target) + 2 * var(--space-2) + 2 * var(--space-3) + var(--safe-bottom));
+  }
+
   .quiz-editor-bar {
     position: sticky;
     bottom: calc(var(--space-3) + var(--safe-bottom));

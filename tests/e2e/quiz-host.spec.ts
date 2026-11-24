@@ -30,6 +30,13 @@ const stored = (page: Page) =>
       }),
   );
 
+/**
+ * The time limit of a flow of forty steps and more with toasts to wait out: the 30 s of a single check were used up
+ * on CI's WebKit before the flow was over, at a different step on every try (run 45430916307). The 5 s of every
+ * single expectation stay as they are.
+ */
+const LONG_FLOW_MS = 90_000;
+
 const noSidewaysScroll = async (page: Page): Promise<void> => {
   expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
 };
@@ -102,6 +109,7 @@ test.describe("on a 390 px phone", () => {
   test.use({ viewport: { width: 390, height: 844 } });
 
   test("AC1 (text): a quiz with 3 rounds and a question of every answer type, no sideways scroll on any screen, there after a reload", async ({ page }) => {
+    test.setTimeout(LONG_FLOW_MS);
     await open(page);
     await newQuiz(page, "Pub night");
     await noSidewaysScroll(page);
@@ -273,6 +281,7 @@ test("pictures, audio and video are in the kind picker and can be chosen: each b
 });
 
 test("deletes: a question goes at once with Undo; a round and a quiz with something in them ask first, then offer Undo", async ({ page }) => {
+  test.setTimeout(LONG_FLOW_MS);
   await seed(page);
   await addQuestion(page, "Second question");
   await done(page);
@@ -334,6 +343,7 @@ test("library: rename in place, duplicate, and an empty quiz is deleted without 
 });
 
 test("the Back button walks the screens: editor → round → quiz → library → Home; “Back to Home” leaves in one step", async ({ page }) => {
+  test.setTimeout(LONG_FLOW_MS);
   await page.goto("./");
   await page.locator('[data-card="quiz"]').click();
   await newQuiz(page, "Pub night");
