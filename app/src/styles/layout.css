@@ -156,19 +156,6 @@
     }
   }
 
-  /* Wide screens, while a toast is up at the bottom edge: what gets the focus scrolls clear of it,
-     and the footer has that much more room under its last line — so a tab walk never lands on a
-     link the toast covers (WCAG 2.4.11). Nothing above the footer moves. */
-  @media (width > 600px) {
-    :root:has(body > [data-toasts] > .toast) {
-      scroll-padding-block-end: calc(var(--tap-target) + 3 * var(--space-4));
-
-      & .app-footer {
-        padding-block-end: calc(var(--tap-target) + 3 * var(--space-4));
-      }
-    }
-  }
-
   /* Inside a mini-app's own dialog (ui/toast-island.ts): a block at the dialog's start, not a bar
      fixed to the screen — the dialog may be transformed (centred), and `fixed` would then follow it. */
   .toast-region--inline {
