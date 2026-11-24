@@ -111,6 +111,7 @@ describe("search texts (T-20)", () => {
   });
 
   it("says in the description and FAQ what the tools are for, not what is still to come", () => {
+    expect(app.description).toMatch(/quiz maker/i);
     expect(app.description).toMatch(/team generator/i);
     expect(app.description).toMatch(/score keeper/i);
     expect(app.description).toMatch(/answer sheet/i);

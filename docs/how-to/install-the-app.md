@@ -24,17 +24,19 @@ Quizzard appears on your Home Screen and opens in its own window. A site you onl
 
 ## Open a tool from the icon
 
-Long-press the icon of the installed app. Where your device supports app shortcuts, a list shows **Teams**, **Scores** and **Answer sheet**. Select one to open that tool directly. Not every device shows shortcuts.
+Long-press the icon of the installed app. Where your device supports app shortcuts, a list shows **Teams**, **Scores**, **Answer sheet** and **Quiz creator**. Select one to open that tool directly. Not every device shows shortcuts.
 
 ## Use Quizzard offline
 
-Open Quizzard once while you are online. It shows **Ready to work offline ✓** when the offline copy is complete. After that, all three tools work without internet, whether you installed Quizzard or not. Your names, players, scores and answers are saved on the device either way.
+Open Quizzard once while you are online. It shows **Ready to work offline ✓** when the offline copy is complete. After that, all four tools work without internet, whether you installed Quizzard or not. Your names, players, scores, answers and quizzes are saved on the device either way.
 
 When you are offline, a small **Offline — still works** label appears in the header. Sharing to another app needs that app's own connection, and opening GitHub from **Report a problem** needs internet.
 
 ## Update Quizzard
 
 When an update is ready, Quizzard shows a note with a **Reload** button. Select **Reload** when it suits you. Quizzard never reloads by itself, and your data stays saved.
+
+To look for an update yourself, go to **Menu** > **Check for updates**. If there is a newer version, Quizzard loads it and reloads; if not, it tells you that you have the latest one.
 
 ## Related
 

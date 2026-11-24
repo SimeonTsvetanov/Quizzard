@@ -1,7 +1,7 @@
 # AGENTS.md — Quizzard
 
 The Quiz Toolkit — a free suite of tools for quiz and game nights by Simeon "Moni" Tsvetanov: one
-GitHub Pages PWA (Level 1 shell, no framework) that hosts mini-apps (Teams, Scores, later a quiz
+GitHub Pages PWA (Level 1 shell, no framework) that hosts mini-apps (Teams, Scores, Answer sheet, Quiz
 creator) behind a `mount` contract; all of their code and data live in this repo. Live at `/Quizzard/` (capital Q ≠ id `quizzard`).
 
 ## Read first
@@ -36,9 +36,11 @@ miniapps/teams  Teams (was TeamSync): packages/core + packages/miniapp are works
 miniapps/scores Scores (was GG Counter; React + Tailwind, isolated CSS): the same, projects `scores*` (per-project metadata)
 miniapps/sheet  Answer sheet (written here, Level 1): packages/miniapp only (src/core = pure logic); linted and type-checked
                 with the shell; e2e in tests/e2e/sheet-host.spec.ts
-miniapps/quiz   Quiz creator (written here, Level 1; docs/quiz-creator/SPEC.md + PLAN.md): packages/core (pure model, registries,
-                migrations) and packages/miniapp (storage/ = IndexedDB `quizzard-quiz`, the only code that touches storage;
-                kinds-ui/ + answers-ui/ = UI registry entries; render/slide.ts; screens/); e2e in tests/e2e/quiz-host.spec.ts
+miniapps/quiz   Quiz creator (written here, Level 1; docs/quiz-creator/SPEC.md + PLAN.md): packages/core (pure model, registries:
+                question kinds, answer types, round kinds standard | pyramid | safe in src/rounds/; migrations), packages/player
+                (the stage: pure state machine game/, views/, render/ slide in cqi, ui/ bar + curtain + host panel; also built
+                into the exported one-file quiz) and packages/miniapp (storage/ = IndexedDB `quizzard-quiz`, the only code that
+                touches storage; kinds-ui/ + answers-ui/ = UI registry entries; screens/); e2e in tests/e2e/quiz-*.spec.ts
 ```
 
 ## Mini-apps (in this repo since 2026-11-23, DECISIONS)
@@ -54,5 +56,6 @@ miniapps/quiz   Quiz creator (written here, Level 1; docs/quiz-creator/SPEC.md +
   (`"scope": "miniapp"` scenarios, opened from Home — a hash URL would not reload between them).
 
 ## Commands
-`pnpm i` · `pnpm dev` · `pnpm generate` · `pnpm verify` (generate+lint+typecheck+test+docs:check+build) ·
+`pnpm i` · `pnpm dev` · `pnpm generate` · `pnpm verify` (generate+lint+typecheck+test+docs:check+build+size) ·
 `pnpm e2e` (after `pnpm build`; `vite preview` at `http://localhost:4173/Quizzard/`) · `pnpm docs:images`
+CI: a push to `main` runs `verify` only, then Deploy; the five-browser e2e runs on pull requests and on a manual run of `ci.yml`.

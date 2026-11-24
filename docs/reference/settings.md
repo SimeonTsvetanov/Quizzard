@@ -4,13 +4,14 @@ This page lists the home screen, the header, every entry of the menu and every o
 
 ## Home screen
 
-The home screen has one card for each tool. A card shows the name of the tool, one line about it and **Open**. The tool you opened last is first. The **Quiz creator** card is planned and can't be opened.
+The home screen has one card for each tool. A card shows the name of the tool, one line about it and **Open**. The tool you opened last is first.
 
 | Card | What it does | Address |
 |---|---|---|
 | **Teams** | Splits names into 2 to 10 fair random teams. | `#/teams` |
 | **Scores** | Keeps score for up to 50 players, with a leaderboard. | `#/scores` |
 | **Answer sheet** | Records your team's answers and points round by round. | `#/sheet` |
+| **Quiz creator** | Makes your own quiz, plays it on a big screen and exports it as one file. | `#/quiz` |
 
 ## Header
 
@@ -54,6 +55,7 @@ The menu has four groups. The following table lists the entries in the order of 
 | Use | **What's new** | Lists the changes of recent versions. |
 | App | **Share app** | Shares the name and address of Quizzard with the share sheet, or opens a window with **WhatsApp** and **Copy**. |
 | App | **Install app** | Installs Quizzard, or shows the steps. Reads **Installed ✓** when installed. |
+| App | **Check for updates** | Asks for a newer version now. If there is one, Quizzard loads it and reloads; if not, it says **You have the latest version** with the version number. Needs internet. |
 | App | **Report a problem** | Opens a form. See [Report a problem](#report-a-problem). |
 | About | **About** | Shows the version, the author, the open-source projects Quizzard uses and their licence texts. |
 | About | **Terms**, **Privacy**, **AI notice**, **Legal notice**, **Contact** | Open the policy and contact pages inside the app. |

@@ -6,7 +6,7 @@
 
 ### The Quiz Toolkit
 
-Free tools for pub quizzes and game nights — **random teams**, a **score keeper** and a **team answer sheet**.<br />
+Free tools for pub quizzes and game nights — a **quiz maker** that plays on a big screen, **random teams**, a **score keeper** and a **team answer sheet**.<br />
 Works offline, needs no account, and everything you enter stays on your device.
 
 <p>
@@ -79,7 +79,14 @@ Your team's sheet at a pub quiz, instead of paper. Write the answers of each rou
 </tr>
 </table>
 
-**Next:** a quiz creator — build a quiz night and take it with you as a single file. It is planned, not built yet.
+### Quiz creator
+
+Build your own quiz night and run it from the same app.
+
+- **Make it:** rounds and questions with open, multiple-choice or true/false answers; pictures, audio and video; time and points per round or per question; a live preview of every slide.
+- **Special rounds:** *Golden pyramid* (4 questions that ask for 1, 2, 3 and 4 answers — 10 points) and *Safe* (5 one-digit answers that open a vault, with a bonus for the full code) come ready-made with their rules.
+- **Play it:** a stage for the big screen with a timer, the answers of each round, points entry, standings, a break, and a separate host panel with your notes.
+- **Take it with you:** export the quiz as one HTML file that plays offline in any browser, or save it as a quiz file to move it to another device.
 
 ## Why people use it
 
@@ -105,7 +112,7 @@ Your team's sheet at a pub quiz, instead of paper. Write the answers of each rou
 - **iPhone / iPad:** tap Share, then **Add to Home Screen**.
 - **Computer:** use the install icon in the address bar.
 
-Long-press the installed icon to jump straight to Teams, Scores or Answer sheet.
+Long-press the installed icon to jump straight to Teams, Scores, Answer sheet or Quiz creator.
 
 ## Guide
 
@@ -133,15 +140,17 @@ flowchart LR
   Home -->|"#/teams"| Teams["Teams<br/>plain TypeScript"]
   Home -->|"#/scores"| Scores["Scores<br/>React"]
   Home -->|"#/sheet"| Sheet["Answer sheet<br/>plain TypeScript"]
-  Home -.->|planned| Quiz["Quiz creator"]
+  Home -->|"#/quiz"| Quiz["Quiz creator<br/>plain TypeScript"]
   Teams --- T[("quizzard-teams")]
   Scores --- S[("quizzard-scores")]
   Sheet --- A[("quizzard-sheet")]
+  Quiz --- Q[("quizzard-quiz<br/>IndexedDB")]
+  Quiz -->|export| File["one HTML file<br/>plays offline"]
 ```
 
 - **TypeScript, strict.** Vite, pnpm workspace, no backend, hosted on GitHub Pages.
 - **Each tool owns its data.** Separate storage areas in the browser; Settings shows, exports, imports and clears them per tool.
-- **Tested where it matters.** Unit and property tests for the logic, and browser tests of every flow on Chromium, Firefox and WebKit, desktop and phone sizes, on every push.
+- **Tested where it matters.** Unit and property tests for the logic on every push, and browser tests of every flow on Chromium, Firefox and WebKit, desktop and phone sizes, on pull requests and on demand.
 - **Accessible by default.** WCAG 2.2 AA checks run in the browser tests; 44 px touch targets; keyboard and screen-reader paths.
 - **Strict Content Security Policy,** pinned GitHub Actions, CodeQL, and a supply-chain policy for dependencies.
 
@@ -149,6 +158,7 @@ flowchart LR
 app/              the shell: Home, menu, dialogs, router, service worker
 packages/core/    the mini-app contract, registry and route parser (pure logic)
 miniapps/teams/   Teams        miniapps/scores/   Scores        miniapps/sheet/   Answer sheet
+miniapps/quiz/    Quiz creator: core (model, round and question kinds), player (the stage, also the exported file), miniapp (editor)
 content/legal/    Terms, Privacy and the other policy texts
 docs/             user guide (mirrored to the Wiki) + SPEC, PLAN, DECISIONS
 tests/e2e/        browser tests of the shell and of each tool

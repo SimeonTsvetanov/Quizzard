@@ -82,7 +82,7 @@ export const app = {
   basePath: "/Quizzard/",
   name: "Quizzard",
   tagline: "The Quiz Toolkit",
-  description: "Free toolkit for pub quizzes and game nights: random team generator, score keeper and answer sheet. Works offline, no account, data stays on your device.",
+  description: "Free pub quiz and game night toolkit: quiz maker, random team generator, score keeper and answer sheet. Works offline, no account, data stays with you.",
   url: "https://simeontsvetanov.github.io/Quizzard/",
   repo: "https://github.com/SimeonTsvetanov/Quizzard",
   version: "0.21.0",
@@ -137,7 +137,7 @@ export const app = {
       { name: "Teams", route: "#/teams", text: "A random team generator: paste or type the names, choose 2 to 10 teams and get fair teams whose sizes differ by at most one, ready to copy or share." },
       { name: "Scores", route: "#/scores", text: "A score keeper for game night: add up to 50 players, change a score with + and − or by any amount, follow the ranked leaderboard and each score's history, and share the leaderboard as text." },
       { name: "Answer sheet", route: "#/sheet", text: "A team's own answer sheet for a pub quiz: write the answers round by round, mark each ✓ or ✗ and see the points per question and per round, bonus points and the running total." },
-      { name: "Quiz creator", route: "#/quiz", text: "A quiz maker for your own quiz night: collect questions into rounds, answer them as open, multiple-choice or true/false, set the time and points per round or per question and preview every question as a slide. Quizzes are saved on your device." },
+      { name: "Quiz creator", route: "#/quiz", text: "A quiz maker for your own quiz night: collect questions into rounds, answer them as open, multiple-choice or true/false, add pictures, audio and video, and set the time and points per round or per question. Two ready-made special rounds, Golden pyramid and Safe, come with their rules. Play the quiz on a big screen with a timer, points and a break, or export it as one file that plays offline in any browser. Quizzes are saved on your device." },
     ],
   },
   moreTools: "https://github.com/SimeonTsvetanov?tab=repositories&q=simeonts-microapp",
@@ -153,13 +153,13 @@ export const app = {
     { q: "Do I need an account?", a: "No. There is no account and no sign-in." },
     { q: "Does Quizzard work offline?", a: "Yes. After the first visit it works without a connection, also when installed." },
     { q: "Is Quizzard available in Bulgarian?", a: "Yes. The app is in English and Bulgarian; choose the language in Settings." },
-    { q: "Can I make quizzes with Quizzard?", a: "Yes. Open Quiz creator, add rounds and write your questions with open, multiple-choice or true/false answers; each round sets the time and points and every question has a preview. Text questions work today; pictures, audio, video and the export to one file that plays on a TV are on their way." },
+    { q: "Can I make quizzes with Quizzard?", a: "Yes. Open Quiz creator, add rounds and write your questions with open, multiple-choice or true/false answers; add pictures, audio and video, and set the time and points per round. Then select Play to run it on a big screen with a timer, the answers and the points of each team, or Export to get one file that plays offline in any browser, for example on a TV." },
   ],
   l10n: {
     bg: {
       // The Bulgarian tagline is Moni's call (PLAN T-19); the English one stands until then.
       tagline: "The Quiz Toolkit",
-      description: "Безплатни инструменти за куиз и игрални вечери: случайни отбори, точки и лист с отговори. Работят офлайн, без акаунт, данните остават на Вашето устройство.",
+      description: "Безплатни инструменти за куиз и игрални вечери: създател на куизове, случайни отбори, точки и лист с отговори. Офлайн, без акаунт, данните остават при Вас.",
       help: {
         steps: [
           "Докоснете „Отбори“, за да разделите хората на честни случайни отбори.",
@@ -172,7 +172,7 @@ export const app = {
           { name: "Отбори", text: "Генератор на случайни отбори: напишете или поставете имената, изберете от 2 до 10 отбора и получете честни отбори, чийто размер се различава най-много с един, готови за копиране или споделяне." },
           { name: "Точки", text: "Водене на резултат за игрална вечер: добавете до 50 играчи, променяйте точките с + и − или с произволна стойност, следете класирането и историята на всеки резултат и споделете класирането като текст." },
           { name: "Лист с отговори", text: "Собствен лист с отговори на отбора за куиз: записвайте отговорите рунд по рунд, отбелязвайте всеки с ✓ или ✗ и вижте точките за въпрос и за рунд, бонус точките и общия резултат." },
-          { name: "Създател на куизове", text: "Инструмент за Вашия собствен куиз: съберете въпроси в рундове, с отворен отговор, избор от няколко или вярно/невярно, задайте време и точки за рунд или за отделен въпрос и прегледайте всеки въпрос като слайд. Куизовете се пазят на Вашето устройство." },
+          { name: "Създател на куизове", text: "Инструмент за Вашия собствен куиз: съберете въпроси в рундове, с отворен отговор, избор от няколко или вярно/невярно, добавете снимки, аудио и видео и задайте време и точки за рунд или за отделен въпрос. Два готови специални рунда, „Златна пирамида“ и „Сейф“, идват с правилата си. Играйте куиза на голям екран с таймер, точки и почивка или го експортирайте като един файл, който работи офлайн във всеки браузър. Куизовете се пазят на Вашето устройство." },
         ],
       },
       faq: [
@@ -186,7 +186,7 @@ export const app = {
         { q: "Нужен ли е акаунт?", a: "Не. Няма акаунт и няма вход." },
         { q: "Работи ли Quizzard офлайн?", a: "Да. След първото посещение работи и без връзка, също и като инсталирано приложение." },
         { q: "Има ли Quizzard на български?", a: "Да. Приложението е на английски и български; изберете езика от „Настройки“." },
-        { q: "Мога ли да правя куизове с Quizzard?", a: "Да. Отворете „Създател на куизове“, добавете рундове и напишете въпросите си с отворен отговор, избор от няколко или вярно/невярно; всеки рунд задава времето и точките, а всеки въпрос има преглед. Текстовите въпроси работят още сега; снимките, аудиото, видеото и експортът в един файл за игра на телевизор предстоят." },
+        { q: "Мога ли да правя куизове с Quizzard?", a: "Да. Отворете „Създател на куизове“, добавете рундове и напишете въпросите си с отворен отговор, избор от няколко или вярно/невярно; добавете снимки, аудио и видео и задайте времето и точките за всеки рунд. После изберете „Играй“, за да го водите на голям екран с таймер, отговорите и точките на всеки отбор, или „Експорт за игра“, за да получите един файл, който работи офлайн във всеки браузър, например на телевизор." },
       ],
     },
   },
