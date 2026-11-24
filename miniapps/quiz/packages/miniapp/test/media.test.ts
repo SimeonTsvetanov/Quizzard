@@ -3,13 +3,13 @@
 // words of a refused file, the base64 pieces of an export and the quiz file written and read back
 // through Blobs.
 import { IDBFactory, IDBKeyRange } from "fake-indexeddb";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeAll, beforeEach, describe, expect, it } from "vitest";
 import {
   type MediaEntry, type Quiz, addQuestion, addRound, createQuiz, createRegistries, editQuestion, extractEmbedded, readEmbeddedQuiz, sequentialIds, EXPORT_DATA_MARK,
 } from "@simeonts/quizzard-quiz-core";
 import { base64Pieces, bytesToBase64 } from "../src/export/encode.ts";
 import { buildExport, estimateExport } from "../src/export/run.ts";
-import { createTranslator } from "../src/i18n/translate.ts";
+import { createTranslator, loadLanguage } from "../src/i18n/translate.ts";
 import { formatName, refusalText } from "../src/media/refusal-text.ts";
 import { createMediaUrls } from "../src/media/urls.ts";
 import { refusedText } from "../src/quizfile/open.ts";
@@ -18,10 +18,16 @@ import { buildQuizFile } from "../src/quizfile/write.ts";
 import { hasRoomFor, keepOnDevice } from "../src/storage/space.ts";
 import { createQuizStore, type QuizStore } from "../src/storage/store.ts";
 
+
+// Bulgarian is loaded when it is the language on show; the tests ask for it up front.
+beforeAll(() => loadLanguage("bg"));
 const MB = 1024 * 1024;
 const registries = createRegistries();
 const env = { ids: sequentialIds("q"), registries };
 const bytes = (blob: Blob): Promise<number[]> => blob.arrayBuffer().then((buffer) => [...new Uint8Array(buffer)]);
+/** Reference base64, the plain way: the tests compare the chunked encoder against it. */
+const base64 = (data: Uint8Array): string => btoa(Array.from(data, (byte) => String.fromCharCode(byte)).join(""));
+const unbase64 = (text: string): number[] => Array.from(atob(text), (character) => character.charCodeAt(0));
 const picture = new Blob([new Uint8Array([1, 2, 3, 250, 251, 252, 0])], { type: "image/png" });
 const sound = new Blob([new Uint8Array(1000).map((_, index) => index % 251)], { type: "audio/mpeg" });
 const MEDIA: readonly MediaEntry[] = [
@@ -161,11 +167,11 @@ describe("the export's base64 pieces", () => {
     expect(bytesToBase64(new Uint8Array())).toBe("");
     expect(bytesToBase64(new TextEncoder().encode("hello"))).toBe("aGVsbG8=");
     const big = new Uint8Array(100_000).map((_, index) => (index * 7) % 256);
-    expect(bytesToBase64(big)).toBe(Buffer.from(big).toString("base64"));
+    expect(bytesToBase64(big)).toBe(base64(big));
   });
 
   it("the pieces of a file joined are the base64 of the whole file, whatever the slice size", async () => {
-    const all = Buffer.from(await sound.arrayBuffer()).toString("base64");
+    const all = base64(new Uint8Array(await sound.arrayBuffer()));
     for (const chunk of [3, 300, 999, 3000]) {
       const pieces: string[] = [];
       for await (const piece of base64Pieces(sound, chunk)) pieces.push(piece);
@@ -185,8 +191,8 @@ describe("the export's base64 pieces", () => {
     const embedded = extractEmbedded(html);
     expect(readEmbeddedQuiz(embedded.quiz ?? "")?.quiz).toEqual(quiz);
     expect(embedded.media.map((entry) => [entry.id, entry.mime])).toEqual([["pic", "image/png"], ["song", "audio/mpeg"]]);
-    expect([...Buffer.from(embedded.media[0]?.base64 ?? "", "base64")]).toEqual([1, 2, 3, 250, 251, 252, 0]);
-    expect(Buffer.from(embedded.media[1]?.base64 ?? "", "base64").equals(Buffer.from(await sound.arrayBuffer()))).toBe(true);
+    expect(unbase64(embedded.media[0]?.base64 ?? "")).toEqual([1, 2, 3, 250, 251, 252, 0]);
+    expect(unbase64(embedded.media[1]?.base64 ?? "")).toEqual(await bytes(sound));
     expect(progress.at(-1)).toBe(1);
     expect(Math.abs(estimateExport(template.length, quiz, MEDIA) - page.size)).toBeLessThan(400);
     await expect(buildExport(template, quiz, MEDIA, { blobOf: () => undefined })).rejects.toThrow(/not on this device/);

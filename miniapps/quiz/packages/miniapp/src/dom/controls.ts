@@ -83,7 +83,7 @@ export interface ChipPickerOptions {
   readonly value: string;
   /** The tag on an option that cannot be chosen yet ("Soon"). */
   readonly soon: string;
-  /** Shown under the chips, e.g. what the "Soon" ones are waiting for. */
+  /** Shown under the chips while one of them cannot be chosen yet: what the "Soon" ones are waiting for. */
   readonly hint?: string;
   onPick(id: string): void;
 }
@@ -108,6 +108,6 @@ function chip(options: ChipPickerOptions, option: ChipOption): HTMLLabelElement 
 export function chipPicker(options: ChipPickerOptions): HTMLFieldSetElement {
   const row = h("div", { class: "quiz-chips" }, ...options.options.map((option) => chip(options, option)));
   const group = h("fieldset", { class: "quiz-group" }, h("legend", { class: "quiz-label" }, options.legend), row);
-  if (options.hint !== undefined) group.append(h("p", { class: "quiz-hint" }, options.hint));
+  if (options.hint !== undefined && options.options.some((option) => option.isAvailable === false)) group.append(h("p", { class: "quiz-hint" }, options.hint));
   return group;
 }

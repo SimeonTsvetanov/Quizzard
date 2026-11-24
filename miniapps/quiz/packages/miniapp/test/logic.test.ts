@@ -1,6 +1,6 @@
 // The creator's pure logic: routes in `history.state`, where the focus returns, formats, the Undo
 // helpers, the deck's thickness, the registries' pickers (AC10 on the UI side), Help and meta.
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 import { addQuestion, addRound, createQuiz, createRegistries, defineBasicKind, deleteQuestion, deleteRound, sequentialIds, type Env, type Quiz } from "@simeonts/quizzard-quiz-core";
 import { answerUis } from "../src/answers-ui/index.ts";
 import { returnFocus, settle } from "../src/app/mount.ts";
@@ -9,7 +9,7 @@ import { bytesText, changedText, numberText, parseNumber, slideLabels, wholeMinu
 import { help } from "../src/help.ts";
 import { bg } from "../src/i18n/bg.ts";
 import { en } from "../src/i18n/en.ts";
-import { createTranslator } from "../src/i18n/translate.ts";
+import { createTranslator, loadLanguage } from "../src/i18n/translate.ts";
 import { kindUis } from "../src/kinds-ui/index.ts";
 import { meta } from "../src/meta.ts";
 import { pointsText, promptSize } from "../src/render/slide.ts";
@@ -19,6 +19,9 @@ import { playOrder } from "../src/screens/preview.ts";
 import { DB_NAME } from "../src/storage/db.ts";
 import { answerChoices, canShow, createUiRegistries, kindChoices } from "../src/ui-registry.ts";
 
+
+// Bulgarian is loaded when it is the language on show; the tests ask for it up front.
+beforeAll(() => loadLanguage("bg"));
 const env = (): Env => ({ ids: sequentialIds("x"), registries: createRegistries() });
 
 function sample(): Quiz {

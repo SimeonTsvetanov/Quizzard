@@ -165,6 +165,8 @@ function clipSlide(face: ClipFace): (question: Question, view: SlideView) => HTM
     tap.hidden = true;
     for (const button of [bar.toggle, bar.restart, tap]) releaseAfterPointer(button as HTMLButtonElement);
     root.append(tap);
+    // An audio element has no picture; it still belongs to the slide, so it goes when the slide goes.
+    if (element.parentNode === null) root.append(element);
     drive(root, element, bar, tap, media);
     element.src = url;
     return root;

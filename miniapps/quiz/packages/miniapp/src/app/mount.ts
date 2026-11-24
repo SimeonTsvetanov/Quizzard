@@ -4,7 +4,7 @@
 import { type Quiz, defaultEnv, findQuestion, findRound } from "@simeonts/quizzard-quiz-core";
 import { answerUis } from "../answers-ui/index.ts";
 import type { MiniAppContext, Unmount } from "../contract.ts";
-import { createTranslator } from "../i18n/translate.ts";
+import { createTranslator, loadLanguage } from "../i18n/translate.ts";
 import { createMediaUrls } from "../media/urls.ts";
 import { kindUis } from "../kinds-ui/index.ts";
 import { meta } from "../meta.ts";
@@ -149,11 +149,14 @@ function createApp(element: HTMLElement, context: MiniAppContext, signal: AbortS
     },
   };
   context.language.subscribe((next) => {
-    app.lang = next;
-    app.t = createTranslator(next);
-    tick.translate(app.t);
-    // The player speaks the quiz's own language: a game in progress is not restarted for the app's.
-    if (app.route.screen !== "play") draw(app);
+    void loadLanguage(next).then(() => {
+      if (signal.aborted || context.language.get() !== next) return;
+      app.lang = next;
+      app.t = createTranslator(next);
+      tick.translate(app.t);
+      // The player speaks the quiz's own language: a game in progress is not restarted for the app's.
+      if (app.route.screen !== "play") draw(app);
+    });
   });
   signal.addEventListener("abort", () => {
     leave(app);
@@ -174,7 +177,8 @@ export function mountQuiz(element: HTMLElement, context: MiniAppContext): Unmoun
   if (context.query.has(AUDIENCE_PARAM) && window.opener !== null) {
     return import("../play/audience.ts").then(({ mountAudience }) => mountAudience(element, context) ?? mountCreator(element, context));
   }
-  return mountCreator(element, context);
+  // The language on show is ready before the first screen is drawn.
+  return loadLanguage(context.language.get()).then(() => mountCreator(element, context));
 }
 
 /** Mounts the creator itself: the library and the screens of a quiz. */

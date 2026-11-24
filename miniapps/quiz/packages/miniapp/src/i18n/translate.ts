@@ -1,8 +1,9 @@
 // The quiz creator's own translator (PLAN §1.2: a mini-app translates its own subtree with its own
 // dictionaries). Resolves keys, `_one`/`_other` plurals and `{{placeholders}}` the way the
 // standalone app's i18next setup does (escapeValue off: every text goes in through textContent).
+// English comes with the creator; another language is loaded when it is the one on show
+// (`loadLanguage`), so nobody's first open carries a dictionary they do not read.
 import type { Lang } from "../contract.ts";
-import { bg } from "./bg.ts";
 import { en, type Messages } from "./en.ts";
 
 /** Dotted paths of every text in a dictionary, e.g. `"error.NAMES_EMPTY"`. */
@@ -22,7 +23,25 @@ export type TextValues = Readonly<Record<string, string | number>>;
 /** Returns the text of `key` in one language. */
 export type Translate = (key: TextKey, values?: TextValues) => string;
 
-const DICTIONARIES: Readonly<Record<Lang, Messages>> = { en, bg };
+const DICTIONARIES: Partial<Record<Lang, Messages>> = { en };
+
+/** How each language other than English is fetched. */
+const LOADERS: Partial<Record<Lang, () => Promise<Messages>>> = { bg: () => import("./bg.ts").then((module) => module.bg) };
+
+/**
+ * Makes a language's dictionary ready for {@link createTranslator}. Until it is — and if it cannot
+ * be loaded — that language's texts are shown in English.
+ * @param lang - the language the host shows
+ */
+export async function loadLanguage(lang: Lang): Promise<void> {
+  const load = LOADERS[lang];
+  if (DICTIONARIES[lang] !== undefined || !load) return;
+  try {
+    DICTIONARIES[lang] = await load();
+  } catch {
+    // Offline before the language was ever cached: English is shown.
+  }
+}
 
 /** Reads a dotted path; undefined when any part is missing. */
 function lookup(messages: Messages, path: string): string | undefined {
@@ -56,7 +75,7 @@ function interpolate(text: string, values: TextValues | undefined): string {
  */
 export function createTranslator(lang: Lang): Translate {
   return (key, values) => {
-    for (const messages of [DICTIONARIES[lang], en]) {
+    for (const messages of [DICTIONARIES[lang] ?? en, en]) {
       for (const candidate of candidates(lang, key, values)) {
         const text = lookup(messages, candidate);
         if (text !== undefined) return interpolate(text, values);
