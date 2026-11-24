@@ -154,7 +154,7 @@ function createApp(element: HTMLElement, context: MiniAppContext, signal: AbortS
   const app: App = {
     host: element, context, signal, store, saver, media: createMediaUrls(), env: defaultEnv, ui: createUiRegistries(), screens: null, lang, t: createTranslator(lang),
     nav: createNavigator({ hash: `#/${meta.id}`, signal, onTraverse: (route) => { void show(app, shows, route, returnFocus(app.route, route)); } }),
-    view: { lastRound: null, isSettingsOpen: false, isNaming: false, renaming: null, isLiveOpen: false, isRevealed: false, drafts: new Map(), isEntering: false, cleanup: null, exported: null, swept: new Set(), isMoreOpen: false, stickyFor: null, selectNext: false, hasAskedToKeep: false },
+    view: { lastRound: null, isSettingsOpen: false, isNaming: false, query: "", renaming: null, isLiveOpen: false, isRevealed: false, drafts: new Map(), isEntering: false, cleanup: null, exported: null, swept: new Set(), isMoreOpen: false, stickyFor: null, selectNext: false, hasAskedToKeep: false },
     route: LIBRARY, library: null, current: null,
     draw: (focus) => { draw(app, focus); },
     go(route, mode = "push", focus = null) {

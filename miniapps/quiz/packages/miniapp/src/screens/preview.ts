@@ -92,8 +92,9 @@ export function previewScreen(app: App, quiz: Quiz): HTMLElement {
   next.addEventListener("click", () => { step(app, quiz, 1); });
   wire(app, quiz, screen, stage);
   screen.append(
-    h("div", { class: "quiz-preview-head" }, close, title, h("span", { class: "quiz-preview-count" }, t("preview.count", { n: at + 1, total: stops.length }))),
+    h("div", { class: "quiz-preview-head" }, close, title),
     stage,
+    h("p", { class: "quiz-hint quiz-preview-turn" }, t("preview.turn")),
     h("div", { class: "quiz-preview-bar" }, previous, reveal, next));
   return screen;
 }

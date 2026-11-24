@@ -26,4 +26,15 @@ export const enMore = {
     more_one: "And {{count}} more.",
     more_other: "And {{count}} more.",
   },
+  print: {
+    button: "Print answers",
+    hint: "A sheet for you, the host: every question with its answer, explanation, host note and points, a round to a page.",
+    title: "Host sheet — questions and answers",
+    answer: "Answer",
+    explanation: "Explanation",
+    note: "Host note",
+    rules: "Rules",
+    noText: "(no question text)",
+    noAnswer: "(no answer yet)",
+  },
 } as const;

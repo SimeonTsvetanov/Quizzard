@@ -57,6 +57,8 @@ export const en = {
     damaged: "This quiz cannot be read.",
     namePlaceholder: "Quiz name…",
     create: "Create quiz",
+    search: "Search your quizzes",
+    searchNone: "No quiz has “{{text}}” in its name.",
   },
   quiz: {
     nameLabel: "Quiz name",
@@ -73,7 +75,7 @@ export const en = {
     media: "Media: {{used}} of {{limit}}",
     unfinished_one: "{{count}} question is not finished",
     unfinished_other: "{{count}} questions are not finished",
-    more: "Quiz file",
+    more: "Quiz file and printing",
     exportShort: "Export",
     notLoaded: "The quiz could not be opened: a part of the app did not load. Check the connection and try again.",
   },

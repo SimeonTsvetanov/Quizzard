@@ -230,3 +230,8 @@
     transform: scaleX(0);
   }
 }
+
+/* Before any points: the teams in their own order, without places, bars or arrows. */
+.qp-board-rows[data-empty] :is(.qp-board-rank, .qp-board-bar, .qp-board-move) {
+  visibility: hidden;
+}

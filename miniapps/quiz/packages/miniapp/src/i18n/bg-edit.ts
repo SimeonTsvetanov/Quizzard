@@ -82,10 +82,10 @@ export const bgEdit = {
   preview: {
     close: "Затвори прегледа",
     where: "{{round}} · въпрос {{n}} от {{total}}",
-    count: "{{n}} / {{total}}",
     previous: "Назад",
     next: "Напред",
     showAnswer: "Покажи отговора",
+    turn: "Обърнете телефона настрани за по-голям слайд.",
   },
   play: {
     title: "Играе се „{{name}}“",
@@ -94,7 +94,7 @@ export const bgEdit = {
   },
   media: {
     label: { image: "Снимка", audio: "Аудио", video: "Видео" },
-    choose: { image: "Изберете снимка", audio: "Изберете аудио файл", video: "Изберете видео" },
+    choose: { image: "Избери снимка", audio: "Избери аудио файл", video: "Избери видео" },
     accepts: { image: "JPEG, PNG, WebP или GIF · до {{limit}}", audio: "MP3 или M4A · до {{limit}}", video: "MP4 (H.264 + AAC) · до {{limit}}" },
     formats: { image: "Снимката трябва да е JPEG, PNG, WebP или GIF.", audio: "Аудиото трябва да е MP3 или M4A (AAC).", video: "Видеото трябва да е MP4 с картина H.264 и звук AAC." },
     drop: "или пуснете файл тук, или го поставете",

@@ -217,7 +217,7 @@ export const en = {
       clearOne: "Clear",
       clearOneLabel: "Clear {{tool}} data",
       clearOneTitle: "Delete {{tool}} data?",
-      clearOneMessage: "Everything {{tool}} saved on this device will be deleted. This can't be undone.",
+      clearOneMessage: "Everything {{tool}} saved on this device will be deleted. This can't be undone. Want a backup? Export your data first — and quizzes are saved one by one with “Save quiz file”.",
       clearedOne: "{{tool}} data was cleared ✓",
       clearAllMessage: "Everything {{name}} and its tools saved on this device will be deleted — settings, teams lists, games and quizzes. This can't be undone.",
       importMessage: "Data that {{name}} and its tools saved on this device will be overwritten with the content of “{{file}}”. Export first if you want a backup.",

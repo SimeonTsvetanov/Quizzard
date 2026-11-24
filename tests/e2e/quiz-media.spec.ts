@@ -509,11 +509,17 @@ async function presentMedia(host: Page, audience: Page): Promise<void> {
   await card.locator('[data-control="clip"]').click();
   if (await tap.isVisible()) await tap.click();
   await expect.poll(() => clipTime(stage(audience))).toBeGreaterThan(0.2);
-  await panel(host).locator('[data-control="black"]').click();
+  // One control bar for the stage and the host panel (owner, 2026-11-24): on a phone its "Black screen" is in the menu, as under the stage.
+  const black = panel(host).locator('[data-control="black"]');
+  if (await black.isVisible()) await black.click();
+  else {
+    await panel(host).locator('[data-control="menu"]').click();
+    await host.locator('[data-dialog="menu"] [data-menu="black"]').click();
+  }
   await expect(stage(audience).locator("[data-curtain-box]")).toHaveAttribute("data-curtain", "black");
   await expect(panel(host).locator("[data-host-cover]")).toHaveText("The room sees a black screen");
   await expect.poll(() => isPaused(stage(audience))).toBe(true);
-  await panel(host).locator('[data-control="black"]').click();
+  await host.keyboard.press("KeyB"); // the same key takes the black screen away
   await expect(stage(audience).locator("[data-curtain-box]")).toBeHidden();
 
   // A picture: the panel zooms it on the audience's stage.

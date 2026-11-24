@@ -3,7 +3,11 @@ import { bgEdit } from "./bg-edit.ts";
 import { bgFiles } from "./bg-files.ts";
 import { bgMore } from "./bg-more.ts";
 
-/** Bulgarian texts of the quiz creator (polite "Вие" forms, as in the rest of Quizzard). */
+/**
+ * Bulgarian texts of the quiz creator, in Quizzard's one register (app/src/i18n/bg.ts): buttons and menu
+ * lines are short imperatives ("Добави рунд", "Избери снимка"); sentences are polite plural
+ * ("Добавете…", "Вашите"); questions in dialogs are impersonal ("Да се изтрие ли…").
+ */
 export const bg: Messages = {
   saved: "Запазено",
   notSaved: "Браузърът не запази промяната. Освободете място или излезте от частното сърфиране и опитайте пак.",
@@ -50,7 +54,7 @@ export const bg: Messages = {
     duplicate: "Направи копие на {{name}}",
     duplicated: "Копиран като „{{name}}“",
     delete: "Изтрий {{name}}",
-    deleteTitle: "Да изтрия ли „{{name}}“?",
+    deleteTitle: "Да се изтрие ли „{{name}}“?",
     deleteText: "Рундовете и въпросите му ще бъдат изтрити от това устройство.",
     deleteConfirm: "Изтрий куиза",
     deleted: "„{{name}}“ е изтрит",
@@ -58,6 +62,8 @@ export const bg: Messages = {
     damaged: "Този куиз не може да се прочете.",
     namePlaceholder: "Име на куиза…",
     create: "Създай куиза",
+    search: "Търсене във Вашите куизове",
+    searchNone: "Няма куиз с „{{text}}“ в името.",
   },
   quiz: {
     nameLabel: "Име на куиза",
@@ -74,7 +80,7 @@ export const bg: Messages = {
     media: "Медия: {{used}} от {{limit}}",
     unfinished_one: "{{count}} въпрос не е довършен",
     unfinished_other: "{{count}} въпроса не са довършени",
-    more: "Файл на куиза",
+    more: "Файл и печат",
     exportShort: "Експорт",
     notLoaded: "Куизът не можа да се отвори: част от приложението не се зареди. Проверете връзката и опитайте пак.",
   },
@@ -96,7 +102,7 @@ export const bg: Messages = {
     moveDown: "Премести {{name}} надолу",
     duplicate: "Направи копие на рунда",
     delete: "Изтрий рунда",
-    deleteTitle: "Да изтрия ли „{{name}}“?",
+    deleteTitle: "Да се изтрие ли „{{name}}“?",
     deleteText_one: "Рундът и неговият {{count}} въпрос ще бъдат изтрити.",
     deleteText_other: "Рундът и неговите {{count}} въпроса ще бъдат изтрити.",
     deleteConfirm: "Изтрий рунда",

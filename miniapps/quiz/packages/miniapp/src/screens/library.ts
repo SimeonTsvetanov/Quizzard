@@ -227,6 +227,41 @@ function takeDrops(app: App, screen: HTMLElement): void {
   });
 }
 
+/** From this many quizzes the library has a search field. */
+export const SEARCH_FROM = 6;
+
+/**
+ * Whether a quiz's name matches what was typed: every typed word is somewhere in it, whatever the case.
+ * @param name - the quiz's name
+ * @param query - the search text
+ */
+export function matches(name: string, query: string): boolean {
+  const hay = name.toLocaleLowerCase();
+  return query.toLocaleLowerCase().split(/\s+/).every((word) => hay.includes(word));
+}
+
+/** The search field: it hides the cards whose names do not match, as it is typed in; the text survives a redraw. */
+function searchField(app: App, list: HTMLElement): HTMLElement {
+  const { t } = app;
+  const field = h("input", { type: "search", class: "quiz-input", autocomplete: "off", enterkeyhint: "search", "aria-label": t("library.search"), placeholder: t("library.search"), "data-search": "", "data-focus": "search" });
+  const none = h("p", { class: "quiz-hint", role: "status", "data-search-none": "" });
+  field.value = app.view.query;
+  const apply = (): void => {
+    app.view.query = field.value;
+    const lines = app.library === null || app.library === "error" ? [] : app.library;
+    let shown = 0;
+    for (const item of list.querySelectorAll<HTMLElement>("[data-quiz]")) {
+      const line = lines.find((one) => one.id === item.getAttribute("data-quiz"));
+      item.hidden = line !== undefined && !matches(line.name, field.value.trim());
+      if (!item.hidden) shown += 1;
+    }
+    none.textContent = shown === 0 ? t("library.searchNone", { text: field.value.trim() }) : "";
+  };
+  field.addEventListener("input", apply);
+  apply();
+  return h("div", { class: "quiz-search" }, h("span", { class: "quiz-search-mark", "aria-hidden": "true" }, icon("search", 18)), field, none);
+}
+
 /**
  * Draws the library.
  * @param app - the mounted creator; `app.library` holds the lines (`null` while they load)
@@ -249,8 +284,9 @@ export function libraryScreen(app: App): HTMLElement {
     screen.append(h("div", { class: "quiz-head" }, title), emptyState({ hasWizard: true, title: t("library.emptyTitle"), text: t("library.emptyText"), action: headActions(app) }));
     return screen;
   }
-  screen.append(
-    h("div", { class: "quiz-head" }, title, h("p", { class: "quiz-sub" }, t("library.sub", { count: library.length })), headActions(app)),
-    h("ul", { class: "quiz-cards" }, ...library.map((line) => card(app, line))));
+  const list = h("ul", { class: "quiz-cards" }, ...library.map((line) => card(app, line)));
+  screen.append(h("div", { class: "quiz-head" }, title, h("p", { class: "quiz-sub" }, t("library.sub", { count: library.length })), headActions(app)));
+  if (library.length >= SEARCH_FROM) screen.append(searchField(app, list));
+  screen.append(list);
   return screen;
 }

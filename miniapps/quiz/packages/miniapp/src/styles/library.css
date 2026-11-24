@@ -18,6 +18,32 @@
     }
   }
 
+  /* The search field (from six quizzes): a mark inside its start, the "nothing found" line under it. */
+  .quiz-search {
+    position: relative;
+    display: grid;
+    gap: var(--space-2);
+
+    & .quiz-input {
+      padding-inline-start: var(--space-10);
+    }
+
+    @media (width >= 700px) {
+      max-width: 26rem;
+    }
+  }
+
+  .quiz-search-mark {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-start: var(--space-3);
+    display: grid;
+    align-items: center;
+    height: var(--tap-target);
+    color: var(--color-text-secondary);
+    pointer-events: none;
+  }
+
   .quiz-cards {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
@@ -68,6 +94,10 @@
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     align-content: space-between;
+
+    &[hidden] {
+      display: none;
+    }
   }
 
   .quiz-card-open {

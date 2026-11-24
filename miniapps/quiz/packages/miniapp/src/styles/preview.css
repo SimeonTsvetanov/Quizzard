@@ -8,7 +8,7 @@
 
   .quiz-preview-head {
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-columns: auto minmax(0, 1fr);
     align-items: center;
     gap: var(--space-2);
   }
@@ -25,11 +25,21 @@
     }
   }
 
-  .quiz-preview-count {
-    font-family: var(--font-display);
-    font-size: var(--text-sm);
-    font-weight: var(--weight-semibold);
-    white-space: nowrap;
+  /* An upright phone shows a small slide: one line says how to get a large one. */
+  .quiz-preview-turn {
+    text-align: center;
+
+    @media (width >= 700px), (orientation: landscape) {
+      display: none;
+    }
+  }
+
+  /* A phone on its side: the slide takes the height the screen has, the bars stay in reach. */
+  @media (orientation: landscape) and (height < 520px) {
+    .quiz-preview .quiz-stage {
+      inline-size: min(100%, calc((100dvh - 2 * var(--tap-target) - var(--header-height) - var(--space-8)) * 16 / 9));
+      margin-inline: auto;
+    }
   }
 
   .quiz-preview .quiz-stage {

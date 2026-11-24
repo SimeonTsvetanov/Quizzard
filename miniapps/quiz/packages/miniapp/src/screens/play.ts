@@ -26,10 +26,13 @@ export function playScreen(app: App, quiz: Quiz): HTMLElement {
     stop?.();
   };
   const media = app.current?.media ?? [];
+  // "Play from here" names a round or a question once: a reload of the Play screen continues the game where it is.
+  const from = app.route.screen === "play" ? app.route.from : undefined;
+  if (from !== undefined) app.nav.replace({ screen: "play", quiz: quiz.id });
   void import("../play/run.ts").then(({ startPlay }) => {
     if (isLeft || app.signal.aborted) return;
     root.replaceChildren();
-    stop = startPlay(app, quiz, media, root, () => { up(app); });
+    stop = startPlay(app, quiz, media, root, () => { up(app); }, from);
   }).catch(() => {
     if (!isLeft) root.replaceChildren(h("p", { class: "quiz-play-wait", role: "alert" }, t("play.failed")));
   });

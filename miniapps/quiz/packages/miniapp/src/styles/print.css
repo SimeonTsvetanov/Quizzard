@@ -1,0 +1,81 @@
+/* Quiz creator: the host's printed sheet (print/sheet.ts). On screen it does not exist; on paper it
+   is all there is — black on white, no backgrounds, a round to a page. */
+@layer components {
+  /* || Components: print sheet */
+  .quiz-print {
+    display: none;
+  }
+
+  @media print {
+    /* Everything else the tool shows stays off the paper: the sheet is the tool's first element, the screens follow it. */
+    .quiz-print ~ * {
+      display: none;
+    }
+
+    .quiz-print {
+      display: block;
+      /* The paper's own colours: black on white whatever the theme on screen. */
+      color-scheme: light;
+      background: Canvas;
+      color: CanvasText;
+      font-family: var(--font-sans);
+      font-size: 11pt;
+      line-height: 1.4;
+
+      & h1 {
+        margin: 0;
+        font-size: 20pt;
+      }
+
+      & h2 {
+        margin: 0 0 4pt;
+        font-size: 15pt;
+      }
+
+      & p {
+        margin: 0 0 3pt;
+      }
+    }
+
+    .quiz-print-meta {
+      color: CanvasText;
+      font-size: 10pt;
+    }
+
+    /* A round to a page; a question is never split across two. */
+    .quiz-print-round {
+      break-before: page;
+      padding-block-start: 6pt;
+
+      &:first-of-type {
+        break-before: auto;
+        margin-block-start: 12pt;
+      }
+    }
+
+    .quiz-print-list {
+      margin: 8pt 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .quiz-print-item {
+      break-inside: avoid;
+      padding-block: 6pt;
+      border-block-start: 0.5pt solid CanvasText;
+    }
+
+    .quiz-print-question {
+      font-size: 12pt;
+    }
+
+    .quiz-print-facts {
+      font-size: 9pt;
+      white-space: nowrap;
+    }
+
+    .quiz-print-line {
+      padding-inline-start: 14pt;
+    }
+  }
+}

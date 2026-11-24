@@ -19,7 +19,9 @@ import { menuContent } from "./ui/menu.ts";
 import { type Panel, createPanel } from "./ui/panel.ts";
 import { createScoreboard } from "./ui/scoreboard.ts";
 import { type Stage, createStage } from "./ui/stage.ts";
+import { playTimeUp, ranOut } from "./ui/sound.ts";
 import { type UndoStrip, createUndoStrip } from "./ui/undo.ts";
+import { keepAwake } from "./ui/wake.ts";
 import type { PlayEnv } from "./views/context.ts";
 
 /** Where the game is kept between sessions; both calls may fail silently (a page opened from a file may have no storage). */
@@ -47,6 +49,8 @@ export interface PlayerOptions {
   readonly openAudience?: () => AudienceLink | null;
   /** Leaves the player (in the app: back to the quiz). */
   readonly onExit?: () => void;
+  /** The id of the round or question the game jumps to as it opens ("Play from here"); left out = where the game is. */
+  readonly startAt?: string;
   /** Shows a short message to the host (the app's toast); the exported page uses its own line. */
   readonly notify?: (message: string) => void;
 }
@@ -114,8 +118,10 @@ function draw(session: Session): void {
 
 /** Makes a move: the reducer, then storage, the audience window and the screen. */
 function move(session: Session, action: GameAction): void {
-  const next = step(session.state, action);
-  if (next === session.state) return;
+  const before = session.state;
+  const next = step(before, action);
+  if (next === before) return;
+  if (next.sound === true && ranOut(before, next)) playTimeUp();
   const isMove = action.type !== "tick" || next.index !== session.state.index;
   session.state = next;
   if (isMove || performance.now() - session.lastSave >= SAVE_EVERY_MS) save(session);
@@ -190,6 +196,14 @@ function startPresenting(session: Session): void {
   draw(session);
 }
 
+/** The game moved to the first screen of a question or a round; unchanged when the id names neither. */
+function startAt(state: GameState, id: string | undefined): GameState {
+  if (id === undefined) return state;
+  const byQuestion = state.screens.findIndex((screen) => screen.questionId === id);
+  const index = byQuestion === -1 ? state.screens.findIndex((screen) => screen.roundId === id) : byQuestion;
+  return index === -1 ? state : step(state, { type: "jump", index });
+}
+
 /** Builds a session: the game (a saved one continued), the stage, the bar and the commands they share. */
 function createSession(options: PlayerOptions): Session {
   const { root, file } = options;
@@ -218,7 +232,7 @@ function createSession(options: PlayerOptions): Session {
     options, t, env, commands, undo,
     stage: createStage(env, { canEdit: true, isLive: true }),
     bar: createBar(t, commands),
-    state: restore(fresh, readSaved(options.storage)),
+    state: startAt(restore(fresh, readSaved(options.storage)), options.startAt),
     overlay: null,
     presenter: null,
     lastSave: performance.now(),
@@ -241,6 +255,7 @@ export function createPlayer(options: PlayerOptions): Player {
   root.toggleAttribute("data-no-audience", !options.openAudience);
   root.replaceChildren(h("div", { class: "qp-stage-box" }, session.stage.element), session.bar.element, session.undo.element);
   listenKeys(session.commands, controller.signal);
+  keepAwake(controller.signal); // the screen does not dim or lock in the middle of a game
   const ticker = window.setInterval(() => {
     const now = performance.now();
     const ms = now - lastTick;

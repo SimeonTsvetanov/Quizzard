@@ -77,6 +77,8 @@ export interface GameState {
   readonly winner: string | null;
   /** Questions run by themselves: the timer starts with the question and the game moves on when it ends. */
   readonly auto: boolean;
+  /** A soft sound is played when a question's time is up; left out = off (it is off unless the host switches it on). */
+  readonly sound?: boolean;
   readonly timer: Timer;
   /** The picture or clip of the screen on show; at rest on every new screen. */
   readonly media: Playback;
@@ -115,6 +117,7 @@ export type GameAction =
   | { readonly type: "addBonus"; readonly teamId: string; readonly by: number }
   | { readonly type: "pickWinner"; readonly teamId: string | null }
   | { readonly type: "setAuto"; readonly value: boolean }
+  | { readonly type: "setSound"; readonly value: boolean }
   /** The question's picture or clip: play, pause, restart, zoom — and what the playing window reports. */
   | { readonly type: "media"; readonly command: PlaybackCommand }
   /** The black screen on or off. */

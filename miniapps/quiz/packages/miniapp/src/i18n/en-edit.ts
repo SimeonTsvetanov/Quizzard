@@ -82,10 +82,10 @@ export const enEdit = {
   preview: {
     close: "Close preview",
     where: "{{round}} · question {{n}} of {{total}}",
-    count: "{{n}} / {{total}}",
     previous: "Previous",
     next: "Next",
     showAnswer: "Show answer",
+    turn: "Turn the phone on its side for a larger slide.",
   },
   play: {
     title: "Playing “{{name}}”",

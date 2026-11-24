@@ -348,3 +348,33 @@
   font-family: var(--qp-display);
   font-weight: 700;
 }
+
+/* A round's screens fold away in the menu: its name jumps to its start, the button after it unfolds them. */
+.qp-jump-round {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.qp-jump-fold {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 56px;
+  min-height: 44px;
+  margin-inline-start: auto;
+  border-radius: 12px;
+  color: var(--qp-text-2);
+  font-size: 13px;
+  font-weight: 700;
+
+  &:hover {
+    background: var(--qp-line);
+  }
+
+  &[aria-expanded="true"] svg {
+    rotate: 180deg;
+  }
+}

@@ -38,13 +38,16 @@ export const finalView: ViewEntry = {
     const top = lines.slice(0, PODIUM_SIZE);
     const rest = lines.slice(PODIUM_SIZE);
     const winners = lines.filter((line) => line.rank === 1).length;
+    // A game nobody scored in has no winner to name.
+    const hasPoints = lines.some((line) => line.total > 0);
+    const title = winners > 1 ? "final.winners" : "final.winner";
     const others = h("ol", { class: "qp-rest" }, ...rest.map((line) => restLine(env, line)));
     shareRows(others, rest.length, rest.length);
     const root = viewRoot("final",
-      h("header", { class: "qp-view-head" }, kicker(env.t("final.title")), heading(env.t(winners > 1 ? "final.winners" : "final.winner"))),
+      h("header", { class: "qp-view-head" }, kicker(env.t("final.title")), heading(env.t(hasPoints ? title : "final.none"))),
       h("div", { class: "qp-final-body", ...(rest.length > 0 ? { "data-rest": "" } : {}) },
         // Document order is 1st, 2nd, 3rd (for reading); the stylesheet puts the first in the middle.
-        h("ol", { class: "qp-podium", "data-count": String(top.length) }, ...top.map((line) => podiumStep(env, line))),
+        h("ol", { class: "qp-podium", "data-count": String(top.length), ...(hasPoints ? {} : { "data-empty": "" }) }, ...top.map((line) => podiumStep(env, line))),
         ...(rest.length > 0 ? [others] : [])),
       h("p", { class: "qp-sub" }, env.t("final.thanks")));
     return { element: root };

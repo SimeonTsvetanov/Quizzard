@@ -209,6 +209,7 @@ const HANDLERS: { readonly [T in GameAction["type"]]: Handler<T> } = {
   addBonus,
   pickWinner,
   setAuto: (state, action) => (state.auto === action.value ? state : { ...state, auto: action.value }),
+  setSound: (state, action) => ((state.sound === true) === action.value ? state : { ...state, sound: action.value }),
   media: (state, action) => media(state, action.command),
   black: (state) => (state.curtain?.kind === "black" ? { ...state, curtain: null } : cover(state, { kind: "black" })),
   break: startBreak,

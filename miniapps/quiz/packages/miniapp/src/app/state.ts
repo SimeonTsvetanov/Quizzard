@@ -16,6 +16,8 @@ export interface ViewState {
   lastRound: string | null;
   /** The round's settings strip is open. */
   isSettingsOpen: boolean;
+  /** What is typed in the library's search field. */
+  query: string;
   /** The library asks for a new quiz's name ("New quiz" was pressed; nothing is created yet). */
   isNaming: boolean;
   /** The quiz whose name is being edited in the library. */

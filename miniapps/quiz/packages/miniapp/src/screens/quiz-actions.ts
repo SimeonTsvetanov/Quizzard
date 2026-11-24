@@ -21,11 +21,24 @@ function unfinishedNote(app: App, quiz: Quiz): HTMLElement | null {
   return link;
 }
 
+/** "Print answers": the host's sheet — rounds, questions, answers, explanations, host notes, points — for the table. */
+function printRow(app: App, quiz: Quiz): HTMLElement {
+  const { t } = app;
+  const print = labelButton("print", t("print.button"), { class: "button", "data-print-answers": "" });
+  print.addEventListener("click", () => {
+    void import("../print/sheet.ts").then(({ printAnswers }) => { if (!app.signal.aborted) printAnswers(app, app.current?.quiz ?? quiz); }).catch(() => {
+      if (!app.signal.aborted) app.context.shell.toast(t("menu.failed"), { tone: "error" });
+    });
+  });
+  return h("div", { class: "quiz-file-row", "data-print-row": "" }, h("p", { class: "quiz-hint" }, t("print.hint")), h("div", { class: "quiz-actions" }, print));
+}
+
 /** The quiz file, folded away under the main actions: what it is for, "Save quiz file", "Share" — and more tools next to them. */
 function fileTools(app: App, quiz: Quiz): HTMLElement {
   const tools = h("details", { class: "quiz-more", "data-quiz-more": "" },
     h("summary", { class: "quiz-settings-summary" }, icon("file", 20), h("span", { class: "quiz-settings-name" }, app.t("quiz.more"))),
-    quizFileRow(app, quiz));
+    quizFileRow(app, quiz),
+    printRow(app, quiz));
   tools.open = app.view.isMoreOpen;
   tools.addEventListener("toggle", () => { app.view.isMoreOpen = tools.open; });
   return tools;

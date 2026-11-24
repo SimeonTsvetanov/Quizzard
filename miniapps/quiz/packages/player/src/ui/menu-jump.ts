@@ -4,8 +4,12 @@
 // later round kind's own screens appear here without a change. The screen the game is on is marked.
 import type { GameScreen, GameState } from "../game/state.ts";
 import { h } from "../render/h.ts";
+import { icon } from "../render/icons.ts";
 import { contextOf, type JumpTile, type PlayEnv } from "../views/context.ts";
 import type { Commands } from "./commands.ts";
+
+/** With more screens than this the rounds the game is not in are folded: the menu stays one screenful. */
+const FOLD_ABOVE = 30;
 
 /** One listed screen: where it is and what its tile says. */
 interface Place {
@@ -77,7 +81,10 @@ function tiles(options: JumpOptions, list: readonly Place[]): HTMLElement {
 export function jumpGrid(options: JumpOptions): HTMLElement {
   const { env, state } = options;
   const rounds = env.file.quiz.rounds;
-  const parts = runs(places(env, state), (place) => place.screen.roundId ?? "").map((list) => {
+  const all = places(env, state);
+  // A short game shows every screen at once; a long one only the round it is in.
+  const isSmall = all.length <= FOLD_ABOVE;
+  const parts = runs(all, (place) => place.screen.roundId ?? "").map((list) => {
     const roundId = list[0]?.screen.roundId;
     const round = rounds.find((candidate) => candidate.id === roundId);
     if (!round) return h("div", { class: "qp-jump-part" }, tiles(options, list));
@@ -88,7 +95,17 @@ export function jumpGrid(options: JumpOptions): HTMLElement {
       options.commands.dispatch({ type: "jump", index: list[0]?.index ?? 0 });
       options.close();
     });
-    return h("section", { class: "qp-jump-part", "data-jump-part": round.id, ...(isHere ? { "data-here": "" } : {}) }, h("h4", { class: "qp-jump-round" }, name), tiles(options, list));
+    // In a long game only the round it is in shows its screens; the others unfold on demand.
+    const grid = tiles(options, list);
+    const isOpen = isHere || isSmall;
+    grid.hidden = !isOpen;
+    const label = env.t("menu.screensOf", { round: round.name, count: list.length });
+    const fold = h("button", { type: "button", class: "qp-jump-fold", "aria-expanded": String(isOpen), "aria-label": label, title: label, "data-jump-fold": round.id }, h("span", { "aria-hidden": "true" }, String(list.length)), icon("down", 18));
+    fold.addEventListener("click", () => {
+      grid.hidden = !grid.hidden;
+      fold.setAttribute("aria-expanded", String(!grid.hidden));
+    });
+    return h("section", { class: "qp-jump-part", "data-jump-part": round.id, ...(isHere ? { "data-here": "" } : {}) }, h("h4", { class: "qp-jump-round" }, name, fold), grid);
   });
   return h("div", { class: "qp-jump", "data-jump-grid": "" }, ...parts);
 }

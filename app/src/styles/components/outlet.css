@@ -33,6 +33,23 @@
     visibility: hidden;
   }
 
+  /* A mini-app that prints a sheet of its own marks it `data-print-sheet`: the paper then carries that
+     sheet alone — nothing of the shell, no page background (the mini-app hides its own screens). */
+  @media print {
+    :root:has(.outlet [data-print-sheet]) {
+      background: white;
+
+      & body {
+        background: white;
+      }
+
+      & body > :not(main),
+      & main > :not(.outlet) {
+        display: none;
+      }
+    }
+  }
+
   /* || Components: outlet skeleton */
   /* Holds the screen while a chunk loads, so the mini-app replaces it without a jump; shown only
      after the loading delay of ui-patterns ("spinner after 300 ms") so a fast load never flickers. */

@@ -42,6 +42,12 @@ export const boardView: ViewEntry = {
     const most = Math.max(0, ...lines.map((line) => line.total));
     const list = h("ol", { class: "qp-board-rows" }, ...lines.map((line, index) => boardRow(env, line, index, most)));
     shareRows(list, lines.length, SPLIT_ABOVE);
-    return { element: viewRoot("board", h("header", { class: "qp-view-head" }, kicker(round ? env.t("board.after", { round: round.name }) : ""), heading(env.t("board.title"))), list) };
+    const head = h("header", { class: "qp-view-head" }, kicker(round ? env.t("board.after", { round: round.name }) : ""), heading(env.t("board.title")));
+    // Before anyone has a point there is no order to show: no places, no bars — the teams and one line that says so.
+    if (most <= 0) {
+      list.setAttribute("data-empty", "");
+      return { element: viewRoot("board", head, h("p", { class: "qp-sub", "data-board-empty": "" }, env.t("board.empty")), list) };
+    }
+    return { element: viewRoot("board", head, list) };
   },
 };

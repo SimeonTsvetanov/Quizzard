@@ -204,3 +204,8 @@
     transform: scaleY(0);
   }
 }
+
+/* Nobody scored: the steps carry the teams without a trophy. */
+.qp-podium[data-empty] .qp-podium-mark {
+  visibility: hidden;
+}

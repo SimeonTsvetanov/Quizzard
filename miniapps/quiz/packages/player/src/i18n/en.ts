@@ -97,6 +97,7 @@ export const en = {
     up: "up {{n}}",
     down: "down {{n}}",
     same: "no change",
+    empty: "No points yet",
   },
   tie: {
     title: "A tie for first place",
@@ -115,6 +116,7 @@ export const en = {
     winners: "Winners",
     thanks: "Thank you for playing!",
     place: "Place {{n}}",
+    none: "Nobody scored this time",
   },
   control: {
     back: "Back",
@@ -158,6 +160,10 @@ export const en = {
     keyFull: "Full screen",
     popupBlocked: "The browser blocked the audience window. Allow pop-ups for this page and try again.",
     restartHint: "Clears every team's points and goes back to the first screen. It asks first, and “Undo” brings the game back for a few seconds.",
+    sound: "Sound when time is up",
+    soundHint: "A soft sound when a question's time runs out. It plays in this window.",
+    screensOf_one: "Show the {{count}} screen of {{round}}",
+    screensOf_other: "Show the {{count}} screens of {{round}}",
   },
   scores: {
     title: "Scores",

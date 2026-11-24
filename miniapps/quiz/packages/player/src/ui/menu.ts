@@ -50,6 +50,14 @@ function autoSwitch({ env, state, commands }: MenuOptions): HTMLElement {
   return h("div", { class: "qp-menu-option" }, h("label", { class: "qp-switch" }, box, h("span", {}, env.t("menu.auto"))), h("p", { class: "qp-menu-note" }, env.t("menu.autoHint")));
 }
 
+/** The switch "Sound when time is up" — off unless the host turns it on. */
+function soundSwitch({ env, state, commands }: MenuOptions): HTMLElement {
+  const box = h("input", { type: "checkbox", class: "qp-switch-box", "data-sound": "" });
+  box.checked = state.sound === true;
+  box.addEventListener("change", () => { commands.dispatch({ type: "setSound", value: box.checked }); });
+  return h("div", { class: "qp-menu-option" }, h("label", { class: "qp-switch" }, box, h("span", {}, env.t("menu.sound"))), h("p", { class: "qp-menu-note" }, env.t("menu.soundHint")));
+}
+
 /** "Start the game again", in a part of its own at the end: it asks before any points are cleared (ui/guards.ts). */
 function restartSection({ env, commands, close }: MenuOptions): HTMLElement {
   const button = menuButton("reset", env.t("menu.restart"), () => {
@@ -80,5 +88,5 @@ export function menuContent(options: MenuOptions): readonly HTMLElement[] {
     menuButton("fullscreen", env.t("control.fullscreen"), then(commands.toggleFullscreen), { "data-menu": "fullscreen" }));
   if (commands.exit) tools.append(menuButton("x", env.t("control.exit"), then(commands.exit), { "data-menu": "exit" }));
   const keys = h("dl", { class: "qp-keys" }, ...KEY_LINES.flatMap(([key, label]) => [h("dt", {}, h("kbd", {}, key)), h("dd", {}, env.t(label))]));
-  return [section(env.t("menu.jump"), jumpGrid(options)), autoSwitch(options), pauses(options), tools, section(env.t("menu.keys"), keys), restartSection(options)];
+  return [section(env.t("menu.jump"), jumpGrid(options)), autoSwitch(options), soundSwitch(options), pauses(options), tools, section(env.t("menu.keys"), keys), restartSection(options)];
 }

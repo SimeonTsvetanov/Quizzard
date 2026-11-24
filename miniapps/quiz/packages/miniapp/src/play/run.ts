@@ -17,9 +17,10 @@ import { gameStorage } from "../storage/game.ts";
  * @param media - the descriptions of its files
  * @param root - an empty element that fills the screen
  * @param exit - leaves the Play screen
+ * @param from - the round or question the game starts at ("Play from here")
  * @returns how to stop the player (it saves the game first)
  */
-export function startPlay(app: App, quiz: Quiz, media: readonly MediaEntry[], root: HTMLElement, exit: () => void): () => void {
+export function startPlay(app: App, quiz: Quiz, media: readonly MediaEntry[], root: HTMLElement, exit: () => void, from?: string): () => void {
   const { shell, storage } = app.context;
   shell.setBusy(true); // no update offer in the middle of a game
   const player = createPlayer({
@@ -29,6 +30,7 @@ export function startPlay(app: App, quiz: Quiz, media: readonly MediaEntry[], ro
     mediaUrl: app.media.url,
     openAudience: () => openAudienceWindow(`${location.href.split("#")[0] ?? ""}#/quiz?${AUDIENCE_PARAM}=1`),
     onExit: exit,
+    ...(from === undefined ? {} : { startAt: from }),
     notify: (message) => { shell.toast(message, { tone: "error" }); },
   });
   return () => {

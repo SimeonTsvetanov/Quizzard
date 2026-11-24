@@ -29,7 +29,7 @@ export const enFiles = {
     fallbackName: "quiz",
     done: "Saved “{{name}}” · {{size}}",
     saved: "Exported: {{name}} · {{size}}. Open the file on the computer that runs the screen — it needs no internet.",
-    failed: "The quiz could not be exported. Check the connection and try again.",
+    failed: "The quiz could not be exported. Try again; if it keeps failing, open Quizzard once while online so the player is saved on this device.",
     bigTitle: "This file will be about {{size}}",
     bigText: "Files over {{limit}} may not open on a phone or be too big to send. A laptop plays them.",
     bigConfirm: "Export anyway",
