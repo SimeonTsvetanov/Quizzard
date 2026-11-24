@@ -3,6 +3,13 @@
 All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
+### Fixed
+- **Quiz creator in a private Safari window:** pictures, audio and video can be added and quiz files with media
+  open (Safari does not store files the usual way there).
+- **Quiz creator on a short phone:** the field you move to in the question editor no longer hides under the bar
+  with "Done".
+- **Home:** the arrow in "Open" no longer jumps when the font arrives; the animated background rests while the
+  menu or a dialog is open.
 
 ## [0.20.3] - 2026-11-24
 ### Added
