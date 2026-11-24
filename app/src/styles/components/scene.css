@@ -2,7 +2,7 @@
    the dark theme is a night sky whose stars drift slowly upwards in three layers (after the classic CSS
    "parallax stars" pen Moni picked, rebuilt here), the light theme soft mountains under a slowly turning sun.
    Only transform and opacity move (composited layers); nothing moves with reduced motion, and the scene stands
-   still while a tool is open. */
+   still while a tool or a dialog is open. */
 @layer components {
   /* || Components: scene */
   .scene {
@@ -22,11 +22,16 @@
     }
 
     /* A tool is open, or the screen is changing (the new picture of a screen change is live: a moving sky would
-       be redrawn into it on every frame): the sky keeps its place. */
+       be redrawn into it on every frame), or a dialog is open (the menu, Settings, an alert: their backdrop
+       blurs the page, and a moving sky would be blurred again on every frame — seconds per frame where there is
+       no GPU): the sky keeps its place. */
     /* The pseudo-elements too: the sun's beams turn on ::before and ::after, which `*` does not reach. */
     :root[data-tool] & *,
     :root[data-tool] & *::before,
     :root[data-tool] & *::after,
+    :root:has(dialog[open]) & *,
+    :root:has(dialog[open]) & *::before,
+    :root:has(dialog[open]) & *::after,
     :root:active-view-transition & *,
     :root:active-view-transition & *::before,
     :root:active-view-transition & *::after {

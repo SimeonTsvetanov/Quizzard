@@ -15,7 +15,7 @@ const settled = (page: Page): Promise<unknown> => page.evaluate(() => Promise.al
 
 for (const [width, height] of SIZES) {
   test.describe(`${String(width)} × ${String(height)}`, () => {
-    test.skip(({ isMobile }) => isMobile, "the sizes are set here: one project runs them");
+    test.skip(({ isMobile, browserName }) => isMobile || browserName !== "chromium", "the sizes are set here: the Chromium project runs them (DECISIONS 2026-11-24)");
     test.use({ viewport: { width, height } });
     const isWide = width >= 700;
 

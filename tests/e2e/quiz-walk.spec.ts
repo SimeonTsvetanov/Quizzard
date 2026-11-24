@@ -6,7 +6,11 @@ import { type SeedFile, control, openQuizAgain, panel, play, pubNight, root, scr
 // visible button, link and switch is pressed once from a fresh state and must do something; nothing
 // may stand outside the window, nothing may log an error; Back — the browser's, the in-app link,
 // Escape in a dialog, the header's arrow — lands where a person expects with the focus restored; and
-// the main rows are symmetric to the pixel. The viewports are set here, so one project runs it.
+// the main rows are symmetric to the pixel. The viewports are set here, so one project (Chromium) runs it.
+// Every test starts from a fresh page and a library of its own, so they run side by side: the file is about a
+// hundred tests and a quarter of an hour in a row, and CI splits a file between its shards only this way.
+test.describe.configure({ mode: "parallel" });
+
 const SIZES = [[360, 740], [412, 915], [800, 1100], [1280, 860], [1920, 1080]] as const;
 const CONTROLS = "button, a[href], summary, input:not([type=file]):not([type=text]):not([type=search]), select";
 
@@ -133,7 +137,7 @@ const PLAYER: readonly Place[] = [
 
 for (const [width, height] of SIZES) {
   test.describe(`${String(width)} × ${String(height)}`, () => {
-    test.skip(({ isMobile }) => isMobile, "the walk sets its own window sizes: one project runs it");
+    test.skip(({ isMobile, browserName }) => isMobile || browserName !== "chromium", "the walk sets its own window sizes: the Chromium project runs it (DECISIONS 2026-11-24)");
     test.use({ viewport: { width, height } });
     test.beforeEach(async ({ page }) => {
       // What a press does outside the page is made visible inside it.
