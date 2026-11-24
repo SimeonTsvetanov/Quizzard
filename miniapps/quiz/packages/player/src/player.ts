@@ -162,6 +162,7 @@ function toggleDialog(session: Session, name: string, title: string, build: (clo
 function moveBar(session: Session, parent: HTMLElement, before: HTMLElement | null): void {
   const focused = document.activeElement;
   parent.insertBefore(session.bar.element, before);
+  draw(session); // the layout of the mode the bar is now part of: a button in a hidden bar cannot take the focus
   if (focused instanceof HTMLElement && session.bar.element.contains(focused)) focused.focus();
 }
 
@@ -198,9 +199,8 @@ function startPresenting(session: Session): void {
     if (message.kind === "bye") stopPresenting(session);
   });
   options.root.append(panel.element);
-  moveBar(session, panel.element, null); // the same bar, now under the host panel
   session.presenter = { link, channel, panel };
-  draw(session);
+  moveBar(session, panel.element, null); // the same bar, now under the host panel
 }
 
 /** The game moved to the first screen of a question or a round; unchanged when the id names neither. */

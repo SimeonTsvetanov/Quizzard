@@ -56,11 +56,22 @@ export interface MorphOptions {
  * for reduced motion, and while the page is hidden.
  * @param options - the two elements and the change
  */
+/**
+ * Whether a dialog is open or still leaving (its exit transition runs while it is in the top layer).
+ * A screen change that starts then — Back pressed right after Escape closed the menu — is made at
+ * once: a view transition started over a leaving dialog did not run its update for seconds, and the
+ * old screen stayed up over the new address (quiz-back.spec.ts found it on wide screens).
+ */
+function hasDialogInMotion(): boolean {
+  return [...document.querySelectorAll("dialog")].some((dialog) => dialog.open || dialog.getAnimations().length > 0);
+}
+
 export function morphScreens({ from, update, to, after }: MorphOptions): void {
   const isAnimated =
     "startViewTransition" in document &&
     !matchMedia("(prefers-reduced-motion: reduce)").matches &&
-    document.visibilityState === "visible";
+    document.visibilityState === "visible" &&
+    !hasDialogInMotion();
   if (!isAnimated) {
     void update();
     after?.();

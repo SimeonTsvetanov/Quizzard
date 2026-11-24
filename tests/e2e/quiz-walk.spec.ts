@@ -187,7 +187,8 @@ for (const [width, height] of SIZES) {
       await control(page, "audience").focus();
       await page.keyboard.press("Enter");
       await expect(panel(page)).toHaveCount(0);
-      await expect(control(page, "audience")).toBeFocused();
+      // (The window that just closed had the system's focus, so the page's own focus is read directly.)
+      expect(await page.evaluate(() => document.activeElement?.getAttribute("data-control"))).toBe("audience");
       expect([...errors, ...audienceErrors]).toEqual([]);
     });
   });

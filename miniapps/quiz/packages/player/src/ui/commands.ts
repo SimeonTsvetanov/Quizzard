@@ -45,11 +45,16 @@ const KEYS: Readonly<Record<string, (commands: Commands) => void>> = {
   KeyF: (commands) => { commands.toggleFullscreen(); },
 };
 
+/** The keys that open the menu and the scores: pressed inside a dialog they close it (or open the other one). */
+const DIALOG_KEYS: ReadonlySet<string> = new Set(["KeyM", "KeyS"]);
+
 /** Whether a key press belongs to the element it happened in: typing in a field, Space on a button, anything in a dialog. */
 function isTaken(event: KeyboardEvent): boolean {
   const target = event.target;
   if (!(target instanceof Element)) return false;
-  if (target.closest("input, textarea, select, [contenteditable], dialog") !== null) return true;
+  if (target.closest("input, textarea, select, [contenteditable]") !== null) return true;
+  // In a dialog only the dialogs' own keys work — M and S close the one they opened, or swap to the other.
+  if (target.closest("dialog") !== null) return !DIALOG_KEYS.has(event.code);
   return (event.code === "Space" || event.code === "Enter") && target.closest("button, a, summary") !== null;
 }
 

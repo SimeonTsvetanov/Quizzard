@@ -46,5 +46,7 @@ export function nameField(options: NameFieldOptions): HTMLTextAreaElement {
     // In the next frame: a size changed inside the observer's own callback is reported by the browser as an error.
     requestAnimationFrame(fit);
   }).observe(field);
+  // The display font may land after the field was measured in the fallback one: its lines are counted again.
+  void (document.fonts as FontFaceSet | undefined)?.ready.then(fit);
   return field;
 }
