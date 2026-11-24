@@ -32,6 +32,22 @@
     min-width: 0;
   }
 
+  /* The side of the form. Phone: no box of its own — the live slide goes on top of the form and the
+     bar stays at the bottom of the screen. Wide: one column that stays in view while the form
+     scrolls: how the question will look, and right under it the two ways to finish (Moni 2026-11-24:
+     the bar hung alone under the empty half of the screen). */
+  .quiz-editor-side {
+    display: contents;
+
+    @media (width >= 700px) {
+      position: sticky;
+      top: calc(var(--quiz-sticky-top) + var(--space-4));
+      display: grid;
+      gap: var(--space-4);
+      min-width: 0;
+    }
+  }
+
   /* "Question 3 of 12 ‹ ›": the title, its place in the round, and the way to its neighbours. */
   .quiz-editor-title {
     display: flex;
@@ -107,8 +123,11 @@
     display: grid;
     gap: var(--space-4);
 
+    /* Side by side, each group keeps its own height: the shorter one (Time) is not stretched, so its
+       stepper and "From the round" stand level with the fields and the mark of Points. */
     @media (width >= 1000px) {
       grid-template-columns: auto minmax(0, 1fr);
+      align-items: start;
       gap: var(--space-6);
     }
   }
@@ -247,11 +266,6 @@
       justify-self: start;
     }
 
-    @media (width >= 700px) {
-      position: sticky;
-      top: calc(var(--quiz-sticky-top) + var(--space-4));
-    }
-
     /* Phone: shown by the bar's switch, pinned under the header while the form scrolls below it. */
     @media (width < 700px) {
       position: sticky;
@@ -336,14 +350,17 @@
       }
     }
 
-    /* Wide: a pill at the right as wide as its buttons — not a strip across the form that hides it. */
+    /* Wide: no floating bar — two buttons as wide as the live slide above them, in the side column. */
     @media (width >= 700px) {
-      width: fit-content;
-      margin-inline-start: auto;
+      position: static;
+      padding: 0;
+      border-radius: 0;
+      background: none;
+      box-shadow: none;
 
-      & .quiz-button {
-        flex: none;
-        min-width: 9rem;
+      & .quiz-button,
+      & [data-done] {
+        flex: 1 1 0;
       }
     }
   }

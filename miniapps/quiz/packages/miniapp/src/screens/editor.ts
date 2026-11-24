@@ -198,6 +198,9 @@ export function editorScreen(app: App, quiz: Quiz): HTMLElement {
   const live = livePreview(app, questionId, media);
   live.element.toggleAttribute("data-open", app.view.isLiveOpen);
   keys(app, screen, place);
-  screen.append(head, h("div", { class: "quiz-editor-body" }, form(app, place, live, controller.signal), live.element), bar(app, live, place));
+  // The live slide and the bar are one side column on a wide screen (the slide, and right under it "Add
+  // another" and "Done" — always in view); on a phone the column dissolves: slide on top, bar at the bottom.
+  const side = h("div", { class: "quiz-editor-side" }, live.element, bar(app, live, place));
+  screen.append(head, h("div", { class: "quiz-editor-body" }, form(app, place, live, controller.signal), side));
   return screen;
 }
