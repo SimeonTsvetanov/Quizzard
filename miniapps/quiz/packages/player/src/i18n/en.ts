@@ -64,13 +64,13 @@ export const en = {
     remove: "Remove {{name}}",
   },
   round: {
-    kicker: "Round {{n}} of {{total}}",
     each: "{{time}} per question",
     rules: "Rules",
+    word: "Round",
   },
   question: {
-    where: "Question {{n}} of {{total}}",
     name: "Question {{n}}",
+    word: "Question",
   },
   answers: {
     title: "Answers",
@@ -131,6 +131,7 @@ export const en = {
     exit: "Back to the quiz",
     close: "Close",
     black: "Black screen",
+    begin: "Start",
   },
   menu: {
     title: "Menu",
@@ -206,6 +207,9 @@ export const en = {
     action: "Undo",
     cleared: "Scores cleared",
     restarted: "The game starts again",
+  },
+  count: {
+    of: "{{n}} of {{total}}",
   },
 } as const;
 

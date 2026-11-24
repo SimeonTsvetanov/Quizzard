@@ -1,4 +1,4 @@
-import { effectivePoints } from "@simeonts/quizzard-quiz-core/play";
+import { type Round, effectivePoints } from "@simeonts/quizzard-quiz-core/play";
 import { pointsText, renderSlide } from "../render/slide.ts";
 import type { DrawnView, HostAnswer, ViewContext, ViewEntry } from "./context.ts";
 import { viewRoot } from "./parts.ts";
@@ -13,6 +13,12 @@ export function hostAnswer({ env, round, question }: ViewContext): HostAnswer | 
   return { text, explanation: question.explanation?.trim() ?? "", points: pointsText(effectivePoints(round, question), env.labels), note: question.note?.trim() ?? "" };
 }
 
+/** A round's place among the rounds that are played (those with questions). */
+function roundPlace(env: ViewContext["env"], round: Round): { n: number; total: number } {
+  const played = env.file.quiz.rounds.filter((candidate) => candidate.questions.length > 0);
+  return { n: played.indexOf(round) + 1, total: played.length };
+}
+
 /**
  * The slide of the context's question.
  * @param context - a question or answer screen
@@ -25,6 +31,7 @@ export function slideOf({ env, round, question, media }: ViewContext, isRevealed
     question,
     round,
     number: round.questions.indexOf(question) + 1,
+    roundPlace: roundPlace(env, round),
     reveal: isRevealed,
     ui: env.parts,
     labels: env.labels,

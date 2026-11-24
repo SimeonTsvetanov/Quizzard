@@ -108,7 +108,7 @@ function draw(session: Session): void {
   const { options, presenter, state } = session;
   options.root.setAttribute("data-mode", presenter ? "panel" : "stage");
   if (presenter) presenter.panel.update(state); else session.stage.show(state);
-  session.bar.update(state);
+  session.bar.update(state, presenter !== null);
   session.overlay?.sync?.(state);
 }
 
@@ -159,6 +159,8 @@ function stopPresenting(session: Session): void {
   presenter.channel.close();
   presenter.link.close();
   presenter.panel.destroy();
+  // The one control bar goes back under the stage.
+  session.options.root.insertBefore(session.bar.element, session.undo.element);
   presenter.panel.element.remove();
   // The clip was playing in the window that is gone: it rests until the host plays it here.
   move(session, { type: "media", command: "pause" });
@@ -183,6 +185,7 @@ function startPresenting(session: Session): void {
     if (message.kind === "bye") stopPresenting(session);
   });
   options.root.append(panel.element);
+  panel.element.append(session.bar.element); // the same bar, now under the host panel
   session.presenter = { link, channel, panel };
   draw(session);
 }

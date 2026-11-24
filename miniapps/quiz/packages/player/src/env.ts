@@ -33,6 +33,8 @@ export function stageLabels(t: Translate, lang: Lang): SlideLabels {
     emptyAnswer: t("slide.emptyAnswer"),
     answer: t("slide.answer"),
     unsupported: t("slide.unsupported"),
+    round: t("round.word"),
+    of: (now, total) => t("count.of", { n: now, total }),
     media: { missing: t("media.missing"), zoom: t("media.zoom"), play: t("media.play"), pause: t("media.pause"), restart: t("media.restart"), tapToPlay: t("media.tap") },
   };
 }

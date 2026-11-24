@@ -1,6 +1,7 @@
-// The control bar under the stage, for a host who plays in one window: back, the timer, next, the
-// black screen, the scores, the menu, the audience window and full screen. Real size (44 px targets) whatever the
-// stage's scale. It dims while nobody touches it.
+// The player's one control bar: back, the timer, the primary button, the black screen, the scores,
+// the audience window, full screen and the menu — under the stage for a host who plays in one window
+// and, unchanged, under the host panel once the audience window is open. Real size (44 px targets)
+// whatever the stage's scale. Every button has its name as a tooltip, with its key.
 import type { GameState } from "../game/state.ts";
 import type { Translate } from "../i18n/translate.ts";
 import { h, releaseAfterPointer } from "../render/h.ts";
@@ -10,7 +11,8 @@ import type { Commands } from "./commands.ts";
 /** A bar and how to bring it up to date. */
 export interface Bar {
   readonly element: HTMLElement;
-  update(state: GameState): void;
+  /** Brings the buttons up to date; `isPresenting` = the audience window is open (the bar stands under the host panel). */
+  update(state: GameState, isPresenting?: boolean): void;
 }
 
 /**
@@ -57,8 +59,29 @@ export function setFace(button: HTMLButtonElement, name: StageIcon, label: strin
   button.replaceChildren(icon(name, 22), h("span", { class: "qp-bar-words", "aria-hidden": "true" }, label));
 }
 
+/** The key of each control, shown in its tooltip — the same on the stage's bar and under the host panel. */
+const KEY_HINTS: Readonly<Record<string, string>> = { back: "←", next: "Space", timer: "T", reset: "R", black: "B", scores: "S", fullscreen: "F", menu: "M" };
+
+/** The tooltip of a control: what it does and, where it has one, its key — "Next (Space)". */
+function hinted(button: HTMLButtonElement): void {
+  const key = KEY_HINTS[button.getAttribute("data-control") ?? ""];
+  const label = button.getAttribute("aria-label") ?? "";
+  button.title = key === undefined ? label : `${label} (${key})`;
+  if (key !== undefined) button.setAttribute("aria-keyshortcuts", key);
+}
+
+/** What the primary button says: "Start" on the first screen, "Show answer" while a reveal is left, else "Next". */
+function primaryFace(state: GameState): { readonly icon: StageIcon; readonly label: "control.begin" | "control.reveal" | "control.next" } {
+  const hasReveal = state.step < (state.screens[state.index]?.steps ?? 0);
+  if (hasReveal) return { icon: "eye", label: "control.reveal" };
+  return state.index === 0 ? { icon: "play", label: "control.begin" } : { icon: "right", label: "control.next" };
+}
+
 /**
- * Creates the control bar.
+ * Creates the control bar: one bar for the whole player. Under the stage and — once the audience
+ * window is open — under the host panel it is the same element with the same buttons in the same
+ * places: leave · back, timer, restart · the primary button, always in the middle and of one width ·
+ * black screen, scores, audience window, full screen, menu.
  * @param t - the translator
  * @param commands - what the buttons do
  */
@@ -68,31 +91,34 @@ export function createBar(t: Translate, commands: Commands): Bar {
   const reset = barButton("reset", t("control.reset"), () => { commands.dispatch({ type: "timerReset" }); }, { "data-control": "reset" });
   const next = barButton("right", t("control.next"), () => { commands.dispatch({ type: "next" }); }, { "data-control": "next", "data-words": "", "data-primary": "" });
   const black = barButton("black", t("control.black"), () => { commands.dispatch({ type: "black" }); }, { "data-control": "black", "aria-pressed": "false" });
-  const tools = h("div", { class: "qp-bar-group" },
+  const audience = barButton("audience", t("control.audience"), commands.toggleAudience, { "data-control": "audience", "aria-pressed": "false" });
+  const tools = h("div", { class: "qp-bar-group qp-bar-end" },
     black,
     barButton("scores", t("control.scores"), commands.openScores, { "data-control": "scores" }),
-    barButton("audience", t("control.audience"), commands.toggleAudience, { "data-control": "audience" }),
+    audience,
     barButton("fullscreen", t("control.fullscreen"), commands.toggleFullscreen, { "data-control": "fullscreen" }),
     barButton("menu", t("control.menu"), commands.openMenu, { "data-control": "menu" }));
-  const element = h("div", { class: "qp-bar", role: "toolbar", "aria-label": t("host.title") },
-    h("div", { class: "qp-bar-group" }, back, timer, reset),
-    next,
-    tools);
-  if (commands.exit) element.prepend(barButton("x", t("control.exit"), commands.exit, { "data-control": "exit" }));
+  const start = h("div", { class: "qp-bar-group qp-bar-start" }, back, timer, reset);
+  if (commands.exit) start.prepend(barButton("x", t("control.exit"), commands.exit, { "data-control": "exit" }));
+  const element = h("div", { class: "qp-bar", role: "toolbar", "aria-label": t("host.title") }, start, next, tools);
+  const buttons = [...element.querySelectorAll("button")];
+  for (const button of buttons) hinted(button);
   return {
     element,
-    update(state) {
-      const screen = state.screens[state.index];
+    update(state, isPresenting = false) {
       const isRunning = state.timer.status === "running" || state.timer.status === "cue";
       const hasTimer = state.timer.totalMs > 0;
-      const hasReveal = state.step < (screen?.steps ?? 0);
+      const face = primaryFace(state);
       setOff(back, state.index === 0 && state.step === 0);
-      setOff(next, state.index === state.screens.length - 1 && !hasReveal);
+      setOff(next, state.index === state.screens.length - 1 && face.label !== "control.reveal");
       setOff(timer, !hasTimer);
       setOff(reset, !hasTimer);
       black.setAttribute("aria-pressed", String(state.curtain?.kind === "black"));
+      audience.setAttribute("aria-pressed", String(isPresenting));
       setFace(timer, isRunning ? "pause" : "play", isRunning ? t("control.pause") : t("control.start"));
-      setFace(next, hasReveal ? "eye" : "right", hasReveal ? t("control.reveal") : t("control.next"));
+      setFace(next, face.icon, t(face.label));
+      setFace(audience, "audience", t(isPresenting ? "control.closeAudience" : "control.audience"));
+      for (const button of [timer, next, audience]) hinted(button);
     },
   };
 }

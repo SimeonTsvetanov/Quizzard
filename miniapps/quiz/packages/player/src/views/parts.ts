@@ -1,8 +1,11 @@
 // Small builders the views share: the view's root, headings, chips, the number stepper and the
 // text that says what a view's structure hangs on.
+import type { Round } from "@simeonts/quizzard-quiz-core/play";
 import type { GameState } from "../game/state.ts";
+import { countMark } from "../render/count.ts";
 import { h, releaseAfterPointer } from "../render/h.ts";
 import { icon, type StageIcon } from "../render/icons.ts";
+import type { PlayEnv } from "./context.ts";
 
 /**
  * The root element of a view.
@@ -15,10 +18,39 @@ export function viewRoot(name: string, ...children: (Node | string)[]): HTMLElem
 
 /**
  * The small line above a heading.
- * @param text - its words
+ * @param parts - its words, and counters among them
  */
-export function kicker(text: string): HTMLElement {
-  return h("p", { class: "qp-kicker" }, text);
+export function kicker(...parts: (Node | string)[]): HTMLElement {
+  return h("p", { class: "qp-kicker" }, ...parts);
+}
+
+/**
+ * A counter in the game's language: "3/10", read out as "3 of 10".
+ * @param env - gives the words
+ * @param now - where it is, from 1
+ * @param total - out of how many
+ */
+export function count(env: PlayEnv, now: number, total: number): HTMLElement {
+  return countMark(now, total, env.labels.of(now, total));
+}
+
+/**
+ * "Round 2/5": a round's place among the rounds that are played (those with questions).
+ * @param env - the quiz and the words
+ * @param round - the round
+ */
+export function roundCount(env: PlayEnv, round: Round): (Node | string)[] {
+  const played = env.file.quiz.rounds.filter((candidate) => candidate.questions.length > 0);
+  return [`${env.labels.round} `, count(env, played.indexOf(round) + 1, played.length)];
+}
+
+/**
+ * "Round 2/5 · History": a round by its place and its name, for the line above a heading.
+ * @param env - the quiz and the words
+ * @param round - the round; `undefined` gives nothing
+ */
+export function roundLine(env: PlayEnv, round: Round | undefined): (Node | string)[] {
+  return round ? [...roundCount(env, round), " · ", round.name] : [];
 }
 
 /** Text lengths at which a big heading steps down a size. */

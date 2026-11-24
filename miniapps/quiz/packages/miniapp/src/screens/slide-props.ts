@@ -2,7 +2,7 @@
 // quiz's media files. Thumbnails take a file's small still where it has one (fifty cards never
 // decode fifty full pictures); the live preview and the Preview screen take the file itself and
 // make its media live — a picture zooms, a clip plays — driven by the slide's own buttons.
-import type { MediaEntry } from "@simeonts/quizzard-quiz-core";
+import type { MediaEntry, Round } from "@simeonts/quizzard-quiz-core";
 import { type LocalMedia, type SlideInput, renderSlide, stillOf } from "@simeonts/quizzard-quiz-player/render";
 import type { App } from "../app/state.ts";
 import { slideLabels } from "../format.ts";
@@ -22,6 +22,17 @@ function entries(app: App): (id: string) => MediaEntry | undefined {
  */
 export function slideProps(app: App): SlideProps {
   return { ui: app.ui, labels: slideLabels(app.t, app.lang), mediaUrl: app.media.url, entryOf: entries(app) };
+}
+
+/**
+ * A round's place among the quiz's rounds that have questions, as the player counts them ("Round 2/5").
+ * @param app - the mounted creator
+ * @param round - the round
+ */
+export function roundPlace(app: App, round: Round): Pick<SlideInput, "roundPlace"> {
+  const played = (app.current?.quiz.rounds ?? []).filter((candidate) => candidate.questions.length > 0);
+  const n = played.indexOf(round) + 1;
+  return n === 0 ? {} : { roundPlace: { n, total: played.length } };
 }
 
 /**

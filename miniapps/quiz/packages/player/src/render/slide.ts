@@ -7,6 +7,7 @@
 // Scaling: the slide is a size container and every size on its canvas is in `cqi` (slide.css), so
 // the same markup is a thumbnail or a projector slide with crisp text and no script.
 import { type MediaEntry, type Points, type Question, type Round, effectivePoints, effectiveSeconds } from "@simeonts/quizzard-quiz-core/play";
+import { countMark } from "./count.ts";
 import { h } from "./h.ts";
 import { icon } from "./icons.ts";
 import { canDraw, type SlideLabels, type SlideMedia, type SlideRegistries, type SlideView } from "./registry.ts";
@@ -33,6 +34,8 @@ export interface SlideInput {
   readonly entryOf?: (id: string) => MediaEntry | undefined;
   /** Makes the media live; see {@link SlideView.media}. */
   readonly media?: SlideMedia;
+  /** The round's place among the quiz's rounds ("Round 2/5" before its name); left out = the name alone. */
+  readonly roundPlace?: { readonly n: number; readonly total: number };
 }
 
 /** Text lengths at which the question text steps down a size. */
@@ -72,9 +75,14 @@ function topLine(input: SlideInput): HTMLElement {
   const meta = h("span", { class: "quiz-slide-meta" }, points);
   const time = timePart(input);
   if (time !== null) meta.prepend(time);
+  // "3/10" and "Round 2/5 · History": the place first, out of how many right after it, quieter.
+  const where = h("span", { class: "quiz-slide-round" });
+  if (input.roundPlace) where.append(`${labels.round} `, countMark(input.roundPlace.n, input.roundPlace.total, labels.of(input.roundPlace.n, input.roundPlace.total)), " · ");
+  where.append(round.name);
+  const total = round.questions.length;
   return h("div", { class: "quiz-slide-top" },
-    h("span", { class: "quiz-slide-number" }, String(number)),
-    h("span", { class: "quiz-slide-round" }, round.name),
+    h("span", { class: "quiz-slide-number", "data-slide-number": "" }, countMark(number, total, labels.of(number, total))),
+    where,
     meta);
 }
 

@@ -18,6 +18,10 @@ export interface SlideLabels extends RevealLabels {
   readonly answer: string;
   /** Shown instead of a question this version cannot draw. */
   readonly unsupported: string;
+  /** The word "Round" before a round's counter ("Round 2/5"). */
+  readonly round: string;
+  /** A counter in words, for screen readers: "2 of 5". */
+  of(now: number, total: number): string;
   /** The words of a picture, an audio clip and a video. */
   readonly media: MediaLabels;
 }

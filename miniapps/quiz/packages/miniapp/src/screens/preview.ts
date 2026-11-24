@@ -7,7 +7,7 @@ import { iconButton, labelButton } from "../dom/controls.ts";
 import { h } from "../dom/h.ts";
 import { createLocalMedia } from "@simeonts/quizzard-quiz-player/render";
 import { emptyState, up } from "./common.ts";
-import { showLive, slideProps } from "./slide-props.ts";
+import { roundPlace, showLive, slideProps } from "./slide-props.ts";
 
 /** A swipe shorter than this many px is a tap. */
 const SWIPE_MIN_PX = 48;
@@ -78,7 +78,7 @@ export function previewScreen(app: App, quiz: Quiz): HTMLElement {
   const media = createLocalMedia();
   app.view.cleanup = () => { media.stop(); };
   const stage = h("div", { class: "quiz-stage", "data-preview-slide": "" });
-  showLive(stage, { question: stop.question, round: stop.round, number: stop.number, reveal: view.isRevealed, ...slideProps(app) }, media);
+  showLive(stage, { question: stop.question, round: stop.round, number: stop.number, reveal: view.isRevealed, ...slideProps(app), ...roundPlace(app, stop.round) }, media);
   const reveal = h("button", { type: "button", class: "button quiz-toggle", "aria-pressed": String(view.isRevealed), "data-reveal-toggle": "", "data-focus": "reveal" }, t("preview.showAnswer"));
   reveal.addEventListener("click", () => {
     view.isRevealed = !view.isRevealed;

@@ -83,6 +83,8 @@ export function slideLabels(t: Translate, lang: Lang): SlideLabels {
     emptyAnswer: t("slide.emptyAnswer"),
     answer: t("slide.answer"),
     unsupported: t("slide.unsupported"),
+    round: t("slide.round"),
+    of: (now, total) => t("slide.of", { n: now, total }),
     media: { missing: t("slide.noFile"), zoom: t("slide.zoom"), play: t("slide.play"), pause: t("slide.pause"), restart: t("slide.restart"), tapToPlay: t("slide.tap") },
   };
 }

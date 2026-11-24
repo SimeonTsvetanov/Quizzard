@@ -1,7 +1,7 @@
 import { h } from "../render/h.ts";
 import { pointsText } from "../render/slide.ts";
 import type { ViewEntry } from "./context.ts";
-import { chip, heading, kicker, viewRoot } from "./parts.ts";
+import { chip, heading, kicker, roundCount, viewRoot } from "./parts.ts";
 
 /** The round's opening: its number and name, how it is played and, when it has them, its rules. */
 export const rulesView: ViewEntry = {
@@ -9,9 +9,8 @@ export const rulesView: ViewEntry = {
   tile: ({ env }) => ({ mark: env.t("tile.rules"), name: env.t("tile.rules") }),
   stage: ({ env, round }) => {
     if (!round) return { element: viewRoot("rules") };
-    const playable = env.file.quiz.rounds.filter((candidate) => candidate.questions.length > 0);
     const root = viewRoot("rules",
-      kicker(env.t("round.kicker", { n: playable.indexOf(round) + 1, total: playable.length })),
+      kicker(...roundCount(env, round)),
       heading(round.name),
       h("div", { class: "qp-chips" },
         chip("scores", env.t("title.questions", { count: round.questions.length })),

@@ -45,5 +45,7 @@ export const enFiles = {
     pause: "Pause",
     restart: "From the start",
     tap: "Tap to play",
+    round: "Round",
+    of: "{{n}} of {{total}}",
   },
 } as const;

@@ -12,7 +12,7 @@ import { canShow } from "../ui-registry.ts";
 import { type ActionLabels, actionRow, openMore } from "./card-actions.ts";
 import { questionName } from "./common.ts";
 import { type CardPlace, QUESTION_ATTRIBUTE, duplicate, edit, moveTo, moveToRound, placeOf, playFrom, preview, remove } from "./question-moves.ts";
-import { thumbProps } from "./slide-props.ts";
+import { roundPlace, thumbProps } from "./slide-props.ts";
 
 export type { CardPlace } from "./question-moves.ts";
 
@@ -82,7 +82,7 @@ function facts(app: App, { round, question }: CardPlace): HTMLElement {
  */
 export function questionCard(app: App, place: CardPlace): HTMLElement {
   const { round, question, index } = place;
-  const slide = renderSlide({ question, round, number: index + 1, reveal: false, ...thumbProps(app) });
+  const slide = renderSlide({ question, round, number: index + 1, reveal: false, ...thumbProps(app), ...roundPlace(app, round) });
   // The mini slide is a picture of the question: the button's name says it in words.
   const open = h("button", { type: "button", class: "quiz-qcard-open", "data-focus": `question:${question.id}` },
     h("span", { class: "visually-hidden" }, questionName(app, question, index + 1)), h("span", { class: "quiz-thumb", "aria-hidden": "true" }, slide));

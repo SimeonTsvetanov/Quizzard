@@ -66,13 +66,13 @@ export const bg: Messages = {
     remove: "Премахни {{name}}",
   },
   round: {
-    kicker: "Рунд {{n}} от {{total}}",
     each: "{{time}} на въпрос",
     rules: "Правила",
+    word: "Рунд",
   },
   question: {
-    where: "Въпрос {{n}} от {{total}}",
     name: "Въпрос {{n}}",
+    word: "Въпрос",
   },
   answers: {
     title: "Отговори",
@@ -133,6 +133,7 @@ export const bg: Messages = {
     exit: "Обратно към куиза",
     close: "Затвори",
     black: "Черен екран",
+    begin: "Начало",
   },
   menu: {
     title: "Меню",
@@ -208,5 +209,8 @@ export const bg: Messages = {
     action: "Отмени",
     cleared: "Точките са изчистени",
     restarted: "Играта започва отначало",
+  },
+  count: {
+    of: "{{n}} от {{total}}",
   },
 };

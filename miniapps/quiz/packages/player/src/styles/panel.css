@@ -6,27 +6,16 @@
   min-height: 0;
   background: var(--qp-page);
   color: var(--qp-text);
+}
 
-  & .qp-bar-button {
-    background: var(--qp-surface);
-    box-shadow: inset 0 0 0 1px var(--qp-line);
-    color: var(--qp-text);
+/* The media card's own buttons follow the page's theme; the control bar under the panel is the stage's bar, unchanged. */
+.qp-panel-body .qp-bar-button {
+  background: var(--qp-surface);
+  box-shadow: inset 0 0 0 1px var(--qp-line);
+  color: var(--qp-text);
 
-    &:hover:not([aria-disabled="true"], [data-primary]) {
-      background: var(--qp-surface);
-      box-shadow: inset 0 0 0 2px var(--qp-accent);
-    }
-
-    /* The primary button keeps its label on every state: a darker accent under the pointer and the finger. */
-    &[data-primary] {
-      background: var(--qp-accent);
-      box-shadow: none;
-      color: var(--qp-on-accent);
-
-      &:is(:hover, :active):not([aria-disabled="true"]) {
-        background: color-mix(in oklch, var(--qp-accent) 84%, black);
-      }
-    }
+  &:hover:not([aria-disabled="true"]) {
+    box-shadow: inset 0 0 0 2px var(--qp-accent);
   }
 }
 
@@ -85,6 +74,16 @@
   color: var(--qp-text-2);
   font-size: 14px;
   font-weight: 600;
+
+  /* "Round 2/5 · History · Question 3/10": the place in the full text colour, the total in the line's own (AA on the page). */
+  & .quiz-count-now {
+    color: var(--qp-text);
+  }
+
+  & .quiz-count-of {
+    color: inherit;
+    font-size: inherit;
+  }
 }
 
 .qp-panel-screens {
@@ -169,19 +168,6 @@
   color: var(--qp-text-2);
   font-size: 15px;
   overflow-wrap: anywhere;
-}
-
-.qp-panel-nav {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
-  gap: 10px;
-  padding: 10px max(14px, env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
-  border-top: 1px solid var(--qp-line);
-
-  & .qp-bar-button {
-    min-height: 56px;
-    font-size: 17px;
-  }
 }
 
 /* || The screen's own controls in the panel: the same parts as on the stage, at a tool's size */

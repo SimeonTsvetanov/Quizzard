@@ -356,7 +356,8 @@ test("presenter mode from a local file: the audience window shows only the stage
 
   // A key pressed in the audience window is a move of the host's game.
   await audience.keyboard.press("Space");
-  await expect(panel(host).locator("[data-host-where]")).toContainText("Question 2 of 2");
+  // The counters are drawn as "n/total" (owner, 2026-11-24): question 2 of 2 is "2/2".
+  await expect(panel(host).locator("[data-host-where] [data-count]").last()).toHaveAttribute("data-count", "2/2");
   await expect(audience.locator(".quiz-slide-option[data-correct]")).toHaveCount(0);
 
   // Score entry happens in the panel; the audience sees the numbers.

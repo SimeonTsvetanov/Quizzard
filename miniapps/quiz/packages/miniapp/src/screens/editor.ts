@@ -18,7 +18,7 @@ import { editorHead, step } from "./editor-head.ts";
 import { timingFields } from "./editor-timing.ts";
 import { type CardPlace, duplicate, edit, placeOf, remove } from "./question-moves.ts";
 import { newQuestion } from "./round.ts";
-import { showLive, slideProps } from "./slide-props.ts";
+import { roundPlace, showLive, slideProps } from "./slide-props.ts";
 
 /** The live preview and how to draw it again. */
 interface Live {
@@ -31,7 +31,7 @@ function livePreview(app: App, questionId: string, media: LocalMedia): Live {
   const stage = h("div", { class: "quiz-stage", "data-live-slide": "" });
   const refresh = (): void => {
     const now = placeOf(app, questionId);
-    if (now) showLive(stage, { question: now.question, round: now.round, number: now.index + 1, reveal: app.view.isRevealed, ...slideProps(app) }, media);
+    if (now) showLive(stage, { question: now.question, round: now.round, number: now.index + 1, reveal: app.view.isRevealed, ...slideProps(app), ...roundPlace(app, now.round) }, media);
   };
   const reveal = h("button", { type: "button", class: "button quiz-toggle", "aria-pressed": String(app.view.isRevealed), "data-reveal-toggle": "" }, t("preview.showAnswer"));
   reveal.addEventListener("click", () => {

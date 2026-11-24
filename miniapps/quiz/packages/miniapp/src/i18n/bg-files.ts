@@ -45,5 +45,7 @@ export const bgFiles = {
     pause: "Пауза",
     restart: "Отначало",
     tap: "Докоснете, за да тръгне",
+    round: "Рунд",
+    of: "{{n}} от {{total}}",
   },
 };

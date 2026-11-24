@@ -52,18 +52,55 @@
     min-width: 0;
   }
 
+  /* "3/10": the question's number, and — quieter — out of how many. */
   .quiz-slide-number {
     display: grid;
     flex: none;
     place-items: center;
-    width: 6.4cqi;
+    min-width: 6.4cqi;
     height: 6.4cqi;
+    padding-inline: 1.4cqi;
     border-radius: 1.8cqi;
     background: var(--quiz-stage-ink);
     color: var(--quiz-stage-to);
     font-family: var(--font-display);
     font-size: 3cqi;
     font-weight: var(--weight-bold);
+    white-space: nowrap;
+
+    /* On the light badge the quiet part is the badge's own dark ink, thinned: 4.5:1 and more. */
+    & .quiz-count-of {
+      color: color-mix(in oklch, var(--quiz-stage-to) 72%, var(--quiz-stage-ink));
+    }
+  }
+
+  /* || Counter (render/count.ts): the place in full, the total after the stroke quieter and smaller. */
+  .quiz-count {
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .quiz-count-now {
+    font-weight: var(--weight-bold, 700);
+  }
+
+  .quiz-count-of {
+    color: color-mix(in oklch, currentColor 72%, transparent);
+    font-size: 0.78em;
+    font-weight: var(--weight-semibold, 600);
+  }
+
+  .quiz-count-said {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .quiz-slide-round .quiz-count-now {
+    color: var(--quiz-stage-ink);
   }
 
   /* A long round name takes a second line before it is cut: the room reads it from the back. */

@@ -1,13 +1,13 @@
 import { h } from "../render/h.ts";
 import type { ViewEntry } from "./context.ts";
-import { heading, kicker, viewRoot } from "./parts.ts";
+import { heading, kicker, roundLine, viewRoot } from "./parts.ts";
 import { hostAnswer, questionNumber, slideOf, slideView } from "./question.ts";
 
 /** The "Answers" divider between a round's last question and its first answer. */
 export const answersView: ViewEntry = {
   id: "answers",
   stage: ({ env, round }) => ({
-    element: viewRoot("answers", kicker(round?.name ?? ""), heading(env.t("answers.title")), h("p", { class: "qp-sub" }, env.t("answers.sub"))),
+    element: viewRoot("answers", kicker(...roundLine(env, round)), heading(env.t("answers.title")), h("p", { class: "qp-sub" }, env.t("answers.sub"))),
   }),
   tile: ({ env }) => ({ mark: env.t("answers.title"), name: env.t("answers.title") }),
 };

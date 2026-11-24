@@ -4,7 +4,7 @@ import { MAX_SCORE, type GameState, type Team } from "../game/state.ts";
 import { h } from "../render/h.ts";
 import { pointsText } from "../render/slide.ts";
 import type { DrawnView, PlayEnv, ViewContext, ViewEntry } from "./context.ts";
-import { heading, kicker, shareRows, stepper, teamDigest, viewRoot, type Stepper } from "./parts.ts";
+import { heading, kicker, roundLine, shareRows, stepper, teamDigest, viewRoot, type Stepper } from "./parts.ts";
 
 /** From more teams than this the table has two columns on a wide stage. */
 const SPLIT_ABOVE = 6;
@@ -79,7 +79,7 @@ export const scoreView: ViewEntry = {
     const { env, round, canEdit } = context;
     const table = scoreTable(context, canEdit);
     const root = viewRoot("score",
-      h("header", { class: "qp-view-head" }, kicker(round?.name ?? ""), heading(env.t("score.title"))),
+      h("header", { class: "qp-view-head" }, kicker(...roundLine(env, round)), heading(env.t("score.title"))),
       h("div", { class: "qp-score-body" }, table.element, pointsGuide(context)));
     return { element: root, ...(table.sync ? { sync: table.sync } : {}) };
   },
