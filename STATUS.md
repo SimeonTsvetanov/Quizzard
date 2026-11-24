@@ -1,6 +1,6 @@
 # STATUS — Quizzard
 
-**Updated:** 2026-11-23 · **Phase:** 3 Build — v0.15.0 (glass menus and dialogs, wordmark + hand-off splash, tools restyled, symmetric desktop; 0.14: colour per tool, Unbounded + Manrope): Teams, Scores, Answer sheet (1,000 rounds, scroll arrows, remove answers, tidier layout); user docs + README, SEO, shortcuts, audits applied live in this repo with their own data; menus filled; next T-17…T-25
+**Updated:** 2026-11-24 · **Phase:** 3 Build — v0.20.0: Teams, Scores, Answer sheet and the Quiz creator (make, play, export, presenter view, media, quiz files; UX pass with one control bar, n/total counters, drag, search, print) live in this repo with their own data; next T-17…T-25
 
 ## Done
 - Old code in branch `legacy-2025`. Spec and plan approved by Moni (2026-11-22). Brand in `brand/` (logo A, palette C Emerald).
@@ -18,7 +18,7 @@
 - T-12/T-13 GG Counter at `#/scores` from submodule `vendor/gg-counter` (a6745fb = 1.2.4), isolated CSS (Tailwind under Vite 8), header buttons in the slot, toasts inside its dialogs: Home 45.4 KB, Scores first open 92.3 KB of 125; its suite 74/76 in `scores` + `scores-mobile` (motion/keyboard ×5 green), scores-host.spec green ×5.
 
 ## Next
-- Quiz creator: slices 1–5 shipped (0.17.0 creator, 0.18.0 player/export/presenter view, 0.19.0 pictures, audio, video, quiz files, host extras). Next: fixes from the manual CI run (WebKit: Back from the library, AC2 save order, download name; CLS micro-shift; shard timeouts; remove zz-frames spec), a full UX review, the user docs page, a large-file test (100–250 MB).
+- Quiz creator: slices 1–5 + UX pass shipped (0.17.0–0.20.0). Next: a manual five-browser CI run on the branch and its fixes, a large-file test (100–250 MB), Cast experiment, restore the e2e gate before 1.0.0, move the learnings into the forge.
 - Open after the move in: ESLint/Prettier/`tsc` still skip `miniapps/`; standalone-only code left in the two packages (theme storage, `./module` entry, standalone host in tests) can go.
 - Open from T-15: quota warning and `notifySaved` → persist. Then T-17 (new:miniapp + quiz card), T-18 icons, T-19 texts (Bulgarian tagline), T-20 SEO, T-21 shortcuts, T-22 a11y, T-23 perf/security, T-24 user docs, T-25 release 1.0.0.
 - Open review findings 2, 4, 6–10, 13, 14 (progress/2026-11-22.md); two flaky tests, then `--fail-on-flaky-tests` back.

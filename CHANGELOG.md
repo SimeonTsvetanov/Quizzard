@@ -4,6 +4,26 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.20.0] - 2026-11-24
+### Added
+- **Quiz creator, easier to use.** A new quiz asks for its name first. Rounds and questions have the same row of
+  buttons (move up, move down, copy, delete, more) and can be dragged into place; a question can be moved to
+  another round. Long rounds can be shown as a compact list, and a search finds a question in any quiz.
+- **While playing:** the stage shows where you are — question "1/10" and "Round 1/3", with the total dimmer.
+  The control bar is the same on the stage and on the host's panel: Back on the left, a wide Next in the middle,
+  the tools on the right, each with a name when you point at it.
+- Play from any question, a sound when the time runs out (can be turned off), the screen stays awake during a
+  game, and a printable answer sheet for the host.
+- Before a game starts you are told which questions are unfinished (no text or no answer).
+- User guides: "Make a quiz" and "Play a quiz".
+### Changed
+- Removing a picture, audio or video, a team or the scores can be undone or asks first; opening a quiz file over
+  an existing quiz asks before it replaces anything.
+- File limits are shown the way your device counts them (15 MB, 50 MB, 250 MB).
+### Fixed
+- Back from the quiz library always returns to Home (it could stay on the page in Safari).
+- Twelve teams fit on a small phone; a long points note is no longer cut on the stage.
+
 ## [0.19.0] - 2026-11-24
 ### Added
 - **Quiz creator: pictures, audio and video.** Add a file from your device to a question — pick it, drop it or
