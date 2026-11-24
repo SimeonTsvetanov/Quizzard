@@ -5,6 +5,7 @@ import {
   type Env, type MediaEntry, type OpenFailure, type Quiz, type QuizFile, defaultEnv, duplicateQuiz, open, toFile, totals, touch, usedMediaBytes,
 } from "@simeonts/quizzard-quiz-core";
 import { MEDIA, QUIZZES, finished, openDb, promised } from "./db.ts";
+import { type MediaRecord, blobOf, createFileWriter, isMediaRecord } from "./media-records.ts";
 
 /** One line of the library: what a quiz card shows, without opening the quiz. */
 export interface QuizSummary {
@@ -45,7 +46,7 @@ export interface QuizStore {
   restore(stored: StoredQuiz): Promise<void>;
   /** Deletes the quiz and its media files. */
   delete(id: string): Promise<void>;
-  /** The media files of a quiz as they are stored. Reading them loads nothing: a Blob is a handle. */
+  /** The media files of a quiz. Reading them loads nothing where the browser stores Blobs: a Blob is a handle. */
   media(quizId: string): Promise<MediaFiles>;
   /** Stores one media file of a quiz (a file of the same id is replaced). */
   putMedia(quizId: string, id: string, blob: Blob): Promise<void>;
@@ -99,20 +100,6 @@ function summarize(key: string, record: unknown, env: Env): QuizSummary {
   return { id: quiz.id, name: quiz.name, rounds: size.rounds, questions: size.questions, seconds: size.seconds, updatedAt: quiz.updatedAt, bytes: bytes + usedMediaBytes(quiz, media) };
 }
 
-/** One record of the `media` store. */
-interface MediaRecord {
-  readonly quizId: string;
-  readonly id: string;
-  readonly blob: Blob;
-}
-
-/** Whether a stored value is a media record this version wrote. */
-function isMediaRecord(value: unknown): value is MediaRecord {
-  if (typeof value !== "object" || value === null) return false;
-  const record = value as Partial<MediaRecord>;
-  return typeof record.quizId === "string" && typeof record.id === "string" && record.blob instanceof Blob;
-}
-
 /** Runs one transaction over the given stores and resolves with `work`'s result once it is written. */
 async function transact<T>(database: IDBDatabase, mode: IDBTransactionMode, work: (transaction: IDBTransaction) => Promise<T>): Promise<T> {
   const transaction = database.transaction([QUIZZES, MEDIA], mode);
@@ -153,24 +140,28 @@ type Run = <T>(mode: IDBTransactionMode, work: (transaction: IDBTransaction) => 
 
 /** The media half of the library: the files of a quiz, kept apart from its data. */
 function mediaApi(run: Run, mediaOf: (quizId: string) => IDBKeyRange): Pick<QuizStore, "media" | "putMedia" | "deleteMedia" | "bring"> {
+  // Blobs where the browser stores them, their bytes where it does not (media-records.ts).
+  const writeFiles = createFileWriter();
   return {
     async media(quizId) {
       const records = await run("readonly", (transaction) => promised<unknown[]>(transaction.objectStore(MEDIA).getAll(mediaOf(quizId))));
-      return new Map(records.filter(isMediaRecord).map((record) => [record.id, record.blob]));
+      return new Map(records.filter(isMediaRecord).map((record) => [record.id, blobOf(record)]));
     },
-    putMedia: (quizId, id, blob) => run("readwrite", async (transaction) => { await promised(transaction.objectStore(MEDIA).put({ quizId, id, blob } satisfies MediaRecord)); }),
+    putMedia: (quizId, id, blob) => writeFiles([[id, blob]], (files) => run("readwrite", async (transaction) => {
+      await Promise.all(files.map(([fileId, file]) => promised(transaction.objectStore(MEDIA).put({ quizId, id: fileId, ...file } satisfies MediaRecord))));
+    })),
     deleteMedia: (quizId, ids) => run("readwrite", async (transaction) => {
       const files = transaction.objectStore(MEDIA);
       await Promise.all(ids.map((id) => promised(files.delete([quizId, id]))));
     }),
-    bring: ({ quiz, media }, blobs) => run("readwrite", async (transaction) => {
+    bring: ({ quiz, media }, blobs) => writeFiles([...blobs], (packed) => run("readwrite", async (transaction) => {
       const files = transaction.objectStore(MEDIA);
       const quizId = quiz.id;
       // In the order they are asked: the old files go first, then the quiz and its files are written.
       const cleared = promised(files.delete(mediaOf(quizId)));
-      const puts = [...blobs].map(([id, blob]) => promised(files.put({ quizId, id, blob } satisfies MediaRecord)));
+      const puts = packed.map(([id, file]) => promised(files.put({ quizId, id, ...file } satisfies MediaRecord)));
       await Promise.all([cleared, promised(transaction.objectStore(QUIZZES).put(toFile(quiz, media))), ...puts]);
-    }),
+    })),
   };
 }
 

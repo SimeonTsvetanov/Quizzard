@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 import { expect, test, type Browser, type BrowserContext, type Locator, type Page, type TestInfo } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
+import { putInLibrary } from "./support/quiz-db.ts";
 
 // Quiz creator, slice 2 (docs/quiz-creator SPEC F9, F11, §6; AC6, AC9, AC11): the quiz played in the
 // app ("Play"), exported to one HTML file and played from disk with the network off, the audience
@@ -41,22 +42,7 @@ const QUIZ = {
 async function openQuiz(page: Page, file: object = QUIZ): Promise<void> {
   await page.goto("./#/quiz");
   await expect(root(page).getByRole("heading", { name: "Your quizzes" })).toBeVisible();
-  await page.evaluate(
-    (record) =>
-      new Promise<void>((resolve, reject) => {
-        const request = indexedDB.open("quizzard-quiz");
-        request.onsuccess = () => {
-          const transaction = request.result.transaction("quizzes", "readwrite");
-          transaction.objectStore("quizzes").put(record);
-          transaction.oncomplete = () => {
-            request.result.close();
-            resolve();
-          };
-          transaction.onerror = () => { reject(new Error("seed failed")); };
-        };
-      }),
-    file,
-  );
+  await putInLibrary(page, [file]);
   await page.reload();
   await root(page).locator(".quiz-card button").first().click();
   await expect(root(page).locator("[data-play-quiz]")).toBeVisible();

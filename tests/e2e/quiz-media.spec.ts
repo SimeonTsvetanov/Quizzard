@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { expect, test, type Browser, type BrowserContext, type Locator, type Page, type TestInfo } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
+import { putInLibrary, storedMediaSizes } from "./support/quiz-db.ts";
 
 // Quiz creator, slices 3–5 (docs/quiz-creator SPEC F7, F10, §3.5, §5; AC4–AC7): pictures, audio and
 // video from the device — picked, checked, shown whole in every place a slide is drawn, played by
@@ -63,24 +64,8 @@ const BLOBS: readonly (readonly [string, string, string])[] = [
 async function openMediaQuiz(page: Page): Promise<void> {
   await page.goto("./#/quiz");
   await expect(root(page).getByRole("heading", { name: "Your quizzes" })).toBeVisible();
-  const blobs = BLOBS.map(([id, name, mime]) => ({ id, mime, base64: readFileSync(file(name)).toString("base64") }));
-  await page.evaluate(
-    ({ record, files }) =>
-      new Promise<void>((resolve, reject) => {
-        const request = indexedDB.open("quizzard-quiz");
-        request.onsuccess = () => {
-          const transaction = request.result.transaction(["quizzes", "media"], "readwrite");
-          transaction.objectStore("quizzes").put(record);
-          for (const one of files) {
-            const bytes = Uint8Array.from(atob(one.base64), (character) => character.charCodeAt(0));
-            transaction.objectStore("media").put({ quizId: record.quiz.id, id: one.id, blob: new Blob([bytes], { type: one.mime }) });
-          }
-          transaction.oncomplete = () => { request.result.close(); resolve(); };
-          transaction.onerror = () => { reject(new Error("seed failed")); };
-        };
-      }),
-    { record: QUIZ, files: blobs },
-  );
+  const blobs = BLOBS.map(([id, name, mime]) => ({ quizId: QUIZ.quiz.id, id, mime, base64: readFileSync(file(name)).toString("base64") }));
+  await putInLibrary(page, [QUIZ], blobs);
   await page.reload();
   await root(page).locator(".quiz-card button").first().click();
   await expect(root(page).locator("[data-play-quiz]")).toBeVisible();
@@ -582,13 +567,7 @@ test("AC7: a quiz file saved in one browser opens in another with the same quiz 
   await expect(cards).toHaveCount(6);
   await expectWhole(cards.nth(1).locator("[data-slide-picture]"));
   // The file's bytes are the same as the ones that were saved.
-  const sizes = await other.evaluate(() => new Promise<number[]>((resolve) => {
-    const request = indexedDB.open("quizzard-quiz");
-    request.onsuccess = () => {
-      const all = request.result.transaction("media").objectStore("media").getAll();
-      all.onsuccess = () => { resolve((all.result as { blob: Blob }[]).map((record) => record.blob.size).sort((a, b) => a - b)); };
-    };
-  }));
+  const sizes = await storedMediaSizes(other);
   expect(sizes).toEqual(QUIZ.media.map((entry) => entry.bytes).sort((a, b) => a - b));
   // The host note came along.
   await cards.nth(3).locator(".quiz-qcard-open").click();

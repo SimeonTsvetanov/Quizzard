@@ -3,7 +3,7 @@
 // words of a refused file, the base64 pieces of an export and the quiz file written and read back
 // through Blobs.
 import { IDBFactory, IDBKeyRange } from "fake-indexeddb";
-import { beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   type MediaEntry, type Quiz, addQuestion, addRound, createQuiz, createRegistries, editQuestion, extractEmbedded, readEmbeddedQuiz, sequentialIds, EXPORT_DATA_MARK,
 } from "@simeonts/quizzard-quiz-core";
@@ -16,6 +16,8 @@ import { refusedText } from "../src/quizfile/open.ts";
 import { readQuizFile } from "../src/quizfile/read.ts";
 import { buildQuizFile } from "../src/quizfile/write.ts";
 import { hasRoomFor, keepOnDevice } from "../src/storage/space.ts";
+import { MEDIA as MEDIA_STORE, openDb, promised } from "../src/storage/db.ts";
+import { createFileWriter } from "../src/storage/media-records.ts";
 import { createQuizStore, type QuizStore } from "../src/storage/store.ts";
 
 
@@ -84,6 +86,87 @@ describe("the media files of a quiz in the library", () => {
     expect([...(await store.media(copy?.id ?? "")).keys()].sort()).toEqual(["pic", "song"]);
     await store.bring({ quiz, media: MEDIA }, held);
     expect(await bytes((await store.media(quiz.id)).get("pic") ?? new Blob())).toEqual([1, 2, 3, 250, 251, 252, 0]);
+  });
+});
+
+describe("a browser that cannot put a Blob into IndexedDB (WebKit in a private window)", () => {
+  let factory: IDBFactory;
+  let store: QuizStore;
+  let blobTries: number;
+  /** The `media` store as it lies in the database. */
+  const records = async (): Promise<unknown[]> => {
+    const database = await openDb(factory);
+    const all = await promised<unknown[]>(database.transaction(MEDIA_STORE).objectStore(MEDIA_STORE).getAll());
+    database.close();
+    return all;
+  };
+  beforeEach(async () => {
+    factory = new IDBFactory();
+    blobTries = 0;
+    // As WebKit does it: the request fails and takes the whole transaction with it.
+    const database = await openDb(factory);
+    const prototype = Object.getPrototypeOf(database.transaction(MEDIA_STORE).objectStore(MEDIA_STORE)) as IDBObjectStore;
+    database.close();
+    const put = Reflect.get(prototype, "put") as (this: IDBObjectStore, value: unknown, key?: IDBValidKey) => IDBRequest<IDBValidKey>;
+    vi.spyOn(prototype, "put").mockImplementation(function refuseBlobs(this: IDBObjectStore, value: unknown, key?: IDBValidKey) {
+      if (typeof value === "object" && value !== null && Reflect.get(value, "blob") instanceof Blob) {
+        blobTries += 1;
+        this.transaction.abort();
+        throw new DOMException("Error preparing Blob/File data to be stored in object store", "UnknownError");
+      }
+      return put.call(this, value, key);
+    });
+    store = createQuizStore({ factory, keyRange: IDBKeyRange, env });
+  });
+  afterEach(() => { vi.restoreAllMocks(); });
+
+  it("keeps the file as its bytes and type, and hands it back as the same Blob", async () => {
+    await store.putMedia("a", "pic", picture);
+    expect(await records()).toEqual([{ quizId: "a", id: "pic", bytes: expect.any(ArrayBuffer) as ArrayBuffer, type: "image/png" }]);
+    const read = (await store.media("a")).get("pic") ?? new Blob();
+    expect(read.type).toBe("image/png");
+    expect(await bytes(read)).toEqual([1, 2, 3, 250, 251, 252, 0]);
+  });
+
+  it("asks for a Blob once: later files go in as bytes at the first try; a quiz file, Undo and a duplicate work the same", async () => {
+    const quiz = quizWithMedia();
+    await store.putMedia(quiz.id, "left-over", sound);
+    await store.bring({ quiz, media: MEDIA }, new Map([["pic", picture], ["song", sound]]));
+    expect(blobTries).toBe(1);
+    expect([...(await store.media(quiz.id)).keys()].sort()).toEqual(["pic", "song"]); // the left-over went with the old files
+    const copy = await store.duplicate(quiz.id, "Copy");
+    expect(await bytes((await store.media(copy?.id ?? "")).get("song") ?? new Blob())).toEqual(await bytes(sound));
+    const held = await store.media(quiz.id);
+    await store.delete(quiz.id);
+    await store.bring({ quiz, media: MEDIA }, held);
+    expect(await bytes((await store.media(quiz.id)).get("pic") ?? new Blob())).toEqual([1, 2, 3, 250, 251, 252, 0]);
+    expect((await store.get(quiz.id)).ok).toBe(true);
+  });
+});
+
+describe("the writer of media files", () => {
+  const file: readonly (readonly [string, Blob])[] = [["pic", picture]];
+
+  it("does not try the bytes when the device is out of room, and reports the first refusal when both forms fail", async () => {
+    const forms: string[] = [];
+    const full = new DOMException("no room", "QuotaExceededError");
+    await expect(createFileWriter()(file, (files) => { forms.push(Object.keys(files[0]?.[1] ?? {}).join()); return Promise.reject(full); })).rejects.toBe(full);
+    expect(forms).toEqual(["blob"]);
+    const first = new DOMException("no blobs", "UnknownError");
+    const write = createFileWriter();
+    await expect(write(file, (files) => Promise.reject("blob" in (files[0]?.[1] ?? {}) ? first : new Error("still no")))).rejects.toBe(first);
+    // Nothing was learnt from a write that failed both ways: the next file is offered as a Blob again.
+    const seen: string[] = [];
+    await write(file, (files) => { seen.push(Object.keys(files[0]?.[1] ?? {}).join()); return Promise.resolve(); });
+    expect(seen).toEqual(["blob"]);
+  });
+
+  it("a write without files is passed on as it is, also after bytes were needed", async () => {
+    const write = createFileWriter();
+    await write(file, (files) => ("blob" in (files[0]?.[1] ?? {}) ? Promise.reject(new Error("no blobs")) : Promise.resolve()));
+    const broken = new Error("the quiz itself did not fit");
+    await expect(write([], () => Promise.reject(broken))).rejects.toBe(broken);
+    expect(await write([], (files) => Promise.resolve(files.length))).toBe(0);
   });
 });
 

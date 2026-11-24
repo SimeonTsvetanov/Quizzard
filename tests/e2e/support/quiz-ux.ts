@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { expect, type Locator, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
+import { putInLibrary } from "./quiz-db.ts";
 
 // What the quiz creator's UX specs share (docs/quiz-creator/UX-REVIEW-2026-11-24.md): a quiz put
 // straight into the creator's IndexedDB library, and the locators of its screens and of the player.
@@ -101,24 +102,8 @@ export async function seed(page: Page, ...files: readonly SeedFile[]): Promise<v
   await page.goto("./#/quiz");
   await expect(root(page).locator("#quiz-library-title")).toBeVisible();
   const picture = readFileSync(LANDSCAPE).toString("base64");
-  await page.evaluate(
-    ({ records, base64 }) =>
-      new Promise<void>((resolve, reject) => {
-        const request = indexedDB.open("quizzard-quiz");
-        request.onsuccess = () => {
-          const transaction = request.result.transaction(["quizzes", "media"], "readwrite");
-          for (const record of records) {
-            transaction.objectStore("quizzes").put(record);
-            if (record.media.length === 0) continue;
-            const bytes = Uint8Array.from(atob(base64), (character) => character.charCodeAt(0));
-            transaction.objectStore("media").put({ quizId: record.quiz.id, id: "m-land", blob: new Blob([bytes], { type: "image/jpeg" }) });
-          }
-          transaction.oncomplete = () => { request.result.close(); resolve(); };
-          transaction.onerror = () => { reject(new Error("seed failed")); };
-        };
-      }),
-    { records: files as SeedFile[], base64: picture },
-  );
+  const media = files.filter((file) => file.media.length > 0).map((file) => ({ quizId: file.quiz.id, id: "m-land", mime: "image/jpeg", base64: picture }));
+  await putInLibrary(page, files, media);
   await page.reload();
   await expect(root(page).locator(".quiz-card")).toHaveCount(files.length);
 }

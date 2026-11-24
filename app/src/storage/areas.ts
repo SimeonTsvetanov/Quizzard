@@ -98,12 +98,16 @@ function openExisting(name: string): Promise<IDBDatabase | null> {
   });
 }
 
-/** Bytes of one stored value: files (Blobs) by their size, everything else as JSON text. */
+/** Bytes of one stored value: files (Blobs, or their bytes where a Blob cannot be stored) by their size, everything else as JSON text. */
 function valueBytes(value: unknown): number {
   let files = 0;
   const text = JSON.stringify(value, (_key, part: unknown) => {
     if (part instanceof Blob) {
       files += part.size;
+      return null;
+    }
+    if (part instanceof ArrayBuffer) {
+      files += part.byteLength;
       return null;
     }
     return part;

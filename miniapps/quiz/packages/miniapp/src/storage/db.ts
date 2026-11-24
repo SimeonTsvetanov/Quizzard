@@ -9,7 +9,10 @@ export const DB_NAME = "quizzard-quiz";
 export const DB_VERSION = 1;
 /** Store of the quizzes: one `QuizFile` per quiz, keyed by `quiz.id`. */
 export const QUIZZES = "quizzes";
-/** Store of the media files: `{ quizId, id, blob }`, keyed by `[quizId, id]` — a file belongs to one quiz. */
+/**
+ * Store of the media files: `{ quizId, id, blob }` — or `{ quizId, id, bytes, type }` where the browser cannot
+ * store a Blob (media-records.ts) — keyed by `[quizId, id]`: a file belongs to one quiz.
+ */
 export const MEDIA = "media";
 
 /**
