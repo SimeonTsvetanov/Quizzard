@@ -1,6 +1,7 @@
 import type { Messages } from "./en.ts";
 import { bgEdit } from "./bg-edit.ts";
 import { bgFiles } from "./bg-files.ts";
+import { bgMore } from "./bg-more.ts";
 
 /** Bulgarian texts of the quiz creator (polite "Вие" forms, as in the rest of Quizzard). */
 export const bg: Messages = {
@@ -11,6 +12,7 @@ export const bg: Messages = {
   cancel: "Отказ",
   done: "Готово",
   soon: "Скоро",
+  undone: "Отменено",
   count: {
     rounds_one: "{{count}} рунд",
     rounds_other: "{{count}} рунда",
@@ -54,6 +56,8 @@ export const bg: Messages = {
     deleted: "„{{name}}“ е изтрит",
     newer: "Направен е с по-нова версия на Quizzard. Обновете приложението, за да го отворите.",
     damaged: "Този куиз не може да се прочете.",
+    namePlaceholder: "Име на куиза…",
+    create: "Създай куиза",
   },
   quiz: {
     nameLabel: "Име на куиза",
@@ -68,8 +72,14 @@ export const bg: Messages = {
     emptyText: "Рундовете са купчинките на тестето. Добавете първия и го напълнете с въпроси.",
     gone: "Този куиз вече не е на това устройство.",
     media: "Медия: {{used}} от {{limit}}",
+    unfinished_one: "{{count}} въпрос не е довършен",
+    unfinished_other: "{{count}} въпроса не са довършени",
+    more: "Файл на куиза",
+    exportShort: "Експорт",
+    notLoaded: "Куизът не можа да се отвори: част от приложението не се зареди. Проверете връзката и опитайте пак.",
   },
   round: {
+    view: { label: "Покажи въпросите като", cards: "Карти", list: "Списък" },
     add: "Добави рунд",
     defaultName: "Рунд {{n}}",
     number: "Рунд {{n}}",
@@ -105,6 +115,13 @@ export const bg: Messages = {
     applied_one: "{{count}} въпрос вече следва рунда",
     applied_other: "{{count}} въпроса вече следват рунда",
     limit: "Най-много {{max}} рунда — този куиз е пълен.",
+    drag: "Пренареди {{name}}: с влачене или със стрелките",
+    more: "Още за {{name}}",
+    duplicateNamed: "Направи копие на {{name}}",
+    deleteNamed: "Изтрий {{name}}",
+    unfinished_one: "{{count}} недовършен",
+    unfinished_other: "{{count}} недовършени",
+    questions: "Въпроси",
   },
   question: {
     add: "Добави въпрос",
@@ -120,7 +137,12 @@ export const bg: Messages = {
     deleted: "Въпрос {{n}} е изтрит",
     full: "Един рунд може да има до {{max}} въпроса.",
     limit: "Най-много {{max}} въпроса — този рунд е пълен.",
+    drag: "Пренареди въпрос {{n}}: с влачене или със стрелките",
+    more: "Още за въпрос {{n}}",
+    empty: "Още е празен",
+    moved: "Въпрос {{n}} е преместен в „{{round}}“",
   },
   ...bgEdit,
   ...bgFiles,
+  ...bgMore,
 };

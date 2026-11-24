@@ -44,7 +44,7 @@ export interface SeedFile {
 }
 
 /**
- * "Pub night": History (3 questions: open, an unfinished one, a picture with `m-land`) and Music (1
+ * "Pub night": History (3 questions: two open ones, a picture with `m-land`) and Music (1
  * question with the longest points note).
  * @param change - fields of the quiz to replace
  */
@@ -59,7 +59,7 @@ export function pubNight(change: Record<string, unknown> = {}): SeedFile {
       rounds: [
         { id: "r1", kind: "standard", name: "History", defaults, questions: [
           open("q1", "Which river flows through Paris?", "The Seine", { explanation: "It splits around two islands.", note: "Accept “Sena”." }),
-          open("q2", "Who built the first pyramid?", ""),
+          open("q2", "Who built the first pyramid?", "Imhotep"),
           { id: "q3", kind: "picture", prompt: "What is this test card called?", media: { id: "m-land" }, answer: { type: "open", text: "Colour bars" } },
         ] },
         { id: "r2", kind: "standard", name: "Music", defaults, questions: [open("q4", "Name the band and the song.", "Queen", { points: { value: 3, note: LONG_NOTE } })] },
@@ -67,6 +67,18 @@ export function pubNight(change: Record<string, unknown> = {}): SeedFile {
       ...change,
     },
   };
+}
+
+/** "Pub night" with two unfinished questions: History 2 has no answer, Music 1 no text. */
+export function unfinishedNight(): SeedFile {
+  const base = pubNight();
+  const [history, music] = base.quiz.rounds;
+  if (!history || !music) return base;
+  const rounds: SeedRound[] = [
+    { ...history, questions: history.questions.map((question, index) => (index === 1 ? open("q2", "Who built the first pyramid?", "") : question)) },
+    { ...music, questions: [open("q4", "", "Queen")] },
+  ];
+  return { ...base, quiz: { ...base.quiz, rounds } };
 }
 
 /**

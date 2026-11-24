@@ -81,6 +81,7 @@ test("M4: removing or replacing a media file, or changing the kind away from it,
 test("M5: a quiz file over an existing quiz — Cancel and Escape change nothing; Replace can be undone", async ({ page }, testInfo) => {
   await openQuiz(page);
   const download = page.waitForEvent("download");
+  await root(page).locator("[data-quiz-more] summary").click();
   await root(page).locator("[data-save-file]").click();
   const path = testInfo.outputPath("Pub night.quizzard");
   await (await download).saveAs(path);
@@ -152,7 +153,8 @@ test("M8 (creator): the longest points note is whole on the slide of the preview
   await page.setViewportSize({ width: 1280, height: 720 });
   await openQuiz(page);
   await root(page).locator('[data-focus="round:r2"]').click();
-  await root(page).locator('[data-question="q4"] [data-preview]').click();
+  await root(page).locator('[data-question="q4"] [data-more]').click();
+  await root(page).locator("[data-sheet] [data-preview]").click();
   const note = root(page).locator("[data-preview-slide] .quiz-slide-chip--points span");
   await expect(note).toContainText(LONG_NOTE);
   expect(await note.evaluate(hiddenLines)).toBe(0);

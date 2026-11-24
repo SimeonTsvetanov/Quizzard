@@ -37,7 +37,9 @@ async function runExport(app: App, quiz: Quiz, button: HTMLButtonElement, progre
   button.setAttribute("aria-busy", "true");
   const show = (share: number): void => {
     const percent = Math.round(share * 100);
-    if (words) words.textContent = t("export.progress", { percent });
+    const text = t("export.progress", { percent });
+    if (words) words.textContent = text;
+    button.setAttribute("aria-label", text);
     progress.hidden = false;
     progress.style.setProperty("--quiz-share", share.toFixed(3));
   };
@@ -78,14 +80,14 @@ async function runSave(app: App, quiz: Quiz, button: HTMLButtonElement, isShare:
  * The "Export to play" button with its progress line.
  * @param app - the mounted creator
  * @param quiz - the open quiz
- * @returns the button and the line that goes under the actions
+ * @returns the button, the line that goes under the actions and the export itself (the caller decides when it runs)
  */
-export function exportControl(app: App, quiz: Quiz): { readonly button: HTMLButtonElement; readonly progress: HTMLElement } {
-  const button = labelButton("download", app.t("quiz.export"), { class: "button", "data-export": "", "data-focus": "export" });
+export function exportControl(app: App, quiz: Quiz): { readonly button: HTMLButtonElement; readonly progress: HTMLElement; readonly run: () => void } {
+  // One short word on the button, so the row's buttons are equal; its full name is its accessible name and tooltip.
+  const button = labelButton("download", app.t("quiz.exportShort"), { class: "button", "aria-label": app.t("quiz.export"), title: app.t("quiz.export"), "data-export": "", "data-focus": "export" });
   const progress = h("div", { class: "quiz-progress", "aria-hidden": "true", "data-export-progress": "" }, h("span", { class: "quiz-meter-fill" }));
   progress.hidden = true;
-  button.addEventListener("click", () => { void runExport(app, quiz, button, progress); });
-  return { button, progress };
+  return { button, progress, run: () => { void runExport(app, quiz, button, progress); } };
 }
 
 /**
@@ -103,5 +105,5 @@ export function quizFileRow(app: App, quiz: Quiz): HTMLElement {
     share.addEventListener("click", () => { void runSave(app, quiz, share, true); });
     row.append(share);
   }
-  return h("div", { class: "quiz-file-row" }, h("p", { class: "quiz-hint" }, t("file.hint")), row);
+  return h("div", { class: "quiz-file-row", "data-file-row": "" }, h("p", { class: "quiz-hint" }, t("file.hint")), row);
 }

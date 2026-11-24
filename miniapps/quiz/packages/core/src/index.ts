@@ -12,6 +12,7 @@ export * from "./answers/answer-type.ts";
 export * from "./answers/choice.ts";
 export * from "./answers/open.ts";
 export * from "./answers/true-false.ts";
+export * from "./complete.ts";
 export * from "./effective.ts";
 export * from "./export.ts";
 export * from "./ids.ts";

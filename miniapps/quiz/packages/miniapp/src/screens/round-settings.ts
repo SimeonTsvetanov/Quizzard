@@ -1,7 +1,7 @@
 // The round's settings strip (SPEC F2): default time and points, what a new question starts as,
 // optional rules, and the round's own actions. Closed it is one line that says what the round gives;
 // changing a value never rebuilds the strip, so the caret stays where it is.
-import { MAX_ROUNDS, RULES_MAX, type Quiz, type Round, deleteRound, duplicateRound, setRoundDefaults, setRoundRules } from "@simeonts/quizzard-quiz-core";
+import { RULES_MAX, type Quiz, type Round, setRoundDefaults, setRoundRules } from "@simeonts/quizzard-quiz-core";
 import { applyAllRow } from "./round-apply.ts";
 import type { App } from "../app/state.ts";
 import { chipPicker, labelButton, textField } from "../dom/controls.ts";
@@ -10,7 +10,7 @@ import { icon } from "../dom/icons.ts";
 import { slideLabels } from "../format.ts";
 import { pointsText } from "../render/slide.ts";
 import { answerChoices, kindChoices } from "../ui-registry.ts";
-import { offerUndo, up, withRound } from "./common.ts";
+import { copyRound, removeRound } from "./round-moves.ts";
 import { pointsFields, secondsField } from "./value-fields.ts";
 
 /** The open round as it is in the quiz right now (the strip outlives many edits). */
@@ -24,38 +24,6 @@ function live(app: App, roundId: string): { quiz: Quiz; round: Round } | undefin
 function gist(app: App, round: Round): string {
   const labels = slideLabels(app.t, app.lang);
   return `${labels.seconds(round.defaults.seconds)} · ${pointsText(round.defaults.points, labels)}`;
-}
-
-/** Deletes the round: asks first when it has questions, then offers Undo. */
-async function removeRound(app: App, roundId: string): Promise<void> {
-  const { t } = app;
-  const now = live(app, roundId);
-  if (!now) return;
-  const { quiz, round } = now;
-  if (round.questions.length > 0) {
-    const isConfirmed = await app.context.shell.confirm({ title: t("round.deleteTitle", { name: round.name }), text: t("round.deleteText", { count: round.questions.length }), confirm: t("round.deleteConfirm"), cancel: t("cancel"), danger: true });
-    if (!isConfirmed || app.signal.aborted) return;
-  }
-  const index = quiz.rounds.indexOf(round);
-  if (!app.change(deleteRound(quiz, roundId))) return;
-  // The round that took its place is shown (wide) and gets the focus; with none left, "Add round".
-  const neighbour = quiz.rounds[index + 1] ?? quiz.rounds[index - 1];
-  app.view.lastRound = neighbour?.id ?? null;
-  if (app.route.screen === "round" && app.nav.depth() >= 2) up(app);
-  else app.go({ screen: "quiz", quiz: quiz.id }, "replace", neighbour ? `[data-focus="round:${neighbour.id}"]` : "[data-add-round]");
-  offerUndo(app, t("round.deleted", { name: round.name }), (later) => withRound(later, round, index), () => { app.go({ screen: "round", quiz: quiz.id, round: roundId }, "replace"); });
-}
-
-function copyRound(app: App, roundId: string): void {
-  const now = live(app, roundId);
-  if (!now) return;
-  const next = duplicateRound(now.quiz, roundId, app.env);
-  if (!app.change(next)) {
-    app.context.shell.toast(app.t("round.full", { max: MAX_ROUNDS }));
-    return;
-  }
-  const copy = next.rounds[next.rounds.findIndex((round) => round.id === roundId) + 1];
-  if (copy) app.go({ screen: "round", quiz: next.id, round: copy.id }, "replace", "#quiz-round-title");
 }
 
 /** The pickers of what a new question starts as. */

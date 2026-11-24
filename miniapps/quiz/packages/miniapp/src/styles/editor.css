@@ -32,6 +32,77 @@
     min-width: 0;
   }
 
+  /* "Question 3 of 12 ‹ ›": the title, its place in the round, and the way to its neighbours. */
+  .quiz-editor-title {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-self: stretch;
+    gap: var(--space-1) var(--space-2);
+    min-width: 0;
+  }
+
+  .quiz-editor-where {
+    color: var(--color-text-secondary);
+    font-weight: var(--weight-semibold);
+  }
+
+  .quiz-editor-arrows {
+    display: flex;
+    gap: var(--space-2);
+    margin-inline-start: auto;
+
+    & .quiz-icon-button {
+      background: var(--color-fill);
+    }
+  }
+
+  /* "In round": right under the title, where a question in the wrong round is noticed. */
+  .quiz-editor-round {
+    display: flex;
+    align-items: center;
+    justify-self: stretch;
+    gap: var(--space-3);
+    min-width: 0;
+
+    & .quiz-label {
+      flex: none;
+    }
+
+    @media (width >= 700px) {
+      max-width: 28rem;
+    }
+  }
+
+  /* The whole question duplicated or deleted: apart, at the end of the form. */
+  .quiz-form-end {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+    gap: var(--space-2);
+    padding-block-start: var(--space-4);
+    border-block-start: 1px solid var(--color-separator);
+
+    & .quiz-button {
+      min-height: var(--tap-target);
+    }
+  }
+
+  /* The names of the option columns: what the circle is for is written above it. */
+  .quiz-options-head {
+    display: flex;
+    align-items: end;
+    gap: var(--space-2);
+    color: var(--color-text-secondary);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-bold);
+  }
+
+  .quiz-options-caption {
+    flex: none;
+    min-width: var(--tap-target);
+    text-align: center;
+  }
+
   .quiz-timing {
     display: grid;
     gap: var(--space-4);
@@ -203,13 +274,36 @@
 
     & .quiz-button {
       flex: 1;
+      min-width: 0;
+      min-height: var(--tap-target);
+      white-space: nowrap;
     }
 
+    /* Phone: the "Preview" switch is its mark alone (its name stays for screen readers and as the
+       tooltip), so "Add another" and "Done" have the room. */
+    & .quiz-toggle {
+      flex: none;
+      width: var(--tap-target);
+      padding-inline: 0;
+
+      & span {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+      }
+    }
+
+    /* Wide: a pill at the right as wide as its buttons — not a strip across the form that hides it. */
     @media (width >= 700px) {
-      justify-content: flex-end;
+      width: fit-content;
+      margin-inline-start: auto;
 
       & .quiz-button {
-        flex: 0 1 12rem;
+        flex: none;
+        min-width: 9rem;
       }
     }
   }

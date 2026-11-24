@@ -39,16 +39,55 @@ function freshName(app: App): string {
   }
 }
 
-async function newQuiz(app: App): Promise<void> {
-  const quiz = createQuiz({ name: freshName(app), language: app.lang, now: new Date().toISOString() }, app.env);
+/** Creates the quiz once its name is confirmed (UX review S16: nothing is made before that) and opens it on its next step, "Add round". */
+async function createNamed(app: App, typed: string): Promise<void> {
+  const name = typed.trim() === "" ? freshName(app) : typed.trim();
+  const quiz = createQuiz({ name, language: app.lang, now: new Date().toISOString() }, app.env);
   try {
     await app.store.put(quiz);
   } catch {
     app.context.shell.toast(app.t("notSaved"), { tone: "error" });
     return;
   }
+  app.view.isNaming = false;
   app.context.storage.notifySaved();
-  if (!app.signal.aborted) app.go({ screen: "quiz", quiz: quiz.id });
+  if (!app.signal.aborted) app.go({ screen: "quiz", quiz: quiz.id }, "push", "[data-add-round]");
+}
+
+/** "New quiz" asks for the name first, in place: a focused field, "Create quiz" and "Cancel" (also Escape). */
+function newQuizForm(app: App): HTMLElement {
+  const { t } = app;
+  const field = h("input", { type: "text", class: "quiz-input", maxlength: String(QUIZ_NAME_MAX), autocomplete: "off", enterkeyhint: "done", "aria-label": t("library.nameLabel"), placeholder: t("library.namePlaceholder"), "data-focus": "new-name", "data-new-name": "" });
+  const create = h("button", { type: "submit", class: "button button--primary", "data-create-quiz": "" }, t("library.create"));
+  const cancel = h("button", { type: "button", class: "button", "data-cancel-new": "" }, t("cancel"));
+  const close = (): void => {
+    app.view.isNaming = false;
+    app.draw("[data-new-quiz]");
+  };
+  const form = h("form", { class: "quiz-new-form", "aria-label": t("library.new"), "data-new-form": "" }, field, h("div", { class: "quiz-new-buttons" }, cancel, create));
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    create.disabled = true;
+    void createNamed(app, field.value).finally(() => { create.disabled = false; });
+  });
+  cancel.addEventListener("click", close);
+  form.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") return;
+    event.stopPropagation();
+    close();
+  });
+  return form;
+}
+
+/** "New quiz" and "Open a quiz file" — or, once "New quiz" was pressed, the form that asks for the name. */
+function headActions(app: App): HTMLElement {
+  if (app.view.isNaming) return newQuizForm(app);
+  const create = addButton(app.t("library.new"), "data-new-quiz");
+  create.addEventListener("click", () => {
+    app.view.isNaming = true;
+    app.draw('[data-focus="new-name"]');
+  });
+  return h("div", { class: "quiz-head-actions" }, create, openFileButton(app));
 }
 
 async function rename(app: App, id: string, name: string): Promise<void> {
@@ -109,7 +148,9 @@ function renameForm(app: App, line: QuizSummary): HTMLElement {
 /** The words of a card: name, what is in it, when it changed and its size — or why it cannot be opened. */
 function cardText(app: App, line: QuizSummary): HTMLElement[] {
   const { t, lang } = app;
-  const name = h("span", { class: "quiz-card-name" }, line.name === "" ? t("library.unnamed") : line.name);
+  const shown = line.name === "" ? t("library.unnamed") : line.name;
+  // Clamped to three lines with an ellipsis (styles/library.css); the whole name is its tooltip.
+  const name = h("span", { class: "quiz-card-name", title: shown }, shown);
   if (line.problem !== undefined) return [name, h("span", { class: "quiz-card-meta" }, t(line.problem === "newer" ? "library.newer" : "library.damaged"))];
   const content = [t("count.rounds", { count: line.rounds }), t("count.questions", { count: line.questions }), t("count.minutes", { count: wholeMinutes(line.seconds) })].join(" · ");
   const changed = t("library.changed", { when: changedText(line.updatedAt, lang) });
@@ -192,8 +233,6 @@ function takeDrops(app: App, screen: HTMLElement): void {
  */
 export function libraryScreen(app: App): HTMLElement {
   const { t, library } = app;
-  const create = addButton(t("library.new"), "data-new-quiz");
-  create.addEventListener("click", () => { void newQuiz(app); });
   const title = h("h2", { class: "quiz-title", id: "quiz-library-title", tabindex: "-1", "data-screen-title": "" }, t("library.title"));
   const screen = h("section", { class: "quiz-screen quiz-library", "aria-labelledby": "quiz-library-title", "data-screen": "library" });
   takeDrops(app, screen);
@@ -207,11 +246,11 @@ export function libraryScreen(app: App): HTMLElement {
     return screen;
   }
   if (library.length === 0) {
-    screen.append(h("div", { class: "quiz-head" }, title), emptyState({ hasWizard: true, title: t("library.emptyTitle"), text: t("library.emptyText"), action: h("div", { class: "quiz-head-actions" }, create, openFileButton(app)) }));
+    screen.append(h("div", { class: "quiz-head" }, title), emptyState({ hasWizard: true, title: t("library.emptyTitle"), text: t("library.emptyText"), action: headActions(app) }));
     return screen;
   }
   screen.append(
-    h("div", { class: "quiz-head" }, title, h("p", { class: "quiz-sub" }, t("library.sub", { count: library.length })), h("div", { class: "quiz-head-actions" }, create, openFileButton(app))),
+    h("div", { class: "quiz-head" }, title, h("p", { class: "quiz-sub" }, t("library.sub", { count: library.length })), headActions(app)),
     h("ul", { class: "quiz-cards" }, ...library.map((line) => card(app, line))));
   return screen;
 }

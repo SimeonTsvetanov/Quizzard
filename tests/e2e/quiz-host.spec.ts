@@ -40,8 +40,12 @@ async function open(page: Page): Promise<void> {
 }
 
 async function newQuiz(page: Page, name: string): Promise<void> {
+  // "New quiz" asks for the name first and creates nothing until it is confirmed (UX review S16).
   await root(page).getByRole("button", { name: "New quiz" }).click();
+  await expect(root(page).getByLabel("Quiz name")).toBeFocused();
   await root(page).getByLabel("Quiz name").fill(name);
+  await page.keyboard.press("Enter");
+  await expect(root(page).getByRole("button", { name: "Add round" })).toBeFocused();
 }
 
 /** From a round (a screen of its own on a phone) back to the quiz with its rounds. */
@@ -153,7 +157,8 @@ test.describe("on a 390 px phone", () => {
     await seed(page);
     await addQuestion(page, "Is water wet?", "True / false");
     await done(page);
-    await questions(page).nth(0).getByRole("button", { name: "Preview question 1" }).click();
+    await questions(page).nth(0).getByRole("button", { name: "More for question 1" }).click(); // Preview is in the card's "More" list
+    await root(page).getByRole("dialog").getByRole("button", { name: "Preview" }).click();
     const slide = root(page).locator("[data-preview-slide]");
     await expect(slide).toContainText("Which river flows through Paris?");
     await expect(slide).not.toContainText("The Seine");
@@ -319,6 +324,7 @@ test("library: rename in place, duplicate, and an empty quiz is deleted without 
   await expect(cards(page).first()).toContainText("Friday quiz (copy)");
   await expect(cards(page).first()).toContainText("1 round · 1 question");
   await root(page).getByRole("button", { name: "New quiz" }).click();
+  await root(page).getByRole("button", { name: "Create quiz" }).click(); // no name typed: it gets the default one
   await expect(root(page).getByLabel("Quiz name")).toHaveValue("New quiz");
   await page.goBack();
   await expect(cards(page)).toHaveCount(3);
@@ -399,6 +405,7 @@ test("Bulgarian: every screen speaks it, with the decimal comma", async ({ page 
   await expect(root(page).getByRole("heading", { name: "Вашите куизове" })).toBeVisible();
   await expect(root(page).getByText("Още няма куизове")).toBeVisible();
   await root(page).getByRole("button", { name: "Нов куиз" }).click();
+  await root(page).getByRole("button", { name: "Създай куиза" }).click();
   await expect(root(page).getByLabel("Име на куиза")).toHaveValue("Нов куиз");
   await root(page).getByRole("button", { name: "Добави рунд" }).click();
   await expect(root(page).getByLabel("Име на рунд 1")).toHaveValue("Рунд 1");
@@ -481,7 +488,9 @@ for (const colorScheme of ["light", "dark"] as const) {
     await done(page);
     await root(page).locator("[data-round-settings] summary").click();
     await check("round with its settings open");
-    await questions(page).first().getByRole("button", { name: "Preview question 1" }).click();
+    await questions(page).first().getByRole("button", { name: "More for question 1" }).click();
+    await check("a question's More list");
+    await root(page).getByRole("dialog").getByRole("button", { name: "Preview" }).click();
     await root(page).getByRole("button", { name: "Show answer" }).click();
     await check("preview, revealed");
     await root(page).getByRole("button", { name: "Close preview" }).click();

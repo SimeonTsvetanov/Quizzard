@@ -3,6 +3,7 @@
 import { type Question, type Quiz, type Round, changeRound, findQuestion, roundTotals, totals } from "@simeonts/quizzard-quiz-core";
 import type { App } from "../app/state.ts";
 import { labelButton } from "../dom/controls.ts";
+import { recordPlaces, slideFrom } from "../dom/flip.ts";
 import { h } from "../dom/h.ts";
 import { icon, type IconName } from "../dom/icons.ts";
 import { wholeMinutes } from "../format.ts";
@@ -107,9 +108,22 @@ export function offerUndo(app: App, message: string, restore: (quiz: Quiz) => Qu
         if (app.signal.aborted || !now || now.id !== quizId) return;
         app.change(restore(now));
         after();
+        app.context.shell.toast(app.t("undone"));
       },
     },
   });
+}
+
+/**
+ * Draws the screen again after cards changed places: each card slides from where it was (dom/flip.ts).
+ * @param app - the mounted creator
+ * @param attribute - the attribute that carries a card's id, e.g. `data-question`
+ * @param focus - what to focus afterwards
+ */
+export function drawSliding(app: App, attribute: string, focus?: string): void {
+  const before = recordPlaces(app.host, attribute);
+  app.draw(focus);
+  slideFrom(app.host, attribute, before);
 }
 
 /**

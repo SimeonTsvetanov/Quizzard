@@ -18,6 +18,8 @@ export interface AnswerEditorContext {
   readonly ids: IdSource;
   /** Reports the answer after an edit; the editor saves it and redraws the live preview. */
   readonly change: (answer: Answer) => void;
+  /** Offers "Undo" after the part removed something a person typed (an option with text); left out where nothing can show it. */
+  readonly offerUndo?: (message: string, run: () => void) => void;
 }
 
 /** The file of the question being edited and how to change it; the editor does the storing. */

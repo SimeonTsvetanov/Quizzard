@@ -1,0 +1,160 @@
+/* Quiz creator: the sheet (dom/sheet.ts) — a card's "More" list, "Move to round…", the list of
+   unfinished questions. Phone: from the bottom, as wide as the screen; wide: a card in the middle. */
+@layer components {
+  /* || Components: sheet */
+  .quiz-sheet {
+    --quiz-sheet-shift: var(--space-6);
+
+    inline-size: min(100%, 26rem);
+    max-inline-size: none;
+    max-block-size: min(100dvh - var(--space-8), 40rem);
+    margin: auto auto 0;
+    padding: var(--space-3) var(--space-3) calc(var(--space-3) + var(--safe-bottom));
+    border: 0;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    background: var(--color-surface-raised);
+    box-shadow: var(--shadow-3);
+    color: var(--color-text);
+
+    &[open] {
+      display: grid;
+      grid-template-rows: auto auto minmax(0, 1fr) auto;
+      gap: var(--space-2);
+    }
+
+    &::backdrop {
+      background: var(--backdrop);
+    }
+
+    @media (width >= 700px) {
+      margin: auto;
+      padding: var(--space-4);
+      border-radius: var(--radius-xl);
+    }
+  }
+
+  .quiz-sheet-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    padding-inline-start: var(--space-2);
+  }
+
+  .quiz-sheet-title {
+    min-width: 0;
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-md);
+    font-weight: var(--weight-bold);
+    overflow-wrap: break-word;
+
+    &:focus {
+      outline: none;
+    }
+  }
+
+  .quiz-sheet-text {
+    margin: 0;
+    padding-inline: var(--space-2);
+    color: var(--color-text-secondary);
+  }
+
+  .quiz-sheet-list {
+    display: grid;
+    gap: var(--space-1);
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    list-style: none;
+  }
+
+  .quiz-sheet-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    width: 100%;
+    min-height: var(--tap-target);
+    padding: var(--space-2) var(--space-3);
+    border: 0;
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-weight: var(--weight-semibold);
+    text-align: start;
+    cursor: pointer;
+
+    & svg {
+      flex: none;
+      color: var(--color-accent-text);
+    }
+
+    @media (hover: hover) {
+      &:hover:not([aria-disabled="true"]) {
+        background: var(--color-fill);
+      }
+    }
+
+    &:focus-visible {
+      outline: var(--focus-ring-width) solid var(--color-focus);
+      outline-offset: calc(-1 * var(--focus-ring-width));
+    }
+
+    &[aria-current="true"] {
+      background: var(--color-accent-tint);
+    }
+
+    &[aria-disabled="true"] {
+      color: var(--color-text-secondary);
+      cursor: default;
+    }
+
+    &[data-danger],
+    &[data-danger] svg {
+      color: var(--color-danger-text);
+    }
+  }
+
+  .quiz-sheet-words {
+    display: grid;
+    min-width: 0;
+    overflow-wrap: break-word;
+  }
+
+  .quiz-sheet-detail {
+    overflow: hidden;
+    color: var(--color-text-secondary);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-regular, 400);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .quiz-sheet-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    padding-block-start: var(--space-2);
+
+    & .button {
+      flex: 1 1 9rem;
+      min-height: var(--tap-target);
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .quiz-sheet[open] {
+      animation: quiz-sheet-in var(--duration-fade) var(--ease-out) backwards;
+    }
+
+    @keyframes quiz-sheet-in {
+      from {
+        opacity: 0;
+        transform: translateY(var(--quiz-sheet-shift));
+      }
+    }
+  }
+}

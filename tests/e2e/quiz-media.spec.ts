@@ -144,6 +144,7 @@ async function newQuestion(page: Page, kind: string): Promise<void> {
 async function newQuizWithRound(page: Page): Promise<void> {
   await page.goto("./#/quiz");
   await root(page).locator("[data-new-quiz]").click();
+  await root(page).locator("[data-create-quiz]").click();
   await root(page).locator("[data-add-round]").click();
   await expect(root(page).locator("[data-add-question]")).toBeVisible();
 }
@@ -224,7 +225,8 @@ test("AC4 + AC5: a picture is picked, scaled, stored and shown whole in the edit
   await root(page).locator("[data-done]").click();
   const card = root(page).locator("[data-question]").first();
   await expectWhole(card.locator("[data-slide-picture]"));
-  await card.locator("[data-preview]").click();
+  await card.locator("[data-more]").click(); // Preview is in the card's "More" list
+  await root(page).locator("[data-sheet] [data-preview]").click();
   await expectWhole(root(page).locator("[data-preview-slide] [data-slide-picture]"));
   // A tap zooms the picture over the slide — still whole — and a second tap takes it back.
   const zoom = root(page).locator("[data-preview-slide] [data-slide-zoom]");
@@ -308,7 +310,8 @@ test("audio and video are tried on import, kept as they are and play in the prev
   await axe(page, "round with media cards");
 
   // The preview plays: nothing starts by itself; the slide's own button plays and pauses.
-  await cards.nth(1).locator("[data-preview]").click();
+  await cards.nth(1).locator("[data-more]").click();
+  await root(page).locator("[data-sheet] [data-preview]").click();
   const slide = root(page).locator("[data-preview-slide]");
   await expectWhole(slide.locator("[data-slide-video]"));
   expect(await isPaused(slide)).toBe(true);
@@ -548,6 +551,7 @@ test("AC7: a quiz file saved in one browser opens in another with the same quiz 
   await openMediaQuiz(page);
   await expect(root(page).locator("[data-media-size]")).toContainText("Media: 92.4 kB of 250 MB");
   const download = page.waitForEvent("download");
+  await root(page).locator("[data-quiz-more] summary").click(); // the quiz file is folded under the actions
   await root(page).locator("[data-save-file]").click();
   const saved = await download;
   expect(saved.suggestedFilename()).toMatch(/^Media[ _]night\.quizzard$/);

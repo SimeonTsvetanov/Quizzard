@@ -1,0 +1,29 @@
+/** English texts of the cards' "More" lists and of the check before Play and Export (part of `en.ts`). */
+export const enMore = {
+  menu: {
+    failed: "That list could not be loaded. Try again.",
+    close: "Close",
+    preview: "Preview",
+    playFrom: "Play from here",
+    previewRound: "Preview this round",
+    playRound: "Play from this round",
+    up: "Move up",
+    down: "Move down",
+    top: "Move to the top",
+    bottom: "Move to the bottom",
+    toRound: "Move to round…",
+    pickRound: "Move question {{n}} to",
+    duplicate: "Duplicate",
+    delete: "Delete",
+  },
+  unfinished: {
+    text: { play: "An unfinished question has no text, no file or no answer, and is shown like that. Open one to finish it, or play as it is.", export: "An unfinished question has no text, no file or no answer, and is exported like that. Open one to finish it, or export as it is." },
+    go: { play: "Play anyway", export: "Export anyway" },
+    title_one: "{{count}} question is not finished",
+    title_other: "{{count}} questions are not finished",
+    where: "{{round}} · question {{n}}",
+    empty: "Still empty",
+    more_one: "And {{count}} more.",
+    more_other: "And {{count}} more.",
+  },
+} as const;

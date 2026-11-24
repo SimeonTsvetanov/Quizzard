@@ -4,6 +4,7 @@ import type { Answer, Env, MediaEntry, Quiz } from "@simeonts/quizzard-quiz-core
 import type { Lang, MiniAppContext } from "../contract.ts";
 import type { Translate } from "../i18n/translate.ts";
 import type { MediaUrls } from "../media/urls.ts";
+import type { DeckScreens } from "../screens/deck.ts";
 import type { Saver } from "../storage/saver.ts";
 import type { QuizStore, QuizSummary, StoredQuiz } from "../storage/store.ts";
 import type { UiRegistries } from "../ui-registry.ts";
@@ -15,6 +16,8 @@ export interface ViewState {
   lastRound: string | null;
   /** The round's settings strip is open. */
   isSettingsOpen: boolean;
+  /** The library asks for a new quiz's name ("New quiz" was pressed; nothing is created yet). */
+  isNaming: boolean;
   /** The quiz whose name is being edited in the library. */
   renaming: string | null;
   /** Phone: the editor's live preview is shown. */
@@ -31,6 +34,10 @@ export interface ViewState {
   exported: { readonly quiz: string; readonly name: string; readonly bytes: number } | null;
   /** The quizzes whose unused media files were already cleared in this visit (app/open-quiz.ts). */
   readonly swept: Set<string>;
+  /** The question whose kind or answer type was just changed: its editor says that new questions of the round now start like it. */
+  stickyFor: string | null;
+  /** The quiz's "Quiz file and more" is open. */
+  isMoreOpen: boolean;
   /** The field the next screen focuses is selected whole (a new round's name: typing replaces it). */
   selectNext: boolean;
   /** The browser was asked to keep this site's storage (once, with the first media file). */
@@ -48,7 +55,10 @@ export interface App {
   readonly media: MediaUrls;
   /** Core's registries and id source: every edit goes through them. */
   readonly env: Env;
-  readonly ui: UiRegistries;
+  /** The UI halves of the registries; empty until the quiz screens are loaded (`screens`). */
+  ui: UiRegistries;
+  /** The screens of a quiz (screens/deck.ts), once loaded; the library needs none of them. */
+  screens: DeckScreens | null;
   readonly nav: Navigator;
   readonly view: ViewState;
   lang: Lang;

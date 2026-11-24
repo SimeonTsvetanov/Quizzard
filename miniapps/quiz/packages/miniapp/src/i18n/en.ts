@@ -1,5 +1,6 @@
 import { enEdit } from "./en-edit.ts";
 import { enFiles } from "./en-files.ts";
+import { enMore } from "./en-more.ts";
 
 /** English texts of the quiz creator — the source of truth for every key (bg.ts must match). */
 export const en = {
@@ -10,6 +11,7 @@ export const en = {
   cancel: "Cancel",
   done: "Done",
   soon: "Soon",
+  undone: "Undone",
   count: {
     rounds_one: "{{count}} round",
     rounds_other: "{{count}} rounds",
@@ -53,6 +55,8 @@ export const en = {
     deleted: "“{{name}}” deleted",
     newer: "Made with a newer Quizzard. Update the app to open it.",
     damaged: "This quiz cannot be read.",
+    namePlaceholder: "Quiz name…",
+    create: "Create quiz",
   },
   quiz: {
     nameLabel: "Quiz name",
@@ -67,8 +71,14 @@ export const en = {
     emptyText: "Rounds are the stacks of your deck. Add the first one, then fill it with questions.",
     gone: "That quiz is no longer on this device.",
     media: "Media: {{used}} of {{limit}}",
+    unfinished_one: "{{count}} question is not finished",
+    unfinished_other: "{{count}} questions are not finished",
+    more: "Quiz file",
+    exportShort: "Export",
+    notLoaded: "The quiz could not be opened: a part of the app did not load. Check the connection and try again.",
   },
   round: {
+    view: { label: "Show the questions as", cards: "Cards", list: "List" },
     add: "Add round",
     defaultName: "Round {{n}}",
     number: "Round {{n}}",
@@ -104,6 +114,13 @@ export const en = {
     applied_one: "{{count}} question now follows the round",
     applied_other: "{{count}} questions now follow the round",
     limit: "{{max}} rounds at most — this quiz is full.",
+    drag: "Reorder {{name}}: drag, or use the arrow keys",
+    more: "More for {{name}}",
+    duplicateNamed: "Duplicate {{name}}",
+    deleteNamed: "Delete {{name}}",
+    unfinished_one: "{{count}} not finished",
+    unfinished_other: "{{count}} not finished",
+    questions: "Questions",
   },
   question: {
     add: "Add question",
@@ -119,9 +136,14 @@ export const en = {
     deleted: "Question {{n}} deleted",
     full: "A round can have up to {{max}} questions.",
     limit: "{{max}} questions at most — this round is full.",
+    drag: "Reorder question {{n}}: drag, or use the arrow keys",
+    more: "More for question {{n}}",
+    empty: "Still empty",
+    moved: "Question {{n}} moved to “{{round}}”",
   },
   ...enEdit,
   ...enFiles,
+  ...enMore,
 } as const;
 
 /** A dictionary's shape: the same keys, any texts. */

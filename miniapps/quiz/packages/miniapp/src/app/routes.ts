@@ -13,7 +13,8 @@ export type Route =
   | { readonly screen: "round"; readonly quiz: string; readonly round: string }
   | { readonly screen: "editor"; readonly quiz: string; readonly question: string }
   | { readonly screen: "preview"; readonly quiz: string; readonly question: string }
-  | { readonly screen: "play"; readonly quiz: string };
+  /** `from` = the round or question Play starts at ("Play from here"); left out = where the game is. */
+  | { readonly screen: "play"; readonly quiz: string; readonly from?: string };
 
 /** Where the creator keeps its screen in `history.state`. */
 export const ROUTE_KEY = "quizzardQuiz";
@@ -43,7 +44,11 @@ export function readRoute(state: unknown): Route {
   const round = field(saved, "round");
   const question = field(saved, "question");
   if (quiz === undefined) return LIBRARY;
-  if (screen === "quiz" || screen === "play") return { screen, quiz };
+  if (screen === "quiz") return { screen, quiz };
+  if (screen === "play") {
+    const from = field(saved, "from");
+    return from === undefined ? { screen, quiz } : { screen, quiz, from };
+  }
   if (screen === "round" && round !== undefined) return { screen, quiz, round };
   if ((screen === "editor" || screen === "preview") && question !== undefined) return { screen, quiz, question };
   return LIBRARY;

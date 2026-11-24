@@ -38,9 +38,10 @@
     }
   }
 
+  /* Three tiles side by side; with very large text each takes a row of its own, so no word is broken. */
   .quiz-stats {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 5.5rem), 1fr));
     gap: var(--space-2);
   }
 
@@ -62,7 +63,7 @@
   .quiz-stat-label {
     font-size: var(--text-xs);
     font-weight: var(--weight-semibold);
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
   }
 
   .quiz-actions-box {
@@ -79,6 +80,64 @@
     & > [data-play-quiz] {
       grid-column: 1 / -1;
     }
+
+    /* Equal buttons: one height, one line each (UX review S2). */
+    & .quiz-button {
+      min-width: 0;
+      min-height: var(--tap-target);
+      white-space: nowrap;
+
+      & span {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+  }
+
+  /* "3 questions are not finished": a line that leads to the first of them. */
+  .quiz-note-link {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: var(--tap-target);
+    padding: var(--space-1) var(--space-3);
+    border: 0;
+    border-radius: var(--radius-md);
+    background: color-mix(in oklch, var(--color-warning-text) 12%, transparent);
+    color: var(--color-text);
+    font: inherit;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    text-align: start;
+    cursor: pointer;
+
+    & svg {
+      flex: none;
+      color: var(--color-warning-text);
+    }
+
+    &:focus-visible {
+      outline: var(--focus-ring-width) solid var(--color-focus);
+      outline-offset: var(--focus-ring-offset);
+    }
+  }
+
+  /* The quiz file, folded away: the header card stays short and the first round is in view. */
+  .quiz-more {
+    border-radius: var(--radius-lg);
+    background: var(--color-fill);
+
+    & > .quiz-settings-summary {
+      padding-inline: var(--space-3);
+      border-radius: var(--radius-lg);
+    }
+
+    & > .quiz-file-row {
+      display: grid;
+      gap: var(--space-2);
+      padding: 0 var(--space-3) var(--space-3);
+    }
   }
 
   /* || Components: round card */
@@ -91,8 +150,12 @@
   }
 
   .quiz-round-card {
-    display: flex;
-    align-items: center;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+
+    & > .quiz-card-row {
+      padding: 0 var(--space-2) var(--space-2);
+    }
 
     /* The round on show in the right pane. */
     &:has([aria-current="true"]) {
@@ -106,12 +169,11 @@
 
   .quiz-round-open {
     display: flex;
-    flex: 1;
     align-items: center;
     gap: var(--space-3);
+    width: 100%;
     min-width: 0;
-    min-height: calc(2 * var(--tap-target));
-    padding: var(--space-3) var(--space-1) var(--space-3) var(--space-3);
+    padding: var(--space-3) var(--space-3) var(--space-1);
     border: 0;
     border-radius: var(--radius-xl);
     background: transparent;
@@ -143,10 +205,13 @@
     min-width: 0;
   }
 
-  .quiz-round-moves {
-    display: grid;
-    flex: none;
-    padding-inline-end: var(--space-1);
+  /* The kind dots and, when something is not finished, its count. */
+  .quiz-round-marks {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-1) var(--space-2);
+    min-height: var(--space-6);
   }
 
   .quiz-dots {

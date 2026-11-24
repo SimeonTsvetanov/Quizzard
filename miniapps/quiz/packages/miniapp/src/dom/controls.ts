@@ -106,7 +106,7 @@ function chip(options: ChipPickerOptions, option: ChipOption): HTMLLabelElement 
  * @param options - legend, the chips, the chosen one and the listener
  */
 export function chipPicker(options: ChipPickerOptions): HTMLFieldSetElement {
-  const row = h("div", { class: "quiz-chips" }, ...options.options.map((option) => chip(options, option)));
+  const row = h("div", { class: "quiz-chips", "data-count": String(options.options.length) }, ...options.options.map((option) => chip(options, option)));
   const group = h("fieldset", { class: "quiz-group" }, h("legend", { class: "quiz-label" }, options.legend), row);
   if (options.hint !== undefined && options.options.some((option) => option.isAvailable === false)) group.append(h("p", { class: "quiz-hint" }, options.hint));
   return group;

@@ -5,8 +5,33 @@
   /* || Components: round head */
   .quiz-round-head {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: var(--space-3);
+  }
+
+  /* Under the name: what the round holds, what is not finished, and — at the end — its own buttons. */
+  .quiz-round-line {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-1) var(--space-2);
+    min-height: var(--tap-target);
+  }
+
+  .quiz-round-tools {
+    display: flex;
+    flex: none;
+    margin-inline-start: auto;
+  }
+
+  /* "Questions" and how they are shown. */
+  .quiz-round-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    min-height: var(--tap-target);
   }
 
   .quiz-round-names {
@@ -64,15 +89,14 @@
     flex: none;
   }
 
+  /* "30 s · 1 point · note": wraps under the name when it is long, never cut. */
   .quiz-settings-gist {
     flex: 1;
     min-width: 0;
-    overflow: hidden;
     color: var(--color-text-secondary);
     font-size: var(--text-sm);
     text-align: end;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    overflow-wrap: break-word;
   }
 
   .quiz-settings-body {
@@ -97,12 +121,17 @@
     list-style: none;
 
     @media (width >= 700px) {
-      grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+      /* Wide enough for the six buttons of a card's row. */
+      grid-template-columns: repeat(auto-fill, minmax(17.5rem, 1fr));
     }
   }
 
+  /* Thumbnail, facts, actions: three rows that are the same height on every card, so the cards of
+     a row line up inside (UX review S1). */
   .quiz-qcard {
     display: grid;
+    grid-template-rows: auto auto auto;
+    align-content: start;
     gap: var(--space-2);
     min-width: 0;
     padding: var(--space-2);
@@ -130,22 +159,104 @@
     border-radius: var(--radius-lg);
   }
 
+  /* One line, always: the kind and the time are whole, a long points note gives way (its whole
+     text is the tooltip and is on the slide above). */
   .quiz-qcard-facts {
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
-    gap: var(--space-1) var(--space-3);
+    gap: var(--space-3);
+    min-width: 0;
     padding-inline: var(--space-2);
   }
 
-  .quiz-qcard-number {
-    font-family: var(--font-display);
-    font-weight: var(--weight-bold);
+  .quiz-fact--points {
+    flex: 0 1 auto;
   }
 
-  .quiz-qcard-actions {
+  /* "Not finished" stands on the thumbnail's lower corner, where the slide has nothing. */
+  .quiz-qcard-open .quiz-flag {
+    position: absolute;
+    inset-block-end: var(--space-2);
+    inset-inline-start: var(--space-2);
+    padding: 0 var(--space-2);
+    border-radius: var(--radius-full);
+    background: var(--color-surface-raised);
+    box-shadow: var(--shadow-1);
+    line-height: var(--leading-normal);
+  }
+
+  /* || Components: compact rows — a long round as a list (UX review S8) */
+  .quiz-qrows {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .quiz-qrow {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    min-height: calc(var(--tap-target) + var(--space-3));
+    padding-inline: var(--space-1);
+    border-radius: var(--radius-lg);
+    background: var(--glass-surface);
+    box-shadow: var(--glass-edge), inset var(--space-1) 0 0 var(--quiz-tone);
+  }
+
+  .quiz-qrow-open {
     display: flex;
-    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-2);
+    min-width: 0;
+    min-height: calc(var(--tap-target) + var(--space-3));
+    padding: 0 var(--space-1);
+    border: 0;
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: start;
+    cursor: pointer;
+
+    &:focus-visible {
+      outline: var(--focus-ring-width) solid var(--color-focus);
+      outline-offset: calc(-1 * var(--focus-ring-width));
+    }
+  }
+
+  .quiz-qrow-number {
+    flex: none;
+    min-width: 2ch;
+    font-family: var(--font-display);
+    font-weight: var(--weight-bold);
+    text-align: end;
+  }
+
+  .quiz-qrow-kind {
+    display: grid;
+    flex: none;
+    color: var(--quiz-tone);
+  }
+
+  .quiz-qrow-text {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    font-weight: var(--weight-semibold);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    &[data-empty] {
+      color: var(--color-text-secondary);
+      font-weight: var(--weight-regular);
+    }
+  }
+
+  .quiz-qrow .quiz-flag {
+    flex: none;
   }
 
   /* || Components: "Add question" */
@@ -156,18 +267,20 @@
       min-width: min(100%, 14rem);
     }
 
-    /* Phone: it floats above the thumb while the cards scroll under it. */
+    /* Phone: the same bar as the editor's — it stays at the bottom, as wide as the screen, and the
+       list ends above it (no pill floating over a card). */
     @media (width < 700px) {
       position: sticky;
-      bottom: calc(var(--space-4) + var(--safe-bottom));
+      bottom: calc(var(--space-3) + var(--safe-bottom));
       z-index: 1;
-      justify-content: center;
-      pointer-events: none;
+      padding: var(--space-2);
+      border-radius: var(--radius-xl);
+      background: var(--color-surface-raised);
+      box-shadow: var(--glass-edge), var(--shadow-3);
 
       & .quiz-button {
-        border-radius: var(--radius-full);
-        box-shadow: var(--shadow-3);
-        pointer-events: auto;
+        flex: 1;
+        min-height: var(--tap-target);
       }
     }
   }

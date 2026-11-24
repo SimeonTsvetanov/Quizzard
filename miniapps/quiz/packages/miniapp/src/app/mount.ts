@@ -2,17 +2,12 @@
 // follows Back/Forward, saves a moment after every change (and at once when the page goes away) and
 // shows the "Saved" tick in the host's header. Screens are looked up by the route, never switched on.
 import { type Quiz, defaultEnv, findQuestion, findRound } from "@simeonts/quizzard-quiz-core";
-import { answerUis } from "../answers-ui/index.ts";
 import type { MiniAppContext, Unmount } from "../contract.ts";
 import { createTranslator, loadLanguage } from "../i18n/translate.ts";
 import { createMediaUrls } from "../media/urls.ts";
-import { kindUis } from "../kinds-ui/index.ts";
 import { meta } from "../meta.ts";
-import { editorScreen } from "../screens/editor.ts";
+import type * as Deck from "../screens/deck.ts";
 import { libraryScreen, loadLibrary } from "../screens/library.ts";
-import { playScreen } from "../screens/play.ts";
-import { previewScreen } from "../screens/preview.ts";
-import { quizScreen } from "../screens/quiz.ts";
 import { keepUnsaved, restoreUnsaved } from "../storage/rescue.ts";
 import { createSaver } from "../storage/saver.ts";
 import { createQuizStore } from "../storage/store.ts";
@@ -22,14 +17,26 @@ import { AUDIENCE_PARAM, LIBRARY, createNavigator, type Route } from "./routes.t
 import { createSavedTick } from "./saved-tick.ts";
 import type { App } from "./state.ts";
 
-/** The screen of each route that shows a quiz. */
-const SCREENS: Readonly<Record<Exclude<Route["screen"], "library">, (app: App, quiz: Quiz) => HTMLElement>> = {
-  quiz: quizScreen,
-  round: quizScreen,
-  editor: editorScreen,
-  preview: previewScreen,
-  play: playScreen,
-};
+let deckModule: Promise<typeof Deck> | null = null;
+
+/**
+ * Loads the screens of a quiz (screens/deck.ts) once and gives them to the mounted creator. The
+ * library asks for them as soon as it is drawn, so opening a quiz rarely waits.
+ * @returns `false` when they could not be loaded (offline before the app was ever cached)
+ */
+async function loadDeck(app: App): Promise<boolean> {
+  if (app.screens !== null) return true;
+  deckModule ??= import("../screens/deck.ts");
+  try {
+    const deck = await deckModule;
+    app.ui = deck.UI;
+    app.screens = deck.SCREENS;
+    return true;
+  } catch {
+    deckModule = null; // the next try asks the network again
+    return false;
+  }
+}
 
 /**
  * The route a quiz can really show: a round or question that is gone (deleted, then Forward) leads to the quiz.
@@ -75,7 +82,7 @@ function leave(app: App): void {
 function draw(app: App, focus?: string): void {
   leave(app);
   const quiz = app.current?.quiz;
-  const screen = app.route.screen === "library" || !quiz ? libraryScreen(app) : SCREENS[app.route.screen](app, quiz);
+  const screen = app.route.screen === "library" || !quiz || !app.screens ? libraryScreen(app) : app.screens[app.route.screen](app, quiz);
   screen.toggleAttribute("data-entering", app.view.isEntering);
   app.view.isEntering = false;
   app.host.replaceChildren(screen);
@@ -98,10 +105,10 @@ async function show(app: App, shows: Shows, route: Route, focus: string | null |
   const isStale = (): boolean => app.signal.aborted || mine !== shows.count;
   let target = route;
   if (route.screen !== "library") {
-    const isOpen = await openQuiz(app, route.quiz);
+    const [isOpen, isLoaded] = await Promise.all([openQuiz(app, route.quiz), loadDeck(app)]);
     if (isStale()) return;
-    if (!isOpen) {
-      app.context.shell.toast(app.t("quiz.gone"));
+    if (!isOpen || !isLoaded) {
+      app.context.shell.toast(app.t(isOpen ? "quiz.notLoaded" : "quiz.gone"), isOpen ? { tone: "error" } : {});
       app.nav.replace(LIBRARY);
       target = LIBRARY;
     } else if (app.current) {
@@ -123,6 +130,7 @@ async function show(app: App, shows: Shows, route: Route, focus: string | null |
   app.current = null;
   app.media.release();
   await loadLibrary(app, wanted);
+  void loadDeck(app); // while the library is read: a quiz then opens without a wait
   if (wanted !== undefined && !isStale() && !app.host.contains(document.activeElement)) focusTitle(app);
 }
 
@@ -144,9 +152,9 @@ function createApp(element: HTMLElement, context: MiniAppContext, signal: AbortS
     },
   });
   const app: App = {
-    host: element, context, signal, store, saver, media: createMediaUrls(), env: defaultEnv, ui: createUiRegistries(kindUis, answerUis), lang, t: createTranslator(lang),
+    host: element, context, signal, store, saver, media: createMediaUrls(), env: defaultEnv, ui: createUiRegistries(), screens: null, lang, t: createTranslator(lang),
     nav: createNavigator({ hash: `#/${meta.id}`, signal, onTraverse: (route) => { void show(app, shows, route, returnFocus(app.route, route)); } }),
-    view: { lastRound: null, isSettingsOpen: false, renaming: null, isLiveOpen: false, isRevealed: false, drafts: new Map(), isEntering: false, cleanup: null, exported: null, swept: new Set(), selectNext: false, hasAskedToKeep: false },
+    view: { lastRound: null, isSettingsOpen: false, isNaming: false, renaming: null, isLiveOpen: false, isRevealed: false, drafts: new Map(), isEntering: false, cleanup: null, exported: null, swept: new Set(), isMoreOpen: false, stickyFor: null, selectNext: false, hasAskedToKeep: false },
     route: LIBRARY, library: null, current: null,
     draw: (focus) => { draw(app, focus); },
     go(route, mode = "push", focus = null) {
