@@ -18,7 +18,7 @@ function longTexts(): SeedFile {
   const questions = [
     open("q1", "Какво е urbex туризъм (urbex tourism)?", LONG_ANSWER),
     open("q2", "Какво е urbex туризъм (urbex tourism)?", LONGEST_ANSWER, { explanation: LONG_EXPLANATION }),
-    open("q3", "Защо ".repeat(100).slice(0, 499) + "?", LONG_ANSWER),
+    open("q3", `${"Защо ".repeat(100).slice(0, 499)}?`, LONG_ANSWER),
   ];
   return { ...base, media: [], quiz: { ...base.quiz, rounds: [{ ...first, questions }] } };
 }
