@@ -8,6 +8,8 @@ packages:
   - miniapps/*/packages/miniapp
   # The quiz creator's player (docs/quiz-creator PLAN §2): built into one HTML template for "Export to play".
   - miniapps/*/packages/player
+  # Experiments deployed beside the app (lab/vite.config.ts): today the clip cutter trial.
+  - lab
 
 minimumReleaseAge: 1440
 minimumReleaseAgeExclude: []

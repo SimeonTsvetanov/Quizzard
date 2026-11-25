@@ -1,0 +1,17 @@
+{
+  "name": "quizzard-lab",
+  "private": true,
+  "type": "module",
+  "version": "0.0.0",
+  "description": "Experiments that are deployed beside the app but are not part of it (no link, no offline copy).",
+  "scripts": {
+    "build": "vite build"
+  },
+  "dependencies": {
+    "mediabunny": "1.66.4"
+  },
+  "devDependencies": {
+    "app": "workspace:*",
+    "vite": "^8.3.0"
+  }
+}

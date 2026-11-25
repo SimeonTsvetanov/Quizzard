@@ -1,0 +1,151 @@
+/* The lab page: the stage's colours, plain controls. */
+:root {
+  color-scheme: dark;
+  font-family: system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.45;
+}
+
+html {
+  background: oklch(17% 0.07 283);
+}
+
+body {
+  min-height: 100dvh;
+  margin: 0;
+  background: linear-gradient(170deg, oklch(27% 0.12 293), oklch(17% 0.07 283) 60rem);
+  color: oklch(98% 0.01 293);
+}
+
+main {
+  display: grid;
+  gap: 16px;
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: 20px 16px 48px;
+}
+
+h1,
+h2 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+h2 {
+  font-size: 1.2rem;
+}
+
+.lab-note {
+  margin: 0;
+  color: oklch(98% 0.01 293 / 0.76);
+}
+
+.lab-editor,
+.lab-out,
+.lab-range {
+  display: grid;
+  gap: 14px;
+}
+
+.lab-pick,
+.lab-field {
+  display: grid;
+  gap: 6px;
+  font-weight: 700;
+}
+
+video,
+audio {
+  width: 100%;
+  max-height: 50dvh;
+  border-radius: 16px;
+  background: oklch(10% 0.04 283);
+}
+
+.lab-range-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 5.5rem auto;
+  align-items: end;
+  gap: 10px;
+
+  & label {
+    display: grid;
+    gap: 4px;
+    font-weight: 700;
+  }
+
+  & output {
+    padding-block: 10px;
+    font-variant-numeric: tabular-nums;
+    text-align: end;
+  }
+}
+
+.lab-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+input[type="range"] {
+  width: 100%;
+  min-height: 44px;
+  accent-color: oklch(87.9% 0.143 92);
+}
+
+button,
+select,
+.lab-button,
+input[type="file"] {
+  min-height: 44px;
+  padding: 8px 16px;
+  border: 0;
+  border-radius: 14px;
+  background: oklch(100% 0 0 / 0.12);
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.lab-button {
+  display: inline-grid;
+  align-items: center;
+  justify-self: start;
+}
+
+.lab-primary {
+  background: oklch(87.9% 0.143 92);
+  color: oklch(24% 0.06 85);
+}
+
+button:disabled {
+  opacity: 0.5;
+}
+
+:focus-visible {
+  outline: 3px solid oklch(87.9% 0.143 92);
+  outline-offset: 2px;
+}
+
+progress {
+  width: 100%;
+  height: 12px;
+  accent-color: oklch(87.9% 0.143 92);
+}
+
+.lab-summary {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.lab-report pre {
+  overflow: auto;
+  padding: 12px;
+  border-radius: 12px;
+  background: oklch(10% 0.04 283 / 0.6);
+  font-size: 0.8rem;
+  white-space: pre-wrap;
+}

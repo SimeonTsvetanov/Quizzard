@@ -18,6 +18,7 @@
 - T-12/T-13 GG Counter at `#/scores` from submodule `vendor/gg-counter` (a6745fb = 1.2.4), isolated CSS (Tailwind under Vite 8), header buttons in the slot, toasts inside its dialogs: Home 45.4 KB, Scores first open 92.3 KB of 125; its suite 74/76 in `scores` + `scores-mobile` (motion/keyboard ×5 green), scores-host.spec green ×5.
 
 ## Next
+- Trial: `/Quizzard/lab/` cuts and shrinks a clip in the browser (Mediabunny). Chromium here: 30.6 MB 1080p → 1.9 MB 720p in 4 s. Waiting on Moni's phone reports (iPhone, Android); then it moves into the question editor with a "play from – to" fallback.
 - 0.22.0 (2026-11-24): special rounds Golden pyramid and Safe (quiz-creator SPEC §10, PLAN slice 6), the stage in the Home look with the Quizzard logo, docs refresh. Checked in Chromium only; WebKit/Firefox and real phones not yet.
 - Quiz creator: slices 1–5 + UX pass shipped (0.17.0–0.20.0). Fixes for the red five-browser run 45430916307 are on the branch (DECISIONS 2026-11-24: media as bytes where Blobs are refused, Home arrow/CLS, sky still under dialogs, 8 shards, traces uploaded); WebKit and Firefox are unproven until the next manual run — read its `e2e-results-*` artifacts first. Then: a large-file test (100–250 MB), Cast experiment, restore the e2e gate before 1.0.0, move the learnings into the forge.
 - Open after the move in: ESLint/Prettier/`tsc` still skip `miniapps/`; standalone-only code left in the two packages (theme storage, `./module` entry, standalone host in tests) can go.

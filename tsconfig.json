@@ -20,6 +20,9 @@
       "path": "./app"
     },
     {
+      "path": "./lab"
+    },
+    {
       "path": "./tsconfig.tools.json"
     }
   ]
