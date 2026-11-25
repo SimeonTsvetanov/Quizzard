@@ -7,6 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
 import { Input } from "../components/ui/input";
 import { useRevealWhileFocused } from "../hooks/use-reveal-while-focused";
 import { t } from "../i18n";
+import { NameColorButton } from "./name-color-button";
+import { nameColorProps } from "./name-colors";
 import { CARD_WIDTH_CLASS } from "../lib/layout";
 
 /** Props of {@link AddPlayerCard}. */
@@ -16,6 +18,9 @@ interface AddPlayerCardProps {
   /** The name typed so far; kept by the parent so it survives the card moving. */
   name: string;
   onNameChange: (name: string) => void;
+  /** The colour picked for the next player's name, or null; kept by the parent like the name. */
+  color: string | null;
+  onColorChange: (color: string | null) => void;
   /** Adds a player with the typed name. */
   onAdd: () => void;
   playerCount: number;
@@ -28,6 +33,8 @@ export function AddPlayerCard({
   inputRef,
   name,
   onNameChange,
+  color,
+  onColorChange,
   onAdd,
   playerCount,
   error,
@@ -44,6 +51,7 @@ export function AddPlayerCard({
         </CardHeader>
         <CardContent>
           <div ref={fieldRowRef} className="flex flex-col gap-2 sm:flex-row">
+            <div className="name-with-color">
             <Input
               ref={inputRef}
               value={name}
@@ -60,7 +68,10 @@ export function AddPlayerCard({
               aria-label={t("app.players.nameLabel")}
               aria-invalid={error !== null}
               aria-describedby={errorId}
+              {...nameColorProps(color)}
             />
+            <NameColorButton color={color} onChange={onColorChange} label={t("app.color.button")} />
+            </div>
             <Button
               onClick={onAdd}
               // because a tap on Add must not take focus from the field: the keyboard stays open for the next name

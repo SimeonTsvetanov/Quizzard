@@ -15,6 +15,10 @@
     --medal-gold: light-dark(oklch(78% 0.16 85), oklch(84% 0.16 88));
     --medal-silver: light-dark(oklch(68% 0.025 260), oklch(80% 0.02 260));
     --medal-bronze: light-dark(oklch(62% 0.12 52), oklch(70% 0.12 55));
+    /* A name field in its player's colour: both are set on the field from JS (players/name-colors.ts); these are
+       the values of a field without a colour. */
+    --name-fill: var(--color-fill);
+    --name-ink: var(--color-text);
     --keyboard-inset: 0px;
     --visual-height: 100dvh;
   }

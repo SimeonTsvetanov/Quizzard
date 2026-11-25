@@ -4,6 +4,10 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.27.0] - 2026-11-25
+### Added
+- **Scores — a colour for each player's name.** A palette button beside the name (when you add a player and on every card) offers the seven Carcassonne meeple colours, any custom colour and "No colour". The colour fills the name field only; without one the field looks as before. It is saved with the game and travels with an exported game.
+
 ## [0.26.0] - 2026-11-25
 ### Fixed
 - **Quiz creator, while playing — changing the language keeps the game as it is.** A break, a running timer and a playing clip go on, the audience window stays open (it used to close and open again), and a quiz played from an exported file no longer risks starting over.

@@ -10,6 +10,7 @@ import {
   removePlayer as removePlayerFromGame,
   removeScoreEntry as removeScoreEntryInGame,
   renamePlayer as renamePlayerInGame,
+  setPlayerColor as setPlayerColorInGame,
   resetPlayerScore as resetPlayerScoreInGame,
   resetScores as resetScoresInGame,
   restoreScoreEntry as restoreScoreEntryInGame,
@@ -31,6 +32,7 @@ type GameAction =
   | { type: "add-player"; player: NewPlayer }
   | { type: "remove-player"; id: string }
   | { type: "rename-player"; id: string; name: string }
+  | { type: "color-player"; id: string; color: string | null }
   | { type: "adjust-score"; id: string; change: ScoreChange }
   | { type: "remove-score-entry"; id: string; entryId: string }
   | { type: "restore-score-entry"; id: string; entry: ScoreEntry; index: number }
@@ -53,6 +55,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       return removePlayerFromGame(state, action.id);
     case "rename-player":
       return valueOr(state, renamePlayerInGame(state, action.id, action.name));
+    case "color-player":
+      return setPlayerColorInGame(state, action.id, action.color);
     case "adjust-score":
       return valueOr(state, adjustScoreInGame(state, action.id, action.change));
     case "remove-score-entry":
@@ -71,11 +75,13 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 /** What {@link useGameState} returns: the game, its actions and the ranking. */
 export interface GameStateApi {
   state: GameState;
-  /** Adds a player; the result says whether core accepted the name (limits, blank name). */
-  addPlayer: (name: string) => Result<GameState, AddPlayerErrorCode>;
+  /** Adds a player, with the colour behind the name when one was picked; the result says whether core accepted the name (limits, blank name). */
+  addPlayer: (name: string, color?: string | null) => Result<GameState, AddPlayerErrorCode>;
   removePlayer: (id: string) => void;
   /** Renames a player; the result says whether core accepted the name (limits, blank name). */
   renamePlayer: (id: string, name: string) => Result<GameState, RenamePlayerErrorCode>;
+  /** Sets the colour behind a player's name (`#rrggbb`), or removes it (null). */
+  setPlayerColor: (id: string, color: string | null) => void;
   /** Changes a score and records it in the player's history; the result says whether core accepted it (score range). */
   adjustScore: (id: string, delta: number) => Result<GameState, ScoreErrorCode>;
   /** Removes one history entry and takes its points off the score (SPEC 1.1 F16); the result says why core refused. */
@@ -153,9 +159,9 @@ export function useGameState(onSaved: () => void): GameStateApi {
   }, [state, savedGame, onSaved]);
 
   const addPlayer = useCallback(
-    (name: string) => {
+    (name: string, color: string | null = null) => {
       // Id and time are made here, once, so the reducer stays pure (React may run it twice).
-      const player: NewPlayer = { name, id: crypto.randomUUID(), createdAt: new Date().toISOString() };
+      const player: NewPlayer = { name, id: crypto.randomUUID(), createdAt: new Date().toISOString(), color };
       dispatch({ type: "add-player", player });
       // The reducer applies the same check to the latest game; this tells the caller the outcome now.
       return addPlayerToGame(state, player);
@@ -172,6 +178,8 @@ export function useGameState(onSaved: () => void): GameStateApi {
     },
     [state]
   );
+
+  const setPlayerColor = useCallback((id: string, color: string | null) => { dispatch({ type: "color-player", id, color }); }, []);
 
   const resetGame = useCallback(() => {
     removeGame();
@@ -193,6 +201,7 @@ export function useGameState(onSaved: () => void): GameStateApi {
     addPlayer,
     removePlayer,
     renamePlayer,
+    setPlayerColor,
     ...scoreActions,
     resetGame,
     reloadFromStorage,

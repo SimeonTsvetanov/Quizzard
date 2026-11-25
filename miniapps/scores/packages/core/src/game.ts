@@ -29,6 +29,8 @@ export interface Player {
   readonly createdAt: string;
   /** The most recent score changes, oldest first; at most `MAX_HISTORY_ENTRIES`. */
   readonly history: readonly ScoreEntry[];
+  /** The colour behind the name (`#rrggbb`), when the player picked one. */
+  readonly color?: string;
 }
 
 /** The whole game; players are in the order they were added. */

@@ -1,6 +1,7 @@
 // Player transitions: add, remove, rename (SPEC F1, F2). Pure — the caller supplies id and time.
 import type { GameState, Player } from "./game.ts";
 import { MAX_PLAYERS } from "./limits.ts";
+import { toPlayerColor } from "./player-color.ts";
 import { checkPlayerName, type NameErrorCode } from "./player-name.ts";
 import { fail, ok, type Result } from "./result.ts";
 
@@ -10,6 +11,8 @@ export interface NewPlayer {
   readonly id: string;
   /** ISO 8601 time the player is added. */
   readonly createdAt: string;
+  /** The colour behind the name (`#rrggbb`); none, or anything else, adds the player without one. */
+  readonly color?: string | null;
 }
 
 /** Why {@link addPlayer} rejected the input. */
@@ -31,7 +34,8 @@ export function addPlayer(game: GameState, input: NewPlayer): Result<GameState, 
   if (game.players.length >= MAX_PLAYERS) {
     return fail("PLAYERS_TOO_MANY", `A game can have at most ${String(MAX_PLAYERS)} players.`);
   }
-  const player: Player = { id: input.id, name: name.value, score: 0, createdAt: input.createdAt, history: [] };
+  const color = toPlayerColor(input.color);
+  const player: Player = { id: input.id, name: name.value, score: 0, createdAt: input.createdAt, history: [], ...(color === null ? {} : { color }) };
   return ok({ ...game, players: [...game.players, player] });
 }
 
@@ -47,4 +51,14 @@ export function renamePlayer(game: GameState, id: string, name: string): Result<
   const players = updatePlayer(game.players, id, (player) => ({ ...player, name: checked.value }));
   if (players === null) return fail("PLAYER_NOT_FOUND", "This player is no longer in the game.");
   return ok({ ...game, players });
+}
+
+/** Returns the game with the colour behind player `id`'s name set to `color` (`#rrggbb`); null, or anything else, removes it. An unknown id leaves the game as it is. */
+export function setPlayerColor(game: GameState, id: string, color: string | null): GameState {
+  const checked = toPlayerColor(color);
+  const players = updatePlayer(game.players, id, (player) => {
+    const { id: playerId, name, score, createdAt, history } = player;
+    return { id: playerId, name, score, createdAt, history, ...(checked === null ? {} : { color: checked }) };
+  });
+  return players === null ? game : { ...game, players };
 }

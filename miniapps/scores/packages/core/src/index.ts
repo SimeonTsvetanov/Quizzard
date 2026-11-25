@@ -14,7 +14,8 @@ export {
   type LeaderboardTextLabels,
 } from "./leaderboard-text.ts";
 export type { NameErrorCode } from "./player-name.ts";
-export { addPlayer, removePlayer, renamePlayer, type AddPlayerErrorCode, type NewPlayer, type RenamePlayerErrorCode } from "./players.ts";
+export { isPlayerColor } from "./player-color.ts";
+export { addPlayer, removePlayer, renamePlayer, setPlayerColor, type AddPlayerErrorCode, type NewPlayer, type RenamePlayerErrorCode } from "./players.ts";
 export { podiumPlaces, rank, type PodiumPlace, type Ranking } from "./ranking.ts";
 export type { Failure, Result } from "./result.ts";
 export { checkSavedGame, parseSavedState, type SavedGameErrorCode, type SavedStateErrorCode } from "./saved-state.ts";

@@ -3,6 +3,7 @@
 // place and the last-scored mark (SPEC 1.1 F16–F18). A rename or score change that core refuses (name over
 // 40 characters, score out of range) says why on the card.
 import { useEffect, useId, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import type { Player, PodiumPlace } from "gg-counter-core";
 import { Minus, Plus } from "lucide-react";
 import { Button } from "../components/ui/button";
@@ -14,6 +15,8 @@ import { t } from "../i18n";
 import { MEDALS } from "../leaderboard/medals";
 import { HistorySheet } from "./history-sheet";
 import type { HistoryActions } from "./history-sheet-content";
+import { NameColorButton } from "./name-color-button";
+import { nameColorProps } from "./name-colors";
 import { limitCode, limitMessage, type LimitCode } from "./limit-message";
 import { RemovePlayerButton } from "./remove-player-button";
 import { ScoreDialog } from "./score-dialog";
@@ -27,6 +30,8 @@ interface PlayerCardProps extends HistoryActions {
   /** This player's change is the newest of the game: the card is marked (SPEC 1.1 F17). */
   isLastScored: boolean;
   onRename: GameStateApi["renamePlayer"];
+  /** Sets or removes (null) the colour behind this player's name. */
+  onColor: GameStateApi["setPlayerColor"];
   onRemove: (id: string) => void;
   /** Sets this player's score to 0 (the "Score only" option of the delete alert). */
   onResetScore: (id: string) => void;
@@ -45,13 +50,18 @@ function PlaceMedal({ place }: { place: PodiumPlace }): React.JSX.Element {
   return <span className="place-medal" role="img" aria-label={t(MEDAL_LABELS[place])}>{MEDALS[place]}</span>;
 }
 
-/** The card's head: the name field (renames on Enter or blur) and `children` (the remove button) beside it. */
-function NameField({ player, onRename, children }: Pick<PlayerCardProps, "player" | "onRename"> & { children: React.ReactNode }): React.JSX.Element {
+/** The card's head: the name field (renames on Enter or blur, filled with the player's colour), the palette and `children` (the remove button) beside it. */
+function NameField({ player, onRename, onColor, children }: Pick<PlayerCardProps, "player" | "onRename" | "onColor"> & { children: React.ReactNode }): React.JSX.Element {
   const errorId = useId();
   const [name, setName] = useState(player.name);
   const [nameError, setNameError] = useState<LimitCode | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const headRef = useRef<HTMLDivElement>(null);
+  // The name is being edited: focus is in the field or on the palette, or the colour sheet is open. Narrow cards
+  // then show the palette in place of the trash (player-card.css).
+  const [isFocused, setIsFocused] = useState(false);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [isTabbing, setIsTabbing] = useState(false);
   // A rename near the bottom of the screen stays above the keyboard, with the remove button beside it (SPEC 1.2 F19).
   useRevealWhileFocused(inputRef, headRef);
 
@@ -75,7 +85,24 @@ function NameField({ player, onRename, children }: Pick<PlayerCardProps, "player
 
   return (
     <div>
-      <div ref={headRef} className="player-card-head">
+      <div
+        ref={headRef}
+        className="player-card-head"
+        data-editing={isFocused || isSheetOpen ? "" : undefined}
+        data-keys={isTabbing ? "" : undefined}
+        onFocus={(event) => {
+          // Dialogs opened from here are React children too: only focus inside the head itself counts.
+          if (event.currentTarget.contains(event.target)) setIsFocused(!event.target.matches("[data-remove-player]"));
+        }}
+        onBlur={(event) => {
+          if (!(event.relatedTarget instanceof Node) || !event.currentTarget.contains(event.relatedTarget)) setIsFocused(false);
+        }}
+        // Tab must reach both buttons: they are both shown before focus moves, and until the next tap.
+        onKeyDown={(event) => {
+          if (event.key === "Tab") flushSync(() => { setIsTabbing(true); });
+        }}
+        onPointerDown={() => { setIsTabbing(false); }}
+      >
         <Input
           ref={inputRef}
           value={name}
@@ -95,6 +122,17 @@ function NameField({ player, onRename, children }: Pick<PlayerCardProps, "player
           aria-label={t("app.players.nameFor", { name: player.name })}
           aria-invalid={nameError !== null}
           aria-describedby={errorId}
+          {...nameColorProps(player.color)}
+        />
+        <NameColorButton
+          color={player.color ?? null}
+          onChange={(color) => { onColor(player.id, color); }}
+          label={t("app.color.buttonFor", { name: player.name })}
+          onOpenChange={(open) => {
+            setIsSheetOpen(open);
+            // Focus comes back to the palette as the sheet closes: it has to be in view by then.
+            if (!open) setIsFocused(true);
+          }}
         />
         {children}
       </div>
@@ -104,7 +142,7 @@ function NameField({ player, onRename, children }: Pick<PlayerCardProps, "player
 }
 
 /** One player's card: name, remove or reset (one alert with a choice), last changes, score and − / +. */
-export function PlayerCard({ player, medal, isLastScored, motion, onRename, onRemove, onResetScore, onAdjust, onRemoveEntry, onRestoreEntry, focusAfterRemove }: PlayerCardProps): React.JSX.Element {
+export function PlayerCard({ player, medal, isLastScored, motion, onRename, onColor, onRemove, onResetScore, onAdjust, onRemoveEntry, onRestoreEntry, focusAfterRemove }: PlayerCardProps): React.JSX.Element {
   const [scoreError, setScoreError] = useState<LimitCode | null>(null);
   const scoreErrorId = useId();
 
@@ -130,7 +168,7 @@ export function PlayerCard({ player, medal, isLastScored, motion, onRename, onRe
     >
       {/* Keyed by place: a medal that changes pops in again (medal-in, player-card.css). */}
       {medal !== null && <PlaceMedal key={medal} place={medal} />}
-      <NameField player={player} onRename={onRename}>
+      <NameField player={player} onRename={onRename} onColor={onColor}>
         <RemovePlayerButton
           playerName={player.name}
           onRemove={() => { onRemove(player.id); }}

@@ -96,6 +96,7 @@ export function ScoresScreen({ screen, element, options }: ScoresScreenProps): R
         lastScoredId={game.lastScoredId}
         onAddPlayer={game.addPlayer}
         onRename={game.renamePlayer}
+        onColor={game.setPlayerColor}
         onRemove={game.removePlayer}
         onResetScore={game.resetPlayerScore}
         onAdjust={game.adjustScore}

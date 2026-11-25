@@ -1,6 +1,6 @@
 // Example tests for the player transitions (SPEC F1, F2; limits SPEC §7).
 import { describe, expect, it } from "vitest";
-import { MAX_NAME_LENGTH, MAX_PLAYERS, addPlayer, createEmptyGame, removePlayer, renamePlayer, type GameState } from "../src/index.ts";
+import { MAX_NAME_LENGTH, MAX_PLAYERS, addPlayer, createEmptyGame, removePlayer, renamePlayer, setPlayerColor, type GameState } from "../src/index.ts";
 
 const NOW = "2026-11-19T10:00:00.000Z";
 const game: GameState = {
@@ -73,5 +73,27 @@ describe("renamePlayer", () => {
   it("a saved name longer than the limit can still be shortened", () => {
     const legacy: GameState = { ...game, players: [{ ...game.players[0], name: "y".repeat(60) }] };
     expect(renamePlayer(legacy, "a1", "Ana").ok).toBe(true);
+  });
+});
+
+describe("the colour behind a name", () => {
+  it("a new player keeps a #rrggbb colour, in lower case", () => {
+    const added = addPlayer(game, { name: "Vera", id: "c3", createdAt: NOW, color: "#D62828" });
+    expect(added.ok && added.value.players[2]).toEqual({ id: "c3", name: "Vera", score: 0, createdAt: NOW, history: [], color: "#d62828" });
+  });
+  it.each([[null], [undefined], ["red"], ["#fff"], ["#12345g"]])("a new player with colour %j has none", (color) => {
+    const added = addPlayer(game, { name: "Vera", id: "c3", createdAt: NOW, color });
+    expect(added.ok && "color" in (added.value.players[2] ?? {})).toBe(false);
+  });
+  it("setPlayerColor sets, replaces and removes the colour of one player only", () => {
+    const red = setPlayerColor(game, "a1", "#d62828");
+    expect(red.players.map((p) => p.color)).toEqual(["#d62828", undefined]);
+    expect(setPlayerColor(red, "a1", "#1d4ed8").players[0]?.color).toBe("#1d4ed8");
+    expect(setPlayerColor(red, "a1", null)).toEqual(game);
+    expect(setPlayerColor(red, "a1", "nope")).toEqual(game);
+  });
+  it("setPlayerColor keeps name, score and history, and ignores an unknown id", () => {
+    expect(setPlayerColor(game, "a1", "#d62828").players[0]).toEqual({ ...game.players[0], color: "#d62828" });
+    expect(setPlayerColor(game, "zz", "#d62828")).toBe(game);
   });
 });

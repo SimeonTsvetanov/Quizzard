@@ -23,6 +23,20 @@
       }
     }
 
+    /* A player's name in the colour they picked (players/name-colors.ts sets both values; the ink is the one of
+       dark and light with the higher contrast). The same fill on hover: the colour is the player's mark. */
+    &[data-colored] {
+      background: var(--name-fill);
+      color: var(--name-ink);
+      font-weight: var(--weight-semibold);
+      /* A hairline, so a colour close to the card (black on a dark card) still reads as a field. */
+      box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--name-ink) 28%, transparent);
+
+      &::placeholder {
+        color: color-mix(in oklch, var(--name-ink) 70%, transparent);
+      }
+    }
+
     /* Not colour alone: the message under the field says why (WCAG 1.4.1). */
     &[aria-invalid="true"] {
       background: color-mix(in oklch, var(--color-danger-text) 12%, var(--color-fill));
@@ -73,5 +87,80 @@
     margin-top: var(--space-1);
     color: var(--color-text-secondary);
     font-size: var(--text-sm);
+  }
+
+  /* || Components: name colour */
+  /* A name field with its palette button beside it (Add player). */
+  .name-with-color {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: var(--space-1);
+    min-width: 0;
+  }
+
+  /* The palette button carries a dot of the chosen colour. */
+  .name-color-button {
+    position: relative;
+  }
+
+  .name-color-dot {
+    position: absolute;
+    inset-block-end: var(--space-1);
+    inset-inline-end: var(--space-1);
+    width: var(--space-3);
+    height: var(--space-3);
+    border: 2px solid var(--color-surface);
+    border-radius: var(--radius-full);
+  }
+
+  .swatches {
+    display: grid;
+    /* The seven meeple colours in one row, also on a 320 px phone. */
+    grid-template-columns: repeat(7, minmax(0, var(--space-12)));
+    justify-content: space-between;
+    gap: var(--space-2);
+  }
+
+  .swatch {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 1;
+    border-radius: var(--radius-full);
+    box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--color-text) 20%, transparent);
+    transition: transform var(--duration-fast) var(--ease-standard);
+
+    &[aria-pressed="true"] {
+      outline: 3px solid var(--color-accent);
+      outline-offset: 2px;
+    }
+
+    &:active {
+      transform: scale(0.94);
+    }
+  }
+
+  .swatch-custom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    margin-top: var(--space-5);
+    font-weight: var(--weight-medium);
+  }
+
+  .swatch-picker {
+    width: calc(var(--tap-target) * 2);
+    height: var(--tap-target);
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-md);
+    background: none;
+    cursor: pointer;
+
+    &[data-current] {
+      outline: 3px solid var(--color-accent);
+      outline-offset: 2px;
+    }
   }
 }

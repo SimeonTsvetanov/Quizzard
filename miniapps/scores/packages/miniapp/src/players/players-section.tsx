@@ -27,6 +27,7 @@ interface PlayersSectionProps extends HistoryActions {
   lastScoredId: string | null;
   onAddPlayer: GameStateApi["addPlayer"];
   onRename: GameStateApi["renamePlayer"];
+  onColor: GameStateApi["setPlayerColor"];
   onRemove: GameStateApi["removePlayer"];
   onResetScore: GameStateApi["resetPlayerScore"];
   onAdjust: GameStateApi["adjustScore"];
@@ -45,6 +46,8 @@ function cardMotion(player: Player, gone: ReadonlySet<Player>, firstIds: Readonl
 /** Renders the player cards and the Add player card; keeps the name being typed. */
 export function PlayersSection({ players, ranking, lastScoredId, onAddPlayer, onRemove, addInputRef, flipRootRef, ...cardActions }: PlayersSectionProps): React.JSX.Element {
   const [newPlayerName, setNewPlayerName] = useState("");
+  // The colour stays for one player: the next name starts without one, like an empty field.
+  const [newPlayerColor, setNewPlayerColor] = useState<string | null>(null);
   const [addError, setAddError] = useState<LimitCode | null>(null);
   const gridRef = useRef<HTMLElement>(null);
   // Cards on screen when the page opened appear without motion; only players added later pop in.
@@ -68,9 +71,10 @@ export function PlayersSection({ players, ranking, lastScoredId, onAddPlayer, on
 
   const handleAddPlayer = () => {
     // Core trims the name and rejects a blank or over-limit one; rejected text stays in the field.
-    const added = onAddPlayer(newPlayerName);
+    const added = onAddPlayer(newPlayerName, newPlayerColor);
     if (added.ok) {
       setNewPlayerName("");
+      setNewPlayerColor(null);
       setAddError(null);
       // The next name goes in the same field (also after Add was pressed with the keyboard); the card scrolls itself.
       addInputRef.current?.focus({ preventScroll: true });
@@ -87,6 +91,8 @@ export function PlayersSection({ players, ranking, lastScoredId, onAddPlayer, on
         setNewPlayerName(name);
         setAddError(null);
       }}
+      color={newPlayerColor}
+      onColorChange={setNewPlayerColor}
       onAdd={handleAddPlayer}
       playerCount={players.length}
       error={addError && limitMessage(addError)}

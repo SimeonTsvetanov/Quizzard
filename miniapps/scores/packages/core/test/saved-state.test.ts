@@ -44,8 +44,14 @@ describe("parseSavedState (examples)", () => {
   it.each([["abc"], [{}], [[1, 2]], [undefined]])("score %j drops the entry", (score) => {
     expect(namesOf({ players: [{ ...V1_STATE.players[0], score }] })).toEqual([]);
   });
-  it("fields other than id, name, score, createdAt and history are not kept", () => {
+  it("fields other than id, name, score, createdAt, history and color are not kept", () => {
     expect(read({ players: [{ ...V1_STATE.players[0], colour: "red" }], extra: 1 })).toEqual({ players: [V1_STATE_READ.players[0]], lastUpdated: NOW, version: GAME_VERSION });
+  });
+  it("a #rrggbb name colour is kept (lower case); any other value is dropped", () => {
+    const withColor = (color: unknown) => read({ players: [{ ...V1_STATE.players[0], color }] });
+    expect(withColor("#D62828")).toEqual({ players: [{ ...V1_STATE_READ.players[0], color: "#d62828" }], lastUpdated: NOW, version: GAME_VERSION });
+    expect(withColor("red")).toEqual({ players: [V1_STATE_READ.players[0]], lastUpdated: NOW, version: GAME_VERSION });
+    expect(withColor(7)).toEqual({ players: [V1_STATE_READ.players[0]], lastUpdated: NOW, version: GAME_VERSION });
   });
   it("names are kept as saved (no trimming, no length limit for saved games)", () => {
     const name = ` ${"x".repeat(60)} `;

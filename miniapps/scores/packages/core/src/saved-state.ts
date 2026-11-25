@@ -3,6 +3,7 @@
 // loses the whole game; checkSavedGame is the strict check of an import. The app parses the JSON, this
 // module checks the value. Saved games beyond today's limits load unchanged.
 import { GAME_VERSION, type GameState, type Player } from "./game.ts";
+import { toPlayerColor } from "./player-color.ts";
 import { readHistory } from "./saved-history.ts";
 import { isObject } from "./unchecked.ts";
 import { fail, ok, type Result } from "./result.ts";
@@ -34,7 +35,7 @@ interface PlayerRead {
   readonly isHistoryIntact: boolean;
 }
 
-/** Reads the player saved in `entry`; a history from 1.1 is read with it (games before 1.1 have none). */
+/** Reads the player saved in `entry`; a history from 1.1 and a name colour are read with it (older games have none). */
 function readPlayer(entry: unknown): PlayerRead {
   if (!isObject(entry)) return { player: null, isHistoryIntact: true };
   const { id, name, createdAt } = entry;
@@ -43,7 +44,10 @@ function readPlayer(entry: unknown): PlayerRead {
     return { player: null, isHistoryIntact: true };
   }
   const { history, isIntact } = readHistory(entry.history);
-  return { player: { id, name, score, createdAt, history }, isHistoryIntact: isIntact };
+  // A colour that is not `#rrggbb` is dropped: the name looks as it does without one.
+  const color = toPlayerColor(entry.color);
+  const player: Player = { id, name, score, createdAt, history, ...(color === null ? {} : { color }) };
+  return { player, isHistoryIntact: isIntact };
 }
 
 /** Returns the players saved in `raw.players` (not an array = none) as they were read. */

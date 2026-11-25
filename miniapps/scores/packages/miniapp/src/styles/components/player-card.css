@@ -180,7 +180,23 @@
   .player-card-head {
     display: flex;
     align-items: center;
+
     gap: var(--space-1);
+
+    /* One button beside the name, so the name keeps its room: the trash, and the palette in its place while the
+       name is being edited (`data-editing`, player-card.tsx). Roomy cards on a wide screen show both, and so does
+       every card while Tab moves through it (`data-keys`). */
+    &[data-editing]:not([data-keys]) [data-remove-player],
+    &:not([data-editing], [data-keys]) [data-name-color] {
+      display: none;
+    }
+
+    @media (width > 600px) {
+      .player-grid[data-density="comfortable"] & [data-remove-player],
+      .player-grid[data-density="comfortable"] & [data-name-color] {
+        display: inline-flex;
+      }
+    }
   }
 
   /* The medal of places 1–3, pinned to the card's corner so it costs no room in any layout. */

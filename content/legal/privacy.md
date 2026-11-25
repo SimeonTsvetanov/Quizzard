@@ -20,7 +20,7 @@
   - **Teams:** your last names list (so it is still there next time), the number of teams, and a
     short code made from the last list you made teams from (not the names themselves) with how
     many times in a row teams were made from it.
-  - **Scores:** your game — player names, when each player was added, their scores and when the
+  - **Scores:** your game — player names, the colour you gave a name (if any), when each player was added, their scores and when the
     game was last changed, and for each
     player a history of their most recent score changes (the points of each change and when it was
     made, up to 50 per player).
