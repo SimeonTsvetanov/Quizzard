@@ -9,7 +9,7 @@ import { h } from "../../dom/h.ts";
 import { icon } from "../../dom/icons.ts";
 import { bytesText } from "../../format.ts";
 import type { Translate } from "../../i18n/translate.ts";
-import { canRead, cutClip, type CutLevel } from "./convert.ts";
+import { canRead, canWriteMp4, clipSeconds, cutClip, type CutLevel } from "./convert.ts";
 import { createTrim, type Trim } from "./trim.ts";
 
 /** Inputs of {@link openCutDialog}. */
@@ -24,6 +24,8 @@ export interface CutDialogOptions {
   readonly maxBytes: number;
   /** Whether the file can be used as it is: then cutting is an offer, not a must. */
   readonly fits: boolean;
+  /** Ends when the editor is left or drawn again: the window closes with it, and a running cut stops. */
+  readonly signal: AbortSignal;
 }
 
 interface Parts {
@@ -69,7 +71,9 @@ async function run(parts: Parts, signal: AbortSignal): Promise<File | null> {
     if (result.ok) return new File([result.blob], cutName(file.name, type), { type: result.blob.type });
     if (result.reason === "too-big") return say(t("cut.stillTooBig", { limit: bytesText(options.maxBytes, options.lang) }));
     return say(result.reason === "unsupported" ? t("cut.unsupported") : "");
-  } catch {
+  } catch (error) {
+    // Kept for the reports from phones: the message alone does not say what the browser refused.
+    if (!signal.aborted) console.error("Quizzard: the clip could not be cut", error);
     return say(signal.aborted ? "" : t("cut.failed"));
   } finally {
     start.disabled = false;
@@ -87,10 +91,12 @@ function player(type: "audio" | "video", url: string): HTMLMediaElement {
  * Opens the cut window for a clip.
  * @param options - the clip, its type, the limit and whether it already fits
  * @returns the new file; `null` when the window was closed without one; `"unreadable"` when the file
- * is no clip this browser can read (no window was shown)
+ * is no clip this browser can read, or the browser cannot write what a quiz carries (no window was shown)
  */
 export async function openCutDialog(options: CutDialogOptions): Promise<File | null | "unreadable"> {
-  if (!(await canRead(options.file, options.type === "video"))) return "unreadable";
+  const isVideo = options.type === "video";
+  if (!(await canWriteMp4(isVideo)) || !(await canRead(options.file, isVideo))) return "unreadable";
+  if (options.signal.aborted) return null;
   return show(options);
 }
 
@@ -98,7 +104,7 @@ function show(options: CutDialogOptions): Promise<File | null> {
   const { t, file, type, lang, host } = options;
   const url = URL.createObjectURL(file);
   const media = player(type, url);
-  const trim = createTrim(media, file, type === "video", t);
+  const trim = createTrim(media, file, type === "video", t, clipSeconds(file));
   const size = choice(t("cut.size"), [["original", t("cut.asItIs")], ["1080", "1080p"], ["720", "720p"], ["480", "480p"]], "720", "data-cut-size");
   const level = choice(t("cut.quality"), [["high", t("cut.high")], ["medium", t("cut.medium")], ["low", t("cut.low")]], "medium", "data-cut-quality");
   size.field.hidden = type !== "video";
@@ -109,6 +115,9 @@ function show(options: CutDialogOptions): Promise<File | null> {
   const bar = h("progress", { class: "quiz-cut-progress", max: "1", value: "0", "aria-label": t("cut.working") });
   bar.hidden = true;
   const start = h("button", { type: "button", class: "button button--primary", "data-cut-start": "" }, icon("cut", 18), h("span", {}, t("cut.start")));
+  // Nothing can be cut until the clip's length is known.
+  start.disabled = true;
+  void trim.ready.then(() => { start.disabled = false; });
   const cancel = h("button", { type: "button", class: "button quiz-button", "data-cut-cancel": "" }, t("cut.cancel"));
   const heading = h("h2", { class: "quiz-sheet-title", id: "quiz-cut-title" }, t(`cut.title.${type}`));
   const dialog = h("dialog", { class: "quiz-sheet quiz-cut", "aria-labelledby": heading.id, "data-cut": type },
@@ -126,6 +135,8 @@ function show(options: CutDialogOptions): Promise<File | null> {
       });
     });
     cancel.addEventListener("click", () => { dialog.close(); });
+    // The editor went away under the window (Back, another screen): it closes, and a running cut stops with it.
+    options.signal.addEventListener("abort", () => { dialog.close(); }, { once: true });
     dialog.addEventListener("close", () => {
       working.abort();
       trim.destroy();

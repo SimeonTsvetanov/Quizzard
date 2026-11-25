@@ -48,11 +48,11 @@ export interface QuestionFiles {
   needsCut(file: File): boolean;
   /**
    * Opens the cut window for a picked file — or, with `null`, for the file the question has — and
-   * takes the new file like {@link pick}.
+   * takes the new file like {@link pick}. `signal` ends with the editor: the window closes with it.
    * @returns `null` when the new file is on the question or nothing had to change; else the message
    * that says what is still wrong (a file that must be cut was not)
    */
-  cut(source: File | null): Promise<string | null>;
+  cut(source: File | null, signal: AbortSignal): Promise<string | null>;
 }
 
 /** What a kind's editor part gets. */

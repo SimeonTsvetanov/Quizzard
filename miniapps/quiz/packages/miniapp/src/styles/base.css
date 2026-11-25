@@ -5,6 +5,12 @@
    clipping. Nothing changes size on :focus. Every control is at least --tap-target. Motion is finite
    and only inside `prefers-reduced-motion: no-preference`. */
 @layer components {
+  /* What is hidden is hidden: the attribute alone loses to any component that sets its own `display`
+     (`.button`, a grid field), which twice left a control on show that should not have been there. */
+  [hidden] {
+    display: none;
+  }
+
   /* || Components: screen */
   .quiz-screen {
     display: grid;

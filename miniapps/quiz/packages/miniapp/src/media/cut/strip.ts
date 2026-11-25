@@ -60,11 +60,13 @@ async function drawSound(input: Input, canvas: HTMLCanvasElement, duration: numb
  * @param signal - stops the drawing (another file was chosen)
  */
 export async function drawStrip(file: Blob, canvas: HTMLCanvasElement, isVideo: boolean, signal: AbortSignal): Promise<void> {
+  const input = new Input({ formats: ALL_FORMATS, source: new BlobSource(file) });
   try {
-    const input = new Input({ formats: ALL_FORMATS, source: new BlobSource(file) });
     const duration = await input.computeDuration();
     await (isVideo ? drawFrames(input, canvas, duration, signal) : drawSound(input, canvas, duration, signal));
   } catch {
     // The plain track stays: the handles work without a picture behind them.
+  } finally {
+    input.dispose(); // decoders are few on a phone: the file's are let go as soon as the track is drawn
   }
 }

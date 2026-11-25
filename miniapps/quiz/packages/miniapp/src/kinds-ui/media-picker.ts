@@ -81,6 +81,12 @@ function fileOf(data: DataTransfer | null): File | undefined {
   return [...(data?.files ?? [])][0];
 }
 
+/** A file that could not be added for a reason nobody foresaw: said plainly, and kept in the console for the reports from phones. */
+function failed({ t }: KindEditorContext, error: unknown): string {
+  console.error("Quizzard: the file could not be added", error);
+  return t("media.failed");
+}
+
 /**
  * Draws the file part of the editor.
  * @param context - the question, its file and how to change it
@@ -91,12 +97,12 @@ export function mediaPicker(context: KindEditorContext, slot: "question" | "answ
   const { files, t, signal } = context;
   const type = files.type;
   if (type === null) return null;
-  const problem = h("p", { class: "quiz-field-error", role: "alert", [slot === "answer" ? "data-answer-error" : "data-media-error"]: "" });
-  problem.hidden = true;
-  const busy = h("p", { class: "quiz-hint", role: "status", [slot === "answer" ? "data-answer-busy" : "data-media-busy"]: "" }, t("media.busy"));
-  busy.hidden = true;
   const isAnswer = slot === "answer";
   const place: Slot = { isAnswer, focus: isAnswer ? "answer-media" : "media", hook: (name) => `data-${isAnswer ? "answer" : "media"}-${name}` };
+  const problem = h("p", { class: "quiz-field-error", role: "alert", [place.hook("error")]: "" });
+  problem.hidden = true;
+  const busy = h("p", { class: "quiz-hint", role: "status", [place.hook("busy")]: "" }, t("media.busy"));
+  busy.hidden = true;
   const box = h("div", { class: "quiz-drop", [place.hook("picker")]: type, "data-tone": type });
   // A file that must be cut and was not yet: the way on is the accented button under the message.
   const fixButton = h("button", { type: "button", class: "button button--primary quiz-drop-fix", [place.hook("fix")]: "" }, icon("cut", 18), h("span", {}, t("cut.start")));
@@ -108,7 +114,7 @@ export function mediaPicker(context: KindEditorContext, slot: "question" | "answ
     busy.hidden = false;
     problem.hidden = true;
     fixButton.hidden = true;
-    void job.catch(() => t("media.failed")).then((message) => {
+    void job.catch((error: unknown) => failed(context, error)).then((message) => {
       box.removeAttribute("aria-busy");
       busy.hidden = true;
       if (message === null) return;
@@ -119,7 +125,7 @@ export function mediaPicker(context: KindEditorContext, slot: "question" | "answ
       if (waiting !== null) fixButton.focus();
     });
   };
-  const fix = (file: File | null): void => { work(files.cut(file), file); };
+  const fix = (file: File | null): void => { work(files.cut(file, signal), file); };
   const take = (file: File): void => {
     if (files.needsCut(file)) fix(file);
     else work(files.pick(file), null);

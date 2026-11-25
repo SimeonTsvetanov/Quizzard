@@ -113,14 +113,14 @@ export function questionFiles(app: App, questionId: string, slot: FileSlot = "qu
     },
     canCut: type !== null && canCut(type),
     needsCut: (file) => type !== null && mustCut(type, file, mimeOf(file.type, file.name)),
-    async cut(source) {
+    async cut(source, signal) {
       if (type === null || !canCut(type)) return null;
       const own = entry ? app.media.blob(entry.id) : undefined;
       const file = source ?? (entry && own ? new File([own], entry.name, { type: entry.mime }) : null);
       if (file === null) return null;
       const maxBytes = MEDIA_RULES[type].maxBytes;
       const { openCutDialog } = await import("../media/cut/dialog.ts");
-      const made = await openCutDialog({ host: app.host, file, type, t, lang: app.lang, maxBytes, fits: source === null });
+      const made = await openCutDialog({ host: app.host, file, type, t, lang: app.lang, maxBytes, fits: source === null, signal });
       // No clip this browser can read: the usual check says what is wrong with it (its format, its size).
       if (made === "unreadable") return files.pick(file);
       // Closed without a new file: the question's own stays as it is; a picked one that had to be cut is still not in.

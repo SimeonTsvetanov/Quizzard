@@ -13,6 +13,8 @@ export interface Trim {
   readonly element: HTMLElement;
   readonly start: () => number;
   readonly end: () => number;
+  /** Settles once the clip's length is known and the handles stand at its ends; until then nothing can be cut. */
+  readonly ready: Promise<void>;
   /** Stops what the bar started (the drawing of the track). */
   destroy(): void;
 }
@@ -133,8 +135,9 @@ function createPlay(state: State, media: HTMLMediaElement, t: Translate): HTMLBu
  * @param file - the clip, for the frames or the loudness along the track
  * @param isVideo - whether the track shows frames
  * @param t - the translator
+ * @param length - the clip's length as its file says, for a clip whose player does not know it (a recording without a length, a format the element cannot play)
  */
-export function createTrim(media: HTMLMediaElement, file: Blob, isVideo: boolean, t: Translate): Trim {
+export function createTrim(media: HTMLMediaElement, file: Blob, isVideo: boolean, t: Translate, length: Promise<number>): Trim {
   const state: State = { duration: 0, from: 0, to: 0 };
   const canvas = h("canvas", { class: "quiz-cut-strip" });
   const handles = { from: handle("from", t("cut.from")), to: handle("to", t("cut.to")) };
@@ -143,15 +146,22 @@ export function createTrim(media: HTMLMediaElement, file: Blob, isVideo: boolean
   const bar: Bar = { track, handles, label: h("p", { class: "quiz-hint", "data-cut-part": "" }), t };
   const redraw = (): void => { draw(bar, state, media.currentTime); };
   const strips = new AbortController();
-  media.addEventListener("loadedmetadata", () => {
-    state.duration = Number.isFinite(media.duration) ? media.duration : 0;
-    state.to = state.duration;
+  let isReady = (): void => undefined;
+  const ready = new Promise<void>((resolve) => { isReady = resolve; });
+  // The first length that is a real one sets the bar up, whoever gives it: the player or the file itself.
+  const begin = (seconds: number): void => {
+    if (state.duration > 0 || !Number.isFinite(seconds) || seconds <= 0) return;
+    state.duration = seconds;
+    state.to = seconds;
     redraw();
     const box = track.getBoundingClientRect();
     canvas.width = Math.round(box.width * window.devicePixelRatio);
     canvas.height = Math.round(box.height * window.devicePixelRatio);
     void drawStrip(file, canvas, isVideo, strips.signal);
-  }, { once: true });
+    isReady();
+  };
+  media.addEventListener("loadedmetadata", () => { begin(media.duration); }, { once: true });
+  void length.then(begin).catch(() => undefined);
   // While it plays the playhead follows every frame, and the kept part's end stops it.
   const tick = (): void => {
     if (media.currentTime >= state.to && !media.paused) {
@@ -166,5 +176,5 @@ export function createTrim(media: HTMLMediaElement, file: Blob, isVideo: boolean
   listenPointer(bar, state, media, redraw);
   listenKeys(bar, state, media, redraw);
   const element = h("div", { class: "quiz-cut-trim" }, track, h("div", { class: "quiz-cut-row" }, createPlay(state, media, t), bar.label));
-  return { element, start: () => state.from, end: () => state.to, destroy: () => { strips.abort(); } };
+  return { element, start: () => state.from, end: () => state.to, ready, destroy: () => { strips.abort(); } };
 }
