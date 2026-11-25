@@ -52,6 +52,18 @@ export function promptSize(prompt: string): string {
   return PROMPT_STEPS.find(([max]) => prompt.length <= max)?.[1] ?? "xs";
 }
 
+/** Text lengths at which the revealed answer steps down a size. */
+const ANSWER_STEPS: readonly (readonly [number, string])[] = [[22, "s"], [48, "m"]];
+
+/**
+ * The size step of a revealed answer by its length, so a long one stays inside its part of the slide.
+ * @param answer - the answer as the slide writes it
+ * @returns `"s"` (short, the largest size), `"m"` or `"l"`
+ */
+export function answerSize(answer: string): string {
+  return ANSWER_STEPS.find(([max]) => answer.length <= max)?.[1] ?? "l";
+}
+
 /** Text lengths at which the explanation steps down a size. */
 const EXPLANATION_STEPS: readonly (readonly [number, string])[] = [[140, "s"], [300, "m"]];
 
@@ -93,10 +105,11 @@ function topLine(input: SlideInput): HTMLElement {
   if (input.roundPlace) where.append(`${labels.round} `, countMark(input.roundPlace.n, input.roundPlace.total, labels.of(input.roundPlace.n, input.roundPlace.total)), " · ");
   where.append(round.name);
   const total = round.questions.length;
-  return h("div", { class: "quiz-slide-top" },
-    h("span", { class: "quiz-slide-number", "data-slide-number": "" }, countMark(number, total, labels.of(number, total))),
-    where,
-    meta);
+  const numberMark = h("span", { class: "quiz-slide-number", "data-slide-number": "" }, countMark(number, total, labels.of(number, total)));
+  // At the reveal the word "Answer" stands up here, next to the question's number — not between the
+  // question and its answer (Moni 2026-11-25).
+  const revealMark = input.reveal ? [h("span", { class: "quiz-slide-reveal-mark", "data-slide-reveal-mark": "" }, labels.answer)] : [];
+  return h("div", { class: "quiz-slide-top" }, numberMark, ...revealMark, where, meta);
 }
 
 /** The middle of a slide this version can draw: the kind's part and the answer type's — or the special round's answer area. */
@@ -142,6 +155,8 @@ export function renderSlide(input: SlideInput): HTMLElement {
   // A part that wants the slide's whole width (a panorama, an audio bar) says so; the others may share the row with the options.
   if (media) slide.setAttribute("data-media", media.firstElementChild?.getAttribute("data-layout") ?? "side");
   for (const part of [media, answer]) if (part) canvas.append(part);
+  const right = reveal ? (answer?.querySelector(".quiz-slide-right") ?? null) : null;
+  if (right) slide.setAttribute("data-answer", answerSize(right.textContent));
   const explanation = question.explanation?.trim() ?? "";
   // A long explanation is set smaller (`data-length`), so all of it is read on the stage, never cut (Moni 2026-11-25).
   if (reveal && explanation !== "") canvas.append(h("p", { class: "quiz-slide-explanation", "data-length": explanationSize(explanation) }, icon("hint", 16), h("span", {}, explanation)));

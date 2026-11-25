@@ -117,7 +117,8 @@ describe("mount (Quizzard host)", () => {
     expect(resources.leaks(before).frames).toBe(1);
     act(() => { headerActions.querySelector<HTMLElement>("[data-action='clear-session']")?.click(); });
     const overlays = element.querySelector(`[${OVERLAYS_ATTRIBUTE}]`);
-    expect(overlays?.querySelector("[role='alertdialog']")).not.toBeNull();
+    // The dialog is rendered in a later task when the machine is busy: wait for it instead of expecting it at once.
+    await act(async () => { await vi.waitFor(() => { expect(overlays?.querySelector("[role='alertdialog']")).not.toBeNull(); }); });
     expect(document.body.querySelector(":scope > [role='alertdialog']")).toBeNull();
     act(() => { unmount(); });
     // Radix returns focus in a zero-delay timer of its own after an open dialog unmounts; let it run.

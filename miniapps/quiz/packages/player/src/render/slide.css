@@ -300,6 +300,27 @@
     background: var(--quiz-stage-edge);
   }
 
+  /* "Answer" at the top of a revealed slide: the display face in the stage's gold, beside the number. */
+  .quiz-slide-reveal-mark {
+    flex: none;
+    padding: 0.7cqi 1.7cqi;
+    border-radius: 99cqi;
+    background: var(--quiz-stage-chip);
+    box-shadow: var(--quiz-stage-lift);
+    color: var(--quiz-stage-gold);
+    font-family: var(--font-display);
+    font-size: 1.9cqi;
+    font-weight: var(--weight-bold);
+    letter-spacing: 0.06em;
+    line-height: 1;
+    text-transform: uppercase;
+  }
+
+  /* The word stands at the top (above), so the answer itself has no label of its own. */
+  .quiz-slide[data-reveal] :is(.quiz-slide-open, .quiz-digit) > .quiz-slide-kicker {
+    display: none;
+  }
+
   .quiz-slide-kicker {
     color: var(--quiz-stage-gold);
     font-size: 2cqi;

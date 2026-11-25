@@ -4,6 +4,12 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.25.2] - 2026-11-25
+### Fixed
+- **Quiz creator, while playing — a long answer beside a picture no longer runs over the question and the text below.** A longer answer is set smaller and its part of the slide grows with it; no word is broken in the middle.
+### Changed
+- **The word "Answer" stands at the top of the answer screen**, beside the question's number, in the display face — not between the question and its answer.
+
 ## [0.25.1] - 2026-11-25
 ### Fixed
 - **Quiz creator, while playing — the answer with a picture and a long text no longer overlaps.** The picture keeps its room, the answer stands beside it and the text under both; everything is drawn a little smaller until it fits.

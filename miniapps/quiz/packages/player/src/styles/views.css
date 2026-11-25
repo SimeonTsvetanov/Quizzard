@@ -332,13 +332,23 @@
      to nothing and the answer out of its row (Moni 2026-11-25). The answer beside a picture is smaller
      than one that has the slide to itself, and smaller still above a long text. */
   & .quiz-slide[data-reveal][data-media="side"]:has(.quiz-slide-right) .quiz-slide-canvas {
-    grid-template-rows: max-content max-content minmax(24cqi, 1fr) max-content;
+    /* `1fr` (not a fixed least height): the row is at least as tall as the answer beside the picture,
+       so a long answer never runs out of it over the question or the text below. */
+    grid-template-rows: max-content max-content 1fr max-content;
     row-gap: 1.6cqi;
+
+    & > .quiz-slide-media {
+      min-height: 24cqi;
+    }
+
+    & > .quiz-slide-answer {
+      min-width: 0;
+    }
   }
 
   & .quiz-slide[data-reveal][data-media] .quiz-slide-right {
-    -webkit-line-clamp: 5;
-    line-clamp: 5;
+    -webkit-line-clamp: 8;
+    line-clamp: 8;
   }
 
   & .quiz-slide[data-reveal][data-media] .quiz-slide-right {
@@ -361,6 +371,30 @@
     color: var(--quiz-stage-dim);
     font-size: 2.7cqi;
     line-height: 1.25;
+  }
+
+  /* A longer answer is set smaller, so it stays in its part of the slide and no word is broken
+     (render/slide.ts `answerSize`). After the sizes above: its length decides last. */
+  & .quiz-slide[data-reveal] .quiz-slide-right {
+    overflow-wrap: break-word;
+  }
+
+  & .quiz-slide[data-reveal][data-answer="m"]:not([data-media]) .quiz-slide-right {
+    font-size: 5.4cqi;
+  }
+
+  & .quiz-slide[data-reveal][data-answer="l"]:not([data-media]) .quiz-slide-right {
+    font-size: 4.2cqi;
+  }
+
+  & .quiz-slide[data-reveal][data-media][data-answer="m"] .quiz-slide-right,
+  & .quiz-slide[data-reveal][data-media][data-answer="m"]:has(.quiz-slide-explanation) .quiz-slide-right {
+    font-size: 4cqi;
+  }
+
+  & .quiz-slide[data-reveal][data-media][data-answer="l"] .quiz-slide-right,
+  & .quiz-slide[data-reveal][data-media][data-answer="l"]:has(.quiz-slide-explanation) .quiz-slide-right {
+    font-size: 3.2cqi;
   }
 
   & .quiz-slide[data-reveal] .quiz-slide-explanation,
