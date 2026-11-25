@@ -404,6 +404,32 @@ test("presenter mode in the app: the audience window is the app's own stage, fed
   await expect(panel(page)).toHaveCount(0);
 });
 
+// Moni 2026-11-25: "on the control screen I want to start the breaks at any time, and pause, stop and resume them".
+test("the host panel starts a break at any time, pauses and resumes it and ends it; the room's window follows", async ({ page, context }) => {
+  await play(page);
+  const opened = context.waitForEvent("page");
+  await page.keyboard.press("KeyM");
+  await page.locator('[data-dialog="menu"] [data-menu="audience"]').click();
+  const audience = await opened;
+  await next(page, 3);
+  const card = panel(page).locator('[data-card="break"]');
+  await card.locator('[data-host-break="5"]').click();
+  const clock = card.locator("[data-host-break-clock]");
+  await expect(clock).toHaveText(/^[45]:\d\d$/);
+  await expect(audience.locator('[data-curtain="break"]')).toBeVisible();
+  await card.locator('[data-host-break="toggle"]').click();
+  await expect(card.locator('[data-host-break="toggle"]')).toHaveAccessibleName("Resume the break");
+  const frozen = await clock.textContent();
+  await page.waitForTimeout(2200);
+  await expect(clock).toHaveText(frozen ?? "");
+  await expect(audience.locator('[data-curtain="break"]')).toContainText("Paused");
+  await card.locator('[data-host-break="toggle"]').click();
+  await expect(clock).not.toHaveText(frozen ?? "", { timeout: 5000 });
+  await card.locator('[data-host-break="end"]').click();
+  await expect(audience.locator('[data-curtain="break"]')).toHaveCount(0);
+  await expect(card.locator('[data-host-break="10"]')).toBeVisible();
+});
+
 // Moni 2026-11-25: "the quiz's settings WHILE IT IS PLAYED must have BG / EN".
 test("the menu changes the language of the game: the stage, the bar and the menu follow, the game stays where it is and a reload keeps the language", async ({ page }) => {
   await play(page);

@@ -10,7 +10,7 @@ import { contextOf, type DrawnView, type PlayEnv } from "../views/context.ts";
 import { fallbackView } from "../views/index.ts";
 import type { Commands } from "./commands.ts";
 import { createCover, createMediaCard } from "./panel-media.ts";
-import { createScoresCard, createTimerCard } from "./panel-tools.ts";
+import { createBreakCard, createScoresCard, createTimerCard } from "./panel-tools.ts";
 import { count, roundCount } from "../views/parts.ts";
 import { createStage } from "./stage.ts";
 
@@ -82,6 +82,7 @@ export function createPanel(env: PlayEnv, commands: Commands): Panel {
   const where = h("p", { class: "qp-host-where", "data-host-where": "" });
   const timer = createTimerCard(env, commands);
   const scores = createScoresCard(env);
+  const pause = createBreakCard(env, commands);
   const answer = card(t("host.answer"), "answer");
   const controls = createControls(env);
   const media = createMediaCard(env, commands);
@@ -90,7 +91,7 @@ export function createPanel(env: PlayEnv, commands: Commands): Panel {
     h("header", { class: "qp-panel-head" },
       h("div", { class: "qp-panel-titles" }, h("h2", { class: "qp-panel-title" }, env.file.quiz.name.trim() === "" ? t("title.unnamed") : env.file.quiz.name), where)),
     h("div", { class: "qp-panel-screens" }, card(t("host.now"), "now", now.element), card(t("host.next"), "next", next.element)),
-    h("div", { class: "qp-panel-side" }, cover.element, timer.element, media.element, answer),
+    h("div", { class: "qp-panel-side" }, cover.element, timer.element, pause.element, media.element, answer),
     controls.element, scores.element);
   // The way through the game is the player's own control bar: the player puts it under this part (player.ts).
   const element = h("div", { class: "qp-panel", "data-panel": "" }, body);
@@ -104,6 +105,7 @@ export function createPanel(env: PlayEnv, commands: Commands): Panel {
       where.replaceChildren(...whereParts(env, state));
       timer.update(state);
       scores.update(state);
+      pause.update(state);
       answer.replaceChildren(h("h3", { class: "qp-card-title" }, t("host.answer")), ...answerLines(env, state));
       controls.update(state);
       media.update(state);

@@ -130,7 +130,7 @@ function tick(state: GameState, ms: number, kinds: Kinds): GameState {
   const { curtain } = state;
   if (curtain !== null) {
     // Behind a cover the question rests; only a break counts down, and stays at zero for the host.
-    if (curtain.kind !== "break" || curtain.leftMs === 0) return state;
+    if (curtain.kind !== "break" || curtain.leftMs === 0 || curtain.paused === true) return state;
     return { ...state, curtain: { ...curtain, leftMs: Math.max(0, curtain.leftMs - elapsed) } };
   }
   return tickTimer(tickMedia(state, elapsed), elapsed, kinds);
@@ -225,6 +225,11 @@ const HANDLERS: { readonly [T in GameAction["type"]]: Handler<T> } = {
   media: (state, action) => media(state, action.command),
   black: (state) => (state.curtain?.kind === "black" ? { ...state, curtain: null } : cover(state, { kind: "black" })),
   break: startBreak,
+  breakToggle: (state) => {
+    const { curtain } = state;
+    if (curtain?.kind !== "break" || curtain.leftMs === 0) return state;
+    return { ...state, curtain: { kind: "break", totalMs: curtain.totalMs, leftMs: curtain.leftMs, ...(curtain.paused === true ? {} : { paused: true }) } };
+  },
   uncover: (state) => (state.curtain === null ? state : { ...state, curtain: null }),
   restart,
 };

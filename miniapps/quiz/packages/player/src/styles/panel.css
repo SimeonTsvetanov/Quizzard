@@ -380,3 +380,12 @@
     }
   }
 }
+
+/* The break card: its three lengths share one line; a paused countdown is quieter. */
+.qp-host-breaks {
+  flex-wrap: wrap;
+}
+
+.qp-host-clock[data-status="paused"] {
+  opacity: 0.6;
+}

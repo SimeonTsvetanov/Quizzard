@@ -2,6 +2,7 @@
 // fields (the scores table of ui/scoreboard.ts), so the host starts the time and corrects a number
 // without leaving the panel (Moni 2026-11-25).
 import { roundIds } from "../game/scores.ts";
+import { BREAK_MINUTES } from "../game/state.ts";
 import { h } from "../render/h.ts";
 import type { PlayEnv } from "../views/context.ts";
 import { barButton, setFace } from "./bar.ts";
@@ -36,6 +37,38 @@ export function createTimerCard(env: PlayEnv, commands: Commands): PanelCard {
       clock.setAttribute("data-status", hasTimer ? state.timer.status : "none");
       buttons.hidden = !hasTimer;
       setFace(toggle, isRunning ? "pause" : "play", t(isRunning ? "control.pause" : "control.start"));
+    },
+  };
+}
+
+/**
+ * Creates the break card: start a break of 5, 10 or 15 minutes at any time; while one runs, its time,
+ * pause or resume, and end it.
+ * @param env - the game's fixed parts
+ * @param commands - what its buttons do
+ */
+export function createBreakCard(env: PlayEnv, commands: Commands): PanelCard {
+  const { t } = env;
+  const starts = h("div", { class: "qp-bar-group qp-host-breaks" }, ...BREAK_MINUTES.map((minutes) =>
+    barButton("break", t("break.minutes", { n: minutes }), () => { commands.dispatch({ type: "break", minutes }); }, { "data-host-break": String(minutes), "data-words": "" })));
+  const clock = h("p", { class: "qp-host-clock", "data-host-break-clock": "" });
+  const toggle = barButton("pause", t("host.breakPause"), () => { commands.dispatch({ type: "breakToggle" }); }, { "data-host-break": "toggle", "data-words": "" });
+  const end = barButton("x", t("menu.breakEnd"), () => { commands.dispatch({ type: "uncover" }); }, { "data-host-break": "end", "data-words": "" });
+  const running = h("div", { class: "qp-bar-group" }, toggle, end);
+  const element = h("section", { class: "qp-card", "data-card": "break" }, h("h3", { class: "qp-card-title" }, t("break.title")), clock, starts, running);
+  return {
+    element,
+    update(state) {
+      const cover = state.curtain?.kind === "break" ? state.curtain : null;
+      const isPaused = cover?.paused === true;
+      starts.hidden = cover !== null;
+      running.hidden = cover === null;
+      clock.hidden = cover === null;
+      if (cover === null) return;
+      clock.textContent = clockText(cover.leftMs);
+      clock.setAttribute("data-status", isPaused ? "paused" : "running");
+      toggle.hidden = cover.leftMs === 0;
+      setFace(toggle, isPaused ? "play" : "pause", t(isPaused ? "host.breakResume" : "host.breakPause"));
     },
   };
 }

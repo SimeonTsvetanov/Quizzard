@@ -65,7 +65,7 @@ export interface Timer {
  * What covers the stage: a black screen ("eyes on the host"), or a break with its countdown.
  * While one is up the question behind it rests: its timer and its clip are paused.
  */
-export type Curtain = { readonly kind: "black" } | { readonly kind: "break"; readonly totalMs: number; readonly leftMs: number };
+export type Curtain = { readonly kind: "black" } | { readonly kind: "break"; readonly totalMs: number; readonly leftMs: number; /** The host paused the countdown; left out = it runs. */ readonly paused?: boolean };
 
 /** The whole game. */
 export interface GameState {
@@ -137,6 +137,8 @@ export type GameAction =
   | { readonly type: "black" }
   /** Starts a break of that many minutes. */
   | { readonly type: "break"; readonly minutes: number }
+  /** Pauses the countdown of a break, or lets it run again. */
+  | { readonly type: "breakToggle" }
   /** Takes away whatever covers the stage. */
   | { readonly type: "uncover" }
   | { readonly type: "restart" };

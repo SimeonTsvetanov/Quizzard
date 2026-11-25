@@ -153,6 +153,18 @@ describe("the time-up sound and the screen that stays awake", () => {
     expect(step(bulgarian, { type: "setLang", lang: "bg" })).toBe(bulgarian);
   });
 
+  it("a break can be paused and resumed: a paused break does not count down, one that is over cannot be paused", () => {
+    const onBreak = step(newGame(), { type: "break", minutes: 5 });
+    const paused = step(onBreak, { type: "breakToggle" });
+    expect(step(paused, { type: "tick", ms: 5000 })).toBe(paused);
+    const resumed = step(paused, { type: "breakToggle" });
+    expect(resumed.curtain).toEqual({ kind: "break", totalMs: 300_000, leftMs: 300_000 });
+    expect(step(resumed, { type: "tick", ms: 5000 }).curtain).toMatchObject({ leftMs: 295_000 });
+    const over = step(resumed, { type: "tick", ms: 400_000 });
+    expect(step(over, { type: "breakToggle" })).toBe(over);
+    expect(step(newGame(), { type: "breakToggle" }).curtain).toBeNull();
+  });
+
   it("the wake lock is asked for at once, again when the page is back on show, and let go at the end", async () => {
     const { keepAwake } = await import("../src/ui/wake.ts");
     const log = { requests: 0, releases: 0 };

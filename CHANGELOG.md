@@ -4,6 +4,10 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.22.4] - 2026-11-25
+### Added
+- **Quiz creator, host panel — a Break card:** start a break of 5, 10 or 15 minutes at any time, pause and resume its countdown, and end it. A paused break says "Paused" on the big screen.
+
 ## [0.22.3] - 2026-11-25
 ### Added
 - **Quiz creator, while playing — Language in the menu:** English or Български for the stage, the buttons and the menu, whatever language the quiz was written in. The game stays where it is, and the choice is remembered for that quiz.

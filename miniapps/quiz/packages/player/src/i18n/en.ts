@@ -30,6 +30,8 @@ export const en = {
     title: "Break",
     sub: "We continue in a moment",
     over: "The break is over",
+    paused: "Paused",
+    minutes: "{{n}} min",
   },
   tile: {
     rules: "Rules",
@@ -228,6 +230,8 @@ export const en = {
     blocked: "The audience window needs one tap or click before it can play sound. Tap “Tap to play” there.",
     black: "The room sees a black screen",
     break: "The room sees the break · {{time}}",
+    breakPause: "Pause the break",
+    breakResume: "Resume the break",
   },
   audience: {
     waiting: "Waiting for the host…",

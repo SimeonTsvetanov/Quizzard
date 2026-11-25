@@ -86,7 +86,10 @@ export function createCurtain(env: PlayEnv, canEdit: boolean): Curtain {
       const isOver = cover.leftMs === 0;
       drawn.time.textContent = clockText(Math.ceil(cover.leftMs / 1000));
       drawn.time.toggleAttribute("data-over", isOver);
-      drawn.sub.textContent = env.t(isOver ? "break.over" : "break.sub");
+      const isPaused = cover.paused === true && !isOver;
+      drawn.time.toggleAttribute("data-paused", isPaused);
+      const running = isPaused ? "break.paused" : "break.sub";
+      drawn.sub.textContent = env.t(isOver ? "break.over" : running);
     },
     layout() {
       if (drawn !== null && drawn.key !== "black") fitRecap(element);
