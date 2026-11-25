@@ -10,6 +10,6 @@ export * from "./game/save.ts";
 export * from "./game/scores.ts";
 export * from "./game/state.ts";
 export * from "./game/step.ts";
-export * from "./player.ts";
+export type { AudienceLink, GameStorage, Player, PlayerOptions } from "./player-types.ts";
 export { createPlayer } from "./play.ts";
 export * from "./windows.ts";

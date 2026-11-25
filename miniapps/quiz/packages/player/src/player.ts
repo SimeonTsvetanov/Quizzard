@@ -2,8 +2,7 @@
 // draws it — as the stage with its control bar, or, once an audience window is open, as the host
 // panel while the stage is sent to that window through a channel. The same code runs inside the
 // creator ("Play") and in the exported page.
-import type { QuizFile } from "@simeonts/quizzard-quiz-core/play";
-import { type Channel, type Transport, createChannel, forAudience } from "./channel.ts";
+import { type Channel, createChannel, forAudience } from "./channel.ts";
 import { createEnv } from "./env.ts";
 import { createGame } from "./game/create.ts";
 import { restore, toSaved } from "./game/save.ts";
@@ -24,55 +23,9 @@ import { offerRestart } from "./ui/resume.ts";
 import { type UndoStrip, createUndoStrip } from "./ui/undo.ts";
 import { keepAwake } from "./ui/wake.ts";
 import type { PlayEnv } from "./views/context.ts";
+import type { AudienceLink, GameStorage, InnerOptions, InnerPlayer } from "./player-types.ts";
 
-/** Where the game is kept between sessions; both calls may fail silently (a page opened from a file may have no storage). */
-export interface GameStorage {
-  load(): unknown;
-  save(value: unknown): void;
-}
-
-/** An open audience window, as the player sees it. */
-export interface AudienceLink {
-  readonly transport: Transport;
-  isClosed(): boolean;
-  close(): void;
-}
-
-/** Inputs of {@link createPlayer}. */
-export interface PlayerOptions {
-  /** An empty element; the player fills it and takes it full screen on F. */
-  readonly root: HTMLElement;
-  readonly file: QuizFile;
-  readonly storage?: GameStorage;
-  /** Gives the address of a media file of the quiz, or `null`. */
-  readonly mediaUrl?: (id: string) => string | null;
-  /** Opens the audience window; `null` when the browser refused. Left out = no presenter mode here. */
-  readonly openAudience?: () => AudienceLink | null;
-  /** Leaves the player (in the app: back to the quiz). */
-  readonly onExit?: () => void;
-  /** The id of the round or question the game jumps to as it opens ("Play from here"); left out = where the game is. */
-  readonly startAt?: string;
-  /** Shows a short message to the host (the app's toast); the exported page uses its own line. */
-  readonly notify?: (message: string) => void;
-  /** Where the logo on the stage leads (the exported page); left out = no link (inside the app, ui/brand.ts). */
-  readonly homeUrl?: string;
-  /** Called when the host picked another language: play.ts starts the player again in it. */
-  readonly onLang?: (lang: string) => void;
-  /** No "Continuing your last game" note: the player only started again in another language. */
-  readonly isRestart?: boolean;
-}
-
-/** A running player. */
-export interface Player {
-  getState(): GameState;
-  dispatch(action: GameAction): void;
-  /** Whether the audience window is open. */
-  isPresenting(): boolean;
-  /** Opens the audience window (inside a click: a browser opens a window only then). */
-  present(): void;
-  /** Saves the game, closes the audience window and removes every listener and timer. */
-  destroy(): void;
-}
+export type * from "./player-types.ts";
 
 /** How often the clock ticks while a timer runs. */
 const TICK_MS = 200;
@@ -84,11 +37,13 @@ interface Presenter {
   readonly link: AudienceLink;
   readonly channel: Channel;
   readonly panel: Panel;
+  /** Stops listening to the audience's window. */
+  readonly off: () => void;
 }
 
 /** One running player: its fixed parts and what changes while it runs. */
 interface Session {
-  readonly options: PlayerOptions;
+  readonly options: InnerOptions;
   readonly t: Translate;
   readonly env: PlayEnv;
   readonly stage: Stage;
@@ -182,6 +137,7 @@ function stopPresenting(session: Session): void {
   const { presenter } = session;
   if (!presenter) return;
   session.presenter = null;
+  presenter.off();
   presenter.channel.close();
   presenter.link.close();
   presenter.panel.destroy();
@@ -194,7 +150,7 @@ function stopPresenting(session: Session): void {
 }
 
 function startPresenting(session: Session): void {
-  const { options, env, commands } = session;
+  const { options } = session;
   const link = options.openAudience?.() ?? null;
   if (link === null) {
     options.notify?.(session.t("menu.popupBlocked"));
@@ -202,17 +158,24 @@ function startPresenting(session: Session): void {
   }
   // From here on the audience's window is the one that plays: a clip playing in this window stops.
   move(session, { type: "media", command: "pause" });
-  const channel = createChannel(link.transport);
+  attach(session, link, createChannel(link.transport));
+}
+
+/** Makes an open audience window this player's: the host panel takes the stage's place and the window gets the game. */
+function attach(session: Session, link: AudienceLink, channel: Channel): void {
+  const { options, env, commands } = session;
   const panel = createPanel(env, commands);
   const file = forAudience(options.file);
-  channel.on((message) => {
+  const off = channel.on((message) => {
     if (message.kind === "hello") channel.send({ kind: "init", file, state: session.state });
     if (message.kind === "action") move(session, message.action);
     if (message.kind === "bye") stopPresenting(session);
   });
   options.root.append(panel.element);
-  session.presenter = { link, channel, panel };
+  session.presenter = { link, channel, panel, off };
   moveBar(session, panel.element, null); // the same bar, now under the host panel
+  // A window handed on from the player before (a language change) is told the quiz again, in the new language.
+  if (options.resume) channel.send({ kind: "init", file, state: session.state });
 }
 
 /** The game moved to the first screen of a question or a round; unchanged when the id names neither. */
@@ -224,7 +187,7 @@ function startAt(state: GameState, id: string | undefined): GameState {
 }
 
 /** Builds a session: the game (a saved one continued), the stage, the bar and the commands they share. */
-function createSession(options: PlayerOptions): Session {
+function createSession(options: InnerOptions): Session {
   const { root, file } = options;
   const t = createTranslator(playerLang(file.quiz.language));
   const undo = createUndoStrip(t("undo.action"));
@@ -252,8 +215,9 @@ function createSession(options: PlayerOptions): Session {
     options, t, env, commands, undo,
     stage: createStage(env, { canEdit: true, isLive: true }),
     bar: createBar(t, commands),
-    // "Play from here" belongs to the first start only.
-    state: startAt(restore(fresh, readSaved(options.storage)), options.isRestart === true ? undefined : options.startAt),
+    // A player that takes another's place goes on with its game as it is — never through storage, which
+    // keeps neither a running timer nor a break and may not be there at all (an exported page).
+    state: options.resume?.state ?? startAt(restore(fresh, readSaved(options.storage)), options.startAt),
     overlay: null,
     presenter: null,
     lastSave: performance.now(),
@@ -261,20 +225,26 @@ function createSession(options: PlayerOptions): Session {
   return session;
 }
 
+/** Marks the root as the host's player and puts the stage, the bar and the undo strip in it. */
+function fill(session: Session): void {
+  const { root } = session.options;
+  root.classList.add("qp-player");
+  root.setAttribute("data-role", "host");
+  root.lang = session.env.lang;
+  root.toggleAttribute("data-no-audience", !session.options.openAudience);
+  root.replaceChildren(h("div", { class: "qp-stage-box" }, session.stage.element), session.bar.element, session.undo.element);
+}
+
 /**
  * Starts the host's player in an element.
  * @param options - the element, the quiz and the page's services
  */
-export function startPlayer(options: PlayerOptions): Player {
+export function startPlayer(options: InnerOptions): InnerPlayer {
   const { root } = options;
   const session = createSession(options);
   const controller = new AbortController();
   let lastTick = performance.now();
-  root.classList.add("qp-player");
-  root.setAttribute("data-role", "host");
-  root.lang = session.env.lang;
-  root.toggleAttribute("data-no-audience", !options.openAudience);
-  root.replaceChildren(h("div", { class: "qp-stage-box" }, session.stage.element), session.bar.element, session.undo.element);
+  fill(session);
   listenKeys(session.commands, controller.signal);
   keepAwake(controller.signal); // the screen does not dim or lock in the middle of a game
   const ticker = window.setInterval(() => {
@@ -289,19 +259,35 @@ export function startPlayer(options: PlayerOptions): Player {
     session.presenter?.channel.send({ kind: "bye" });
   }, { signal: controller.signal });
   draw(session);
-  if (options.isRestart !== true) offerRestart({ state: session.state, saved: readSaved(options.storage), undo: session.undo, t: session.t, dispatch: session.commands.dispatch });
+  if (options.resume?.presenter) attach(session, options.resume.presenter.link, options.resume.presenter.channel);
+  if (options.resume) session.bar.element.querySelector<HTMLElement>('[data-control="menu"]')?.focus(); // the menu the language was picked in is gone
+  else offerRestart({ state: session.state, saved: readSaved(options.storage), undo: session.undo, t: session.t, dispatch: session.commands.dispatch });
+  /** Stops everything the player runs; what is on the page is left to the caller. */
+  const halt = (): void => {
+    save(session);
+    controller.abort();
+    window.clearInterval(ticker);
+    session.overlay?.close();
+    session.undo.clear();
+  };
   return {
     getState: () => session.state,
     dispatch: session.commands.dispatch,
     isPresenting: () => session.presenter !== null,
     present: () => { if (!session.presenter) startPresenting(session); },
+    handOver() {
+      halt();
+      const { presenter } = session;
+      session.presenter = null;
+      presenter?.off();
+      presenter?.panel.destroy();
+      session.stage.destroy();
+      root.replaceChildren(); // full screen and the root's own marks stay: the next player is about to fill it
+      return { state: session.state, presenter: presenter ? { link: presenter.link, channel: presenter.channel } : null };
+    },
     destroy() {
       if (controller.signal.aborted) return;
-      save(session);
-      controller.abort();
-      window.clearInterval(ticker);
-      session.overlay?.close();
-      session.undo.clear();
+      halt();
       stopPresenting(session);
       session.stage.destroy();
       if (document.fullscreenElement === root) void document.exitFullscreen().catch(() => undefined);

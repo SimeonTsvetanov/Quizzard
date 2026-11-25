@@ -498,6 +498,32 @@ test("the menu changes the language of the game: the stage, the bar and the menu
   await expect(control(page, "next")).toHaveAccessibleName(/Next/);
 });
 
+// Code review 2026-11-25: the change used to save the game and read it back, which stopped a break and
+// closed and reopened the room's window.
+test("changing the language with the audience window open keeps the window, the break and the place", async ({ page, context }) => {
+  await play(page);
+  const opened = context.waitForEvent("page");
+  await page.keyboard.press("KeyM");
+  await page.locator('[data-dialog="menu"] [data-menu="audience"]').click();
+  const audience = await opened;
+  await next(page, 3);
+  await panel(page).locator('[data-card="break"] [data-host-break="5"]').click();
+  await expect(audience.locator('[data-curtain="break"]')).toBeVisible();
+  const pagesBefore = context.pages().length;
+  await page.keyboard.press("KeyM");
+  await page.locator('[data-dialog="menu"] [data-lang="bg"]').click();
+  await expect(control(page, "next")).toHaveAccessibleName(/Напред/);
+  // The same window, still open, now in Bulgarian, still on the break; the host is still on the panel.
+  expect(audience.isClosed()).toBe(false);
+  expect(context.pages().length).toBe(pagesBefore);
+  await expect(audience.locator(".qp-player")).toHaveAttribute("lang", "bg");
+  await expect(audience.locator('[data-curtain="break"]')).toContainText("Почивка");
+  await expect(panel(page)).toBeVisible();
+  await expect(panel(page).locator('[data-card="break"] [data-host-break-clock]')).toHaveText(/^[45]:\d\d$/);
+  // The focus is on the menu button, not lost on the page.
+  await expect(control(page, "menu")).toBeFocused();
+});
+
 for (const colorScheme of ["light", "dark"] as const) {
 test(`AC11: the stage, the menu and the host panel have no serious accessibility problem (${colorScheme})`, async ({ page, context }) => {
   test.slow(); // fourteen axe runs: about 20 s alone, past 30 s when the machine is busy with other tests
