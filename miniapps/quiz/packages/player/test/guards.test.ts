@@ -95,7 +95,7 @@ describe("guarded dispatch", () => {
 });
 
 describe("the Undo strip", () => {
-  it("goes after ten seconds, waits while the focus is on it, and runs its action once", () => {
+  it("goes after five seconds, waits while the focus is on it, and runs its action once", () => {
     vi.useFakeTimers();
     const strip = createUndoStrip("Undo");
     document.body.replaceChildren(strip.element);

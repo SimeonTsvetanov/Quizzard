@@ -327,6 +327,51 @@
     }
   }
 
+  /* A picture beside the answer (render/slide-media.css): on the stage its row keeps a height, so a
+     long text under it makes the slide's fit draw everything smaller instead of squeezing the picture
+     to nothing and the answer out of its row (Moni 2026-11-25). The answer beside a picture is smaller
+     than one that has the slide to itself, and smaller still above a long text. */
+  & .quiz-slide[data-reveal][data-media="side"]:has(.quiz-slide-right) .quiz-slide-canvas {
+    grid-template-rows: max-content max-content minmax(24cqi, 1fr) max-content;
+    row-gap: 1.6cqi;
+  }
+
+  & .quiz-slide[data-reveal][data-media] .quiz-slide-right {
+    -webkit-line-clamp: 5;
+    line-clamp: 5;
+  }
+
+  & .quiz-slide[data-reveal][data-media] .quiz-slide-right {
+    font-size: 5.4cqi;
+  }
+
+  & .quiz-slide[data-reveal][data-media]:has(.quiz-slide-explanation:is([data-length="m"], [data-length="l"])) .quiz-slide-right {
+    font-size: 4.6cqi;
+  }
+
+  /* The order of weight at the reveal, with or without a picture (Moni 2026-11-25): the room has
+     read the question, so it is small and quiet — its number is what matters; the answer and its
+     picture are the largest things on the slide; the text with the answer is small again, like the
+     question. These come last, over the sizes above. */
+  & .quiz-slide[data-reveal] .quiz-slide-prompt,
+  & .quiz-slide[data-reveal]:is([data-size="l"], [data-size="m"], [data-size="s"], [data-size="xs"]) .quiz-slide-prompt,
+  & .quiz-slide[data-reveal][data-media]:is([data-size="l"], [data-size="m"], [data-size="s"], [data-size="xs"]) .quiz-slide-prompt,
+  [data-shape="tall"] & .quiz-slide[data-reveal]:is([data-size="l"], [data-size="m"], [data-size="s"], [data-size="xs"]) .quiz-slide-prompt {
+    margin-block: 0;
+    color: var(--quiz-stage-dim);
+    font-size: 2.7cqi;
+    line-height: 1.25;
+  }
+
+  & .quiz-slide[data-reveal] .quiz-slide-explanation,
+  & .quiz-slide[data-reveal] .quiz-slide-explanation:is([data-length="m"], [data-length="l"]) {
+    font-size: 2.1cqi;
+  }
+
+  & .quiz-slide[data-reveal] .quiz-slide-explanation[data-length="l"] {
+    font-size: 1.9cqi;
+  }
+
   /* An upright stage has the height for it: the long text stays nearly as large. */
   [data-shape="tall"] & .quiz-slide[data-reveal] .quiz-slide-explanation:is([data-length="m"], [data-length="l"]) {
     font-size: 2.2cqi;

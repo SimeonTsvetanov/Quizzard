@@ -4,6 +4,12 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.25.1] - 2026-11-25
+### Fixed
+- **Quiz creator, while playing — the answer with a picture and a long text no longer overlaps.** The picture keeps its room, the answer stands beside it and the text under both; everything is drawn a little smaller until it fits.
+- **The answer screen puts the weight where it belongs:** the question is small and quiet (the room has read it; its number is what matters), the answer and its picture are the largest things, and the text with the answer is small again.
+- **The notes over the control bar** ("The game starts again · Undo", "Continuing your last game") go after 5 seconds instead of 10, and at once when you tap anywhere else.
+
 ## [0.25.0] - 2026-11-25
 ### Added
 - **Quiz creator — a picture with the answer.** Every question can keep a picture that is shown when the answer is revealed, in place of the question's own picture or clip: "Picture with the answer (optional)" under the explanation.
