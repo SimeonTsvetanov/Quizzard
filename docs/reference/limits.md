@@ -70,24 +70,28 @@ Other rules:
 | Characters in a host note | 500 |
 | Characters in a round's rules | 600 |
 | Characters in a points note | 80 |
-| Time for a question | 5 to 600 seconds; a new round starts at 30 |
-| Points for a question | 0 to 100; a new round starts at 1 |
+| Time for a question | 5 to 600 seconds; a standard round starts with 30 |
+| Points for a question | 0 to 100; a standard round starts with 1 |
 | Picture | JPEG, PNG, WebP or GIF, up to 15 MB as stored. A picture wider or taller than 1,920 px is scaled down, so a photo of up to 60 MB can be picked. |
-| Audio | MP3 or M4A, up to 15 MB. A bigger file, or another format, can be cut and made smaller while you add it (Chrome, Edge, Safari 26 or later, Firefox on a computer). |
+| Audio | MP3 or M4A, up to 15 MB. A bigger file, or another format such as WAV, can be cut and made smaller while you add it (Chrome, Edge, Safari 26 or later, Firefox on a computer). |
 | Video | MP4 (H.264 + AAC), up to 50 MB. A bigger file, or another format such as MOV, can be cut and made smaller while you add it (the same browsers). |
-| Pictures, audio and video of one quiz | 250 MB together |
+| A file to cut | Up to 2 GB. The limit of its kind applies to the cut file. |
+| Pictures, audio and video of one quiz | 250 MB together, pictures with the answer included |
 | Teams in a game | 2 to 12; a game starts with 4 |
 | Characters in a team name | 40 |
-| Points of a team in one round | 0 to 999; a Golden pyramid 0 to 10, a Safe 0 to 5 digits plus the bonus |
+| Points of a team in one round | 0 to 999; a Golden pyramid 0 to 10, a Safe 0 to 5 digits plus the bonus, a round without answers up to its prize or most points |
 | Golden pyramid | 4 questions; question n asks for n answers; up to 60 accepted answers each; 10 points; 60 seconds per question to start with |
 | Safe | 5 questions with one digit 0–9 each; bonus 0 to 20 (3 to start with); 45 seconds per question to start with |
+| Make the quizmaster laugh | 1 screen; 5 minutes to start with; first-place prize 0 to 20 (3 to start with), second-place prize 0 to 20 (1 to start with) |
+| Free game | 1 screen; 3 minutes to start with; most points for a team 0 to 20 (3 to start with) |
+| Break | 5, 10 or 15 minutes |
 
 Other rules:
 
 - Sizes are shown in MB of 1,024 × 1,024 bytes, the same unit as the limits.
-- A file of another kind, a file over its limit, or a clip your browser can't play is refused with a message that names the file and the limit. Nothing is saved then.
+- An audio or video file over its limit, or in another format, opens the cut window where the browser can cut it. Otherwise a file of another kind, a file over its limit, or a clip your browser can't play is refused with a message that names the file and the limit. Nothing is saved then.
 - At a limit, the button that adds more is replaced by the reason, for example "20 rounds at most — this quiz is full."
-- A Golden pyramid and a Safe keep their number of questions: instead of **Add question** a line says why.
+- A Golden pyramid, a Safe, a **Make the quizmaster laugh** round and a **Free game** keep their number of questions: instead of **Add question** a line says why.
 - On the stage a Golden pyramid answer shows its first 12 accepted answers and "+N more"; the host panel and **Print answers** show all of them.
 - An export over 100 MB asks first: large files may not open on a phone.
 - **Play** and **Export** ask first while questions are not finished.

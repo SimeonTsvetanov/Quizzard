@@ -20,7 +20,7 @@ To rename a player, edit the name in the card and select outside the field. To r
 ## Change a score
 
 - To add one point, select **+** in the player's card. To subtract one point, select **−**.
-- To add or subtract any amount, select the score, enter the amount in the **Custom score adjustment** field of the **Adjust score** window, and select **Apply**. Enter a negative number such as `-5` to subtract.
+- To add or subtract any amount, select the score, enter the amount in the **Custom score adjustment** field of the **Adjust score** window, and select **Apply**. Enter a negative number such as `-5` to subtract. On an iPhone or iPad the field opens the keyboard that has a minus sign; other phones show the number pad.
 
 The card and the leaderboard show the changed score at once. If a change would take a score past a limit, Quizzard keeps the score and shows a message. See [Limits](../reference/limits.md).
 

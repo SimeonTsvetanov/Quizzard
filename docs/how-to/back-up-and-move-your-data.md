@@ -4,11 +4,13 @@ This guide shows you how to save everything Quizzard keeps to one file, load tha
 
 Quizzard saves your data only in the browser on the device you use. Each tool keeps its own data, separate from the other tools. The file is the only way to move your data to another device or browser.
 
-The following image shows **Settings** with **Your data**, **Export my data**, **Import data** and **Clear my data**.
+Quizzes are the exception: they are not in that file, because their pictures, audio and video can be large. Save each quiz as its own file with **Save quiz file**; see [Make a quiz](make-a-quiz.md#save-share-and-print).
+
+The following image shows **Settings** with **Your data**, **Storage**, **Export my data** and **Import data**.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="../images/back-up-and-move-your-data/settings-dark.png">
-  <img src="../images/back-up-and-move-your-data/settings-light.png" alt="Settings with Theme, Language, a Your data list for each tool, and the Export my data, Import data and Clear my data buttons." width="390">
+  <img src="../images/back-up-and-move-your-data/settings-light.png" alt="Settings with Theme, Background, Language, a Your data list for each tool, and the Export my data and Import data buttons." width="390">
 </picture>
 
 ## Back up your data
@@ -16,7 +18,7 @@ The following image shows **Settings** with **Your data**, **Export my data**, *
 1. Go to **Menu** > **Settings**.
 2. Under **Storage**, select **Export my data**.
 
-Your browser saves a file named `quizzard-data-` followed by the date and `.json`, for example `quizzard-data-2026-11-23.json`. The file holds the settings of Quizzard (theme and language) and the data of every tool: your list of names and number of teams, the Scores game and its history, and the Answer sheet game.
+Your browser saves a file named `quizzard-data-` followed by the date and `.json`, for example `quizzard-data-2026-11-23.json`. The file holds the settings of Quizzard (theme, background and language) and the data of every tool: your list of names and number of teams, the Scores game and its history, the Answer sheet game, and the Quiz creator's games in progress and choice of cards or list. The quizzes themselves are not in it.
 
 ## Restore your data
 
@@ -27,7 +29,7 @@ You can restore a file on the same device or on another one. To move your data, 
 3. Choose the file you exported.
 4. In the **Replace your data?** window, select **Replace**.
 
-Quizzard shows a message such as "Imported 6 items ✓". The data in the file replaces the data on this device. You can't undo this, so export first if you want a copy of what is there. To keep your data, select **Cancel**.
+Quizzard shows a message such as "Imported 6 items ✓". The data in the file replaces the data on this device. The quizzes on this device stay as they are. You can't undo this, so export first if you want a copy of what is there. To keep your data, select **Cancel**.
 
 If the file can't be used, Quizzard changes nothing and shows why:
 
@@ -45,7 +47,7 @@ Under **Storage**, **Kept permanently** shows **Yes ✓** or **Not yet**. To ask
 2. Under **Your data**, select **Clear** in the row of the tool.
 3. In the window that asks "Delete … data?", select **Delete**.
 
-The row reads **Nothing saved** afterwards. Other tools and the settings of Quizzard stay as they are. A tool without saved data has no **Clear**.
+The row reads **Nothing saved** afterwards. Other tools and the settings of Quizzard stay as they are. A tool without saved data has no **Clear**. **Clear** in the **Quiz creator** row deletes every quiz on this device with its pictures, audio and video, so save the quizzes you want to keep with **Save quiz file** first.
 
 ## Delete all your data
 
@@ -53,7 +55,7 @@ The row reads **Nothing saved** afterwards. Other tools and the settings of Quiz
 2. Under **Delete**, select **Clear my data**.
 3. In the **Delete all your data?** window, select **Delete**.
 
-Quizzard shows "Your data was cleared ✓". Everything Quizzard and its tools saved on this device is gone: settings, lists of names, games and answer sheets. You can't undo this. Other apps in the same browser are not affected, and neither are the TeamSync and GG Counter sites.
+Quizzard shows "Your data was cleared ✓". Everything Quizzard and its tools saved on this device is gone: settings, lists of names, games, answer sheets and quizzes. You can't undo this. Other apps in the same browser are not affected, and neither are the TeamSync and GG Counter sites.
 
 ## Related
 

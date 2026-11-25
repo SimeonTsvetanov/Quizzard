@@ -14,15 +14,15 @@ The following guides each cover one task:
 - [Make teams](how-to/make-teams.md) — type or paste names, choose how many teams, shuffle again, copy or share the result.
 - [Keep score](how-to/keep-score.md) — add players, change scores, read the leaderboard and share it as text.
 - [Use the answer sheet](how-to/use-the-answer-sheet.md) — write your team's answers, mark them and count the points round by round.
-- [Make a quiz](how-to/make-a-quiz.md) — name it, add rounds and questions, put them in order, save and print it.
-- [Play a quiz](how-to/play-a-quiz.md) — run it in Quizzard, on a TV from one file, or with a window for the audience.
+- [Make a quiz](how-to/make-a-quiz.md) — name it, add rounds of five kinds and questions with pictures, audio and video, cut a clip, save and print it.
+- [Play a quiz](how-to/play-a-quiz.md) — run it in Quizzard, on a TV from one file, or from a host panel with a window for the audience.
 - [Install the app](how-to/install-the-app.md) — open Quizzard like an app, with shortcuts to the tools and without internet.
 - [Back up and move your data](how-to/back-up-and-move-your-data.md) — save everything to one file, load it on another device or delete it.
 - [Change the language and theme](how-to/change-language-and-theme.md) — switch between English and Български, and between light and dark.
 
 ## Reference
 
-- [Settings](reference/settings.md) — the menu and every option in **Settings**.
+- [Settings](reference/settings.md) — the home screen, the menu, the footer and every option in **Settings**.
 - [Limits](reference/limits.md) — how many names, players, rounds, answers, questions and megabytes each tool takes.
 
 ## About

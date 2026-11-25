@@ -36,7 +36,7 @@ When you are offline, a small **Offline — still works** label appears in the h
 
 When an update is ready, Quizzard shows a note with a **Reload** button. Select **Reload** when it suits you. Quizzard never reloads by itself, and your data stays saved.
 
-To look for an update yourself, go to **Menu** > **Check for updates**. If there is a newer version, Quizzard loads it and reloads; if not, it tells you that you have the latest one.
+To look for an update yourself, go to **Menu** > **Check for updates**. If there is a newer version, Quizzard loads it and reloads. If not, it says **You have the latest version** with the version number. Checking needs internet.
 
 ## Related
 

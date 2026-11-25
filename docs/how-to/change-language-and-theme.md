@@ -7,7 +7,9 @@ This guide shows you how to switch Quizzard between English and Българск
 1. Go to **Menu** > **Settings**.
 2. Under **Language**, select **English** or **Български**.
 
-The language changes at once in Quizzard and in all three tools, and Quizzard remembers it on this device. It applies to the texts on screen, to **Help**, and to the text you copy or share from **Teams** and **Scores**. The policy pages (**Terms**, **Privacy**, **AI notice**, **Legal notice**, **Contact**) are in English in every language.
+The language changes at once in Quizzard and in all four tools, and Quizzard remembers it on this device. It applies to the texts on screen, to **Help**, and to the text you copy or share from **Teams** and **Scores**. The questions of a quiz stay in the language you wrote them in.
+
+While you play a quiz, **Language** in the player's menu switches the stage, its buttons and its menu between **English** and **Български** for that quiz alone. See [The menu](play-a-quiz.md#the-menu). The policy pages (**Terms**, **Privacy**, **AI notice**, **Legal notice**, **Contact**) are in English in every language.
 
 Quizzard starts in English until you choose another language. It doesn't pick a language from your browser.
 
