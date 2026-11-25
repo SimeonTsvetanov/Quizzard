@@ -306,6 +306,46 @@
     margin-block-end: auto;
   }
 
+  /* On the stage the explanation is read whole: no line is cut. A long one is set smaller and the
+     answer above it gives way; what still does not fit is taken away by the slide's fit (--qp-zoom). */
+  & .quiz-slide[data-reveal] .quiz-slide-explanation {
+    line-height: 1.35;
+
+    & span {
+      display: block;
+      overflow: visible;
+      -webkit-line-clamp: none;
+      line-clamp: none;
+    }
+
+    &[data-length="m"] {
+      font-size: 2.05cqi;
+    }
+
+    &[data-length="l"] {
+      font-size: 1.8cqi;
+    }
+  }
+
+  /* An upright stage has the height for it: the long text stays nearly as large. */
+  [data-shape="tall"] & .quiz-slide[data-reveal] .quiz-slide-explanation:is([data-length="m"], [data-length="l"]) {
+    font-size: 2.2cqi;
+  }
+
+  /* Room for the Quizzard mark in the corner under a text that reaches the bottom: part of the text's
+     own box, so the slide's fit counts it (content may run into the canvas's padding unseen). */
+  & .quiz-slide[data-reveal] .quiz-slide-explanation:is([data-length="m"], [data-length="l"]) {
+    padding-block-end: 3.8cqi;
+  }
+
+  & .quiz-slide[data-reveal]:not([data-media]):has(.quiz-slide-explanation[data-length="m"]) .quiz-slide-right {
+    font-size: 5.6cqi;
+  }
+
+  & .quiz-slide[data-reveal]:not([data-media]):has(.quiz-slide-explanation[data-length="l"]) .quiz-slide-right {
+    font-size: 4.6cqi;
+  }
+
   & .quiz-slide[data-reveal]:not([data-media]) .quiz-slide-kicker {
     font-size: 2.4cqi;
   }

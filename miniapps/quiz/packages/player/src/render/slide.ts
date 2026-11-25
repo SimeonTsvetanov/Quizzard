@@ -52,6 +52,17 @@ export function promptSize(prompt: string): string {
   return PROMPT_STEPS.find(([max]) => prompt.length <= max)?.[1] ?? "xs";
 }
 
+/** Text lengths at which the explanation steps down a size. */
+const EXPLANATION_STEPS: readonly (readonly [number, string])[] = [[140, "s"], [300, "m"]];
+
+/**
+ * The size step of an explanation by its length: `"s"` (short, the usual size), `"m"` or `"l"`.
+ * @param explanation - the text shown with the answer
+ */
+export function explanationSize(explanation: string): string {
+  return EXPLANATION_STEPS.find(([max]) => explanation.length <= max)?.[1] ?? "l";
+}
+
 /**
  * Points as the teams read them: the number, the note, or both (SPEC F6, AC3).
  * @param points - the points the question is played for
@@ -129,6 +140,7 @@ export function renderSlide(input: SlideInput): HTMLElement {
   if (media) slide.setAttribute("data-media", media.firstElementChild?.getAttribute("data-layout") ?? "side");
   for (const part of [media, answer]) if (part) canvas.append(part);
   const explanation = question.explanation?.trim() ?? "";
-  if (reveal && explanation !== "") canvas.append(h("p", { class: "quiz-slide-explanation" }, icon("hint", 16), h("span", {}, explanation)));
+  // A long explanation is set smaller (`data-length`), so all of it is read on the stage, never cut (Moni 2026-11-25).
+  if (reveal && explanation !== "") canvas.append(h("p", { class: "quiz-slide-explanation", "data-length": explanationSize(explanation) }, icon("hint", 16), h("span", {}, explanation)));
   return slide;
 }

@@ -18,7 +18,7 @@ export const ANSWER_TEXT_MAX = 300;
 /** Longest text of one multiple-choice option, in characters. */
 export const OPTION_TEXT_MAX = 120;
 /** Longest explanation shown with the answer, in characters. */
-export const EXPLANATION_MAX = 500;
+export const EXPLANATION_MAX = 700;
 /** Longest host note of a question, in characters. */
 export const HOST_NOTE_MAX = 500;
 /** Longest points note ("1 for the band, 2 with the song"), in characters. */

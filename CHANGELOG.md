@@ -4,6 +4,12 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.23.1] - 2026-11-25
+### Fixed
+- **Quiz creator, while playing — a long text with the answer is shown whole.** The explanation was cut after two lines. Now all of it is on the screen: a longer text is set smaller, the answer above it gives way, and it keeps clear of the Quizzard mark.
+### Changed
+- The text shown with the answer can be up to 700 characters (about 100 words), up from 500.
+
 ## [0.23.0] - 2026-11-25
 ### Added
 - **Quiz creator — cut and shrink a video or a sound while adding it.** A clip that is too big for a quiz, or in a format a quiz does not carry (a phone's MOV, a WAV), is no longer refused: a window opens with the clip on one bar — frames of the video or the loudness of the sound — with a handle at each end. Move the handles to the part you want, play just that part, pick the picture size and the quality, and select "Cut and shrink". The new, smaller file goes on the question.

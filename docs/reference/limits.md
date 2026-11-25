@@ -66,7 +66,8 @@ Other rules:
 | Characters in a question | 500 |
 | Characters in an open answer | 300 |
 | Characters in an option | 120 |
-| Characters in an explanation or a host note | 500 each |
+| Characters in an explanation | 700. On the stage a long one is set smaller so that all of it shows. |
+| Characters in a host note | 500 |
 | Characters in a round's rules | 600 |
 | Characters in a points note | 80 |
 | Time for a question | 5 to 600 seconds; a new round starts at 30 |
