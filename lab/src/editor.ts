@@ -2,20 +2,33 @@
 // beside the original and a report to copy.
 import { cutClip, encoders, type CutResult, type Level } from "./convert.ts";
 import { button, choice, el } from "./dom.ts";
-import { createRange } from "./range.ts";
+import { createTrim, type Trim } from "./trim.ts";
 import { clock, megabytes, words } from "./text.ts";
 
 interface Parts {
   readonly file: File;
   readonly isVideo: boolean;
-  readonly range: ReturnType<typeof createRange>;
+  readonly range: Trim;
   readonly size: HTMLSelectElement;
   readonly level: HTMLSelectElement;
   readonly out: HTMLElement;
 }
 
-function player(isVideo: boolean, source: Blob): HTMLMediaElement {
-  const media = isVideo ? el("video", { controls: "", playsinline: "", preload: "metadata" }) : el("audio", { controls: "", preload: "metadata" });
+/** The limits of Quiz creator for one file (docs/reference/limits.md), in bytes. */
+const LIMITS = { video: 50 * 1024 * 1024, audio: 15 * 1024 * 1024 };
+
+/** Whether a clip of that size fits a quiz, in words. */
+function fitNote(isVideo: boolean, bytes: number, isResult: boolean): HTMLElement {
+  const limit = isVideo ? LIMITS.video : LIMITS.audio;
+  const fits = bytes <= limit;
+  const tooBig = isResult ? words.stillTooBig : words.mustCut;
+  const text = (fits ? words.fits : tooBig).replace("{{limit}}", megabytes(limit));
+  return el("p", { class: "lab-fit", "data-fit": fits ? "yes" : "no" }, text);
+}
+
+function player(isVideo: boolean, source: Blob, hasControls: boolean): HTMLMediaElement {
+  const media = isVideo ? el("video", { playsinline: "", preload: "metadata" }) : el("audio", { preload: "metadata" });
+  media.controls = hasControls;
   media.src = URL.createObjectURL(source);
   return media;
 }
@@ -37,7 +50,7 @@ function showResult(parts: Parts, result: CutResult, text: string): void {
   const summary = `${megabytes(parts.file.size)} → ${megabytes(result.blob.size)} (${saved >= 0 ? "−" : "+"}${String(Math.abs(saved))} %) · ${(result.ms / 1000).toFixed(1)} s · ${result.container} (${result.codecs})`;
   const mp4 = parts.isVideo ? "mp4" : "m4a";
   const link = el("a", { class: "lab-button", download: `cut.${result.container === "MP4" ? mp4 : "webm"}`, href: URL.createObjectURL(result.blob), "data-download": "" }, words.download);
-  parts.out.replaceChildren(el("h2", {}, words.result), el("p", { class: "lab-summary", "data-summary": "" }, summary), player(parts.isVideo, result.blob), link, reportBox(text));
+  parts.out.replaceChildren(el("h2", {}, words.result), el("p", { class: "lab-summary", "data-summary": "" }, summary), fitNote(parts.isVideo, result.blob.size, true), player(parts.isVideo, result.blob, true), link, reportBox(text));
 }
 
 function reportBox(text: string): HTMLElement {
@@ -75,8 +88,8 @@ async function run(parts: Parts, start: HTMLButtonElement): Promise<void> {
  */
 export function createEditor(file: File): HTMLElement {
   const isVideo = file.type.startsWith("video/");
-  const media = player(isVideo, file);
-  const range = createRange(media);
+  const media = player(isVideo, file, false);
+  const range = createTrim(media, file, isVideo);
   const size = choice(words.size, [["original", words.original], ["1080", "1080p"], ["720", "720p"], ["480", "480p"]], "720");
   const level = choice(words.quality, [["high", words.high], ["medium", words.medium], ["low", words.low]], "medium");
   const out = el("section", { class: "lab-out", "aria-live": "polite" });
@@ -84,6 +97,6 @@ export function createEditor(file: File): HTMLElement {
   const start = button(words.cut, () => { void run(parts, start); }, { class: "lab-primary", "data-cut": "" });
   size.field.hidden = !isVideo;
   return el("div", { class: "lab-editor" },
-    el("p", { class: "lab-note", "data-source": "" }, `${file.name} · ${megabytes(file.size)}`),
+    el("p", { class: "lab-note", "data-source": "" }, `${file.name} · ${megabytes(file.size)}`), fitNote(isVideo, file.size, false),
     media, range.element, el("div", { class: "lab-row" }, size.field, level.field), start, out);
 }

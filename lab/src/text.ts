@@ -3,12 +3,14 @@ const en = {
   title: "Cut and shrink a clip",
   intro: "A trial for Quiz creator. Pick a video or an audio file, choose the part to keep and how small to make it. Everything happens on this device; nothing is uploaded.",
   pick: "Choose a video or audio file",
-  from: "From",
-  to: "To",
-  fromHere: "Start here",
-  toHere: "End here",
+  from: "Start of the part to keep",
+  to: "End of the part to keep",
   playPart: "Play the chosen part",
-  length: "Length",
+  pause: "Pause",
+  fits: "Fits a quiz as it is (up to {{limit}}): cutting is up to you.",
+  mustCut: "Too big for a quiz (up to {{limit}}): cut it or lower the quality to use it.",
+  stillTooBig: "Still over {{limit}}: keep a shorter part or pick a lower quality.",
+  length: "length",
   size: "Picture size",
   original: "As it is",
   quality: "Quality",
@@ -31,12 +33,14 @@ const bg: typeof en = {
   title: "Изрежи и смали клип",
   intro: "Опит за Създателя на куизове. Изберете видео или аудио файл, частта, която остава, и колко малък да стане. Всичко става на това устройство; нищо не се качва.",
   pick: "Изберете видео или аудио файл",
-  from: "От",
-  to: "До",
-  fromHere: "Начало тук",
-  toHere: "Край тук",
+  from: "Начало на частта, която остава",
+  to: "Край на частта, която остава",
   playPart: "Пусни избраната част",
-  length: "Дължина",
+  pause: "Пауза",
+  fits: "Влиза в куиз както е (до {{limit}}): рязането е по желание.",
+  mustCut: "Твърде голям за куиз (до {{limit}}): изрежете го или намалете качеството, за да го ползвате.",
+  stillTooBig: "Все още над {{limit}}: оставете по-къса част или изберете по-ниско качество.",
+  length: "дължина",
   size: "Размер на картината",
   original: "Както е",
   quality: "Качество",
@@ -65,7 +69,8 @@ export function clock(seconds: number): string {
   return `${String(minutes)}:${(safe - minutes * 60).toFixed(1).padStart(4, "0")}`;
 }
 
-/** Bytes as "12.4 MB" or "830 kB". */
+/** Bytes as "12.4 MB" or "830 kB", in units of 1,024 like the app's limits. */
 export function megabytes(bytes: number): string {
-  return bytes >= 1_000_000 ? `${(bytes / 1_000_000).toFixed(1)} MB` : `${String(Math.round(bytes / 1000))} kB`;
+  const megabyte = 1024 * 1024;
+  return bytes >= megabyte ? `${(bytes / megabyte).toFixed(1).replace(/\.0$/, "")} MB` : `${String(Math.round(bytes / 1024))} kB`;
 }

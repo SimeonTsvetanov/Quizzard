@@ -17,12 +17,25 @@ body {
   color: oklch(98% 0.01 293);
 }
 
+main,
+.lab-editor,
+.lab-out,
+.lab-trim {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+input[type="file"] {
+  box-sizing: border-box;
+  width: 100%;
+}
+
 main {
   display: grid;
   gap: 16px;
+  box-sizing: border-box;
   max-width: 44rem;
   margin: 0 auto;
-  padding: 20px 16px 48px;
+  padding: 20px 32px 48px;
 }
 
 h1,
@@ -62,22 +75,133 @@ audio {
   background: oklch(10% 0.04 283);
 }
 
-.lab-range-row {
+/* || The trim bar */
+.lab-trim {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 5.5rem auto;
-  align-items: end;
-  gap: 10px;
+  gap: 12px;
+}
 
-  & label {
-    display: grid;
-    gap: 4px;
-    font-weight: 700;
+.lab-track {
+  --from: 0;
+  --to: 1;
+  --at: 0;
+
+  position: relative;
+  height: 72px;
+  border-radius: 14px;
+  background: oklch(10% 0.04 283);
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+}
+
+.lab-strip {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 14px;
+}
+
+/* What is cut away is dimmed. */
+.lab-dim {
+  position: absolute;
+  inset-block: 0;
+  background: oklch(10% 0.04 283 / 0.72);
+}
+
+.lab-dim-before {
+  inset-inline: 0 calc((1 - var(--from)) * 100%);
+  border-radius: 14px 0 0 14px;
+}
+
+.lab-dim-after {
+  inset-inline: calc(var(--to) * 100%) 0;
+  border-radius: 0 14px 14px 0;
+}
+
+/* The part that stays: a gold frame between the two handles. */
+.lab-kept {
+  position: absolute;
+  inset-block: 0;
+  inset-inline: calc(var(--from) * 100%) calc((1 - var(--to)) * 100%);
+  border-block: 4px solid oklch(87.9% 0.143 92);
+  pointer-events: none;
+}
+
+.lab-playhead {
+  position: absolute;
+  inset-block: -4px;
+  inset-inline-start: calc(var(--at) * 100% - 1.5px);
+  width: 3px;
+  border-radius: 2px;
+  background: oklch(100% 0 0);
+  box-shadow: 0 0 6px oklch(0% 0 0 / 0.6);
+  pointer-events: none;
+}
+
+/* A handle: 16 px to look at, 44 px to grab. */
+.lab-handle {
+  position: absolute;
+  inset-block: 0;
+  width: 44px;
+  cursor: ew-resize;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset-block: 0;
+    width: 16px;
+    background: oklch(87.9% 0.143 92);
   }
 
-  & output {
-    padding-block: 10px;
-    font-variant-numeric: tabular-nums;
-    text-align: end;
+  &::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 4px;
+    height: 24px;
+    border-radius: 2px;
+    background: oklch(24% 0.06 85);
+    translate: 0 -50%;
+  }
+
+  &[data-handle="from"] {
+    inset-inline-start: calc(var(--from) * 100% - 28px);
+
+    &::before {
+      inset-inline-end: 12px;
+      border-radius: 10px 0 0 10px;
+    }
+
+    &::after {
+      inset-inline-end: 18px;
+    }
+  }
+
+  &[data-handle="to"] {
+    inset-inline-start: calc(var(--to) * 100% - 16px);
+
+    &::before {
+      inset-inline-start: 16px;
+      border-radius: 0 10px 10px 0;
+    }
+
+    &::after {
+      inset-inline-start: 22px;
+    }
+  }
+}
+
+.lab-fit {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: oklch(100% 0 0 / 0.08);
+  font-weight: 700;
+
+  &[data-fit="no"] {
+    background: oklch(60% 0.2 30 / 0.3);
   }
 }
 
@@ -86,12 +210,6 @@ audio {
   flex-wrap: wrap;
   align-items: center;
   gap: 12px;
-}
-
-input[type="range"] {
-  width: 100%;
-  min-height: 44px;
-  accent-color: oklch(87.9% 0.143 92);
 }
 
 button,
@@ -148,4 +266,8 @@ progress {
   background: oklch(10% 0.04 283 / 0.6);
   font-size: 0.8rem;
   white-space: pre-wrap;
+}
+
+[hidden] {
+  display: none !important;
 }
