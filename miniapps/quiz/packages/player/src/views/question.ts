@@ -1,4 +1,5 @@
 import { type Round, effectivePoints } from "@simeonts/quizzard-quiz-core/play";
+import { fitSlideText } from "../render/fit.ts";
 import type { SlidePhase } from "../render/registry.ts";
 import { pointsText, renderSlide } from "../render/slide.ts";
 import type { DrawnView, HostAnswer, ViewContext, ViewEntry } from "./context.ts";
@@ -63,6 +64,9 @@ export function fitSlide(root: HTMLElement): void {
   const canvas = root.querySelector<HTMLElement>(".quiz-slide-canvas");
   if (!canvas) return;
   canvas.style.removeProperty("zoom");
+  // The texts give way first (render/fit.ts); the whole slide only when that is not enough.
+  const slide = canvas.closest<HTMLElement>(".quiz-slide");
+  if (slide) fitSlideText(slide);
   const base = Number(getComputedStyle(canvas).getPropertyValue("--qp-zoom")) || 1;
   for (let fit = 1; fit >= FIT_MIN; fit -= FIT_STEP) {
     canvas.style.setProperty("zoom", (base * fit).toFixed(3));

@@ -5,7 +5,9 @@
 // · the answer part · the explanation at the reveal. With media the options may stand next to it
 // instead of under it (slide.css decides by `data-media` and the number of options).
 // Scaling: the slide is a size container and every size on its canvas is in `cqi` (slide.css), so
-// the same markup is a thumbnail or a projector slide with crisp text and no script.
+// the same markup is a thumbnail or a projector slide with crisp text. One script helps: fit.ts draws
+// the texts smaller when a slide would otherwise cut them.
+import { keepSlideFitted } from "./fit.ts";
 import { type MediaEntry, type Points, type Question, type Round, effectivePoints, effectiveSeconds } from "@simeonts/quizzard-quiz-core/play";
 import { countMark } from "./count.ts";
 import { h } from "./h.ts";
@@ -133,6 +135,13 @@ function parts({ question, ui, round }: SlideInput, view: SlideView, special: Ro
  * @returns the slide element; its width decides its size (16:9 unless its container gives it a height)
  */
 export function renderSlide(input: SlideInput): HTMLElement {
+  const slide = drawSlide(input);
+  keepSlideFitted(slide);
+  return slide;
+}
+
+/** Builds the slide's markup. */
+function drawSlide(input: SlideInput): HTMLElement {
   const { question, reveal, ui, labels } = input;
   const view: SlideView = {
     reveal, labels,

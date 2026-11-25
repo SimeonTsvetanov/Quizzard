@@ -14,4 +14,5 @@ export * from "./kinds/index.ts";
 export * from "./local-media.ts";
 export * from "./registry.ts";
 export * from "./rounds/index.ts";
+export * from "./fit.ts";
 export * from "./slide.ts";

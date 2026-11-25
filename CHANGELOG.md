@@ -4,6 +4,10 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.27.3] - 2026-11-25
+### Fixed
+- **Quiz creator — a slide never cuts its text.** A long answer, question or text with the answer no longer ends in "…": the texts are drawn smaller until all of them fit — in the editor's preview, on the thumbnails, on the stage and in an exported quiz.
+
 ## [0.27.2] - 2026-11-25
 ### Changed
 - **The Back arrow at the top goes one step back.** In the Quiz creator it leads from a question to its round, then to the quiz and to your quizzes, and only then Home (it used to jump Home from anywhere). The Quizzard logo still goes Home in one step.
