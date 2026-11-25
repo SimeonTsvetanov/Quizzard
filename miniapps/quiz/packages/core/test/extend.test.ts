@@ -42,7 +42,7 @@ describe("AC10: a fake question kind and answer type need no change outside thei
   it("appear in the registries' lists (what the pickers show)", () => {
     const { registries } = extendedEnv();
     expect(registries.kinds.list().map((kind) => kind.id)).toEqual(["text", "picture", "audio", "video", "pyramid"]);
-    expect(registries.answers.list().map((answer) => answer.id)).toEqual(["open", "choice", "trueFalse", "list", "digit", "closest"]);
+    expect(registries.answers.list().map((answer) => answer.id)).toEqual(["open", "choice", "trueFalse", "list", "digit", "none", "closest"]);
   });
 
   it("ops: add with the entry's defaults, edit, switch kind and answer type, duplicate, move, delete", () => {

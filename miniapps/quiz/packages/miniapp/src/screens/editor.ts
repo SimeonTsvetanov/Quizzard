@@ -41,6 +41,8 @@ function livePreview(app: App, questionId: string, media: LocalMedia): Live {
     refresh();
   });
   refresh();
+  // A task has no answer to show.
+  reveal.hidden = placeOf(app, questionId)?.question.answer.type === "none";
   const element = h("aside", { class: "quiz-live", "aria-label": t("editor.live"), "data-live": "" }, h("p", { class: "quiz-label" }, t("editor.live")), stage, reveal);
   return { element, refresh };
 }
@@ -127,7 +129,8 @@ function form(app: App, place: CardPlace, live: Live, signal: AbortSignal): HTML
   const explanation = textField({ label: t("editor.explanation"), value: question.explanation ?? "", max: EXPLANATION_MAX, rows: 2, placeholder: t("editor.explanationPlaceholder"), props: { "data-explanation": "" }, onInput: (value) => { edited((quiz) => editQuestion(quiz, id, { explanation: value })); } });
   // The host's own note: saved with the question, shown on the host panel, never on the stage — so no preview to refresh.
   const note = textField({ label: t("editor.note"), value: question.note ?? "", max: HOST_NOTE_MAX, rows: 2, placeholder: t("editor.notePlaceholder"), hint: t("editor.noteHint"), props: { "data-host-note": "" }, onInput: (value) => { edited((quiz) => editQuestion(quiz, id, { note: value })); } });
-  const parts = [picker.kind, prompt, kindPart, picker.answer, answerPart, timingFields(app, id, live.refresh), explanation, note, ending(app, place)];
+  // A task (answer type `none`) reveals nothing, so it has no text to show with an answer.
+  const parts = [picker.kind, prompt, kindPart, picker.answer, answerPart, timingFields(app, id, live.refresh), question.answer.type === "none" ? null : explanation, note, ending(app, place)];
   const element = h("form", { class: "quiz-form quiz-panel", novalidate: "" }, ...parts.filter((part) => part !== null));
   element.addEventListener("submit", (event) => { event.preventDefault(); });
   return element;

@@ -13,6 +13,7 @@ export const bgEdit = {
     trueFalse: "Вярно / невярно",
     list: "Приети отговори",
     digit: "Една цифра",
+    none: "Без отговор (задача)",
   },
   editor: {
     title: "Въпрос {{n}}",

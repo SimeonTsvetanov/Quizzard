@@ -24,7 +24,7 @@ The buttons on a quiz's card rename it, make a copy or delete it. A deleted quiz
 
 ## Add rounds
 
-1. Select **Add round** and choose its kind: **Standard**, **Golden pyramid** or **Safe**. A standard round opens with its name selected.
+1. Select **Add round** and choose its kind: **Standard**, **Golden pyramid**, **Safe**, **Make the quizmaster laugh** or **Free game**. A standard round opens with its name selected.
 2. Enter the name of the round, for example "History".
 3. Optional: select **Round settings** to set **Time per question** and **Points per question**, what new questions start as, and the rules shown before the round.
 
@@ -50,6 +50,15 @@ A special round always has its number of questions: there is no **Add question**
 can't be duplicated, deleted or moved to another round — a line in the round says why. The questions
 of a Safe can change places; those of a Golden pyramid can't, because the place says how many answers
 a question asks for. Each question can still be text, a picture, audio or video.
+
+## Add a round without answers
+
+Two rounds have no questions to answer: one screen says what the teams do, a timer runs and you give the points. Nothing is revealed.
+
+- **Make the quizmaster laugh** — every team has 5 minutes to think up a joke, and one of them tells it. You pick the two funniest teams. In **Round settings**, **Points for first place** (3) and **Points for second place** (1) set the prizes. Only two teams score.
+- **Free game** — your own task: write what the teams must do, for example "Draw the quizmaster", and add a picture, a sound or a video if it helps. In **Round settings**, set the time and **Most points for a team** (3).
+
+Each of these rounds is one screen. For another task, add another **Free game**.
 
 ## Add questions
 

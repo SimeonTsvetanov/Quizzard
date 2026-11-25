@@ -27,12 +27,12 @@ describe("createRegistry", () => {
 });
 
 describe("the built-in registries", () => {
-  it("have the four question kinds, five answer types (two kept for the special rounds) and three round kinds", () => {
+  it("have the four question kinds, six answer types (three kept for the special rounds) and five round kinds", () => {
     const { kinds, answers, rounds } = createRegistries();
     expect(kinds.list().map((kind) => kind.id)).toEqual(["text", "picture", "audio", "video"]);
     expect(kinds.list().map((kind) => kind.mediaType)).toEqual([null, "image", "audio", "video"]);
-    expect(answers.list().map((answer) => answer.id)).toEqual(["open", "choice", "trueFalse", "list", "digit"]);
-    expect(rounds.list().map((round) => round.id)).toEqual(["standard", "pyramid", "safe"]);
+    expect(answers.list().map((answer) => answer.id)).toEqual(["open", "choice", "trueFalse", "list", "digit", "none"]);
+    expect(rounds.list().map((round) => round.id)).toEqual(["standard", "pyramid", "safe", "laugh", "task"]);
   });
 
   it("createRegistries gives independent sets", () => {

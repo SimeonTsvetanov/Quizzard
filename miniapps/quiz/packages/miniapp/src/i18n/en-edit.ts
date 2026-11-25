@@ -13,6 +13,7 @@ export const enEdit = {
     trueFalse: "True / false",
     list: "Accepted answers",
     digit: "One digit",
+    none: "No answer (a task)",
   },
   editor: {
     title: "Question {{n}}",

@@ -244,3 +244,65 @@
     animation: none;
   }
 }
+
+/* || The opening of a round without answers: its prizes as medals (views/special.ts) */
+.qp-prizes {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 40px;
+  width: 100%;
+}
+
+.qp-prize {
+  display: grid;
+  justify-items: center;
+  gap: 18px;
+}
+
+.qp-prize-mark {
+  display: grid;
+  place-items: center;
+  width: 190px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: linear-gradient(160deg, oklch(92% 0.12 95), oklch(74% 0.15 75));
+  box-shadow: var(--qp-lift-strong);
+  color: var(--qp-on-gold);
+  font-family: var(--qp-display);
+  font-size: 96px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.qp-prize[data-prize="second"] .qp-prize-mark {
+  width: 140px;
+  background: linear-gradient(160deg, oklch(90% 0.01 283), oklch(68% 0.02 283));
+  color: oklch(26% 0.03 283);
+  font-size: 68px;
+}
+
+.qp-prize-text {
+  color: var(--qp-gold);
+  font-size: 36px;
+  font-weight: 700;
+  text-align: center;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .qp-prize {
+    animation: qp-prize-in 600ms var(--qp-ease) backwards;
+  }
+
+  .qp-prize[data-prize="second"] {
+    animation-delay: 250ms;
+  }
+}
+
+@keyframes qp-prize-in {
+  from {
+    opacity: 0;
+    scale: 0.6;
+    translate: 0 24px;
+  }
+}

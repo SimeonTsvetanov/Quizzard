@@ -50,7 +50,10 @@ export function createDial(t: Translate): Dial {
       element.toggleAttribute("data-low", seconds <= LOW_SECONDS && timer.status !== "idle");
       if (seconds === shown) return;
       shown = seconds;
-      number.textContent = String(seconds);
+      // Past 99 seconds the dial reads as a clock ("5:00"), set smaller so it stays inside the ring.
+      const isLong = seconds > 99;
+      number.textContent = isLong ? `${String(Math.floor(seconds / 60))}:${String(seconds % 60).padStart(2, "0")}` : String(seconds);
+      number.toggleAttribute("data-long", isLong);
       element.setAttribute("aria-label", t("stage.timer", { n: seconds }));
     },
   };

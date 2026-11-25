@@ -20,6 +20,8 @@ export interface RoundKindUi extends RegistryEntry {
   readonly fixed?: TextKey;
   /** How the round's points read, in place of the points fields. */
   readonly points?: TextKey;
+  /** The whole numbers the kind keeps in the round's own data (a prize, the most points), each a stepper in the round's settings. */
+  readonly values?: readonly { readonly key: string; readonly label: TextKey }[];
 }
 
 /** The creator's round kinds, in the chooser's order. */
@@ -27,6 +29,8 @@ export const roundKindUis: Registry<RoundKindUi> = createRegistry<RoundKindUi>([
   { id: "standard", label: "roundKind.standard", text: "roundKind.standardText", icon: "standard" },
   { id: "pyramid", label: "roundKind.pyramid", text: "roundKind.pyramidText", icon: "pyramid", rules: "roundKind.pyramidRules", fixed: "roundKind.pyramidFixed", points: "roundKind.pyramidPoints" },
   { id: "safe", label: "roundKind.safe", text: "roundKind.safeText", icon: "safe", rules: "roundKind.safeRules", fixed: "roundKind.safeFixed", points: "roundKind.safePoints" },
+  { id: "laugh", label: "roundKind.laugh", text: "roundKind.laughText", icon: "laugh", rules: "roundKind.laughRules", fixed: "roundKind.laughFixed", points: "roundKind.laughPoints", values: [{ key: "first", label: "roundKind.laughFirst" }, { key: "second", label: "roundKind.laughSecond" }] },
+  { id: "task", label: "roundKind.task", text: "roundKind.taskText", icon: "task", rules: "roundKind.taskRules", fixed: "roundKind.taskFixed", points: "roundKind.taskPoints", values: [{ key: "points", label: "roundKind.taskMost" }] },
 ]);
 
 /**

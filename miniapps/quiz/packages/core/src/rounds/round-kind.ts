@@ -27,6 +27,11 @@ export interface RoundShape {
   readonly seconds: number;
   /** The points of the question at this place (from 0); the creator offers no points of its own. */
   pointsAt(index: number): number;
+  /**
+   * The questions show what the round can give (`RoundKind.maxPoints`) as their points, and follow it
+   * when the round's own values change (a round without answers: its one task shows the prize).
+   */
+  readonly pointsFollowRound?: true;
   /** The round's own `data` when it is created; left out = none. */
   defaultData?(): Readonly<Record<string, unknown>>;
 }

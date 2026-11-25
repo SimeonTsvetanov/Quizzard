@@ -117,3 +117,26 @@ export const scoreView: ViewEntry = {
     return { element: h("div", { class: "qp-panel-score" }, table.element, side), ...(table.sync ? { sync: table.sync } : {}) };
   },
 };
+
+/**
+ * The points of a round without answers (a task, "Make the quizmaster laugh"): the entry and the
+ * guide, with no list of answers and so one part on any screen.
+ */
+export const tallyView: ViewEntry = {
+  id: "tally",
+  tile: ({ env }) => ({ mark: env.t("score.title"), name: env.t("score.title") }),
+  structure: teamDigest,
+  stage: (context) => {
+    const { env, round, canEdit } = context;
+    const table = scoreTable(context, canEdit);
+    const titles = h("div", { class: "qp-view-titles" }, kicker(...roundLine(env, round)), heading(env.t("score.title")));
+    const root = viewRoot("score", h("header", { class: "qp-view-head" }, titles, ...(canEdit ? [breakRow(env)] : [])), h("div", { class: "qp-score-body" }, table.element, pointsGuide(context)));
+    root.setAttribute("data-part", "points");
+    root.setAttribute("data-tally", "");
+    return { element: root, ...(table.sync ? { sync: table.sync } : {}) };
+  },
+  panel: (context) => {
+    const table = scoreTable(context, true);
+    return { element: h("div", { class: "qp-panel-score" }, table.element, h("div", { class: "qp-panel-score-side" }, pointsGuide(context), breakRow(context.env))), ...(table.sync ? { sync: table.sync } : {}) };
+  },
+};

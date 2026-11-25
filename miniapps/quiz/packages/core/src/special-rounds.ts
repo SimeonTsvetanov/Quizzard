@@ -63,6 +63,27 @@ export function addRoundOfKind(quiz: Quiz, input: NewRound, env: Env = defaultEn
 }
 
 /**
+ * Sets one of the whole numbers a round kind keeps in the round's own data (a prize, the most points):
+ * 0–20. Where the kind's questions show what the round gives, their points follow.
+ * @param quiz - the quiz
+ * @param roundId - the round
+ * @param key - the value's name in the round's data
+ * @param value - the number as typed
+ * @param env - gives the registries
+ */
+export function setRoundValue(quiz: Quiz, roundId: string, key: string, value: number, env: Env = defaultEnv): Quiz {
+  const whole = limits.clamp(Math.round(value), limits.SAFE_BONUS_MIN, limits.SAFE_BONUS_MAX);
+  return changeRound(quiz, roundId, (round) => {
+    if (round.data?.[key] === whole) return round;
+    const next: Round = { ...round, data: { ...round.data, [key]: whole } };
+    const kind = env.registries.rounds.get(round.kind);
+    if (kind?.shape?.pointsFollowRound !== true || !kind.maxPoints) return next;
+    const points = { value: kind.maxPoints(next) };
+    return { ...next, questions: next.questions.map((question) => ({ ...question, points })) };
+  });
+}
+
+/**
  * Sets a Safe round's bonus for all digits right (0–20, whole).
  * @param quiz - the quiz
  * @param roundId - the round

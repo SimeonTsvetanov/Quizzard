@@ -27,6 +27,15 @@
     --quiz-kind-safe-to: oklch(36% 0.03 250);
     --quiz-kind-safe-ink: oklch(98% 0 0);
     --quiz-kind-safe-text: light-dark(oklch(44% 0.04 250), oklch(84% 0.03 250));
+    /* The rounds without answers: a warm pink for "Make the quizmaster laugh", a teal for the free game. */
+    --quiz-kind-laugh-from: oklch(78% 0.15 20);
+    --quiz-kind-laugh-to: oklch(62% 0.2 10);
+    --quiz-kind-laugh-ink: oklch(22% 0.06 10);
+    --quiz-kind-laugh-text: light-dark(oklch(47% 0.17 10), oklch(82% 0.11 15));
+    --quiz-kind-task-from: oklch(80% 0.12 190);
+    --quiz-kind-task-to: oklch(62% 0.11 200);
+    --quiz-kind-task-ink: oklch(22% 0.05 200);
+    --quiz-kind-task-text: light-dark(oklch(44% 0.09 200), oklch(84% 0.1 190));
 
     /* The cut window's track (styles/cut.css): a dark ground in both themes, like a video player's, the
        veil over what is cut away, and the white playhead with its shadow. */

@@ -3,6 +3,7 @@ export const en = {
   teamName: "Team {{n}}",
   unit: {
     seconds: "{{n}} s",
+    minutes: "{{n}} min",
     points_one: "{{n}} point",
     points_other: "{{n}} points",
     pts: "pts",
@@ -96,6 +97,17 @@ export const en = {
   brand: {
     link: "Quizzard — make your own quiz",
     line: "Make your own quiz",
+  },
+  task: {
+    host: "A task — no answer. You give the points.",
+    laughEvery: "Every team tells one joke",
+    laughTwo: "The quizmaster picks the two funniest",
+    first: "The funniest",
+    second: "Second place",
+    others: "Everyone else",
+    freeScreen: "Do what the screen says",
+    freeHost: "The quizmaster gives the points",
+    freeGuide: "How well it was done",
   },
   special: {
     write_one: "Write {{count}} answer",

@@ -542,3 +542,15 @@
   font-size: 26px;
   font-weight: 700;
 }
+
+/* || The points of a round without answers (views/score.ts `tallyView`): no list beside the table,
+   so the table takes the middle of a wide stage. */
+:not([data-one-part]) > .qp-canvas [data-tally] .qp-score-body {
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+
+  & > .qp-score-table {
+    grid-area: 1 / 1;
+    width: min(100%, 900px);
+  }
+}

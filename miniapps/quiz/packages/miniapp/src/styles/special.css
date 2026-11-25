@@ -22,6 +22,16 @@
       background: color-mix(in oklch, var(--quiz-kind-safe-from) 18%, transparent);
       color: var(--quiz-kind-safe-text);
     }
+
+    &[data-round-kind="laugh"] {
+      background: color-mix(in oklch, var(--quiz-kind-laugh-to) 18%, transparent);
+      color: var(--quiz-kind-laugh-text);
+    }
+
+    &[data-round-kind="task"] {
+      background: color-mix(in oklch, var(--quiz-kind-task-to) 18%, transparent);
+      color: var(--quiz-kind-task-text);
+    }
   }
 
   :is(.quiz-round-tile, .quiz-round-number)[data-round-kind="pyramid"] {
@@ -32,6 +42,16 @@
   :is(.quiz-round-tile, .quiz-round-number)[data-round-kind="safe"] {
     background: linear-gradient(140deg, var(--quiz-kind-safe-from), var(--quiz-kind-safe-to));
     color: var(--quiz-kind-safe-ink);
+  }
+
+  :is(.quiz-round-tile, .quiz-round-number)[data-round-kind="laugh"] {
+    background: linear-gradient(140deg, var(--quiz-kind-laugh-from), var(--quiz-kind-laugh-to));
+    color: var(--quiz-kind-laugh-ink);
+  }
+
+  :is(.quiz-round-tile, .quiz-round-number)[data-round-kind="task"] {
+    background: linear-gradient(140deg, var(--quiz-kind-task-from), var(--quiz-kind-task-to));
+    color: var(--quiz-kind-task-ink);
   }
 
   /* || What a special round fixes, said in a line where a free round has a control. */

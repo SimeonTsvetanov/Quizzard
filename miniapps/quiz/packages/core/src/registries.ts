@@ -3,6 +3,7 @@
 import type { AnswerType } from "./answers/answer-type.ts";
 import { choiceAnswer } from "./answers/choice.ts";
 import { digitAnswer } from "./answers/digit.ts";
+import { noneAnswer } from "./answers/none.ts";
 import { listAnswer } from "./answers/list.ts";
 import { openAnswer } from "./answers/open.ts";
 import { trueFalseAnswer } from "./answers/true-false.ts";
@@ -27,7 +28,7 @@ export interface Registries {
 export function createRegistries(): Registries {
   return {
     kinds: createRegistry<QuestionKind>([textKind, pictureKind, audioKind, videoKind]),
-    answers: createRegistry<AnswerType>([openAnswer, choiceAnswer, trueFalseAnswer, listAnswer, digitAnswer]),
+    answers: createRegistry<AnswerType>([openAnswer, choiceAnswer, trueFalseAnswer, listAnswer, digitAnswer, noneAnswer]),
     rounds: createRoundKinds(),
   };
 }

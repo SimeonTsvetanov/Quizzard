@@ -223,3 +223,43 @@ describe("SR5: special rounds are still a version-1 file", () => {
     expect(core.screensOf(roundOf(special.quiz as core.Quiz, "safe"), older)).toEqual([]);
   });
 });
+
+// Moni 2026-11-25: two round kinds without answers — "Make the quizmaster laugh" and the free game.
+describe("rounds without answers: laugh and task", () => {
+  const withRound = (kind: string): { quiz: core.Quiz; env: core.Env; round: core.Round } => {
+    const env = testEnv();
+    const quiz = core.addRoundOfKind(core.createQuiz({ name: "Q", language: "en", now: NOW }, env), { kind, name: "R" }, env);
+    return { quiz, env, round: roundOf(quiz, kind) };
+  };
+
+  it("a laugh round comes with one task of 5 minutes, no answer, and the two prizes 3 and 1", () => {
+    const { round, env } = withRound("laugh");
+    expect(round.questions).toHaveLength(1);
+    expect(at(round, 0).answer).toEqual({ type: "none" });
+    expect(round.defaults.seconds).toBe(300);
+    expect(core.laughPrizes(round)).toEqual({ first: 3, second: 1 });
+    expect(core.roundMaxPoints(round, env.registries.rounds)).toBe(3);
+    // No "Answers", no reveal: rules, the task, the points, the leaderboard.
+    expect(core.screensOf(round, env.registries).map((screen) => screen.screen)).toEqual(["rules", "question", "tally", "board"]);
+  });
+
+  it("a prize that changes is what the task shows as its points; values stay whole and within 0–20", () => {
+    const laugh = withRound("laugh");
+    const changed = roundOf(core.setRoundValue(laugh.quiz, laugh.round.id, "first", 5.4, laugh.env), "laugh");
+    expect(core.laughPrizes(changed)).toEqual({ first: 5, second: 1 });
+    expect(at(changed, 0).points).toEqual({ value: 5 });
+    const task = withRound("task");
+    expect(core.taskPoints(task.round)).toBe(3);
+    const most = roundOf(core.setRoundValue(task.quiz, task.round.id, "points", 99, task.env), "task");
+    expect(core.taskPoints(most)).toBe(20);
+    expect(at(most, 0).points).toEqual({ value: 20 });
+  });
+
+  it("the answer type `none` is not offered in a free round, and a task still needs its words", () => {
+    const { round, env, quiz } = withRound("task");
+    expect(core.freeAnswerTypes(env.registries)).not.toContain("none");
+    expect(core.unfinishedQuestions(quiz, env.registries)).toHaveLength(1);
+    const written = core.editQuestion(quiz, at(round, 0).id, { prompt: "Draw the quizmaster." });
+    expect(core.unfinishedQuestions(written, env.registries)).toHaveLength(0);
+  });
+});

@@ -16,6 +16,7 @@ export * from "./registry.ts";
 export * from "./rounds/kinds.ts";
 export * from "./rounds/pyramid.ts";
 export * from "./rounds/safe.ts";
+export * from "./rounds/tasks.ts";
 export * from "./round-points.ts";
 export * from "./rounds/standard.ts";
 export { EXPORT_MEDIA_ATTR, EXPORT_QUIZ_ID, isPlayableFile, readEmbeddedQuiz } from "./export.ts";

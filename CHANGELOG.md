@@ -4,6 +4,15 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.24.0] - 2026-11-25
+### Added
+- **Quiz creator — two rounds without answers.** "Add round" now also offers:
+  - **Make the quizmaster laugh:** every team has 5 minutes to think up a joke and tells it; the quizmaster picks the two funniest. First place wins 3 points and second place 1 — you can change both. Only two teams score.
+  - **Free game:** one screen with your own task — draw, build, sing — with text and, if you like, a picture, a sound or a video, a timer and the most points a team can get (3 unless you change it).
+- Both are played as: the rules with the prizes, the task with its timer, the points, the leaderboard. Nothing is revealed, so there is no "Answers" screen.
+### Changed
+- **While playing:** a timer over 99 seconds reads as a clock ("5:00"), and whole minutes are written as minutes ("5 min").
+
 ## [0.23.1] - 2026-11-25
 ### Fixed
 - **Quiz creator, while playing — a long text with the answer is shown whole.** The explanation was cut after two lines. Now all of it is on the screen: a longer text is set smaller, the answer above it gives way, and it keeps clear of the Quizzard mark.

@@ -23,7 +23,7 @@ function editor(ui: typeof listAnswerUi, answer: Answer, index: number): { eleme
 
 describe("round kinds in the creator", () => {
   it("every round kind of the core has a face; a special one shows its badge", () => {
-    expect(createRegistries().rounds.list().map((kind) => roundKindUis.get(kind.id)?.id)).toEqual(["standard", "pyramid", "safe"]);
+    expect(createRegistries().rounds.list().map((kind) => roundKindUis.get(kind.id)?.id)).toEqual(["standard", "pyramid", "safe", "laugh", "task"]);
     expect(roundKindName({ t }, "pyramid")).toBe("Golden pyramid");
     expect(roundKindName({ t }, "wheel")).toBe("wheel");
     const round = { id: "r", kind: "safe", name: "S", defaults: { seconds: 45, points: { value: 1 }, questionKind: "text", answerType: "digit" }, questions: [] };

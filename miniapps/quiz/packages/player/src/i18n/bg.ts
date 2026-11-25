@@ -5,6 +5,7 @@ export const bg: Messages = {
   teamName: "Отбор {{n}}",
   unit: {
     seconds: "{{n}} сек",
+    minutes: "{{n}} мин",
     points_one: "{{n}} точка",
     points_other: "{{n}} точки",
     pts: "т.",
@@ -98,6 +99,17 @@ export const bg: Messages = {
   brand: {
     link: "Quizzard — направете свой куиз",
     line: "Направете свой куиз",
+  },
+  task: {
+    host: "Задача — без отговор. Точките давате Вие.",
+    laughEvery: "Всеки отбор разказва по един виц",
+    laughTwo: "Куизмастърът избира двата най-смешни",
+    first: "Най-смешният",
+    second: "Второ място",
+    others: "Всички останали",
+    freeScreen: "Направете това, което пише на екрана",
+    freeHost: "Точките дава куизмастърът",
+    freeGuide: "Колко добре е изпълнено",
   },
   special: {
     write_one: "Напишете {{count}} отговор",

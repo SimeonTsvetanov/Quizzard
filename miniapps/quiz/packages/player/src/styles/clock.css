@@ -53,6 +53,10 @@
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   line-height: 1;
+
+  &[data-long] {
+    font-size: 2cqi;
+  }
 }
 
 /* || The cue between questions */

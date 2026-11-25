@@ -404,6 +404,52 @@ test("presenter mode in the app: the audience window is the app's own stage, fed
   await expect(panel(page)).toHaveCount(0);
 });
 
+// Moni 2026-11-25: two rounds without answers — "Make the quizmaster laugh" (two prizes) and the free game.
+const TASKS = {
+  ...QUIZ,
+  quiz: {
+    ...QUIZ.quiz, id: "task-quiz", name: "Games night",
+    rounds: [
+      {
+        id: "rl", kind: "laugh", name: "Make the quizmaster laugh", data: { first: 3, second: 1 }, defaults: { seconds: 300, points: { value: 1 }, questionKind: "text", answerType: "none" },
+        questions: [{ id: "ql", kind: "text", prompt: "Think up a joke about quizzes.", answer: { type: "none" }, points: { value: 3 } }],
+      },
+      {
+        id: "rt", kind: "task", name: "Free game", data: { points: 5 }, defaults: { seconds: 180, points: { value: 1 }, questionKind: "text", answerType: "none" },
+        questions: [{ id: "qt", kind: "text", prompt: "Draw the quizmaster.", answer: { type: "none" }, points: { value: 5 } }],
+      },
+    ],
+  },
+};
+
+test("a round without answers is played as rules, the task with its timer, the points and the leaderboard — no reveal; the points stop at the round's prize", async ({ page }) => {
+  await play(page, TASKS);
+  await next(page, 2);
+  // The opening shows the two prizes and the time as minutes.
+  await expect(view(page, "rules")).toContainText("Make the quizmaster laugh");
+  await expect(view(page, "rules").locator(".qp-prize")).toHaveCount(2);
+  await expect(view(page, "rules")).toContainText("5 min");
+  await next(page);
+  // The task: its words, 3 points, and a dial that reads as a clock past 99 seconds.
+  await expect(view(page, "slide-view")).toContainText("Think up a joke about quizzes.");
+  await expect(stage(page).locator("[data-dial]")).toHaveText("5:00");
+  await next(page);
+  // Straight to the points: no "Answers", no reveal, no list of answers beside the table.
+  const tally = stage(page).locator('[data-view="score"][data-tally]');
+  await expect(tally).toBeVisible();
+  await expect(tally.locator(".qp-recap")).toHaveCount(0);
+  await expect(tally).toContainText("The funniest");
+  for (let press = 0; press < 5; press += 1) await more(tally, "Team 1").click();
+  await expect(tally.getByRole("textbox", { name: "Points of Team 1" })).toHaveValue("3");
+  await next(page);
+  await expect(view(page, "board")).toBeVisible();
+  // The free game: up to its own 5 points.
+  await next(page);
+  await expect(view(page, "rules")).toContainText("Up to 5 points");
+  await next(page);
+  await expect(view(page, "slide-view")).toContainText("Draw the quizmaster.");
+});
+
 // Moni 2026-11-25: "on the control screen I want to start the breaks at any time, and pause, stop and resume them".
 test("the host panel starts a break at any time, pauses and resumes it and ends it; the room's window follows", async ({ page, context }) => {
   await play(page);

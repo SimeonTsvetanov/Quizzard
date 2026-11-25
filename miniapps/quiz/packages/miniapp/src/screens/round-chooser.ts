@@ -1,7 +1,7 @@
 // "Add round" (SPEC §10): a sheet with one card per round kind — Standard, Golden pyramid, Safe — each
 // with its icon and one sentence. A special round arrives ready-made: its questions, its answer type,
 // its points and time, and its rules text in the quiz's language. Loaded with the first press.
-import { addRoundOfKind, safeBonus } from "@simeonts/quizzard-quiz-core";
+import { addRoundOfKind, laughPrizes, safeBonus, taskPoints } from "@simeonts/quizzard-quiz-core";
 import type { App } from "../app/state.ts";
 import type { Lang } from "../contract.ts";
 import { openSheet } from "../dom/sheet.ts";
@@ -29,7 +29,7 @@ async function add(app: App, kind: RoundKindUi): Promise<void> {
   const draft = addRoundOfKind(quiz, { kind: kind.id, name }, app.env);
   const added = draft.rounds.at(-1);
   if (draft === quiz || !added) return;
-  const rules = kind.rules === undefined ? "" : words(kind.rules, { bonus: safeBonus(added) });
+  const rules = kind.rules === undefined ? "" : words(kind.rules, { bonus: safeBonus(added), ...laughPrizes(added), points: taskPoints(added) });
   const next = rules === "" ? draft : addRoundOfKind(quiz, { kind: kind.id, name, rules }, app.env);
   const round = next.rounds.at(-1);
   if (!app.change(next) || !round) return;

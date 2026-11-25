@@ -7,6 +7,7 @@ export * from "./answers/choice.ts";
 export * from "./answers/digit.ts";
 export * from "./answers/index.ts";
 export * from "./answers/list.ts";
+export * from "./answers/none.ts";
 export * from "./answers/open.ts";
 export * from "./answers/true-false.ts";
 export * from "./kinds/index.ts";

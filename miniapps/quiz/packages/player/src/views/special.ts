@@ -2,7 +2,7 @@
 // the short rules of the round's opening, the lines of the points guide, the words of the score
 // entry and what stands under the round's list of answers (the Safe's code). The views ask this
 // registry by the round's kind and never switch on it; a standard round has no entry.
-import { type Registry, type RegistryEntry, type Round, createRegistry, pyramidAsks, safeBonus, safeCode } from "@simeonts/quizzard-quiz-core/play";
+import { type Registry, type RegistryEntry, type Round, createRegistry, laughPrizes, pyramidAsks, safeBonus, safeCode, taskPoints } from "@simeonts/quizzard-quiz-core/play";
 import { h } from "../render/h.ts";
 import { pyramidFigure } from "../render/rounds/pyramid.ts";
 import { vaultFigure } from "../render/rounds/vault.ts";
@@ -73,5 +73,33 @@ const safeStage: RoundStage = {
   },
 };
 
+/** A prize as the opening shows it: a medal with its place (or a star) and what it is worth. */
+function prize(mark: string, text: string, place: string): HTMLElement {
+  return h("div", { class: "qp-prize", "data-prize": place }, h("span", { class: "qp-prize-mark" }, mark), h("span", { class: "qp-prize-text" }, text));
+}
+
+/** "Make the quizmaster laugh": two medals — the funniest team's prize and the runner-up's. */
+const laughStage: RoundStage = {
+  id: "laugh",
+  figure: (env, round) => {
+    const { first, second } = laughPrizes(round);
+    return h("div", { class: "qp-prizes" }, prize("1", env.labels.points(first), "first"), prize("2", env.labels.points(second), "second"));
+  },
+  rules: (env) => [env.t("task.laughEvery"), env.t("task.laughTwo")],
+  guide: (env, round) => [
+    { label: env.t("task.first"), text: env.labels.points(laughPrizes(round).first) },
+    { label: env.t("task.second"), text: env.labels.points(laughPrizes(round).second) },
+    { label: env.t("task.others"), text: env.labels.points(0) },
+  ],
+};
+
+/** The free game: what a team can win, as one star. */
+const taskStage: RoundStage = {
+  id: "task",
+  figure: (env, round) => h("div", { class: "qp-prizes" }, prize("★", env.t("special.allPoints", { points: env.labels.points(taskPoints(round)) }), "first")),
+  rules: (env) => [env.t("task.freeScreen"), env.t("task.freeHost")],
+  guide: (env, round) => [{ label: env.t("task.freeGuide"), text: env.t("special.allPoints", { points: env.labels.points(taskPoints(round)) }) }],
+};
+
 /** The player's special round kinds. */
-export const roundStages: Registry<RoundStage> = createRegistry<RoundStage>([pyramidStage, safeStage]);
+export const roundStages: Registry<RoundStage> = createRegistry<RoundStage>([pyramidStage, safeStage, laughStage, taskStage]);
