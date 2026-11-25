@@ -53,7 +53,9 @@ export function thumbProps(app: App): SlideProps {
  * @param media - the stage's own media link (`createLocalMedia`)
  */
 export function showLive(stage: HTMLElement, input: SlideInput, media: LocalMedia): void {
-  const key = `${input.question.kind}:${input.question.media?.id ?? ""}`;
+  // At the reveal the picture kept for the answer is the media on show.
+  const shown = input.reveal && input.question.answerMedia ? `answer:${input.question.answerMedia.id}` : `${input.question.kind}:${input.question.media?.id ?? ""}`;
+  const key = shown;
   const kept = stage.getAttribute("data-media-key") === key ? stage.querySelector(".quiz-slide-media") : null;
   if (kept === null) media.stop();
   const slide = renderSlide(kept === null ? { ...input, media } : input);

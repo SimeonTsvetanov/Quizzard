@@ -101,7 +101,10 @@ function topLine(input: SlideInput): HTMLElement {
 
 /** The middle of a slide this version can draw: the kind's part and the answer type's — or the special round's answer area. */
 function parts({ question, ui, round }: SlideInput, view: SlideView, special: RoundSlideView | null): (HTMLElement | null)[] {
-  const media = ui.kinds.get(question.kind)?.parts?.slide(question, view) ?? null;
+  // At the reveal a picture kept for the answer is shown in place of the question's own file — drawn
+  // by the picture kind, whatever the question's kind is (Moni 2026-11-25).
+  const withAnswer = view.reveal && question.answerMedia !== undefined;
+  const media = withAnswer ? (ui.kinds.get("picture")?.parts?.slide({ ...question, media: question.answerMedia }, view) ?? null) : (ui.kinds.get(question.kind)?.parts?.slide(question, view) ?? null);
   const own = special ? ui.rounds?.get(round.kind)?.parts.answer : undefined;
   const answer = own && special ? own(question, special) : (ui.answers.get(question.answer.type)?.parts?.slide(question.answer, view) ?? null);
   return [media === null ? null : h("div", { class: "quiz-slide-media" }, media), answer === null ? null : h("div", { class: "quiz-slide-answer" }, answer)];

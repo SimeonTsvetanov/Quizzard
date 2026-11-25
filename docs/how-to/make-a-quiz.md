@@ -68,7 +68,8 @@ Each of these rounds is one screen. For another task, add another **Free game**.
 4. For a picture, audio or video question, select **Choose a picture**, **Choose an audio file** or **Choose a video**. On a computer you can also drop a file on the area or paste a picture. If an audio or video file is too big or in another format, a window opens with the clip on one bar: move the two handles to the part you want, select **Play the chosen part** to check it, choose **Picture size** and **Quality**, and select **Cut and shrink**. For a file that already fits, **Cut** next to **Replace** opens the same window. An audio or video file that is longer than the time of its question plays from its start and stops when that time has played; with the answer it plays in full.
 5. Under **How it is answered**, select **Open answer**, **Multiple choice** or **True / false**, and enter the answer. For **Multiple choice**, enter 2 to 8 options and tick every correct one in the **Correct** column.
 6. Optional: change **Time** and **Points** for this question, and enter an **Explanation shown with the answer (optional)** and a **Host note (optional)**. The host note is for you alone and is never shown on the stage.
-7. Select **Add another** to go straight to the next question, or **Done** to go back to the round.
+7. Optional: under **Picture with the answer (optional)**, choose a picture. It is shown when the answer is revealed, in place of the question's own picture or clip.
+8. Select **Add another** to go straight to the next question, or **Done** to go back to the round.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="../images/make-a-quiz/editor-dark.png">

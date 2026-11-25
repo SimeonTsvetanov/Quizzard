@@ -19,6 +19,16 @@
     }
   }
 
+  /* A file that must be cut and was not yet: the way on, as the accented button under the message.
+     Hidden until then — said here, because `.button` sets its own `display` over the attribute. */
+  .quiz-drop-fix {
+    justify-self: start;
+
+    &[hidden] {
+      display: none;
+    }
+  }
+
   .quiz-drop-button {
     display: grid;
     justify-items: center;

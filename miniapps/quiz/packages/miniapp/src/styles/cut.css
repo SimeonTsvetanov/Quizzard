@@ -190,8 +190,4 @@
     accent-color: var(--color-accent);
   }
 
-  /* In the picker: a file that must be cut, with the way on as the accented button. */
-  .quiz-drop-fix {
-    justify-self: start;
-  }
 }

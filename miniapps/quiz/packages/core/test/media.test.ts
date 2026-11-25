@@ -173,3 +173,29 @@ describe("applyRoundDefaults", () => {
     expect(core.applyRoundDefaults(quiz, "nope")).toBe(quiz);
   });
 });
+
+// Moni 2026-11-25: "the answer may contain a picture if I want".
+describe("the picture shown with an answer", () => {
+  it("counts as a use of its file, so the file is kept and weighs; removing it frees the file", async () => {
+    const core = await import("../src/index.ts");
+    const { NOW, testEnv } = await import("./helpers.ts");
+    const env = testEnv();
+    let quiz = core.addRound(core.createQuiz({ name: "Q", language: "en", now: NOW }, env), "R", env);
+    quiz = core.addQuestion(quiz, quiz.rounds[0]?.id ?? "", {}, env);
+    const id = quiz.rounds[0]?.questions[0]?.id ?? "";
+    const entry: core.MediaEntry = { id: "pic", type: "image", mime: "image/jpeg", name: "p.jpg", bytes: 100, width: 4, height: 3 };
+    const withPicture = core.editQuestion(quiz, id, { answerMedia: { id: "pic" } });
+    const question = withPicture.rounds[0]?.questions[0];
+    expect(question?.answerMedia).toEqual({ id: "pic" });
+    expect(question?.media).toBeUndefined(); // the question's own file is another thing
+    expect(question && core.answerMediaOf(question, [entry])).toEqual(entry);
+    expect(core.mediaUses(withPicture, "pic")).toBe(1);
+    expect(core.usedMediaBytes(withPicture, [entry])).toBe(100);
+    expect(core.unusedMedia(withPicture, [entry])).toEqual([]);
+    const without = core.editQuestion(withPicture, id, { answerMedia: null });
+    expect(without.rounds[0]?.questions[0]?.answerMedia).toBeUndefined();
+    expect(core.unusedMedia(without, [entry])).toEqual([entry]);
+    // A clip is not a picture for the answer.
+    expect(question && core.answerMediaOf(question, [{ ...entry, type: "audio", seconds: 3 }])).toBeUndefined();
+  });
+});

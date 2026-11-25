@@ -12,6 +12,7 @@ import { chipPicker, labelButton, textField } from "../dom/controls.ts";
 import { h } from "../dom/h.ts";
 import { icon } from "../dom/icons.ts";
 import { answerChoices, canShow, kindChoices } from "../ui-registry.ts";
+import { mediaPicker } from "../kinds-ui/media-picker.ts";
 import { roundKindName } from "../round-kinds-ui.ts";
 import { backLink, emptyState, up } from "./common.ts";
 import { offerMediaUndo, questionFiles } from "./editor-files.ts";
@@ -129,8 +130,10 @@ function form(app: App, place: CardPlace, live: Live, signal: AbortSignal): HTML
   const explanation = textField({ label: t("editor.explanation"), value: question.explanation ?? "", max: EXPLANATION_MAX, rows: 2, placeholder: t("editor.explanationPlaceholder"), props: { "data-explanation": "" }, onInput: (value) => { edited((quiz) => editQuestion(quiz, id, { explanation: value })); } });
   // The host's own note: saved with the question, shown on the host panel, never on the stage — so no preview to refresh.
   const note = textField({ label: t("editor.note"), value: question.note ?? "", max: HOST_NOTE_MAX, rows: 2, placeholder: t("editor.notePlaceholder"), hint: t("editor.noteHint"), props: { "data-host-note": "" }, onInput: (value) => { edited((quiz) => editQuestion(quiz, id, { note: value })); } });
-  // A task (answer type `none`) reveals nothing, so it has no text to show with an answer.
-  const parts = [picker.kind, prompt, kindPart, picker.answer, answerPart, timingFields(app, id, live.refresh), question.answer.type === "none" ? null : explanation, note, ending(app, place)];
+  // A task (answer type `none`) reveals nothing, so it has no text or picture to show with an answer.
+  const hasAnswer = question.answer.type !== "none";
+  const answerPicture = hasAnswer ? mediaPicker({ question, t, lang: app.lang, files: questionFiles(app, id, "answer"), signal }, "answer") : null;
+  const parts = [picker.kind, prompt, kindPart, picker.answer, answerPart, timingFields(app, id, live.refresh), hasAnswer ? explanation : null, answerPicture, note, ending(app, place)];
   const element = h("form", { class: "quiz-form quiz-panel", novalidate: "" }, ...parts.filter((part) => part !== null));
   element.addEventListener("submit", (event) => { event.preventDefault(); });
   return element;

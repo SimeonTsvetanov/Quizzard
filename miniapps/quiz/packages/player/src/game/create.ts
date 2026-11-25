@@ -1,7 +1,7 @@
 // Builds a game from a quiz: the list of screens (title, teams, every round's own screens from its
 // round kind, tiebreak, podium) with what the reducer needs of each written next to it — so the
 // state carries no reference to the quiz and stays plain data.
-import { type MediaEntry, type Question, type QuizFile, type Registry, type Round, type RoundKind, MAX_TEAMS, MIN_TEAMS, RESTING_PLAYBACK, clamp, createRoundKinds } from "@simeonts/quizzard-quiz-core/play";
+import { type MediaEntry, type Question, type QuizFile, type Registry, type Round, type RoundKind, MAX_TEAMS, MIN_TEAMS, RESTING_PLAYBACK, STANDARD_SCREENS, clamp, createRoundKinds } from "@simeonts/quizzard-quiz-core/play";
 import { type ScreenKind, screenKinds } from "./kinds.ts";
 import { PLAYER_SCREENS, type GameScreen, type GameState, type Team, freshTimer } from "./state.ts";
 
@@ -40,7 +40,9 @@ function roundScreens(round: Round, media: ReadonlyMap<string, MediaEntry>, roun
     const kind = kinds.get(place.screen);
     const question = place.questionId === undefined ? undefined : questions.get(place.questionId);
     const seconds = question && kind?.seconds ? kind.seconds(round, question) : 0;
-    return { ...place, seconds, steps: kind?.steps ?? 0, ...(kind?.upright ? { upright: true as const } : {}), ...mediaOfScreen(question?.media ? media.get(question.media.id) : undefined) };
+    // At the reveal the picture kept for the answer takes the place of the question's own file.
+    const shown = place.screen === STANDARD_SCREENS.answer && question?.answerMedia ? question.answerMedia : question?.media;
+    return { ...place, seconds, steps: kind?.steps ?? 0, ...(kind?.upright ? { upright: true as const } : {}), ...mediaOfScreen(shown ? media.get(shown.id) : undefined) };
   });
 }
 

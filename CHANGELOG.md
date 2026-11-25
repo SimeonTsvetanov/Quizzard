@@ -4,6 +4,12 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.25.0] - 2026-11-25
+### Added
+- **Quiz creator — a picture with the answer.** Every question can keep a picture that is shown when the answer is revealed, in place of the question's own picture or clip: "Picture with the answer (optional)" under the explanation.
+### Fixed
+- **Quiz creator:** a "Cut and shrink" button stood under every file field, also when there was nothing to cut (since 0.23.0). It now shows only for a file that must be cut.
+
 ## [0.24.0] - 2026-11-25
 ### Added
 - **Quiz creator — two rounds without answers.** "Add round" now also offers:

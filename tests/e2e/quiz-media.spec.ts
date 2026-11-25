@@ -373,6 +373,42 @@ for (const viewport of [{ width: 390, height: 844 }, { width: 1280, height: 860 
   });
 }
 
+// Moni 2026-11-25: "the answer may contain a picture if I want".
+test("a picture can be kept with the answer: it shows at the reveal — in the editor's preview and on the stage — and not with the question", async ({ page }) => {
+  await newQuizWithRound(page);
+  // A text question: it has no picker of its own, only the answer's.
+  await root(page).locator("[data-add-question]").click();
+  await expect(root(page).locator('[data-screen="editor"]')).toBeVisible();
+  await expect(root(page).locator("[data-media-picker]")).toHaveCount(0);
+  await root(page).locator("[data-prompt]").fill("Which animal is this about?");
+  await root(page).locator("[data-open-answer]").fill("A cow");
+  const answerPicker = root(page).locator("[data-answer-picker]");
+  await root(page).locator("[data-answer-input]").setInputFiles(file("landscape.jpg"));
+  await expect(answerPicker.locator("[data-answer-name]")).toHaveText("landscape.jpg");
+  expect((await storedMedia(page)).length).toBe(1);
+  // The live slide: no picture with the question, the picture once "Show answer" is on.
+  // (A phone keeps the live slide behind "Preview": there the stage below checks it.)
+  const live = root(page).locator("[data-live-slide]");
+  if (await root(page).locator("[data-reveal-toggle]").isVisible()) {
+    await expect(live.locator("[data-slide-picture]")).toHaveCount(0);
+    await root(page).locator("[data-reveal-toggle]").click();
+    await expect(live.locator("[data-slide-picture]")).toBeVisible();
+  }
+  await root(page).locator("[data-done]").click();
+  // On the stage: the question alone, then the answer with its picture.
+  await root(page).locator("[data-question] [data-more]").first().click();
+  await root(page).locator("[data-sheet] [data-play-from]").click();
+  await expect(prompt(page)).toHaveText("Which animal is this about?");
+  await expect(stage(page).locator("[data-slide-picture]")).toHaveCount(0);
+  await page.keyboard.press("Space"); // "Answers"
+  await page.keyboard.press("Space"); // the answer's slide
+  await page.keyboard.press("Space"); // revealed
+  await expect(stage(page).locator(".quiz-slide-right")).toHaveText("A cow");
+  await expectWhole(stage(page).locator("[data-slide-picture]"));
+  // Removing it frees the file.
+  await page.keyboard.press("Escape");
+});
+
 // Moni 2026-11-25: a clip that is too big or in another format is not refused where the browser can
 // re-encode — it is cut on the way in, on one trim bar; a clip that fits can be cut too, by choice.
 test("a video in a format a quiz does not carry opens the cut window: the kept part is chosen on the bar and the new MP4 goes on the question; closing it leaves the way on as the accented button", async ({ page, browserName }) => {
@@ -382,6 +418,8 @@ test("a video in a format a quiz does not carry opens the cut window: the kept p
   await newQuestion(page, "Video");
   const picker = root(page).locator("[data-media-picker]");
   await expect(picker.locator("[data-media-cut-hint]")).toBeVisible();
+  // The way on shows only for a file that must be cut (it once stood under every picker, 0.23.0–0.24.0).
+  await expect(picker.locator("[data-media-fix]")).toBeHidden();
   await pick(page, file("clip.webm"));
   const cut = root(page).locator("dialog[data-cut]");
   await expect(cut.locator("[data-cut-note]")).toHaveAttribute("data-cut-note", "must");
@@ -394,6 +432,7 @@ test("a video in a format a quiz does not carry opens the cut window: the kept p
   const fix = picker.locator("[data-media-fix]");
   await expect(fix).toHaveClass(/button--primary/);
   await fix.click();
+  await expect(cut.locator('[data-cut-handle="to"]')).toHaveAttribute("aria-valuemax", /^6\.\d$/); // the clip's length is read again
   // The end handle moved to the left with the keyboard: 2 s shorter.
   await cut.locator('[data-cut-handle="to"]').focus();
   await page.keyboard.press("Shift+ArrowLeft");
@@ -404,6 +443,7 @@ test("a video in a format a quiz does not carry opens the cut window: the kept p
   await expect(cut).toHaveCount(0, { timeout: 60_000 });
   await expect(picker.locator("[data-media-name]")).toHaveText("clip.mp4");
   await expect(picker.locator("[data-media-facts]")).toContainText(/0:0[34]/);
+  await expect(picker.locator("[data-media-fix]")).toBeHidden();
   expect((await storedMedia(page)).length).toBe(1);
 
   // A clip that fits can be cut by choice: the window says it fits, and closing it changes nothing.

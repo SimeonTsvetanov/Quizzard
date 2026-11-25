@@ -11,7 +11,10 @@ import type { MediaEntry, MediaType, Question, Quiz } from "./model.ts";
 export function usedMediaIds(quiz: Quiz): ReadonlySet<string> {
   const ids = new Set<string>();
   for (const round of quiz.rounds) {
-    for (const question of round.questions) if (question.media) ids.add(question.media.id);
+    for (const question of round.questions) {
+      if (question.media) ids.add(question.media.id);
+      if (question.answerMedia) ids.add(question.answerMedia.id);
+    }
   }
   return ids;
 }
@@ -37,12 +40,24 @@ export function unusedMedia(quiz: Quiz, media: readonly MediaEntry[]): readonly 
 }
 
 /**
- * How many questions point at a file.
+ * How many times the quiz points at a file: as a question's file or as the picture with its answer.
  * @param quiz - the quiz
  * @param mediaId - the file's id
  */
 export function mediaUses(quiz: Quiz, mediaId: string): number {
-  return quiz.rounds.reduce((sum, round) => sum + round.questions.filter((question) => question.media?.id === mediaId).length, 0);
+  const uses = (question: Question): number => (question.media?.id === mediaId ? 1 : 0) + (question.answerMedia?.id === mediaId ? 1 : 0);
+  return quiz.rounds.reduce((sum, round) => sum + round.questions.reduce((count, question) => count + uses(question), 0), 0);
+}
+
+/**
+ * The description of the picture shown with a question's answer, when it is there and a picture.
+ * @param question - the question
+ * @param media - the descriptions kept with the quiz
+ */
+export function answerMediaOf(question: Question, media: readonly MediaEntry[]): MediaEntry | undefined {
+  const id = question.answerMedia?.id;
+  const entry = id === undefined ? undefined : media.find((candidate) => candidate.id === id);
+  return entry?.type === "image" ? entry : undefined;
 }
 
 /**

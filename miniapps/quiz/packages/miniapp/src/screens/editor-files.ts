@@ -2,7 +2,7 @@
 // here — the checks and the preparation (media/import.ts, loaded with the first file), the room on
 // the device, the storing, and the question's pointer to the file. The file is stored first and the
 // question changed after: a refused file leaves nothing behind (AC5).
-import { MEDIA_RULES, type MediaEntry, type MediaType, type Question, type Quiz, changeQuestion, editQuestion, findQuestion, mediaOf, mediaUses, mimeOf, usedMediaBytes, withMedia, without } from "@simeonts/quizzard-quiz-core";
+import { MEDIA_RULES, type MediaEntry, type MediaType, type Question, type Quiz, answerMediaOf, changeQuestion, editQuestion, findQuestion, mediaOf, mediaUses, mimeOf, usedMediaBytes, withMedia, without } from "@simeonts/quizzard-quiz-core";
 import { stillOf } from "@simeonts/quizzard-quiz-player/render";
 import type { App } from "../app/state.ts";
 import { canCut, mustCut } from "../media/cut/can-cut.ts";
@@ -47,8 +47,11 @@ function askToKeep(app: App): void {
   void keepOnDevice();
 }
 
+/** Which of a question's files: its own (what the kind shows) or the picture shown with its answer. */
+export type FileSlot = "question" | "answer";
+
 /** Stores a prepared file and points the question at it. */
-async function attach(app: App, questionId: string, entry: MediaEntry, blob: Blob): Promise<boolean> {
+async function attach(app: App, questionId: string, entry: MediaEntry, blob: Blob, slot: FileSlot): Promise<boolean> {
   const quizId = app.current?.quiz.id;
   if (quizId === undefined) return false;
   await app.store.putMedia(quizId, entry.id, blob);
@@ -56,21 +59,28 @@ async function attach(app: App, questionId: string, entry: MediaEntry, blob: Blo
   if (app.signal.aborted || now?.quiz.id !== quizId || !findQuestion(now.quiz, questionId)) return false;
   app.media.add(entry.id, blob);
   askToKeep(app);
-  return app.change(editQuestion(now.quiz, questionId, { media: { id: entry.id } }), withMedia(now.media, entry));
+  const edit = slot === "answer" ? { answerMedia: { id: entry.id } } : { media: { id: entry.id } };
+  return app.change(editQuestion(now.quiz, questionId, edit), withMedia(now.media, entry));
 }
 
 /**
  * The file of the question in the editor and how to change it.
  * @param app - the mounted creator
  * @param questionId - the question being edited
+ * @param slot - the question's own file, or the picture shown with its answer
  */
-export function questionFiles(app: App, questionId: string): QuestionFiles {
+export function questionFiles(app: App, questionId: string, slot: FileSlot = "question"): QuestionFiles {
   const { t } = app;
   const current = app.current;
   const question = current ? findQuestion(current.quiz, questionId)?.question : undefined;
-  const type = question ? (app.env.registries.kinds.get(question.kind)?.mediaType ?? null) : null;
-  const entry = question && current && type !== null ? mediaOf(question, current.media, type) : undefined;
-  const redraw = (): void => { if (app.route.screen === "editor" && app.route.question === questionId) app.draw('[data-focus="media"]'); };
+  const isAnswer = slot === "answer";
+  const ownType = question ? (app.env.registries.kinds.get(question.kind)?.mediaType ?? null) : null;
+  const answerType: MediaType | null = question ? "image" : null;
+  const type = isAnswer ? answerType : ownType;
+  const own = question && current && ownType !== null ? mediaOf(question, current.media, ownType) : undefined;
+  const answers = question && current ? answerMediaOf(question, current.media) : undefined;
+  const entry = isAnswer ? answers : own;
+  const redraw = (): void => { if (app.route.screen === "editor" && app.route.question === questionId) app.draw(isAnswer ? '[data-focus="answer-media"]' : '[data-focus="media"]'); };
   const files: QuestionFiles = {
     type,
     entry,
@@ -86,10 +96,10 @@ export function questionFiles(app: App, questionId: string): QuestionFiles {
       const result = await importMedia(file, { type, usedBytes, id: app.env.ids(), hasRoomFor });
       if (!result.ok) return refusalText(t, app.lang, result, usedBytes);
       try {
-        if (!(await attach(app, questionId, result.entry, result.blob))) return null;
+        if (!(await attach(app, questionId, result.entry, result.blob, slot))) return null;
         redraw();
         // The file that was there is not lost: Undo points the question back at it.
-        if (question && entry) offerMediaUndo(app, question, entry, "replaced");
+        if (question && entry && !isAnswer) offerMediaUndo(app, question, entry, "replaced");
         return null;
       } catch {
         return refusalText(t, app.lang, { reason: "no-space", type, name: file.name, bytes: result.blob.size, mime: result.entry.mime }, usedBytes);
@@ -97,9 +107,9 @@ export function questionFiles(app: App, questionId: string): QuestionFiles {
     },
     remove() {
       const now = app.current?.quiz;
-      if (!now || !app.change(editQuestion(now, questionId, { media: null }))) return;
+      if (!now || !app.change(editQuestion(now, questionId, isAnswer ? { answerMedia: null } : { media: null }))) return;
       redraw();
-      if (question && entry) offerMediaUndo(app, question, entry, "removed");
+      if (question && entry && !isAnswer) offerMediaUndo(app, question, entry, "removed");
     },
     canCut: type !== null && canCut(type),
     needsCut: (file) => type !== null && mustCut(type, file, mimeOf(file.type, file.name)),

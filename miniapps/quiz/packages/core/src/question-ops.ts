@@ -76,6 +76,8 @@ export interface QuestionEdit {
   readonly note?: string;
   readonly answer?: Answer;
   readonly media?: MediaRef | null;
+  /** The picture shown with the answer; `null` removes it. */
+  readonly answerMedia?: MediaRef | null;
   readonly data?: QuestionData;
 }
 
@@ -91,6 +93,7 @@ function applyOptional(question: Question, edit: QuestionEdit): Question {
     next = note.trim() === "" ? without(next, "note") : { ...next, note };
   }
   if (edit.media !== undefined) next = edit.media === null ? without(next, "media") : { ...next, media: edit.media };
+  if (edit.answerMedia !== undefined) next = edit.answerMedia === null ? without(next, "answerMedia") : { ...next, answerMedia: edit.answerMedia };
   return next;
 }
 

@@ -59,6 +59,8 @@ export interface Question {
   readonly kind: string;
   readonly prompt: string;
   readonly media?: MediaRef;
+  /** A picture shown with the answer at the reveal, in place of the question's own file; several questions may share it. */
+  readonly answerMedia?: MediaRef;
   readonly answer: Answer;
   /** Shown with the answer at the reveal. */
   readonly explanation?: string;
@@ -126,6 +128,7 @@ export const questionSchema = z.looseObject({
   kind: id,
   prompt: z.string(),
   media: z.looseObject({ id }).optional(),
+  answerMedia: z.looseObject({ id }).optional(),
   answer: answerSchema,
   explanation: z.string().optional(),
   note: z.string().optional(),
