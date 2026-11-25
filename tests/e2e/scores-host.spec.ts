@@ -608,3 +608,19 @@ test.describe("with the service worker (Chromium only)", () => {
     ).toBeVisible();
   });
 });
+
+// Moni 2026-11-25: after points are entered the page stayed scrolled down (a phone's keyboard pushes it).
+test("after the Adjust score dialog the page is back at its top", async ({ page }) => {
+  await page.goto("./#/scores");
+  await expect(addField(page)).toBeVisible();
+  for (let n = 1; n <= 12; n += 1) await addPlayer(page, `Player ${String(n)}`);
+  const score = mountRoot(page).getByRole("button", { name: /^Adjust score for Player 12/ });
+  await score.scrollIntoViewIfNeeded();
+  await page.evaluate(() => { window.scrollTo(0, document.documentElement.scrollHeight); });
+  expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+  await score.click();
+  await page.getByRole("spinbutton", { name: "Custom score adjustment" }).fill("5");
+  await page.getByRole("button", { name: "Apply", exact: true }).click();
+  await expect(mountRoot(page).getByRole("button", { name: "Adjust score for Player 12: 5" })).toBeAttached();
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+});

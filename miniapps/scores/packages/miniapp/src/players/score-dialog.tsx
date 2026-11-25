@@ -18,6 +18,7 @@ import { Input } from "../components/ui/input";
 import { useTrend } from "../hooks/use-change";
 import { t } from "../i18n";
 import { signedNumberMode } from "../lib/keyboard-mode";
+import { scrollPageToTop } from "../lib/scroll-top";
 import { limitMessage, type LimitCode } from "./limit-message";
 import { isLongScore } from "./score-size";
 
@@ -49,6 +50,7 @@ export function ScoreDialog({ player, onApply }: ScoreDialogProps): React.JSX.El
     }
     setCustomAmount("");
     setIsOpen(false);
+    scrollPageToTop();
   };
 
   return (
@@ -59,6 +61,9 @@ export function ScoreDialog({ player, onApply }: ScoreDialogProps): React.JSX.El
         if (open) {
           setCustomAmount("");
           setError(null);
+        } else {
+          // Cancel, Escape or a tap outside: the keyboard left the page scrolled just the same.
+          scrollPageToTop();
         }
       }}
     >

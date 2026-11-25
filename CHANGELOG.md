@@ -4,6 +4,10 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.25.4] - 2026-11-25
+### Fixed
+- **Scores:** after you enter points in "Adjust score" the page goes back to its top by itself — on a phone the keyboard used to leave it scrolled down.
+
 ## [0.25.3] - 2026-11-25
 ### Fixed
 - **Scores, on a phone:** the buttons at the top no longer slide under the menu button. The plus button left the header — the "Add Player" card is on the screen anyway — so Leaderboard and Clear session have room on every phone.

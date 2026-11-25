@@ -1,6 +1,6 @@
 {
   "name": "@simeonts/quizzard-core",
-  "version": "0.25.3",
+  "version": "0.25.4",
   "private": true,
   "description": "The Quiz Toolkit — core library (pure TypeScript, no DOM). Private: used only by the Quizzard app.",
   "type": "module",
