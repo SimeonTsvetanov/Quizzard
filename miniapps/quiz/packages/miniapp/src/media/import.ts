@@ -2,7 +2,7 @@
 // file). In order: the format and the limits (core `checkMedia`) — a refusal says which and nothing
 // is read; then the file is prepared (a picture scaled and saved again, a clip tried in the browser);
 // then the room on the device. Only a file that passed everything is handed back to be stored.
-import { type MediaCheck, type MediaEntry, type MediaType, QUIZ_MEDIA_MAX_BYTES, checkMedia, mimeOf } from "@simeonts/quizzard-quiz-core";
+import { MEDIA_RULES, type MediaCheck, type MediaEntry, type MediaType, QUIZ_MEDIA_MAX_BYTES, checkMedia, mimeOf } from "@simeonts/quizzard-quiz-core";
 import { prepareClip } from "./clip.ts";
 import { preparePicture, type Prepared } from "./picture.ts";
 
@@ -32,6 +32,12 @@ const PREPARE: Readonly<Record<MediaType, (file: Blob, mime: string) => Promise<
   video: (file, mime) => prepareClip(file, mime, "video"),
 };
 
+/**
+ * The largest picture taken in to be scaled down, in bytes (60 MB): a photo is stored at 1,920 px,
+ * so its limit is checked on what is stored, not on what was picked (Moni 2026-11-25).
+ */
+export const PICTURE_SOURCE_MAX_BYTES = 60 * 1024 * 1024;
+
 /** What {@link importMedia} needs besides the file. */
 export interface ImportOptions {
   /** The media type the question's kind takes. */
@@ -54,11 +60,15 @@ export async function importMedia(file: File, options: ImportOptions): Promise<I
   const { type, usedBytes, id } = options;
   const mime = mimeOf(file.type, file.name);
   const refuse = (reason: RefusalReason): MediaRefusal => ({ ok: false, reason, type, name: file.name, bytes: file.size, mime });
-  const check = checkMedia({ type, mime, bytes: file.size }, usedBytes);
+  // A picture is checked at the size it is stored at (below); a clip at its own.
+  const isLargePicture = type === "image" && file.size > MEDIA_RULES.image.maxBytes;
+  if (isLargePicture && file.size > PICTURE_SOURCE_MAX_BYTES) return refuse("too-big");
+  const check = checkMedia({ type, mime, bytes: isLargePicture ? MEDIA_RULES.image.maxBytes : file.size }, usedBytes);
   if (!check.ok) return refuse(check.reason);
   const prepared = await PREPARE[type](file, mime).catch(() => null);
   if (prepared === null) return refuse("unplayable");
   const { blob, ...known } = prepared;
+  if (blob.size > MEDIA_RULES[type].maxBytes) return refuse("too-big");
   if (usedBytes + blob.size > QUIZ_MEDIA_MAX_BYTES) return refuse("quiz-full");
   if (!(await options.hasRoomFor(blob.size))) return refuse("no-space");
   return { ok: true, blob, entry: { id, type, mime: blob.type === "" ? mime : blob.type, name: file.name, bytes: blob.size, ...known } };

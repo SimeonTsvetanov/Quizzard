@@ -120,7 +120,7 @@ Rules that keep it extendable:
   quiz, play a quiz, limits), Help, CHANGELOG, DECISIONS.
 
 ### Slice 7 — cut and shrink a clip while adding it (trial in `lab/`, Moni 2026-11-25)
-Not started in the app: the trial page `/Quizzard/lab/` (Mediabunny, WebCodecs) waits for reports from an iPhone and an Android phone.
+Shipped in 0.23.0 (media/cut/): Chromium checked; reports from an iPhone and an Android phone are still open. Not built: "play from – to" where the browser cannot encode.
 - **The limits check the result, not the file picked.** A video or sound over its limit (50 MB / 15 MB) is taken in, not refused:
   the question says what is wrong ("the file is too big" or "this format cannot be used") and that it must be changed, and
   the button that changes it ("Cut and shrink") is the accented one. The question is not finished until the file fits.

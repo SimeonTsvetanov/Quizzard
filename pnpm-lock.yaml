@@ -303,6 +303,9 @@ importers:
       lucide:
         specifier: ^1.70.0
         version: 1.77.0
+      mediabunny:
+        specifier: 1.66.4
+        version: 1.66.4
     devDependencies:
       fake-indexeddb:
         specifier: ^6.2.8

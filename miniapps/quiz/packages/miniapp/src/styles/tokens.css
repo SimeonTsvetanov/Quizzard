@@ -28,6 +28,13 @@
     --quiz-kind-safe-ink: oklch(98% 0 0);
     --quiz-kind-safe-text: light-dark(oklch(44% 0.04 250), oklch(84% 0.03 250));
 
+    /* The cut window's track (styles/cut.css): a dark ground in both themes, like a video player's, the
+       veil over what is cut away, and the white playhead with its shadow. */
+    --quiz-cut-ground: oklch(12% 0.02 283);
+    --quiz-cut-veil: oklch(12% 0.02 283 / 0.75);
+    --quiz-cut-line: oklch(100% 0 0);
+    --quiz-cut-line-shadow: 0 0 6px oklch(0% 0 0 / 0.6);
+
     --quiz-stage-from: light-dark(oklch(37% 0.2 293), oklch(29% 0.13 293));
     --quiz-stage-to: light-dark(oklch(23% 0.12 283), oklch(17% 0.07 283));
     --quiz-stage-ink: oklch(98% 0.01 293);

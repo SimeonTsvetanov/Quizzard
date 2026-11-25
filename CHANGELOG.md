@@ -4,6 +4,15 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.23.0] - 2026-11-25
+### Added
+- **Quiz creator — cut and shrink a video or a sound while adding it.** A clip that is too big for a quiz, or in a format a quiz does not carry (a phone's MOV, a WAV), is no longer refused: a window opens with the clip on one bar — frames of the video or the loudness of the sound — with a handle at each end. Move the handles to the part you want, play just that part, pick the picture size and the quality, and select "Cut and shrink". The new, smaller file goes on the question.
+- **A clip that already fits can be cut too:** "Cut" stands next to "Replace". It is always up to you.
+- If you close the window without cutting, the question says why the file is not in yet, and "Cut and shrink" is the highlighted button.
+### Changed
+- **Pictures over 15 MB are taken in** (up to 60 MB): a photo is scaled down to 1,920 px anyway, so its limit is checked on what is stored.
+- Where a browser cannot re-encode (older Safari, Firefox on Android), big files are refused with the reason, as before.
+
 ## [0.22.5] - 2026-11-25
 ### Changed
 - **Quiz creator, while playing — a long clip stops at the question's time.** A video or sound that is longer than the time set for its question plays from its start and stops when that time has played (30 seconds set, 30 seconds played). Play starts it again from the beginning. A shorter clip plays to its own end, and with the answer the clip is not limited.

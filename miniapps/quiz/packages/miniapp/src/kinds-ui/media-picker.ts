@@ -15,8 +15,10 @@ const ENDINGS: Readonly<Record<MediaType, string>> = { image: ".jpg,.jpeg,.png,.
 const MARKS: Readonly<Record<MediaType, IconName>> = { image: "picture", audio: "audio", video: "video" };
 
 /** The hidden file input behind "Choose …" and "Replace". */
-function fileInput(type: MediaType, onFile: (file: File) => void): HTMLInputElement {
-  const input = h("input", { type: "file", class: "visually-hidden", accept: `${MEDIA_RULES[type].mimes.join(",")},${ENDINGS[type]}`, tabindex: "-1", "aria-hidden": "true", "data-media-input": "" });
+function fileInput(type: MediaType, canCut: boolean, onFile: (file: File) => void): HTMLInputElement {
+  // Where a clip can be cut, any clip can be picked (a phone's .mov, a long recording): it is cut on the way in.
+  const accept = canCut && type !== "image" ? `${type}/*,${ENDINGS[type]}` : `${MEDIA_RULES[type].mimes.join(",")},${ENDINGS[type]}`;
+  const input = h("input", { type: "file", class: "visually-hidden", accept, tabindex: "-1", "aria-hidden": "true", "data-media-input": "" });
   input.addEventListener("change", () => {
     const [file] = input.files ?? [];
     input.value = ""; // the same file can be picked again after a refusal
@@ -35,7 +37,7 @@ function facts({ files, lang, t }: KindEditorContext): string {
 }
 
 /** The file the question has: its still or mark, its name and facts, Replace and Remove. */
-function current(context: KindEditorContext, type: MediaType, choose: () => void): HTMLElement {
+function current(context: KindEditorContext, type: MediaType, choose: () => void, fix: (file: File | null) => void): HTMLElement {
   const { files, t } = context;
   const name = files.entry?.name ?? "";
   const thumb = files.still === null ? h("span", { class: "quiz-file-mark" }, icon(MARKS[type], 24)) : h("img", { class: "quiz-file-still", src: files.still, alt: "" });
@@ -44,17 +46,24 @@ function current(context: KindEditorContext, type: MediaType, choose: () => void
   const remove = h("button", { type: "button", class: "button quiz-button", "data-media-remove": "" }, icon("trash", 18), h("span", {}, t("media.remove")));
   remove.addEventListener("click", () => { files.remove(); });
   const lines = h("div", { class: "quiz-file-lines" }, h("span", { class: "quiz-file-name", "data-media-name": "" }, name), h("span", { class: "quiz-hint", "data-media-facts": "" }, facts(context)));
+  const actions = h("div", { class: "quiz-file-actions" }, replace, remove);
+  if (files.canCut && type !== "image") {
+    const cut = h("button", { type: "button", class: "button quiz-button", "data-media-cut": "" }, icon("cut", 18), h("span", {}, t("media.cut")));
+    cut.addEventListener("click", () => { fix(null); });
+    actions.prepend(cut);
+  }
   if (files.sharedWith > 0) lines.append(h("span", { class: "quiz-hint" }, t("media.shared", { count: files.sharedWith })));
-  return h("div", { class: "quiz-file", "data-media-file": "" }, h("span", { class: "quiz-file-thumb", "aria-hidden": "true" }, thumb), lines, h("div", { class: "quiz-file-actions" }, replace, remove));
+  return h("div", { class: "quiz-file", "data-media-file": "" }, h("span", { class: "quiz-file-thumb", "aria-hidden": "true" }, thumb), lines, actions);
 }
 
 /** No file yet: one wide button and what is accepted. */
-function empty({ t, lang }: KindEditorContext, type: MediaType, choose: () => void): HTMLElement {
+function empty({ t, lang, files }: KindEditorContext, type: MediaType, choose: () => void): HTMLElement {
   const button = h("button", { type: "button", class: "quiz-drop-button", "data-media-choose": "", "data-focus": "media" },
     h("span", { class: "quiz-drop-mark", "aria-hidden": "true" }, icon(MARKS[type], 28)),
     h("span", { class: "quiz-drop-words" }, t(`media.choose.${type}`)),
     h("span", { class: "quiz-hint" }, t(`media.accepts.${type}`, { limit: bytesText(MEDIA_RULES[type].maxBytes, lang) })),
     h("span", { class: "quiz-hint quiz-wide-only" }, t("media.drop")));
+  if (files.canCut && type !== "image") button.append(h("span", { class: "quiz-hint", "data-media-cut-hint": "" }, t("media.cutHint")));
   button.addEventListener("click", choose);
   return button;
 }
@@ -78,22 +87,36 @@ export function mediaPicker(context: KindEditorContext): HTMLElement | null {
   const busy = h("p", { class: "quiz-hint", role: "status", "data-media-busy": "" }, t("media.busy"));
   busy.hidden = true;
   const box = h("div", { class: "quiz-drop", "data-media-picker": type, "data-tone": type });
-  const take = (file: File): void => {
+  // A file that must be cut and was not yet: the way on is the accented button under the message.
+  const fixButton = h("button", { type: "button", class: "button button--primary quiz-drop-fix", "data-media-fix": "" }, icon("cut", 18), h("span", {}, t("cut.start")));
+  fixButton.hidden = true;
+  let pending: File | null = null;
+  const work = (job: Promise<string | null>, waiting: File | null): void => {
     if (box.hasAttribute("aria-busy")) return;
     box.setAttribute("aria-busy", "true");
     busy.hidden = false;
     problem.hidden = true;
-    void files.pick(file).catch(() => t("media.failed")).then((message) => {
+    fixButton.hidden = true;
+    void job.catch(() => t("media.failed")).then((message) => {
       box.removeAttribute("aria-busy");
       busy.hidden = true;
       if (message === null) return;
       problem.textContent = message;
       problem.hidden = false;
+      pending = waiting;
+      fixButton.hidden = waiting === null;
+      if (waiting !== null) fixButton.focus();
     });
   };
-  const input = fileInput(type, take);
+  const fix = (file: File | null): void => { work(files.cut(file), file); };
+  const take = (file: File): void => {
+    if (files.needsCut(file)) fix(file);
+    else work(files.pick(file), null);
+  };
+  fixButton.addEventListener("click", () => { if (pending) fix(pending); });
+  const input = fileInput(type, files.canCut, take);
   const choose = (): void => { input.click(); };
-  box.append(files.entry ? current(context, type, choose) : empty(context, type, choose), input, busy, problem);
+  box.append(files.entry ? current(context, type, choose, fix) : empty(context, type, choose), input, busy, problem, fixButton);
   box.addEventListener("dragover", (event) => {
     event.preventDefault();
     box.setAttribute("data-over", "");

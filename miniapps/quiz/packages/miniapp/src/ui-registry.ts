@@ -42,6 +42,17 @@ export interface QuestionFiles {
   pick(file: File): Promise<string | null>;
   /** Takes the file off the question. */
   remove(): void;
+  /** Whether a clip can be cut and made smaller in this browser (media/cut/can-cut.ts). */
+  readonly canCut: boolean;
+  /** Whether a picked file must be cut before the quiz takes it: too big, or in a format a quiz does not carry. */
+  needsCut(file: File): boolean;
+  /**
+   * Opens the cut window for a picked file — or, with `null`, for the file the question has — and
+   * takes the new file like {@link pick}.
+   * @returns `null` when the new file is on the question or nothing had to change; else the message
+   * that says what is still wrong (a file that must be cut was not)
+   */
+  cut(source: File | null): Promise<string | null>;
 }
 
 /** What a kind's editor part gets. */

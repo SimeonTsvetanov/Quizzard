@@ -18,7 +18,8 @@
   "dependencies": {
     "@simeonts/quizzard-quiz-core": "workspace:^",
     "@simeonts/quizzard-quiz-player": "workspace:^",
-    "lucide": "^1.70.0"
+    "lucide": "^1.70.0",
+    "mediabunny": "1.66.4"
   },
   "devDependencies": {
     "fake-indexeddb": "^6.2.8"

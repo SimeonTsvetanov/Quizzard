@@ -71,9 +71,9 @@ Other rules:
 | Characters in a points note | 80 |
 | Time for a question | 5 to 600 seconds; a new round starts at 30 |
 | Points for a question | 0 to 100; a new round starts at 1 |
-| Picture | JPEG, PNG, WebP or GIF, up to 15 MB. A picture wider or taller than 1,920 px is scaled down. |
-| Audio | MP3 or M4A, up to 15 MB |
-| Video | MP4 (H.264 + AAC), up to 50 MB |
+| Picture | JPEG, PNG, WebP or GIF, up to 15 MB as stored. A picture wider or taller than 1,920 px is scaled down, so a photo of up to 60 MB can be picked. |
+| Audio | MP3 or M4A, up to 15 MB. A bigger file, or another format, can be cut and made smaller while you add it (Chrome, Edge, Safari 26 or later, Firefox on a computer). |
+| Video | MP4 (H.264 + AAC), up to 50 MB. A bigger file, or another format such as MOV, can be cut and made smaller while you add it (the same browsers). |
 | Pictures, audio and video of one quiz | 250 MB together |
 | Teams in a game | 2 to 12; a game starts with 4 |
 | Characters in a team name | 40 |

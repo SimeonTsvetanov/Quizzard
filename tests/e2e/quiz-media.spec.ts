@@ -175,11 +175,13 @@ test("AC4 + AC5: a picture is picked, scaled, stored and shown whole in the edit
   await expect(picker).toContainText("JPEG, PNG, WebP or GIF · up to 15 MB");
   await axe(page, "editor, no picture yet");
 
-  // Refused: another format, then a file over the limit — each named, with what is allowed; nothing is stored.
+  // Refused: another format, then files that are no pictures — each named, with what is allowed; nothing is stored.
   await pick(page, { name: "notes.txt", mimeType: "text/plain", buffer: Buffer.from("not a picture") });
   await expect(picker.locator("[data-media-error]")).toHaveText("“notes.txt” is a TXT file. A picture must be JPEG, PNG, WebP or GIF.");
   await pick(page, { name: "huge.jpg", mimeType: "image/jpeg", buffer: Buffer.alloc(16 * 1024 * 1024, 1) });
-  await expect(picker.locator("[data-media-error]")).toHaveText("“huge.jpg” is 16 MB. The most for one file of this kind is 15 MB.");
+  // A picture over 15 MB is no longer refused for its size: it is opened to be scaled down, and its limit is
+  // checked on what is stored (Moni 2026-11-25; the 60 MB ceiling is unit tested). This one is no picture at all.
+  await expect(picker.locator("[data-media-error]")).toHaveText("“huge.jpg” cannot be opened in this browser. A picture must be JPEG, PNG, WebP or GIF.");
   await pick(page, { name: "broken.png", mimeType: "image/png", buffer: Buffer.from("this is not a png at all") });
   await expect(picker.locator("[data-media-error]")).toHaveText("“broken.png” cannot be opened in this browser. A picture must be JPEG, PNG, WebP or GIF.");
   expect(await storedMedia(page)).toEqual([]);
@@ -370,6 +372,47 @@ for (const viewport of [{ width: 390, height: 844 }, { width: 1280, height: 860 
     await axe(page, "stage with a video");
   });
 }
+
+// Moni 2026-11-25: a clip that is too big or in another format is not refused where the browser can
+// re-encode — it is cut on the way in, on one trim bar; a clip that fits can be cut too, by choice.
+test("a video in a format a quiz does not carry opens the cut window: the kept part is chosen on the bar and the new MP4 goes on the question; closing it leaves the way on as the accented button", async ({ page, browserName }) => {
+  test.skip(browserName !== "chromium", "the cut needs WebCodecs encoders; where they are missing the file is refused as before (unit tested)");
+  test.slow();
+  await newQuizWithRound(page);
+  await newQuestion(page, "Video");
+  const picker = root(page).locator("[data-media-picker]");
+  await expect(picker.locator("[data-media-cut-hint]")).toBeVisible();
+  await pick(page, file("clip.webm"));
+  const cut = root(page).locator("dialog[data-cut]");
+  await expect(cut.locator("[data-cut-note]")).toHaveAttribute("data-cut-note", "must");
+  await expect(cut.locator('[data-cut-handle="to"]')).toHaveAttribute("aria-valuemax", /^6\.\d$/);
+  // Closed without cutting: nothing is stored, the message says why and the button to cut is the accented one.
+  await cut.locator("[data-cut-cancel]").click();
+  await expect(picker.locator("[data-media-error]")).toContainText("“clip.webm”");
+  await expect(picker.locator("[data-media-error]")).toContainText("Cut it to use it");
+  expect(await storedMedia(page)).toEqual([]);
+  const fix = picker.locator("[data-media-fix]");
+  await expect(fix).toHaveClass(/button--primary/);
+  await fix.click();
+  // The end handle moved to the left with the keyboard: 2 s shorter.
+  await cut.locator('[data-cut-handle="to"]').focus();
+  await page.keyboard.press("Shift+ArrowLeft");
+  await page.keyboard.press("Shift+ArrowLeft");
+  await expect(cut.locator("[data-cut-part]")).toContainText(/0:00\.0 – 0:0[34]\.\d/);
+  await axe(page, "cut window");
+  await cut.locator("[data-cut-start]").click();
+  await expect(cut).toHaveCount(0, { timeout: 60_000 });
+  await expect(picker.locator("[data-media-name]")).toHaveText("clip.mp4");
+  await expect(picker.locator("[data-media-facts]")).toContainText(/0:0[34]/);
+  expect((await storedMedia(page)).length).toBe(1);
+
+  // A clip that fits can be cut by choice: the window says it fits, and closing it changes nothing.
+  await picker.locator("[data-media-cut]").click();
+  await expect(cut.locator("[data-cut-note]")).toHaveAttribute("data-cut-note", "fits");
+  await cut.locator("[data-cut-cancel]").click();
+  await expect(picker.locator("[data-media-error]")).toBeHidden();
+  await expect(picker.locator("[data-media-name]")).toHaveText("clip.mp4");
+});
 
 test("the black screen, the break, the grid of screens and the clicker keys", async ({ page }) => {
   await openMediaQuiz(page);

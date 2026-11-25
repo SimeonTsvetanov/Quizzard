@@ -2,11 +2,13 @@
 // here — the checks and the preparation (media/import.ts, loaded with the first file), the room on
 // the device, the storing, and the question's pointer to the file. The file is stored first and the
 // question changed after: a refused file leaves nothing behind (AC5).
-import { type MediaEntry, type MediaType, type Question, type Quiz, changeQuestion, editQuestion, findQuestion, mediaOf, mediaUses, usedMediaBytes, withMedia, without } from "@simeonts/quizzard-quiz-core";
+import { MEDIA_RULES, type MediaEntry, type MediaType, type Question, type Quiz, changeQuestion, editQuestion, findQuestion, mediaOf, mediaUses, mimeOf, usedMediaBytes, withMedia, without } from "@simeonts/quizzard-quiz-core";
 import { stillOf } from "@simeonts/quizzard-quiz-player/render";
 import type { App } from "../app/state.ts";
+import { canCut, mustCut } from "../media/cut/can-cut.ts";
 import { refusalText } from "../media/refusal-text.ts";
 import { hasRoomFor, keepOnDevice } from "../storage/space.ts";
+import { bytesText } from "../format.ts";
 import type { QuestionFiles } from "../ui-registry.ts";
 import { offerUndo } from "./common.ts";
 
@@ -69,7 +71,7 @@ export function questionFiles(app: App, questionId: string): QuestionFiles {
   const type = question ? (app.env.registries.kinds.get(question.kind)?.mediaType ?? null) : null;
   const entry = question && current && type !== null ? mediaOf(question, current.media, type) : undefined;
   const redraw = (): void => { if (app.route.screen === "editor" && app.route.question === questionId) app.draw('[data-focus="media"]'); };
-  return {
+  const files: QuestionFiles = {
     type,
     entry,
     still: entry ? (stillOf(entry) ?? (entry.type === "image" ? app.media.url(entry.id) : null)) : null,
@@ -99,5 +101,22 @@ export function questionFiles(app: App, questionId: string): QuestionFiles {
       redraw();
       if (question && entry) offerMediaUndo(app, question, entry, "removed");
     },
+    canCut: type !== null && canCut(type),
+    needsCut: (file) => type !== null && mustCut(type, file, mimeOf(file.type, file.name)),
+    async cut(source) {
+      if (type === null || !canCut(type)) return null;
+      const own = entry ? app.media.blob(entry.id) : undefined;
+      const file = source ?? (entry && own ? new File([own], entry.name, { type: entry.mime }) : null);
+      if (file === null) return null;
+      const maxBytes = MEDIA_RULES[type].maxBytes;
+      const { openCutDialog } = await import("../media/cut/dialog.ts");
+      const made = await openCutDialog({ host: app.host, file, type, t, lang: app.lang, maxBytes, fits: source === null });
+      // No clip this browser can read: the usual check says what is wrong with it (its format, its size).
+      if (made === "unreadable") return files.pick(file);
+      // Closed without a new file: the question's own stays as it is; a picked one that had to be cut is still not in.
+      if (made === null) return source === null ? null : t("media.mustCut", { name: file.name, size: bytesText(file.size, app.lang) });
+      return files.pick(made);
+    },
   };
+  return files;
 }

@@ -2,13 +2,13 @@
 // the creator shows are bundled.
 import {
   ArrowDown, ArrowDownToLine, ArrowUp, ArrowUpToLine, Check, ChevronLeft, ChevronRight, CircleQuestionMark, Copy, Download, Eye, FileDown, Ellipsis, FolderOpen, GalleryVerticalEnd, GripVertical, Image, Layers, LayoutGrid, Lightbulb, List, Printer, Search,
-  Hash, ListChecks, Minus, Music, Pyramid, Vault, Pencil, PenLine, Play, Plus, Replace, RotateCcw, Share2, SlidersHorizontal, Star, Timer, ToggleLeft, Trash2, TriangleAlert, Type, Video,
+  Hash, ListChecks, Minus, Music, Pyramid, Vault, Pencil, PenLine, Play, Plus, Replace, RotateCcw, Scissors, Share2, SlidersHorizontal, Star, Timer, ToggleLeft, Trash2, TriangleAlert, Type, Video,
   X, createElement, type IconNode,
 } from "lucide";
 
 const ICONS = {
   alert: TriangleAlert, audio: Music, bottom: ArrowDownToLine, cards: LayoutGrid, check: Check, choice: ListChecks, copy: Copy, deck: GalleryVerticalEnd, down: ArrowDown, download: Download,
-  eye: Eye, file: FileDown, folder: FolderOpen, grip: GripVertical, list: List, more: Ellipsis, print: Printer, round: Layers, search: Search, top: ArrowUpToLine, replace: Replace, share: Share2, hint: Lightbulb, left: ChevronLeft, minus: Minus, open: PenLine, pencil: Pencil, picture: Image, play: Play, plus: Plus, points: Star, reset: RotateCcw,
+  cut: Scissors, eye: Eye, file: FileDown, folder: FolderOpen, grip: GripVertical, list: List, more: Ellipsis, print: Printer, round: Layers, search: Search, top: ArrowUpToLine, replace: Replace, share: Share2, hint: Lightbulb, left: ChevronLeft, minus: Minus, open: PenLine, pencil: Pencil, picture: Image, play: Play, plus: Plus, points: Star, reset: RotateCcw,
   right: ChevronRight, settings: SlidersHorizontal, text: Type, time: Timer, trash: Trash2, trueFalse: ToggleLeft, unknown: CircleQuestionMark,
   up: ArrowUp, video: Video, x: X, digit: Hash, pyramid: Pyramid, safe: Vault, standard: Layers,
 } satisfies Record<string, IconNode>;
