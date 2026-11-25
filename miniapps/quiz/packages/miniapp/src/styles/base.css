@@ -325,6 +325,8 @@
   .quiz-number {
     width: var(--space-16);
     flex: none;
+    /* Three digits ("300" seconds) fit whole. */
+    padding-inline: var(--space-1);
     font-family: var(--font-display);
     font-weight: var(--weight-semibold);
     text-align: center;
