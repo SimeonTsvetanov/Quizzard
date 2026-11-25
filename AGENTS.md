@@ -37,10 +37,11 @@ miniapps/scores Scores (was GG Counter; React + Tailwind, isolated CSS): the sam
 miniapps/sheet  Answer sheet (written here, Level 1): packages/miniapp only (src/core = pure logic); linted and type-checked
                 with the shell; e2e in tests/e2e/sheet-host.spec.ts
 miniapps/quiz   Quiz creator (written here, Level 1; docs/quiz-creator/SPEC.md + PLAN.md): packages/core (pure model, registries:
-                question kinds, answer types, round kinds standard | pyramid | safe in src/rounds/; migrations), packages/player
-                (the stage: pure state machine game/, views/, render/ slide in cqi, ui/ bar + curtain + host panel; also built
-                into the exported one-file quiz) and packages/miniapp (storage/ = IndexedDB `quizzard-quiz`, the only code that
-                touches storage; kinds-ui/ + answers-ui/ = UI registry entries; screens/); e2e in tests/e2e/quiz-*.spec.ts
+                question kinds, answer types, round kinds standard | pyramid | safe | laugh | task; migrations), packages/player (the
+                stage: state machine game/, views/, render/ slide in cqi, ui/; also built into the exported one-file quiz, whose
+                standalone.ts keeps its game in localStorage) and packages/miniapp (storage/ = IndexedDB `quizzard-quiz`, the only
+                creator code that touches storage; kinds-ui/ + answers-ui/; media/ = import, cut/ = the cut window with
+                Mediabunny, loaded lazily; screens/); e2e in tests/e2e/quiz-*.spec.ts
 ```
 
 ## Mini-apps (in this repo since 2026-11-23, DECISIONS)
@@ -56,6 +57,4 @@ miniapps/quiz   Quiz creator (written here, Level 1; docs/quiz-creator/SPEC.md +
   (`"scope": "miniapp"` scenarios, opened from Home — a hash URL would not reload between them).
 
 ## Commands
-`pnpm i` · `pnpm dev` · `pnpm generate` · `pnpm verify` (generate+lint+typecheck+test+docs:check+build+size) ·
-`pnpm e2e` (after `pnpm build`; `vite preview` at `http://localhost:4173/Quizzard/`) · `pnpm docs:images`
-CI: a push to `main` runs `verify` only, then Deploy; the five-browser e2e runs on pull requests and on a manual run of `ci.yml`.
+`pnpm i` · `pnpm dev` · `pnpm generate` · `pnpm verify` (generate+lint+typecheck+test+docs:check+build+size) · `pnpm e2e` (after `pnpm build`; `vite preview` at `http://localhost:4173/Quizzard/`) · `pnpm docs:images` CI: a push to `main` runs `verify`, then Deploy; five-browser e2e on pull requests and manual runs of `ci.yml`.

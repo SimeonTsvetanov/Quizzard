@@ -1,18 +1,20 @@
 <!-- From the forge template app-shell/templates/legal/privacy.md (legal-pages §2, 2026-11-07), filled for Quizzard on 2026-11-22 with the wording of GG Counter's and TeamSync's privacy texts where the facts are the same, and checked against the code the same day (where: docs/DECISIONS.md 2026-11-22 "Policy pages filled"). Not legal advice. One bullet per layer the app really has: no feedback webhook, no API, no AI features. {App} and {email} are filled by scripts/generate.ts from app.config.ts. -->
 
-**Privacy** — Last updated: 24 November 2026
+**Privacy** — Last updated: 25 November 2026
 
 - **Who is responsible:** {App} is made by Simeon Tsvetanov, Bulgaria (contact: {email}). The
   names, players and scores you enter stay on your device and under your control only; where data
   reaches us, the section "When data reaches us" below applies.
-- **In the browser:** {App} and its tools (Teams and Scores) run entirely on your device. Names,
+- **In the browser:** {App} and its tools (Teams, Scores, Answer sheet and Quiz creator) run
+  entirely on your device. Names,
   players and scores are not uploaded anywhere, and they are never put in the page address (only
   the number of teams can be, e.g. `#/teams?teams=4`). There is no server of our own, and the app
   loads nothing from other websites: no fonts, scripts, images or trackers from third parties.
 - **Stored on your device only:** everything below is kept in your browser's local storage on this
   device; the quizzes you make with the Quiz creator are kept in your browser's IndexedDB database
   on this device. Nothing is kept in cookies or the browser's private file storage.
-  - **{App} itself:** your settings (theme and language), the tool you opened last, the last
+  - **{App} itself:** your settings (theme, background and language), whether the app
+    already asked the browser to keep its data, the tool you opened last, the last
     version whose "What's new" you saw, dismissed prompts (when you last closed the offer to
     install the app) and an unsent problem report draft (its type, title and text).
   - **Teams:** your last names list (so it is still there next time), the number of teams, and a
@@ -31,8 +33,13 @@
     video you add to a quiz are kept as files in the same database, each with its name, size,
     length or dimensions and a small preview picture; a photo is scaled down and saved again
     without the data the camera wrote into it (such as the place it was taken), audio and video
-    are kept exactly as you added them. A game you are playing (team names, scores, where the game
-    is) is kept in local storage. If you close or reload the page right after a change, that
+    are kept as you added them, or — when you cut and shrink one — as the smaller file your
+    browser makes on your device with the Mediabunny library that comes with the app; the clip is
+    not uploaded, and only the cut file is kept. A picture you add to an answer is kept the same
+    way as a question's picture. A game you are playing (team names, scores, where the
+    game is, whether questions run by themselves, whether the time-up sound is on and the language
+    you picked while playing) is kept in local storage; a quiz exported to one file keeps its game
+    the same way in the browser that opens that file, where the browser allows it. If you close or reload the page right after a change, that
     quiz is kept for a moment in local storage and moved into the database the next time you open
     the Quiz creator. With the first media file you add, the app asks the browser to keep this
     site's storage persistent (`navigator.storage.persist()`), and before storing a file it asks
@@ -79,7 +86,8 @@
   the error message, where in the app's code it happened, the last action, the app version, your
   browser's user agent, whether the app is installed and the time to your clipboard.
 - **Links to other sites:** links to GitHub, LinkedIn, WhatsApp and Buy Me a Coffee open those
-  sites, which have their own privacy policies.
+  sites, which have their own privacy policies. In a quiz exported to one file, the Quizzard logo is a link
+  to the Quizzard site on GitHub Pages; it opens only when someone selects it.
 - **Hosting:** the site is hosted on GitHub Pages. GitHub logs visitor IP addresses for security
   purposes — see the GitHub Privacy Statement.
 

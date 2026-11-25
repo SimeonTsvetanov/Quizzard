@@ -273,19 +273,6 @@ importers:
         specifier: ^7.4.1
         version: 7.4.1
 
-  lab:
-    dependencies:
-      mediabunny:
-        specifier: 1.66.4
-        version: 1.66.4
-    devDependencies:
-      app:
-        specifier: workspace:*
-        version: link:../app
-      vite:
-        specifier: ^8.3.0
-        version: 8.3.8(@types/node@24.19.2)(jiti@2.7.0)(terser@5.51.4)
-
   miniapps/quiz/packages/core:
     dependencies:
       zod:

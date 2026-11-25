@@ -119,7 +119,7 @@ Rules that keep it extendable:
 - **SR-04 checks and docs:** e2e (create, edit, play both kinds; walk places), screenshots, user docs (make a
   quiz, play a quiz, limits), Help, CHANGELOG, DECISIONS.
 
-### Slice 7 — cut and shrink a clip while adding it (trial in `lab/`, Moni 2026-11-25)
+### Slice 7 — cut and shrink a clip while adding it (Moni 2026-11-25; the trial page `lab/` is gone)
 Shipped in 0.23.0 (media/cut/): Chromium checked; reports from an iPhone and an Android phone are still open. Not built: "play from – to" where the browser cannot encode.
 - **The limits check the result, not the file picked.** A video or sound over its limit (50 MB / 15 MB) is taken in, not refused:
   the question says what is wrong ("the file is too big" or "this format cannot be used") and that it must be changed, and

@@ -83,9 +83,9 @@ Your team's sheet at a pub quiz, instead of paper. Write the answers of each rou
 
 Build your own quiz night and run it from the same app.
 
-- **Make it:** rounds and questions with open, multiple-choice or true/false answers; pictures, audio and video; time and points per round or per question; a live preview of every slide.
-- **Special rounds:** *Golden pyramid* (4 questions that ask for 1, 2, 3 and 4 answers — 10 points) and *Safe* (5 one-digit answers that open a vault, with a bonus for the full code) come ready-made with their rules.
-- **Play it:** a stage for the big screen with a timer, the answers of each round, points entry, standings, a break, and a separate host panel with your notes.
+- **Make it:** rounds and questions with open, multiple-choice or true/false answers; pictures, audio and video; cut and shrink a clip on the device while you add it; a picture shown with the answer; time and points per round or per question; a live preview of every slide.
+- **Round kinds:** *Standard*, *Golden pyramid* (4 questions that ask for 1, 2, 3 and 4 answers — 10 points), *Safe* (5 one-digit answers that open a vault, with a bonus for the full code), *Make the quizmaster laugh* (every team tells a joke; the two funniest score) and *Free game* (your own task — draw, build, sing — with a timer and points).
+- **Play it:** a stage for the big screen with a timer, the answers of each round, points entry, standings and a break; an audience window with a host panel beside it (timer, break, scores, your notes); the stage in English or Bulgarian, whatever the quiz's language.
 - **Take it with you:** export the quiz as one HTML file that plays offline in any browser, or save it as a quiz file to move it to another device.
 
 ## Why people use it
@@ -124,6 +124,7 @@ The user guide lives in [`docs/`](docs/index.md) and is mirrored to the reposito
 - [Make a quiz](docs/how-to/make-a-quiz.md)
 - [Play a quiz](docs/how-to/play-a-quiz.md)
 - [Install the app](docs/how-to/install-the-app.md)
+- [Change the language and theme](docs/how-to/change-language-and-theme.md)
 - [Back up and move your data](docs/how-to/back-up-and-move-your-data.md)
 - [Settings](docs/reference/settings.md) · [Limits](docs/reference/limits.md) · [Privacy and your data](docs/about/privacy-and-data.md)
 

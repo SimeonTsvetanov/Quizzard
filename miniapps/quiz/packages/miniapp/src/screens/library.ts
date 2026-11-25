@@ -2,6 +2,7 @@
 // more questions it holds — with "New quiz" on top. Open, rename in place, duplicate, delete (asks
 // when the quiz has something in it, then offers Undo). The first visit is an empty state, not a blank page.
 import { QUIZ_FILE_EXTENSION, QUIZ_FILE_MIME, QUIZ_NAME_MAX, createQuiz, renameQuiz } from "@simeonts/quizzard-quiz-core";
+import { loadLibrary } from "../app/library-load.ts";
 import type { App } from "../app/state.ts";
 import { iconButton, labelButton } from "../dom/controls.ts";
 import { h } from "../dom/h.ts";
@@ -19,12 +20,6 @@ export function stackOf(questions: number): number {
   if (questions <= 0) return 0;
   if (questions <= 5) return 1;
   return questions <= 15 ? 2 : 3;
-}
-
-/** Reads the library again and draws it; a browser that refuses storage gets the error state. */
-export async function loadLibrary(app: App, focus?: string): Promise<void> {
-  app.library = await app.store.list().catch(() => "error" as const);
-  if (!app.signal.aborted && app.route.screen === "library") app.draw(focus);
 }
 
 /** "New quiz", then "New quiz 2" … — a name no quiz in the library has yet. */

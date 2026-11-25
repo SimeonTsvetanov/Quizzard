@@ -4,6 +4,20 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.26.0] - 2026-11-25
+### Fixed
+- **Quiz creator, while playing — changing the language keeps the game as it is.** A break, a running timer and a playing clip go on, the audience window stays open (it used to close and open again), and a quiz played from an exported file no longer risks starting over.
+- **The cut window** closes with the screen it was opened from and stops its work; it waits until the clip's length is known before "Cut and shrink" can be pressed; a browser that cannot write what a quiz carries gets the usual message instead of an empty window.
+- **Removing or replacing the picture with an answer** offers Undo, like every other file.
+- A round's prize that is missing in an older quiz shows the same number in the editor as on the stage.
+- A picture over 60 MB is refused with the right limit in the message.
+### Changed
+- **Help, the FAQ and the texts for search engines and AI assistants** describe the Quiz creator as it is: five round kinds, cutting a clip, the picture with the answer, the host panel, the language while playing. The Help of Scores speaks of Scores, not of GG Counter.
+- A cut clip is H.264 with AAC sound, or with Opus where the browser has no AAC (Firefox, Linux).
+- The Privacy text names the cut on the device, the picture with an answer and what a saved game keeps.
+### Removed
+- The trial page for cutting clips (`/lab/`): the cut window in the editor took its place.
+
 ## [0.25.4] - 2026-11-25
 ### Fixed
 - **Scores:** after you enter points in "Adjust score" the page goes back to its top by itself — on a phone the keyboard used to leave it scrolled down.

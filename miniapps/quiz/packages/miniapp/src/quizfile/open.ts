@@ -8,7 +8,7 @@ import { MEDIA_RULES, QUIZ_MEDIA_MAX_BYTES, duplicateQuiz, isSameQuizFile, toFil
 import type { App } from "../app/state.ts";
 import { ask } from "../dom/ask.ts";
 import { bytesText, dateTimeText } from "../format.ts";
-import { loadLibrary } from "../screens/library.ts";
+import { loadLibrary } from "../app/library-load.ts";
 import { hasRoomFor, keepOnDevice } from "../storage/space.ts";
 import type { StoredQuiz } from "../storage/store.ts";
 import { type ReadQuizFile, type RefusedQuizFile, readQuizFile } from "./read.ts";

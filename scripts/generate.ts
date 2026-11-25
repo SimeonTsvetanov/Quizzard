@@ -13,8 +13,9 @@ import sharp from "sharp";
 import { app as config, type AppConfig } from "../app.config.ts";
 import { accentCss, resolveAccent } from "./accent.ts";
 import { POLICY_TITLES, legalFills, policyBodyHtml } from "./legal.ts";
+import { TOOLS_TITLE, toolsBody, toolsDescription } from "./tools-page.ts";
 import { readUpstreamLicenseTexts, shippedPackages, thirdPartyLicensesTxt, withFallbackLicenseTexts } from "./licenses.ts";
-import { POLICY_PAGES, lastUpdatedDate, latestReleaseDate, llmsFullTxt, llmsTxt, perAppRobotsTxt, sitemapXml } from "./seo.ts";
+import { POLICY_PAGES, escapeHtml, lastUpdatedDate, latestReleaseDate, llmsFullTxt, llmsTxt, perAppRobotsTxt, sitemapXml } from "./seo.ts";
 
 // Widen the `as const` literal types so optional modes (null today) type-check when enabled.
 const app: AppConfig = config;
@@ -126,25 +127,12 @@ for (const slug of POLICY_PAGES) {
   write(join(slug, "index.html"), fill(html));
 }
 
-// "More free tools" (footer, 404): this app first, then the author's other tools from app.config.otherTools.
-{
-  const escapeHtml = (text: string): string => text.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
-  const entry = (tool: { name: string; url: string; text: string }): string =>
-    `<h2><a href="${escapeHtml(tool.url)}">${escapeHtml(tool.name)}</a></h2><p>${escapeHtml(tool.text)}</p>`;
-  const body = [
-    "<h1>More free tools</h1>",
-    `<p>Free tools by ${escapeHtml(app.author.name)}. They run in your browser, work offline and need no account.</p>`,
-    entry({ name: `${app.name} — ${app.tagline}`, url: app.url, text: app.description }),
-    ...app.otherTools.map(entry),
-    ...(app.author.github ? [`<p><a href="${escapeHtml(app.author.github)}">The author on GitHub</a></p>`] : []),
-  ].join("\n");
-  const html = shell
-    .replace('<article class="page-body">PAGE_BODY</article>', `<article class="page-body">${body}</article>`)
-    .replaceAll("PAGE_TITLE", "More free tools")
-    .replaceAll("PAGE_DESCRIPTION", `More free tools by the author of ${app.name}.`)
-    .replaceAll("PAGE_SLUG", "tools");
-  write(join("tools", "index.html"), fill(html));
-}
+// "More free tools" (footer, 404): scripts/tools-page.ts.
+write(join("tools", "index.html"), fill(shell
+  .replace('<article class="page-body">PAGE_BODY</article>', `<article class="page-body">${toolsBody(app)}</article>`)
+  .replaceAll("PAGE_TITLE", TOOLS_TITLE)
+  .replaceAll("PAGE_DESCRIPTION", escapeHtml(toolsDescription(app)))
+  .replaceAll("PAGE_SLUG", "tools")));
 
 // llms-full.txt — complete reference for agents (APP-STANDARD §10), from app.config only.
 write("llms-full.txt", llmsFullTxt(app));
