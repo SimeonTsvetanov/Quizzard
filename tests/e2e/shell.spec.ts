@@ -348,6 +348,18 @@ test("policy pages render and keep the email out of the HTML source", async ({ p
   expect(html).not.toMatch(/[\w.+-]+@[\w-]+\.[\w.]+/);
 });
 
+// "More free tools" was a GitHub search that found none of the apps (Moni 2026-11-25): now a page of our own.
+test("More free tools opens our own page that lists Quizzard and the other tools", async ({ page }) => {
+  await page.goto("./");
+  // The link sits in the footer or in the menu, by the width of the window: its address is what counts.
+  await expect(page.locator(`a[href="${app.url}tools/"]`).first()).toBeAttached();
+  await page.goto("./tools/");
+  const body = page.locator(".page-body");
+  await expect(body.getByRole("heading", { level: 1 })).toHaveText("More free tools");
+  await expect(body.getByRole("link", { name: /Quizzard/ })).toBeVisible();
+  for (const tool of app.otherTools) await expect(body.getByRole("link", { name: tool.name, exact: true })).toHaveAttribute("href", tool.url);
+});
+
 test("custom 404 page shows the requested path", async ({ page }) => {
   await page.goto("./404.html?from=/missing-page");
   await expect(page.locator("h1")).toHaveText(/vanished in a puff of smoke/);

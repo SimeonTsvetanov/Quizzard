@@ -4,6 +4,10 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.22.2] - 2026-11-25
+### Fixed
+- **"More free tools"** (footer and the 404 page) opened a GitHub search that found none of the apps. It now opens Quizzard's own page with Quizzard, TeamSync, GG Counter and PDF → PNG.
+
 ## [0.22.1] - 2026-11-25
 ### Added
 - **Quiz creator, host panel:** start, pause and restart the timer from the Timer card, and see and correct every team's points per round in a Scores table right on the panel.

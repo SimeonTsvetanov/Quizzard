@@ -406,6 +406,7 @@ test("presenter mode in the app: the audience window is the app's own stage, fed
 
 for (const colorScheme of ["light", "dark"] as const) {
 test(`AC11: the stage, the menu and the host panel have no serious accessibility problem (${colorScheme})`, async ({ page, context }) => {
+  test.slow(); // fourteen axe runs: about 20 s alone, past 30 s when the machine is busy with other tests
   await page.emulateMedia({ colorScheme });
   const check = async (target: Page, name: string): Promise<void> => {
     await target.evaluate(() => Promise.all(document.getAnimations().filter((one) => one.effect?.getComputedTiming().iterations !== Infinity).map((animation) => animation.finished.catch(() => undefined))));

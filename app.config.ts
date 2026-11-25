@@ -61,8 +61,10 @@ export interface AppConfig {
     /** Every option explained. `route` (language-independent, e.g. "#/teams") makes a tool's deep link in llms.txt. */
     readonly features: readonly { readonly name: string; readonly text: string; readonly route?: string }[];
   };
-  /** "More free tools" link (footer, 404). Until the hub site simeontsvetanov.github.io exists: the GitHub list. */
+  /** "More free tools" link (footer, 404): this app's own page `tools/`, written by scripts/generate.ts from `otherTools`. */
   readonly moreTools: string;
+  /** The author's other free tools, listed on the `tools/` page. A new tool is one more line here. */
+  readonly otherTools: readonly { readonly name: string; readonly url: string; readonly text: string }[];
   readonly author: { readonly name: string; readonly country: string; readonly linkedin?: string; readonly github?: string }; // Legal notice, About, Support, JSON-LD
   /** `wasm: true` adds 'wasm-unsafe-eval' to script-src — only when the build ships .wasm (engineering → security §1). */
   readonly csp?: { readonly wasm?: boolean };
@@ -85,7 +87,7 @@ export const app = {
   description: "Free pub quiz and game night toolkit: quiz maker, random team generator, score keeper and answer sheet. Works offline, no account, data stays with you.",
   url: "https://simeontsvetanov.github.io/Quizzard/",
   repo: "https://github.com/SimeonTsvetanov/Quizzard",
-  version: "0.22.1",
+  version: "0.22.2",
   languages: ["en", "bg"],
   // Palette C · Emerald (DECISIONS 2026-11-22): white text on the light one (5.00:1), dark text on the dark one.
   accent: { light: "#00804F", dark: "#34D399" },
@@ -140,7 +142,13 @@ export const app = {
       { name: "Quiz creator", route: "#/quiz", text: "A quiz maker for your own quiz night: collect questions into rounds, answer them as open, multiple-choice or true/false, add pictures, audio and video, and set the time and points per round or per question. Two ready-made special rounds, Golden pyramid and Safe, come with their rules. Play the quiz on a big screen with a timer, points and a break, or export it as one file that plays offline in any browser. Quizzes are saved on your device." },
     ],
   },
-  moreTools: "https://github.com/SimeonTsvetanov?tab=repositories&q=simeonts-microapp",
+  // Was a GitHub search for repositories named "simeonts-microapp": it found none of the apps (Moni 2026-11-25).
+  moreTools: "https://simeontsvetanov.github.io/Quizzard/tools/",
+  otherTools: [
+    { name: "TeamSync", url: "https://simeontsvetanov.github.io/teamsync-random-team-generator/", text: "Random team generator on its own: paste the names, pick the number of teams and share the result." },
+    { name: "GG Counter", url: "https://simeontsvetanov.github.io/GG-counter/", text: "Score tracker for board-game nights: players, points, a leaderboard and the history of every change." },
+    { name: "PDF → PNG", url: "https://simeontsvetanov.github.io/pdf-to-png/", text: "Turns the pages of a PDF into PNG pictures in your browser; the file never leaves your device." },
+  ],
   author: { name: "Simeon Tsvetanov", country: "Bulgaria", linkedin: "https://www.linkedin.com/in/simeon-tsvetanov-a00963159", github: "https://github.com/SimeonTsvetanov" },
   faq: [
     { q: "What is Quizzard?", a: "Quizzard is a free toolkit for pub quizzes and game nights with four tools: Teams makes random teams, Scores keeps score for game night, Answer sheet records your team's answers and points and Quiz creator builds your own quiz. It runs in your browser and works offline." },
