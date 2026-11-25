@@ -243,6 +243,15 @@ describe("rounds without answers: laugh and task", () => {
     expect(core.screensOf(round, env.registries).map((screen) => screen.screen)).toEqual(["rules", "question", "tally", "board"]);
   });
 
+  it("a laugh round states its own task: its screen is finished without a text; a free game still needs one", () => {
+    const laugh = withRound("laugh");
+    expect(at(laugh.round, 0).prompt).toBe("");
+    expect(core.unfinishedCount(laugh.round, laugh.env.registries)).toBe(0);
+    expect(core.unfinishedQuestions(laugh.quiz, laugh.env.registries)).toEqual([]);
+    const task = withRound("task");
+    expect(core.unfinishedCount(task.round, task.env.registries)).toBe(1);
+  });
+
   it("a prize that changes is what the task shows as its points; values stay whole and within 0–20", () => {
     const laugh = withRound("laugh");
     const changed = roundOf(core.setRoundValue(laugh.quiz, laugh.round.id, "first", 5.4, laugh.env), "laugh");

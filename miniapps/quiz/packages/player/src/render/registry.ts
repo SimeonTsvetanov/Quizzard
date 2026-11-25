@@ -10,6 +10,8 @@ export interface SlideLabels extends RevealLabels {
   seconds(count: number): string;
   /** "2 points" */
   points(count: number): string;
+  /** What a round kind's own screen tells the teams to do, shown before the question's text; a kind that has none gives `undefined`. */
+  roundTask?(roundKind: string): string | undefined;
   /** Shown where the question text will be, while it is empty. */
   readonly emptyPrompt: string;
   /** Shown in place of an empty option or answer. */

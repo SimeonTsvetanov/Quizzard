@@ -91,7 +91,7 @@ Other rules:
 - Sizes are shown in MB of 1,024 × 1,024 bytes, the same unit as the limits.
 - An audio or video file over its limit, or in another format, opens the cut window where the browser can cut it. Otherwise a file of another kind, a file over its limit, or a clip your browser can't play is refused with a message that names the file and the limit. Nothing is saved then.
 - At a limit, the button that adds more is replaced by the reason, for example "20 rounds at most — this quiz is full."
-- A Golden pyramid, a Safe, a **Make the quizmaster laugh** round and a **Free game** keep their number of questions: instead of **Add question** a line says why.
+- A Golden pyramid, a Safe and a **Free game** keep their number of questions: instead of **Add question** a line says why. A **Make the quizmaster laugh** round has no questions at all: it shows **What the teams see** in their place.
 - On the stage a Golden pyramid answer shows its first 12 accepted answers and "+N more"; the host panel and **Print answers** show all of them.
 - An export over 100 MB asks first: large files may not open on a phone.
 - **Play** and **Export** ask first while questions are not finished.

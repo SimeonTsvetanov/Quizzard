@@ -22,6 +22,8 @@ function isKnown(question: Question, registries: Registries): boolean {
 /** Whether a known question is not finished: by its kind and answer type, then by its round's rule for its place. */
 function isUnfinished(round: Round, question: Question, index: number, registries: Registries): boolean {
   if (!isKnown(question, registries)) return false;
+  // A round that states its own task needs nothing of its question.
+  if (registries.rounds.get(round.kind)?.statesTask === true) return false;
   if (!isComplete(question, registries)) return true;
   return !(registries.rounds.get(round.kind)?.isQuestionComplete?.(question, index) ?? true);
 }

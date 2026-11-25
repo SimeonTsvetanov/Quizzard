@@ -149,9 +149,12 @@ function drawSlide(input: SlideInput): HTMLElement {
     ...(input.entryOf ? { entryOf: input.entryOf } : {}),
     ...(input.media ? { media: input.media } : {}),
   };
-  const isEmpty = question.prompt.trim() === "";
+  // A round that states its own task ("Make the quizmaster laugh") shows it first; the question's text only adds to it.
+  const task = labels.roundTask?.(input.round.kind);
+  const prompt = task === undefined ? question.prompt : [task, question.prompt.trim()].filter((part) => part !== "").join("\n\n");
+  const isEmpty = prompt.trim() === "";
   const canvas = h("div", { class: "quiz-slide-canvas" }, topLine(input));
-  const slide = h("div", { class: "quiz-slide", "data-tone": ui.kinds.get(question.kind)?.tone ?? "none", "data-size": promptSize(question.prompt), ...(reveal ? { "data-reveal": "" } : {}) }, canvas);
+  const slide = h("div", { class: "quiz-slide", "data-tone": ui.kinds.get(question.kind)?.tone ?? "none", "data-size": promptSize(prompt), ...(reveal ? { "data-reveal": "" } : {}) }, canvas);
   // A special round's picture stands beside the content (above it on an upright stage).
   const round = ui.rounds?.get(input.round.kind);
   const special: RoundSlideView | null = round ? { ...view, round: input.round, index: input.number - 1, phase: input.phase ?? "question" } : null;
@@ -163,7 +166,7 @@ function drawSlide(input: SlideInput): HTMLElement {
     canvas.append(h("p", { class: "quiz-slide-prompt", "data-empty": "" }, labels.unsupported));
     return slide;
   }
-  canvas.append(h("p", { class: "quiz-slide-prompt", ...(isEmpty ? { "data-empty": "" } : {}) }, isEmpty ? labels.emptyPrompt : question.prompt));
+  canvas.append(h("p", { class: "quiz-slide-prompt", ...(isEmpty ? { "data-empty": "" } : {}) }, isEmpty ? labels.emptyPrompt : prompt));
   const [media, answer] = parts(input, view, special);
   // A part that wants the slide's whole width (a panorama, an audio bar) says so; the others may share the row with the options.
   if (media) slide.setAttribute("data-media", media.firstElementChild?.getAttribute("data-layout") ?? "side");

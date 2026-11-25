@@ -66,6 +66,7 @@ export function taskPoints(round: Round): number {
 /** Round kind `laugh`: one task (5 minutes), two prizes — only two teams score. */
 export const laughRound: RoundKind = {
   id: "laugh",
+  statesTask: true,
   screens: taskScreens,
   shape: { count: 1, answerType: "none", canReorder: false, seconds: 300, pointsAt: () => LAUGH_FIRST_DEFAULT, pointsFollowRound: true, defaultData: () => ({ first: LAUGH_FIRST_DEFAULT, second: LAUGH_SECOND_DEFAULT }) },
   isDataValid: (data) => areValid(data, ["first", "second"]),

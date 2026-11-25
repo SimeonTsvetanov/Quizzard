@@ -12,6 +12,7 @@ import { pointsText } from "../render/slide.ts";
 import { answerChoices, kindChoices } from "../ui-registry.ts";
 import { copyRound, removeRound } from "./round-moves.ts";
 import { specialPoints } from "./round-special.ts";
+import { roundKindUis } from "../round-kinds-ui.ts";
 import { pointsFields, secondsField } from "./value-fields.ts";
 
 /** The open round as it is in the quiz right now (the strip outlives many edits). */
@@ -65,6 +66,7 @@ export function roundSettings(app: App, round: Round, onChange: () => void): HTM
   const time = secondsField(app, t("round.time"), round.defaults.seconds, (seconds) => { edit((quiz) => setRoundDefaults(quiz, round.id, { seconds })); });
   const points = pointsFields(app, t("round.points"), round.defaults.points, (value) => { edit((quiz) => setRoundDefaults(quiz, round.id, { points: value })); });
   const rules = textField({ label: t("round.rules"), value: round.rules ?? "", max: RULES_MAX, rows: 2, placeholder: t("round.rulesPlaceholder"), onInput: (value) => { edit((quiz) => setRoundRules(quiz, round.id, value)); } });
+  const ownsScreen = shapeOf(round, app.env.registries) !== undefined && roundKindUis.get(round.kind)?.ownScreen !== undefined;
   const copy = labelButton("copy", t("round.duplicate"), { class: "button", "data-duplicate-round": "" });
   copy.addEventListener("click", () => { copyRound(app, round.id); });
   const trash = labelButton("trash", t("round.delete"), { class: "button button--destructive", "data-delete-round": "" });
@@ -74,11 +76,11 @@ export function roundSettings(app: App, round: Round, onChange: () => void): HTM
     h("div", { class: "quiz-settings-body" },
       h("div", { class: "quiz-group" }, h("span", { class: "quiz-label" }, t("round.time")), time.element),
       ...(specialPoints(app, round, changed) ?? [h("div", { class: "quiz-group" }, h("span", { class: "quiz-label" }, t("round.points")), points.element, h("p", { class: "quiz-hint" }, t("points.hint")))]),
-      applyAllRow(app, round.id, () => gist(app, live(app, round.id)?.round ?? round), changed),
-      ...defaultsPickers(app, round, changed),
-      rules,
+      // A round that states its own task has no questions to set up: time and prizes are all it asks (rules written earlier stay editable).
+      ...(ownsScreen ? [] : [applyAllRow(app, round.id, () => gist(app, live(app, round.id)?.round ?? round), changed), ...defaultsPickers(app, round, changed)]),
+      ...(ownsScreen && (round.rules ?? "") === "" ? [] : [rules]),
       h("div", { class: "quiz-settings-actions" }, copy, trash)));
-  strip.open = app.view.isSettingsOpen;
+  strip.open = app.view.isSettingsOpen || ownsScreen;
   strip.addEventListener("toggle", () => { app.view.isSettingsOpen = strip.open; });
   return strip;
 }

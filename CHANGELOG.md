@@ -4,6 +4,12 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.28.0] - 2026-11-25
+### Changed
+- **Quiz creator — "Make the quizmaster laugh" needs no question.** The round is ready as soon as it is added: its screen carries a built-in explanation in the language the quiz is played in, the opening says the rules in four lines, and the round shows "What the teams see" with one optional field for a text of your own. Time (5 minutes) and the two prizes (3 and 1) are in the round's settings. The round is never "not finished".
+### Added
+- **An unfinished question is marked on its card:** a red edge and a red light, next to the "Not finished" label.
+
 ## [0.27.3] - 2026-11-25
 ### Fixed
 - **Quiz creator — a slide never cuts its text.** A long answer, question or text with the answer no longer ends in "…": the texts are drawn smaller until all of them fit — in the editor's preview, on the thumbnails, on the stage and in an exported quiz.

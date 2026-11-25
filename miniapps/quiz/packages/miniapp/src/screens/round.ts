@@ -16,6 +16,7 @@ import { QUESTION_ATTRIBUTE, edit, moveTo } from "./question-moves.ts";
 import { makeSortable } from "./reorder.ts";
 import { copyRound, liveRound, moveRoundTo, playFromRound, previewRound, removeRound } from "./round-moves.ts";
 import { roundSettings } from "./round-settings.ts";
+import { taskPanel } from "./round-task.ts";
 
 /** Adds a question with the round's defaults and opens it in the editor (its kind chips come first there). */
 export function newQuestion(app: App, roundId: string, mode: "push" | "replace" = "push"): void {
@@ -113,13 +114,16 @@ export function roundPane(app: App, quiz: Quiz, round: Round): HTMLElement {
     },
   });
   const summary = h("p", { class: "quiz-sub", "data-round-summary": "" }, roundSummary(app, round));
-  const list = h("div", { class: "quiz-questions-box" }, questionList(app, quiz, round, mode));
+  // A round that states its own task has no questions to show: its one screen and a field for more text instead.
+  const own = shapeOf(round, app.env.registries) ? roundKindUis.get(round.kind)?.ownScreen : undefined;
+  const body = (now: Round, inQuiz: Quiz): HTMLElement => (own ? taskPanel(app, now, own) : questionList(app, inQuiz, now, mode));
+  const list = h("div", { class: "quiz-questions-box" }, body(round, quiz));
   // After a change of the round's time or points: the cards and the summary follow, nothing else is rebuilt.
   const refresh = (): void => {
     const now = liveRound(app, round.id);
     if (!now) return;
     summary.textContent = roundSummary(app, now.round);
-    list.replaceChildren(questionList(app, now.quiz, now.round, mode));
+    list.replaceChildren(body(now.round, now.quiz));
     syncCounts(app);
   };
   const badge = unfinishedLink(app, round);
@@ -131,7 +135,5 @@ export function roundPane(app: App, quiz: Quiz, round: Round): HTMLElement {
     backLink(quiz.name === "" ? t("quiz.unnamed") : quiz.name, () => { up(app); }, "quiz-narrow-only"),
     head,
     roundSettings(app, round, refresh),
-    bar,
-    list,
-    addControl(app, round));
+    ...(own ? [list] : [bar, list, addControl(app, round)]));
 }

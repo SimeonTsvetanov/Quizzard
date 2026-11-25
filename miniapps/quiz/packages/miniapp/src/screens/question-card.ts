@@ -65,6 +65,11 @@ function flag(app: App, { question }: CardPlace): HTMLElement | null {
   return isComplete(question, app.env.registries) ? null : h("span", { class: "quiz-flag", "data-unfinished": "" }, app.t("question.unfinished"));
 }
 
+/** Marks the whole card of an unfinished question (a red edge and light, round.css), so it is found at a glance. */
+function unfinishedMark(mark: HTMLElement | null): { "data-card-unfinished"?: string } {
+  return mark?.hasAttribute("data-unfinished") ? { "data-card-unfinished": "" } : {};
+}
+
 /** Kind chip, time and points on one line; a value that is the question's own is marked, a long points note is cut with its whole text as the tooltip. */
 function facts(app: App, { round, question }: CardPlace): HTMLElement {
   const { t, lang } = app;
@@ -91,7 +96,7 @@ export function questionCard(app: App, place: CardPlace): HTMLElement {
   const mark = flag(app, place);
   if (mark) open.append(mark);
   open.addEventListener("click", () => { edit(app, question.id); });
-  return h("li", { class: "quiz-qcard", [QUESTION_ATTRIBUTE]: question.id, "data-tone": app.ui.kinds.get(question.kind)?.tone ?? "none" }, open, facts(app, place), actions(app, place, false));
+  return h("li", { class: "quiz-qcard", ...unfinishedMark(mark), [QUESTION_ATTRIBUTE]: question.id, "data-tone": app.ui.kinds.get(question.kind)?.tone ?? "none" }, open, facts(app, place), actions(app, place, false));
 }
 
 /**
@@ -114,5 +119,5 @@ export function questionRow(app: App, place: CardPlace): HTMLElement {
   const row = actions(app, place, true);
   const drag = row.querySelector("[data-drag]");
   const more = row.querySelector("[data-more]");
-  return h("li", { class: "quiz-qrow", [QUESTION_ATTRIBUTE]: question.id, "data-tone": kind?.tone ?? "none" }, ...(drag ? [drag] : []), open, ...(more ? [more] : []));
+  return h("li", { class: "quiz-qrow", ...unfinishedMark(mark), [QUESTION_ATTRIBUTE]: question.id, "data-tone": kind?.tone ?? "none" }, ...(drag ? [drag] : []), open, ...(more ? [more] : []));
 }

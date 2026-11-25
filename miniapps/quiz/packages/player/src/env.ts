@@ -31,6 +31,7 @@ export function stageLabels(t: Translate, lang: Lang): SlideLabels {
     // Whole minutes from two up read as minutes: "5 min", not "300 s".
     seconds: (count) => (count >= 120 && count % 60 === 0 ? t("unit.minutes", { n: numberText(count / 60, lang) }) : t("unit.seconds", { n: numberText(count, lang) })),
     points: (count) => t("unit.points", { count, n: numberText(count, lang) }),
+    roundTask: (kind) => (kind === "laugh" ? t("task.laughTask") : undefined),
     emptyPrompt: t("slide.emptyPrompt"),
     emptyAnswer: t("slide.emptyAnswer"),
     answer: t("slide.answer"),

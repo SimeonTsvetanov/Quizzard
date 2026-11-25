@@ -36,6 +36,7 @@ export const enFiles = {
   },
   slide: {
     emptyPrompt: "Your question appears here",
+    laughTask: "Think up a joke and make the quizmaster laugh! One of you tells it to everyone.",
     emptyAnswer: "…",
     answer: "Answer",
     unsupported: "Not supported in this version",

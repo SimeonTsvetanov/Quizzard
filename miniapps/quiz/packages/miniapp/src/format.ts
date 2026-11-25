@@ -79,6 +79,7 @@ export function slideLabels(t: Translate, lang: Lang): SlideLabels {
     falseText: t("trueFalse.false"),
     seconds: (count) => t("unit.seconds", { n: numberText(count, lang) }),
     points: (count) => t("unit.points", { count, n: numberText(count, lang) }),
+    roundTask: (kind) => (kind === "laugh" ? t("slide.laughTask") : undefined),
     emptyPrompt: t("slide.emptyPrompt"),
     emptyAnswer: t("slide.emptyAnswer"),
     answer: t("slide.answer"),

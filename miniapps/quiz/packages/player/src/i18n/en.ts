@@ -100,8 +100,11 @@ export const en = {
   },
   task: {
     host: "A task — no answer. You give the points.",
-    laughEvery: "Every team tells one joke",
+    laughTask: "Think up a joke and make the quizmaster laugh! One of you tells it to everyone.",
+    laughEvery: "Every team thinks up one joke while the timer runs",
+    laughTell: "One of the team tells it to everyone",
     laughTwo: "The quizmaster picks the two funniest",
+    laughOnly: "Only those two teams score in this round",
     first: "The funniest",
     second: "Second place",
     others: "Everyone else",

@@ -46,9 +46,17 @@ A special round always has its number of questions: there is no **Add question**
 
 **Make the quizmaster laugh** and **Free game** have no questions to answer. Each is one screen that says what the teams do, with a timer; then you give the points. Nothing is revealed, so these rounds have no answers screen.
 
+**Make the quizmaster laugh** needs nothing from you: add the round as in [Add rounds](#add-rounds) and it is ready.
+
+- **What the teams see** shows the round's screen. Its explanation is built in and is shown in the language the quiz is played in.
+- Optional: in **More text on the screen**, add a line of your own, for example a theme for the jokes. It is shown under the explanation.
+- In **Round settings**, change **Time per question** (5 minutes to start with) and the two prizes.
+
+**Free game** is your own task:
+
 1. Add the round as in [Add rounds](#add-rounds).
 2. In the round, select its one screen. The editor opens.
-3. In **Question**, enter what the teams see, for example "Think up a joke about quizzes" or "Draw the quizmaster". Until it has a text, the screen is **Not finished**.
+3. In **Question**, enter what the teams see, for example "Draw the quizmaster". Until it has a text, the screen is **Not finished**.
 4. Optional: under **Kind of question**, select **Picture**, **Audio** or **Video** and add a file that helps with the task.
 5. Select **Done**.
 6. Optional: in **Round settings**, change **Time per question** and the points.

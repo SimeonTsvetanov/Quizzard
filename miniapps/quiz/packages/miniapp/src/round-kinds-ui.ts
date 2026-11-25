@@ -20,6 +20,8 @@ export interface RoundKindUi extends RegistryEntry {
   readonly fixed?: TextKey;
   /** How the round's points read, in place of the points fields. */
   readonly points?: TextKey;
+  /** The round states its own task and has no questions to make: the texts of the panel shown in their place (screens/round-task.ts). */
+  readonly ownScreen?: { readonly title: TextKey; readonly note: TextKey; readonly extra: TextKey; readonly extraHint: TextKey; readonly placeholder: TextKey };
   /** The whole numbers the kind keeps in the round's own data (a prize, the most points), each a stepper in the round's settings. */
   readonly values?: readonly { readonly key: string; readonly label: TextKey }[];
 }
@@ -29,7 +31,8 @@ export const roundKindUis: Registry<RoundKindUi> = createRegistry<RoundKindUi>([
   { id: "standard", label: "roundKind.standard", text: "roundKind.standardText", icon: "standard" },
   { id: "pyramid", label: "roundKind.pyramid", text: "roundKind.pyramidText", icon: "pyramid", rules: "roundKind.pyramidRules", fixed: "roundKind.pyramidFixed", points: "roundKind.pyramidPoints" },
   { id: "safe", label: "roundKind.safe", text: "roundKind.safeText", icon: "safe", rules: "roundKind.safeRules", fixed: "roundKind.safeFixed", points: "roundKind.safePoints" },
-  { id: "laugh", label: "roundKind.laugh", text: "roundKind.laughText", icon: "laugh", rules: "roundKind.laughRules", fixed: "roundKind.laughFixed", points: "roundKind.laughPoints", values: [{ key: "first", label: "roundKind.laughFirst" }, { key: "second", label: "roundKind.laughSecond" }] },
+  { id: "laugh", label: "roundKind.laugh", text: "roundKind.laughText", icon: "laugh", rules: "roundKind.laughRules", fixed: "roundKind.laughFixed", points: "roundKind.laughPoints", values: [{ key: "first", label: "roundKind.laughFirst" }, { key: "second", label: "roundKind.laughSecond" }],
+    ownScreen: { title: "roundKind.ownTitle", note: "roundKind.laughNote", extra: "roundKind.ownExtra", extraHint: "roundKind.ownExtraHint", placeholder: "roundKind.laughPlaceholder" } },
   { id: "task", label: "roundKind.task", text: "roundKind.taskText", icon: "task", rules: "roundKind.taskRules", fixed: "roundKind.taskFixed", points: "roundKind.taskPoints", values: [{ key: "points", label: "roundKind.taskMost" }] },
 ]);
 

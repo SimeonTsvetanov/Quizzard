@@ -36,6 +36,7 @@ export const bgFiles = {
   },
   slide: {
     emptyPrompt: "Тук се появява Вашият въпрос",
+    laughTask: "Измислете виц и разсмейте куизмастъра! Един от отбора го разказва пред всички.",
     emptyAnswer: "…",
     answer: "Отговор",
     unsupported: "Не се поддържа в тази версия",

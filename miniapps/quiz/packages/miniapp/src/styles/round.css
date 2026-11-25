@@ -141,6 +141,42 @@
     box-shadow: var(--glass-edge), inset var(--space-1) 0 0 var(--quiz-tone), var(--shadow-1);
   }
 
+  /* An unfinished question is found at a glance (Moni 2026-11-25): a red edge round its card or row and a red
+     light in the corner; the "Not finished" label says it in words. */
+  :is(.quiz-qcard, .quiz-qrow)[data-card-unfinished] {
+    position: relative;
+    outline: 2px solid var(--color-danger-text);
+    outline-offset: -2px;
+
+    &::after {
+      content: "";
+      position: absolute;
+      inset-block-start: calc(var(--space-1) * -1);
+      inset-inline-end: calc(var(--space-1) * -1);
+      width: var(--space-3);
+      height: var(--space-3);
+      border-radius: var(--radius-full);
+      background: var(--color-danger-text);
+      box-shadow: 0 0 var(--space-2) var(--color-danger-text);
+    }
+  }
+
+  /* || Components: a round that states its own task (screens/round-task.ts) */
+  .quiz-task {
+    display: grid;
+    gap: var(--space-3);
+    padding: var(--space-4);
+  }
+
+  .quiz-task-note {
+    margin: 0;
+    color: var(--color-text-secondary);
+  }
+
+  .quiz-task-thumb {
+    max-width: 28rem;
+  }
+
   .quiz-qcard-open {
     /* Holds its visually hidden name. */
     position: relative;

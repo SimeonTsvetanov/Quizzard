@@ -57,6 +57,8 @@ export interface RoundKind extends RegistryEntry {
   readonly shape?: RoundShape;
   /** Whether the round's `data` is what this kind keeps there (an absent `data` is checked as `undefined`). */
   isDataValid?(data: Readonly<Record<string, unknown>> | undefined): boolean;
+  /** The round's own screen states the task, so its question is finished without a text of its own. */
+  readonly statesTask?: boolean;
   /** What the kind asks of a question at a place beyond its answer type's own check. */
   isQuestionComplete?(question: Question, index: number): boolean;
   /** The most points a team can get in the round; left out = the sum of its questions' points. */

@@ -85,7 +85,7 @@ const laughStage: RoundStage = {
     const { first, second } = laughPrizes(round);
     return h("div", { class: "qp-prizes" }, prize("1", env.labels.points(first), "first"), prize("2", env.labels.points(second), "second"));
   },
-  rules: (env) => [env.t("task.laughEvery"), env.t("task.laughTwo")],
+  rules: (env) => [env.t("task.laughEvery"), env.t("task.laughTell"), env.t("task.laughTwo"), env.t("task.laughOnly")],
   guide: (env, round) => [
     { label: env.t("task.first"), text: env.labels.points(laughPrizes(round).first) },
     { label: env.t("task.second"), text: env.labels.points(laughPrizes(round).second) },
