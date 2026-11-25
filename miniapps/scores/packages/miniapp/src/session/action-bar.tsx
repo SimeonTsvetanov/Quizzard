@@ -1,9 +1,11 @@
-// The session's header buttons (Leaderboard, Add player, Clear session) — part of the game screen. They
+// The session's header buttons (Leaderboard, Clear session) — part of the game screen. "Add player" was
+// one of them until 2026-11-25: on a phone the three did not fit beside the menu button, and the Add
+// player card is on the screen anyway (Moni). They
 // render through a portal into the host's header slot (`Host.headerActions`, host.ts), so the host owns
 // the header and the screen only fills its slot; the standalone header places the slot between its
 // logo button and its Theme and Menu buttons (app-header.tsx), the same order as before the seam.
 import type { Player } from "gg-counter-core";
-import { Plus, RefreshCw, Trophy } from "lucide-react";
+import { RefreshCw, Trophy } from "lucide-react";
 import { createPortal } from "react-dom";
 import { Button } from "../components/ui/button";
 import { t } from "../i18n";
@@ -12,8 +14,6 @@ import { useHost } from "../providers/host-provider";
 
 /** What the session actions do; the main screen owns the state behind them. */
 export interface SessionActions {
-  /** Scrolls to the Add player card and focuses its name field. */
-  onQuickAdd: () => void;
   onShare: () => void;
   /** Opens the "Clear session?" alert with "Scores only" checked (Reset scores buttons). */
   onRequestReset: () => void;
@@ -44,15 +44,6 @@ export function ActionBar({ variant, leaderboard, actions }: ActionBarProps): Re
           <Trophy aria-hidden />
         </Button>
       </LeaderboardDialog>
-
-      <Button
-        variant={variant}
-        size="icon"
-        onClick={actions.onQuickAdd}
-        aria-label={t("app.header.addPlayer")}
-      >
-        <Plus aria-hidden />
-      </Button>
 
       <Button
         variant={variant}

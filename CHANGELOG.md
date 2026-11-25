@@ -4,6 +4,10 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.25.3] - 2026-11-25
+### Fixed
+- **Scores, on a phone:** the buttons at the top no longer slide under the menu button. The plus button left the header — the "Add Player" card is on the screen anyway — so Leaderboard and Clear session have room on every phone.
+
 ## [0.25.2] - 2026-11-25
 ### Fixed
 - **Quiz creator, while playing — a long answer beside a picture no longer runs over the question and the text below.** A longer answer is set smaller and its part of the slide grows with it; no word is broken in the middle.

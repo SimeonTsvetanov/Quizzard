@@ -16,7 +16,6 @@ export const en = {
     copiedSummary: "Leaderboard copied ✓",
     header: {
       leaderboard: "Open leaderboard",
-      addPlayer: "Add player",
       clear: "Clear session",
     },
     players: {

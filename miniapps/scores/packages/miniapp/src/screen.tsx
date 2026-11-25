@@ -78,8 +78,6 @@ export function ScoresScreen({ screen, element, options }: ScoresScreenProps): R
   };
 
   const actions: SessionActions = {
-    // The field scrolls itself into the visible area on focus (useRevealWhileFocused, SPEC 1.2 F19).
-    onQuickAdd: () => { addInputRef.current?.focus({ preventScroll: true }); },
     onShare: handleShare,
     onRequestReset: () => { setClearRequest("scores"); },
     onRequestClear: () => { setClearRequest("all"); },

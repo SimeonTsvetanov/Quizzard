@@ -153,8 +153,10 @@ test.describe("without a service worker", () => {
     await expect(addField(page)).toBeVisible();
     await expect(page).toHaveTitle(`Scores — ${app.name}`);
     // PLAN open point 8 (DECISIONS 2026-11-22): the session buttons always sit in the header slot.
-    await expect(headerSlot(page).getByRole("button")).toHaveText(["", "", ""]);
-    for (const name of ["Open leaderboard", "Add player", "Clear session"])
+    // Two since 2026-11-25: "Add player" left the header (three did not fit a phone beside the menu button).
+    await expect(headerSlot(page).getByRole("button")).toHaveText(["", ""]);
+    await expect(headerSlot(page).getByRole("button", { name: "Add player" })).toHaveCount(0);
+    for (const name of ["Open leaderboard", "Clear session"])
       {await expect(headerSlot(page).getByRole("button", { name })).toBeVisible();}
     await expect(homeView(page)).toBeHidden();
     await backButton(page).click();
@@ -381,7 +383,7 @@ test.describe("without a service worker", () => {
         () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
       ),
     ).toBe(true);
-    for (const name of ["Open leaderboard", "Add player", "Clear session"]) {
+    for (const name of ["Open leaderboard", "Clear session"]) {
       const button = headerSlot(page).getByRole("button", { name });
       await button.scrollIntoViewIfNeeded();
       await expect(button).toBeInViewport();

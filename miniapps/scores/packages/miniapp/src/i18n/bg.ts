@@ -17,7 +17,6 @@ export const bg: Messages = {
     copiedSummary: "Класирането е копирано ✓",
     header: {
       leaderboard: "Отвори класирането",
-      addPlayer: "Добави играч",
       clear: "Изчисти сесията",
     },
     players: {

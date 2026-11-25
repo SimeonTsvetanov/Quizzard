@@ -13,7 +13,7 @@ This guide shows you how to keep score for a game with **Scores**: add players, 
 2. In the **Add Player** card, enter the name in the **Player Name** field.
 3. Select **Add**. With a keyboard, you can use the Enter key instead.
 
-The player appears as a card with a score of 0. The name field stays ready for the next name. To jump to it from anywhere on the page, select the plus button (**Add player**) in the header.
+The player appears as a card with a score of 0. The name field stays ready for the next name.
 
 To rename a player, edit the name in the card and select outside the field. To remove a player, see [Remove a player or reset a score](#remove-a-player-or-reset-a-score).
 
