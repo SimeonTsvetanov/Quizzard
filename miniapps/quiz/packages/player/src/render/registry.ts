@@ -154,6 +154,8 @@ export interface SlideRegistries {
 export interface StageAnswer extends SlideAnswer {
   /** The right answer in words. */
   text(answer: Answer, labels: RevealLabels): string;
+  /** `true` = a task with nothing to reveal: the host's answer card says so instead of an answer. */
+  readonly isTask?: true;
   /** The right answer as a list of the round's answers writes it, when that differs: a choice with its letters ("A: Mars · C: Venus"). */
   line?(answer: Answer, labels: RevealLabels): string;
 }

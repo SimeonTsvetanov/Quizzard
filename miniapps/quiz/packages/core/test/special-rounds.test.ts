@@ -255,6 +255,14 @@ describe("rounds without answers: laugh and task", () => {
     expect(at(most, 0).points).toEqual({ value: 20 });
   });
 
+  it("a value the kind does not keep is not written; a missing one reads as the kind's default", () => {
+    const { quiz, round, env } = withRound("laugh");
+    expect(core.setRoundValue(quiz, round.id, "bonus", 5, env)).toBe(quiz);
+    expect(core.laughPrizes({ ...round, data: {} })).toEqual({ first: 3, second: 1 });
+    expect(env.registries.answers.get("none")?.reveals).toBe(false);
+    expect(env.registries.answers.get("open")?.reveals).toBeUndefined();
+  });
+
   it("the answer type `none` is not offered in a free round, and a task still needs its words", () => {
     const { round, env, quiz } = withRound("task");
     expect(core.freeAnswerTypes(env.registries)).not.toContain("none");

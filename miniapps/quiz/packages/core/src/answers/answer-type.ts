@@ -18,6 +18,8 @@ export interface AnswerType extends RegistryEntry {
   defaults(ids: IdSource): Answer;
   /** Whether the author has filled in enough for the question to be played. */
   isComplete(answer: Answer): boolean;
+  /** `false` = nothing is revealed (a task): no explanation, no picture with the answer, no "Show answer". Left out = it reveals. */
+  readonly reveals?: false;
   /** The correct answer as one line of text, for the reveal and for lists. */
   revealText(answer: Answer, labels: RevealLabels): string;
 }

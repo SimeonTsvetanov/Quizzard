@@ -4,7 +4,8 @@
 // a quiz does not carry (Moni 2026-11-25: the limits check the result, not the file picked).
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { CUT_SOURCE_MAX_BYTES, canCut, mustCut } from "../src/media/cut/can-cut.ts";
-import { PICTURE_SOURCE_MAX_BYTES, importMedia } from "../src/media/import.ts";
+import { PICTURE_SOURCE_MAX_BYTES } from "@simeonts/quizzard-quiz-core";
+import { importMedia } from "../src/media/import.ts";
 
 const MB = 1024 * 1024;
 const file = (name: string, type: string, size: number) => ({ name, type, size });

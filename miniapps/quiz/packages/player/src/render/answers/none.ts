@@ -4,5 +4,6 @@ import type { StageAnswer } from "../registry.ts";
 export const noneAnswerSlide: StageAnswer = {
   id: "none",
   text: () => "",
+  isTask: true,
   parts: { slide: () => null },
 };

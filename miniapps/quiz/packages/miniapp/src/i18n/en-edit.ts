@@ -120,7 +120,7 @@ export const enEdit = {
   media: {
     label: { image: "Picture", audio: "Audio", video: "Video" },
     choose: { image: "Choose a picture", audio: "Choose an audio file", video: "Choose a video" },
-    accepts: { image: "JPEG, PNG, WebP or GIF · up to {{limit}}", audio: "MP3 or M4A · up to {{limit}}", video: "MP4 (H.264 + AAC) · up to {{limit}}" },
+    accepts: { image: "JPEG, PNG, WebP or GIF · up to {{limit}} (a larger photo is scaled down)", audio: "MP3 or M4A · up to {{limit}}", video: "MP4 (H.264 + AAC) · up to {{limit}}" },
     formats: { image: "A picture must be JPEG, PNG, WebP or GIF.", audio: "Audio must be MP3 or M4A (AAC).", video: "A video must be MP4 with H.264 picture and AAC sound." },
     drop: "or drop a file here, or paste one",
     answerLabel: "Picture with the answer (optional)",

@@ -12,6 +12,9 @@ import { bytesText } from "../format.ts";
 import type { QuestionFiles } from "../ui-registry.ts";
 import { offerUndo } from "./common.ts";
 
+/** Which of a question's files: its own (what the kind shows) or the picture shown with its answer. */
+export type FileSlot = "question" | "answer";
+
 /** How a question lost its file: taken off, swapped for another, or dropped by a change of kind. */
 export type MediaLoss = "removed" | "replaced";
 
@@ -23,19 +26,22 @@ export type MediaLoss = "removed" | "replaced";
  * @param before - the question as it was, with its file
  * @param entry - the description of that file
  * @param how - what happened to it
+ * @param slot - the question's own file (the default), or the picture shown with its answer
  */
-export function offerMediaUndo(app: App, before: Question, entry: MediaEntry, how: MediaLoss): void {
+export function offerMediaUndo(app: App, before: Question, entry: MediaEntry, how: MediaLoss, slot: FileSlot = "question"): void {
   const type: MediaType = entry.type;
-  const restore = (quiz: Quiz): Quiz => changeQuestion(quiz, before.id, (question) => ({
+  const restoreOwn = (quiz: Quiz): Quiz => changeQuestion(quiz, before.id, (question) => ({
     ...without(question, "data"),
     kind: before.kind,
     ...(before.media ? { media: before.media } : {}),
     ...(before.data === undefined ? {} : { data: before.data }),
   }));
-  offerUndo(app, app.t(`media.${how}.${type}`), restore, () => {
+  // The answer's picture is its own field: the question's kind and its own file are left as they are now.
+  const restoreAnswer = (quiz: Quiz): Quiz => (before.answerMedia ? editQuestion(quiz, before.id, { answerMedia: before.answerMedia }) : quiz);
+  offerUndo(app, app.t(`media.${how}.${type}`), slot === "answer" ? restoreAnswer : restoreOwn, () => {
     const now = app.current;
     if (now) app.change(now.quiz, withMedia(now.media, entry));
-    if (app.route.screen === "editor" && app.route.question === before.id) app.draw('[data-focus="media"]');
+    if (app.route.screen === "editor" && app.route.question === before.id) app.draw(slot === "answer" ? '[data-focus="answer-media"]' : '[data-focus="media"]');
   });
 }
 
@@ -46,9 +52,6 @@ function askToKeep(app: App): void {
   app.context.storage.notifySaved();
   void keepOnDevice();
 }
-
-/** Which of a question's files: its own (what the kind shows) or the picture shown with its answer. */
-export type FileSlot = "question" | "answer";
 
 /** Stores a prepared file and points the question at it. */
 async function attach(app: App, questionId: string, entry: MediaEntry, blob: Blob, slot: FileSlot): Promise<boolean> {
@@ -99,7 +102,7 @@ export function questionFiles(app: App, questionId: string, slot: FileSlot = "qu
         if (!(await attach(app, questionId, result.entry, result.blob, slot))) return null;
         redraw();
         // The file that was there is not lost: Undo points the question back at it.
-        if (question && entry && !isAnswer) offerMediaUndo(app, question, entry, "replaced");
+        if (question && entry) offerMediaUndo(app, question, entry, "replaced", slot);
         return null;
       } catch {
         return refusalText(t, app.lang, { reason: "no-space", type, name: file.name, bytes: result.blob.size, mime: result.entry.mime }, usedBytes);
@@ -109,7 +112,7 @@ export function questionFiles(app: App, questionId: string, slot: FileSlot = "qu
       const now = app.current?.quiz;
       if (!now || !app.change(editQuestion(now, questionId, isAnswer ? { answerMedia: null } : { media: null }))) return;
       redraw();
-      if (question && entry && !isAnswer) offerMediaUndo(app, question, entry, "removed");
+      if (question && entry) offerMediaUndo(app, question, entry, "removed", slot);
     },
     canCut: type !== null && canCut(type),
     needsCut: (file) => type !== null && mustCut(type, file, mimeOf(file.type, file.name)),

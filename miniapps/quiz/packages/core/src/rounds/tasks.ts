@@ -2,6 +2,7 @@
 // and the host gives the points — nothing is revealed. `laugh` ("Make the quizmaster laugh"): every
 // team tells a joke, the funniest two win the round's first and second prize. `task` (the free game):
 // whatever the host puts on the screen — draw, build, sing — for up to the round's points.
+import { ROUND_VALUE_MAX, ROUND_VALUE_MIN } from "../limits.ts";
 import type { Round } from "../model.ts";
 import type { PlayerScreen, RoundKind } from "./round-kind.ts";
 import { STANDARD_SCREENS } from "./standard.ts";
@@ -12,9 +13,6 @@ export const TASK_SCREENS = {
   tally: "tally",
 } as const;
 
-/** Lowest and highest prize or points of a round without answers. */
-export const TASK_VALUE_MIN = 0;
-export const TASK_VALUE_MAX = 20;
 /** What a new "Make the quizmaster laugh" round gives the funniest team and the runner-up. */
 export const LAUGH_FIRST_DEFAULT = 3;
 export const LAUGH_SECOND_DEFAULT = 1;
@@ -38,14 +36,14 @@ export function taskScreens(round: Round): readonly PlayerScreen[] {
 /** A whole number 0–20 kept in a round's own data, or the fallback. */
 function valueOf(round: Round, key: string, fallback: number): number {
   const value = round.data?.[key];
-  return typeof value === "number" && Number.isInteger(value) && value >= TASK_VALUE_MIN && value <= TASK_VALUE_MAX ? value : fallback;
+  return typeof value === "number" && Number.isInteger(value) && value >= ROUND_VALUE_MIN && value <= ROUND_VALUE_MAX ? value : fallback;
 }
 
 /** Whether every value a kind keeps is absent or a whole number 0–20. */
 function areValid(data: Readonly<Record<string, unknown>> | undefined, keys: readonly string[]): boolean {
   return keys.every((key) => {
     const value = data?.[key];
-    return value === undefined || (typeof value === "number" && Number.isInteger(value) && value >= TASK_VALUE_MIN && value <= TASK_VALUE_MAX);
+    return value === undefined || (typeof value === "number" && Number.isInteger(value) && value >= ROUND_VALUE_MIN && value <= ROUND_VALUE_MAX);
   });
 }
 

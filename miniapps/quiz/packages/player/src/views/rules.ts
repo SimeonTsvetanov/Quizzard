@@ -1,4 +1,4 @@
-import { type Round, roundMaxPoints } from "@simeonts/quizzard-quiz-core/play";
+import { type Round, effectiveSeconds, roundMaxPoints } from "@simeonts/quizzard-quiz-core/play";
 import { h } from "../render/h.ts";
 import { pointsText } from "../render/slide.ts";
 import type { PlayEnv, ViewEntry } from "./context.ts";
@@ -10,7 +10,7 @@ function chips(env: PlayEnv, round: Round): HTMLElement {
   const isSpecial = roundStages.has(round.kind);
   const points = isSpecial ? env.t("special.allPoints", { points: env.labels.points(roundMaxPoints(round)) }) : pointsText(round.defaults.points, env.labels);
   // A round of one screen (a task) has its time, not "1 question" and a time "per question".
-  if (isSpecial && round.questions.length === 1) return h("div", { class: "qp-chips" }, chip("time", env.labels.seconds(round.defaults.seconds)), chip("points", points, "gold"));
+  if (isSpecial && round.questions.length === 1) return h("div", { class: "qp-chips" }, chip("time", env.labels.seconds(round.questions[0] ? effectiveSeconds(round, round.questions[0]) : round.defaults.seconds)), chip("points", points, "gold"));
   return h("div", { class: "qp-chips" },
     chip("scores", env.t("title.questions", { count: round.questions.length })),
     chip("time", env.t("round.each", { time: env.labels.seconds(round.defaults.seconds) })),

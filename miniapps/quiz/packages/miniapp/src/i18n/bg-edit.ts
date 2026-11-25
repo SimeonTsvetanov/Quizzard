@@ -120,7 +120,7 @@ export const bgEdit = {
   media: {
     label: { image: "Снимка", audio: "Аудио", video: "Видео" },
     choose: { image: "Избери снимка", audio: "Избери аудио файл", video: "Избери видео" },
-    accepts: { image: "JPEG, PNG, WebP или GIF · до {{limit}}", audio: "MP3 или M4A · до {{limit}}", video: "MP4 (H.264 + AAC) · до {{limit}}" },
+    accepts: { image: "JPEG, PNG, WebP или GIF · до {{limit}} (по-голяма снимка се смалява)", audio: "MP3 или M4A · до {{limit}}", video: "MP4 (H.264 + AAC) · до {{limit}}" },
     formats: { image: "Снимката трябва да е JPEG, PNG, WebP или GIF.", audio: "Аудиото трябва да е MP3 или M4A (AAC).", video: "Видеото трябва да е MP4 с картина H.264 и звук AAC." },
     drop: "или пуснете файл тук, или го поставете",
     answerLabel: "Картина към отговора (по желание)",

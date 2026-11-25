@@ -52,6 +52,9 @@ export function promptSize(prompt: string): string {
   return PROMPT_STEPS.find(([max]) => prompt.length <= max)?.[1] ?? "xs";
 }
 
+/** The question kind whose slide part draws the picture kept with an answer. */
+const ANSWER_PICTURE_KIND = "picture";
+
 /** Text lengths at which the revealed answer steps down a size. */
 const ANSWER_STEPS: readonly (readonly [number, string])[] = [[22, "s"], [48, "m"]];
 
@@ -116,8 +119,9 @@ function topLine(input: SlideInput): HTMLElement {
 function parts({ question, ui, round }: SlideInput, view: SlideView, special: RoundSlideView | null): (HTMLElement | null)[] {
   // At the reveal a picture kept for the answer is shown in place of the question's own file — drawn
   // by the picture kind, whatever the question's kind is (Moni 2026-11-25).
-  const withAnswer = view.reveal && question.answerMedia !== undefined;
-  const media = withAnswer ? (ui.kinds.get("picture")?.parts?.slide({ ...question, media: question.answerMedia }, view) ?? null) : (ui.kinds.get(question.kind)?.parts?.slide(question, view) ?? null);
+  // Only a picture (a file from elsewhere may point at a clip); a thumbnail without `entryOf` trusts the quiz.
+  const picture = view.reveal && question.answerMedia && (view.entryOf?.(question.answerMedia.id)?.type ?? "image") === "image" ? question.answerMedia : undefined;
+  const media = picture ? (ui.kinds.get(ANSWER_PICTURE_KIND)?.parts?.slide({ ...question, media: picture }, view) ?? null) : (ui.kinds.get(question.kind)?.parts?.slide(question, view) ?? null);
   const own = special ? ui.rounds?.get(round.kind)?.parts.answer : undefined;
   const answer = own && special ? own(question, special) : (ui.answers.get(question.answer.type)?.parts?.slide(question.answer, view) ?? null);
   return [media === null ? null : h("div", { class: "quiz-slide-media" }, media), answer === null ? null : h("div", { class: "quiz-slide-answer" }, answer)];

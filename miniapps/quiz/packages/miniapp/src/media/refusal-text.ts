@@ -1,6 +1,6 @@
 // The words of a refused file (AC5): which file, what it is — its format or its size — and what is
 // allowed. Pure, so every refusal's wording is unit tested.
-import { MEDIA_RULES, QUIZ_MEDIA_MAX_BYTES, type MediaType } from "@simeonts/quizzard-quiz-core";
+import { MEDIA_RULES, PICTURE_SOURCE_MAX_BYTES, QUIZ_MEDIA_MAX_BYTES, type MediaType } from "@simeonts/quizzard-quiz-core";
 import type { Lang } from "../contract.ts";
 import { bytesText } from "../format.ts";
 import type { Translate } from "../i18n/translate.ts";
@@ -41,7 +41,8 @@ export function refusalText(t: Translate, lang: Lang, refused: Refused, usedByte
   const texts: Readonly<Record<Refused["reason"], () => string>> = {
     // iPhones save photos as HEIC: the message says what to do about it.
     format: () => (/hei[cf]/i.test(`${refused.mime} ${format}`) ? t("media.refused.heic", { name, accepted }) : t(format === "" ? "media.refused.unknown" : "media.refused.format", { name, format, accepted })),
-    "too-big": () => t("media.refused.tooBig", { name, size, limit: bytesText(MEDIA_RULES[type].maxBytes, lang) }),
+    // A picture is refused for its size at two places: as picked (past what is opened to be scaled down) and as stored.
+    "too-big": () => t("media.refused.tooBig", { name, size, limit: bytesText(type === "image" && refused.bytes > PICTURE_SOURCE_MAX_BYTES ? PICTURE_SOURCE_MAX_BYTES : MEDIA_RULES[type].maxBytes, lang) }),
     "quiz-full": () => t("media.refused.quizFull", { name, size, used: bytesText(usedBytes, lang), limit: bytesText(QUIZ_MEDIA_MAX_BYTES, lang) }),
     unplayable: () => t("media.refused.unplayable", { name, accepted }),
     "no-space": () => t("media.refused.noSpace", { name, size }),

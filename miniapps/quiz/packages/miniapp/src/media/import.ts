@@ -2,7 +2,7 @@
 // file). In order: the format and the limits (core `checkMedia`) — a refusal says which and nothing
 // is read; then the file is prepared (a picture scaled and saved again, a clip tried in the browser);
 // then the room on the device. Only a file that passed everything is handed back to be stored.
-import { MEDIA_RULES, type MediaCheck, type MediaEntry, type MediaType, QUIZ_MEDIA_MAX_BYTES, checkMedia, mimeOf } from "@simeonts/quizzard-quiz-core";
+import { MEDIA_RULES, type MediaCheck, type MediaEntry, type MediaType, PICTURE_SOURCE_MAX_BYTES, QUIZ_MEDIA_MAX_BYTES, checkMedia, mimeOf } from "@simeonts/quizzard-quiz-core";
 import { prepareClip } from "./clip.ts";
 import { preparePicture, type Prepared } from "./picture.ts";
 
@@ -31,12 +31,6 @@ const PREPARE: Readonly<Record<MediaType, (file: Blob, mime: string) => Promise<
   audio: (file, mime) => prepareClip(file, mime, "audio"),
   video: (file, mime) => prepareClip(file, mime, "video"),
 };
-
-/**
- * The largest picture taken in to be scaled down, in bytes (60 MB): a photo is stored at 1,920 px,
- * so its limit is checked on what is stored, not on what was picked (Moni 2026-11-25).
- */
-export const PICTURE_SOURCE_MAX_BYTES = 60 * 1024 * 1024;
 
 /** What {@link importMedia} needs besides the file. */
 export interface ImportOptions {

@@ -1,6 +1,6 @@
 // What a special round (SPEC §10) shows in its settings instead of the points fields: its rule in a
 // line, and — for a Safe — the bonus for the whole code, a stepper 0–20 with what it adds up to.
-import { type Round, SAFE_BONUS_MAX, SAFE_BONUS_MIN, roundMaxPoints, safeBonus, setRoundBonus, setRoundValue, shapeOf } from "@simeonts/quizzard-quiz-core";
+import { ROUND_VALUE_MAX, ROUND_VALUE_MIN, type Round, SAFE_BONUS_MAX, SAFE_BONUS_MIN, roundMaxPoints, safeBonus, setRoundBonus, setRoundValue, shapeOf } from "@simeonts/quizzard-quiz-core";
 import type { App } from "../app/state.ts";
 import { iconButton } from "../dom/controls.ts";
 import { h } from "../dom/h.ts";
@@ -41,15 +41,21 @@ function bonusField(app: App, round: Round, onChange: () => void): HTMLElement {
 function valueField(app: App, round: Round, value: { readonly key: string; readonly label: TextKey }, onChange: () => void): HTMLElement {
   const { t } = app;
   const label = t(value.label);
-  const read = (from: Round): number => (typeof from.data?.[value.key] === "number" ? from.data[value.key] as number : 0);
+  // A round whose data lacks the value plays with the kind's own default (core): the field shows that, not 0.
+  const fallback = shapeOf(round, app.env.registries)?.defaultData?.()[value.key];
+  const read = (from: Round): number => {
+    const kept = from.data?.[value.key];
+    if (typeof kept === "number") return kept;
+    return typeof fallback === "number" ? fallback : 0;
+  };
   let current = read(round);
   const field = h("input", { type: "text", inputmode: "numeric", class: "quiz-input quiz-number", maxlength: "2", autocomplete: "off", enterkeyhint: "done", "aria-label": label, "data-round-value": value.key });
   const less = iconButton("minus", `${label} −1`, { class: "quiz-step", "data-round-value-less": value.key });
   const more = iconButton("plus", `${label} +1`, { class: "quiz-step", "data-round-value-more": value.key });
   const show = (): void => {
     field.value = String(current);
-    less.disabled = current <= SAFE_BONUS_MIN;
-    more.disabled = current >= SAFE_BONUS_MAX;
+    less.disabled = current <= ROUND_VALUE_MIN;
+    more.disabled = current >= ROUND_VALUE_MAX;
   };
   const commit = (typed: number): void => {
     const quiz = app.current?.quiz;

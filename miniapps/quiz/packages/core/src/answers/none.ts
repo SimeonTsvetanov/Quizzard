@@ -12,5 +12,6 @@ export const noneAnswer: AnswerType = {
   schema,
   defaults: () => ({ type: "none" }),
   isComplete: () => true,
+  reveals: false,
   revealText: () => "",
 };

@@ -29,6 +29,9 @@ export const LIST_ITEMS_MAX = 60;
 /** Lowest and highest bonus of a Safe round, and the bonus a new one starts with (SPEC §10). */
 export const SAFE_BONUS_MIN = 0;
 export const SAFE_BONUS_MAX = 20;
+/** Lowest and highest of any whole number a round kind keeps in the round's own data (a bonus, a prize, the most points). */
+export const ROUND_VALUE_MIN = SAFE_BONUS_MIN;
+export const ROUND_VALUE_MAX = SAFE_BONUS_MAX;
 export const SAFE_BONUS_DEFAULT = 3;
 
 /** Most rounds in one quiz. */
@@ -60,6 +63,11 @@ export const DEFAULT_POINTS = 1;
 
 /** Largest picture as picked, in bytes (SPEC §5: 15 MB). */
 export const PICTURE_MAX_BYTES = 15 * MB;
+/**
+ * Largest picture taken in to be scaled down, in bytes (60 MB): a photo is stored at 1,920 px, so its
+ * limit is checked on what is stored, not on what was picked.
+ */
+export const PICTURE_SOURCE_MAX_BYTES = 60 * MB;
 /** Largest audio file, in bytes (SPEC §5: 15 MB). */
 export const AUDIO_MAX_BYTES = 15 * MB;
 /** Largest video file, in bytes (SPEC §5: 50 MB). */

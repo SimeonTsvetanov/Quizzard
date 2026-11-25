@@ -11,7 +11,8 @@ import { viewRoot } from "./parts.ts";
 export function hostAnswer({ env, round, question }: ViewContext): HostAnswer | null {
   if (!round || !question) return null;
   // A task has no answer to keep from the room: the card says what the host does instead.
-  const text = question.answer.type === "none" ? env.t("task.host") : (env.parts.answers.get(question.answer.type)?.text(question.answer, env.labels) ?? "");
+  const type = env.parts.answers.get(question.answer.type);
+  const text = type?.isTask === true ? env.t("task.host") : (type?.text(question.answer, env.labels) ?? "");
   return { text, explanation: question.explanation?.trim() ?? "", points: pointsText(effectivePoints(round, question), env.labels), note: question.note?.trim() ?? "" };
 }
 

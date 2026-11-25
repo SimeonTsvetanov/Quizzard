@@ -72,12 +72,15 @@ export function addRoundOfKind(quiz: Quiz, input: NewRound, env: Env = defaultEn
  * @param env - gives the registries
  */
 export function setRoundValue(quiz: Quiz, roundId: string, key: string, value: number, env: Env = defaultEnv): Quiz {
-  const whole = limits.clamp(Math.round(value), limits.SAFE_BONUS_MIN, limits.SAFE_BONUS_MAX);
+  const kind = env.registries.rounds.get(quiz.rounds.find((round) => round.id === roundId)?.kind ?? "");
+  // Only a value the kind itself keeps: another key would make the round's data fail the kind's own check.
+  const shape = kind?.shape;
+  if (!kind || shape?.defaultData?.()[key] === undefined) return quiz;
+  const whole = limits.clamp(Math.round(value), limits.ROUND_VALUE_MIN, limits.ROUND_VALUE_MAX);
   return changeRound(quiz, roundId, (round) => {
     if (round.data?.[key] === whole) return round;
     const next: Round = { ...round, data: { ...round.data, [key]: whole } };
-    const kind = env.registries.rounds.get(round.kind);
-    if (kind?.shape?.pointsFollowRound !== true || !kind.maxPoints) return next;
+    if (shape.pointsFollowRound !== true || !kind.maxPoints) return next;
     const points = { value: kind.maxPoints(next) };
     return { ...next, questions: next.questions.map((question) => ({ ...question, points })) };
   });
