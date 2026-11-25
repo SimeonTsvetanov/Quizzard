@@ -2,7 +2,7 @@
 // shape by the creator, filled in, and played to the end with their pictures and the Safe's bonus.
 import { readFileSync } from "node:fs";
 import { expect, test, type Page } from "@playwright/test";
-import { type SeedFile, openQuiz, play, pubNight, root, stage, view } from "./support/quiz-ux.ts";
+import { type SeedFile, openQuiz, play, pubNight, root, stage, view, unfinishedNight } from "./support/quiz-ux.ts";
 
 const SPECIAL: SeedFile = JSON.parse(readFileSync(new URL("../../miniapps/quiz/packages/core/test/fixtures/v1/special-rounds.quiz.json", import.meta.url), "utf8")) as SeedFile;
 
@@ -108,4 +108,37 @@ test("SR4: the vault turns, fills and opens on the Safe's answers", async ({ pag
   await expect(vault).toHaveAttribute("data-door", "opening");
   await expect(vault.locator(".quiz-vault-window text")).toHaveText(["4", "7", "1", "9", "2"]);
   await expect(stage(page).locator(".quiz-digit-value")).toHaveText("2");
+});
+
+// Moni 2026-11-25: "Make the quizmaster laugh" asks for no question — the round is ready when it is added.
+test("a laugh round has no questions: its screen with the built-in explanation, one optional text, never unfinished", async ({ page }) => {
+  await openQuiz(page, pubNight());
+  await root(page).locator("[data-add-round]").click();
+  await page.locator("[data-pick-laugh]").click();
+  const pane = root(page).locator(".quiz-pane--round");
+  await expect(pane.locator("[data-round-name]")).toHaveValue("Make the quizmaster laugh");
+  // No question list, no "Add question", no "not finished" anywhere.
+  await expect(pane.locator("[data-question-list]")).toHaveCount(0);
+  await expect(pane.locator("[data-unfinished-count]")).toHaveCount(0);
+  await expect(root(page).locator("[data-card-unfinished]")).toHaveCount(0);
+  const panel = pane.locator('[data-round-task="laugh"]');
+  await expect(panel).toContainText("What the teams see");
+  await expect(panel.locator(".quiz-slide-prompt")).toContainText("Think up a joke and make the quizmaster laugh!");
+  // Time and the two prizes are in the settings, which are open.
+  await expect(pane.locator("[data-round-settings]")).toHaveAttribute("open", "");
+  await expect(pane.locator('[data-round-value="first"]')).toHaveValue("3");
+  // The optional text is shown under the explanation.
+  await panel.locator("[data-round-task-text]").fill("The joke must be about the birthday girl");
+  await expect(panel.locator(".quiz-slide-prompt")).toContainText("birthday girl");
+  await expect(panel.locator(".quiz-slide-prompt")).toContainText("Think up a joke");
+  if (process.env["LOOK"]) await page.screenshot({ path: `${process.env["LOOK"]}/laugh-round.png`, fullPage: true });
+});
+
+test("an unfinished question's card carries the red mark; a finished one does not", async ({ page }) => {
+  await openQuiz(page, unfinishedNight());
+  await root(page).locator(".quiz-round-open").first().click();
+  const cards = root(page).locator(".quiz-pane--round [data-question-list] > li");
+  await expect(cards.nth(1)).toHaveAttribute("data-card-unfinished", "");
+  await expect(cards.nth(0)).not.toHaveAttribute("data-card-unfinished");
+  if (process.env["LOOK"]) await page.screenshot({ path: `${process.env["LOOK"]}/unfinished.png` });
 });

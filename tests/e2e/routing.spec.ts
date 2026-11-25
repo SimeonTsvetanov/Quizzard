@@ -179,7 +179,7 @@ test("title names the mini-app in the UI language; setTitle replaces the name; B
   await expect(page).toHaveTitle(`Probe step 1 — ${app.name}`);
   await page.goto("./?lang=bg#/probe");
   await expect(page).toHaveTitle(`Проба — ${app.name}`);
-  await expect(page.getByRole("button", { name: "Към началото" })).toBeVisible();
+  await expect(page.getByRole("banner").getByRole("button", { name: "Назад", exact: true })).toBeVisible();
   await expect(page.locator("[data-outlet]")).toHaveAttribute("aria-label", "Проба");
 });
 
