@@ -404,6 +404,28 @@ test("presenter mode in the app: the audience window is the app's own stage, fed
   await expect(panel(page)).toHaveCount(0);
 });
 
+// Moni 2026-11-25: "the quiz's settings WHILE IT IS PLAYED must have BG / EN".
+test("the menu changes the language of the game: the stage, the bar and the menu follow, the game stays where it is and a reload keeps the language", async ({ page }) => {
+  await play(page);
+  await next(page, 3);
+  const before = await page.evaluate(() => document.querySelector('.qp-stage[data-stage="live"] .qp-view')?.getAttribute("data-view"));
+  await page.keyboard.press("KeyM");
+  await expect(page.locator('[data-dialog="menu"] [data-lang="en"]')).toHaveAttribute("aria-pressed", "true");
+  await page.locator('[data-dialog="menu"] [data-lang="bg"]').click();
+  await expect(control(page, "next")).toHaveAccessibleName(/Напред/);
+  await expect(page.locator(".qp-player")).toHaveAttribute("lang", "bg");
+  expect(await page.evaluate(() => document.querySelector('.qp-stage[data-stage="live"] .qp-view')?.getAttribute("data-view"))).toBe(before);
+  await page.keyboard.press("KeyM");
+  await expect(page.locator('[data-dialog="menu"] .qp-dialog-title')).toHaveText("Меню");
+  await expect(page.locator('[data-dialog="menu"] [data-lang="bg"]')).toHaveAttribute("aria-pressed", "true");
+  await page.keyboard.press("Escape");
+  await page.reload();
+  await expect(control(page, "next")).toHaveAccessibleName(/Напред/);
+  await page.keyboard.press("KeyM");
+  await page.locator('[data-dialog="menu"] [data-lang="en"]').click();
+  await expect(control(page, "next")).toHaveAccessibleName(/Next/);
+});
+
 for (const colorScheme of ["light", "dark"] as const) {
 test(`AC11: the stage, the menu and the host panel have no serious accessibility problem (${colorScheme})`, async ({ page, context }) => {
   test.slow(); // fourteen axe runs: about 20 s alone, past 30 s when the machine is busy with other tests

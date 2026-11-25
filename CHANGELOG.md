@@ -4,6 +4,10 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.22.3] - 2026-11-25
+### Added
+- **Quiz creator, while playing — Language in the menu:** English or Български for the stage, the buttons and the menu, whatever language the quiz was written in. The game stays where it is, and the choice is remembered for that quiz.
+
 ## [0.22.2] - 2026-11-25
 ### Fixed
 - **"More free tools"** (footer and the 404 page) opened a GitHub search that found none of the apps. It now opens Quizzard's own page with Quizzard, TeamSync, GG Counter and PDF → PNG.

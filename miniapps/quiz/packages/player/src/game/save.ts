@@ -23,6 +23,8 @@ export interface SavedGame {
   readonly auto: boolean;
   /** The time-up sound is on; left out by games saved before it existed (= off). */
   readonly sound?: boolean;
+  /** The language the host picked; left out = the quiz's own. */
+  readonly lang?: string;
   readonly timer: Timer;
 }
 
@@ -43,7 +45,7 @@ export function restingTimer(timer: Timer): Timer {
  */
 export function toSaved(state: GameState): SavedGame {
   const { index, step, teams, nextTeam, scores, bonus, winner, auto } = state;
-  return { v: SAVE_VERSION, index, step, teams, nextTeam, scores, bonus, winner, auto, ...(state.sound === true ? { sound: true } : {}), timer: restingTimer(state.timer) };
+  return { v: SAVE_VERSION, index, step, teams, nextTeam, scores, bonus, winner, auto, ...(state.sound === true ? { sound: true } : {}), ...(state.lang === undefined ? {} : { lang: state.lang }), timer: restingTimer(state.timer) };
 }
 
 function isRecord(value: unknown): value is Readonly<Record<string, unknown>> {
@@ -112,6 +114,7 @@ export function restore(fresh: GameState, saved: unknown): GameState {
     winner: typeof winner === "string" && teamIds.has(winner) ? winner : null,
     auto: saved["auto"] !== false,
     ...(saved["sound"] === true ? { sound: true } : {}),
+    ...(typeof saved["lang"] === "string" ? { lang: saved["lang"] } : {}),
     timer: readTimer(saved["timer"], freshTimer(screen?.seconds ?? 0)),
   };
 }

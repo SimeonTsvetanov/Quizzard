@@ -176,6 +176,7 @@ export const en = {
   menu: {
     title: "Menu",
     jump: "Go to",
+    language: "Language",
     start: "Start",
     end: "Final result",
     auto: "Questions run by themselves",

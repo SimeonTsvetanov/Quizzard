@@ -56,12 +56,20 @@ export interface PlayerOptions {
   readonly notify?: (message: string) => void;
   /** Where the logo on the stage leads (the exported page); left out = no link (inside the app, ui/brand.ts). */
   readonly homeUrl?: string;
+  /** Called when the host picked another language: play.ts starts the player again in it. */
+  readonly onLang?: (lang: string) => void;
+  /** No "Continuing your last game" note: the player only started again in another language. */
+  readonly isRestart?: boolean;
 }
 
 /** A running player. */
 export interface Player {
   getState(): GameState;
   dispatch(action: GameAction): void;
+  /** Whether the audience window is open. */
+  isPresenting(): boolean;
+  /** Opens the audience window (inside a click: a browser opens a window only then). */
+  present(): void;
   /** Saves the game, closes the audience window and removes every listener and timer. */
   destroy(): void;
 }
@@ -130,6 +138,7 @@ function move(session: Session, action: GameAction): void {
   if (isMove || performance.now() - session.lastSave >= SAVE_EVERY_MS) save(session);
   session.presenter?.channel.send({ kind: "state", state: next });
   draw(session);
+  if (next.lang !== before.lang && next.lang !== undefined) session.options.onLang?.(next.lang);
 }
 
 /** Puts a whole game back (Undo of "Start the game again"): storage, the audience window and the screen follow. */
@@ -243,7 +252,8 @@ function createSession(options: PlayerOptions): Session {
     options, t, env, commands, undo,
     stage: createStage(env, { canEdit: true, isLive: true }),
     bar: createBar(t, commands),
-    state: startAt(restore(fresh, readSaved(options.storage)), options.startAt),
+    // "Play from here" belongs to the first start only.
+    state: startAt(restore(fresh, readSaved(options.storage)), options.isRestart === true ? undefined : options.startAt),
     overlay: null,
     presenter: null,
     lastSave: performance.now(),
@@ -255,7 +265,7 @@ function createSession(options: PlayerOptions): Session {
  * Starts the host's player in an element.
  * @param options - the element, the quiz and the page's services
  */
-export function createPlayer(options: PlayerOptions): Player {
+export function startPlayer(options: PlayerOptions): Player {
   const { root } = options;
   const session = createSession(options);
   const controller = new AbortController();
@@ -279,10 +289,12 @@ export function createPlayer(options: PlayerOptions): Player {
     session.presenter?.channel.send({ kind: "bye" });
   }, { signal: controller.signal });
   draw(session);
-  offerRestart({ state: session.state, saved: readSaved(options.storage), undo: session.undo, t: session.t, dispatch: session.commands.dispatch });
+  if (options.isRestart !== true) offerRestart({ state: session.state, saved: readSaved(options.storage), undo: session.undo, t: session.t, dispatch: session.commands.dispatch });
   return {
     getState: () => session.state,
     dispatch: session.commands.dispatch,
+    isPresenting: () => session.presenter !== null,
+    present: () => { if (!session.presenter) startPresenting(session); },
     destroy() {
       if (controller.signal.aborted) return;
       save(session);

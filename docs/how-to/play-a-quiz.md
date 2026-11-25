@@ -52,6 +52,7 @@ On a phone the bar keeps **Back to the quiz**, **Back**, the timer, the main but
 - **Go to** jumps to any screen. In a long quiz only the round you are in shows its screens; select the number after a round's name to see the others.
 - **Questions run by themselves** starts the timer with each question and moves on when time is up. Switch it off to do both yourself.
 - **Sound when time is up** plays a soft sound when a question's time runs out. It is off until you switch it on.
+- **Language** switches the stage, the buttons and the menu between **English** and **Български**. The questions stay as you wrote them. The game stays where it is, and the choice is remembered for that quiz.
 - **Break · 5 min**, **Break · 10 min** and **Break · 15 min** show a countdown on the stage. The same three buttons are on the score screen after every round. During a break the stage also shows the standings so far and the answers of the round just played.
 - **Start the game again** clears every team's points and goes back to the first screen. It asks first, keeps the team names, and **Undo** brings the game back for a few seconds.
 

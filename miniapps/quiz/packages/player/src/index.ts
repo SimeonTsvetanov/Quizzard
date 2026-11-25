@@ -11,4 +11,5 @@ export * from "./game/scores.ts";
 export * from "./game/state.ts";
 export * from "./game/step.ts";
 export * from "./player.ts";
+export { createPlayer } from "./play.ts";
 export * from "./windows.ts";

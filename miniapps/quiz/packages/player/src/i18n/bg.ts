@@ -178,6 +178,7 @@ export const bg: Messages = {
   menu: {
     title: "Меню",
     jump: "Отиди на",
+    language: "Език",
     start: "Начало",
     end: "Крайно класиране",
     auto: "Въпросите вървят сами",

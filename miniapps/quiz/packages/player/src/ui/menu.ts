@@ -58,6 +58,15 @@ function soundSwitch({ env, state, commands }: MenuOptions): HTMLElement {
   return h("div", { class: "qp-menu-option" }, h("label", { class: "qp-switch" }, box, h("span", {}, env.t("menu.sound"))), h("p", { class: "qp-menu-note" }, env.t("menu.soundHint")));
 }
 
+/** The language of the stage: the quiz's own unless the host picks the other one. */
+function languageSection({ env, commands, close }: MenuOptions): HTMLElement {
+  const pick = (lang: string, name: string): HTMLButtonElement => menuButton(null, name, () => {
+    close();
+    commands.dispatch({ type: "setLang", lang });
+  }, { "data-lang": lang, lang, "aria-pressed": String(env.lang === lang) });
+  return section(env.t("menu.language"), h("div", { class: "qp-menu-tools" }, pick("en", "English"), pick("bg", "Български")));
+}
+
 /** "Start the game again", in a part of its own at the end: it asks before any points are cleared (ui/guards.ts). */
 function restartSection({ env, commands, close }: MenuOptions): HTMLElement {
   const button = menuButton("reset", env.t("menu.restart"), () => {
@@ -88,5 +97,5 @@ export function menuContent(options: MenuOptions): readonly HTMLElement[] {
     menuButton("fullscreen", env.t("control.fullscreen"), then(commands.toggleFullscreen), { "data-menu": "fullscreen" }));
   if (commands.exit) tools.append(menuButton("x", env.t("control.exit"), then(commands.exit), { "data-menu": "exit" }));
   const keys = h("dl", { class: "qp-keys" }, ...KEY_LINES.flatMap(([key, label]) => [h("dt", {}, h("kbd", {}, key)), h("dd", {}, env.t(label))]));
-  return [section(env.t("menu.jump"), jumpGrid(options)), autoSwitch(options), soundSwitch(options), pauses(options), tools, section(env.t("menu.keys"), keys), restartSection(options)];
+  return [section(env.t("menu.jump"), jumpGrid(options)), autoSwitch(options), soundSwitch(options), pauses(options), tools, languageSection(options), section(env.t("menu.keys"), keys), restartSection(options)];
 }

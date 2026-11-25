@@ -143,6 +143,16 @@ describe("the time-up sound and the screen that stays awake", () => {
     expect(step(on, { type: "setSound", value: false }).sound).toBe(false);
   });
 
+  it("the language the host picked is part of the saved game; a game without one keeps the old shape", async () => {
+    const { restore, toSaved } = await import("../src/game/save.ts");
+    const fresh = newGame();
+    expect("lang" in toSaved(fresh)).toBe(false);
+    const bulgarian = step(fresh, { type: "setLang", lang: "bg" });
+    expect(toSaved(bulgarian).lang).toBe("bg");
+    expect(restore(fresh, JSON.parse(JSON.stringify(toSaved(bulgarian)))).lang).toBe("bg");
+    expect(step(bulgarian, { type: "setLang", lang: "bg" })).toBe(bulgarian);
+  });
+
   it("the wake lock is asked for at once, again when the page is back on show, and let go at the end", async () => {
     const { keepAwake } = await import("../src/ui/wake.ts");
     const log = { requests: 0, releases: 0 };

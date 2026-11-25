@@ -10,7 +10,8 @@ import { EXPORT_QUIZ_ID, readEmbeddedQuiz } from "@simeonts/quizzard-quiz-core/p
 import { createAudience } from "./audience.ts";
 import { createTranslator, playerLang } from "./i18n/translate.ts";
 import { embeddedMedia } from "./media.ts";
-import { type GameStorage, createPlayer } from "./player.ts";
+import { createPlayer } from "./play.ts";
+import type { GameStorage } from "./player.ts";
 import { h } from "./render/h.ts";
 import { openAudienceWindow, openerTransport } from "./windows.ts";
 
