@@ -56,7 +56,7 @@ a question asks for. Each question can still be text, a picture, audio or video.
 1. In the round, select **Add question**. The editor opens.
 2. Under **Kind of question**, select **Text**, **Picture**, **Audio** or **Video**.
 3. Enter the question in **Question**.
-4. For a picture, audio or video question, select **Choose a picture**, **Choose an audio file** or **Choose a video**. On a computer you can also drop a file on the area or paste a picture.
+4. For a picture, audio or video question, select **Choose a picture**, **Choose an audio file** or **Choose a video**. On a computer you can also drop a file on the area or paste a picture. An audio or video file that is longer than the time of its question plays from its start and stops when that time has played; with the answer it plays in full.
 5. Under **How it is answered**, select **Open answer**, **Multiple choice** or **True / false**, and enter the answer. For **Multiple choice**, enter 2 to 8 options and tick every correct one in the **Correct** column.
 6. Optional: change **Time** and **Points** for this question, and enter an **Explanation shown with the answer (optional)** and a **Host note (optional)**. The host note is for you alone and is never shown on the stage.
 7. Select **Add another** to go straight to the next question, or **Done** to go back to the round.

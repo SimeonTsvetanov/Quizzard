@@ -115,13 +115,20 @@ function media(state: GameState, command: PlaybackCommand): GameState {
   return { ...state, media: moved, timer };
 }
 
-/** The clip after some time; one whose window never said "ended" is taken as ended a moment after its length. */
+/**
+ * The clip after some time. One whose window never said "ended" is taken as ended a moment after its
+ * length; and a clip longer than the question's time ends when that time has played (Moni 2026-11-25:
+ * a clip nobody cut starts at its start and stops at the question's limit — 30 s set, 30 s played).
+ */
 function tickMedia(state: GameState, elapsed: number): GameState {
-  const clipMs = state.screens[state.index]?.clipMs ?? 0;
+  const screen = state.screens[state.index];
+  const clipMs = screen?.clipMs ?? 0;
+  const limitMs = (screen?.seconds ?? 0) * 1000;
   const moved = playbackTick(state.media, elapsed);
   if (moved === state.media) return state;
   const ticked = { ...state, media: moved };
-  return clipMs > 0 && moved.ms >= clipMs + CLIP_END_GRACE_MS ? media(ticked, "ended") : ticked;
+  const isOver = (clipMs > 0 && moved.ms >= clipMs + CLIP_END_GRACE_MS) || (limitMs > 0 && moved.ms >= limitMs);
+  return isOver ? media(ticked, "ended") : ticked;
 }
 
 function tick(state: GameState, ms: number, kinds: Kinds): GameState {

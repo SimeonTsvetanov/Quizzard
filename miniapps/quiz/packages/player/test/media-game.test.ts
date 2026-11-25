@@ -103,9 +103,21 @@ describe("clips and the timer", () => {
     const over = run(late, tick(1));
     expect(over.media.status).toBe("ended");
     expect(over.timer.status).toBe("running");
-    // A clip of unknown length only ends when its window says so.
-    const unknown = run(onQuestion(4), media("play"), tick(600_000));
-    expect(unknown.media).toMatchObject({ status: "playing", ms: 600_000 });
+    // A clip of unknown length ends when its window says so — or when the question's time has played (below).
+    const unknown = run(onQuestion(4), media("play"), tick(9_000));
+    expect(unknown.media).toMatchObject({ status: "playing", ms: 9_000 });
+  });
+
+  it("a clip longer than the question's time stops when that time has played, and plays again from its start", () => {
+    // Question 4: a video of unknown length on a 10 s question.
+    const almost = run(onQuestion(4), media("play"), tick(9_999));
+    expect(almost.media.status).toBe("playing");
+    const over = run(almost, tick(1));
+    expect(over.media.status).toBe("ended");
+    expect(over.timer.status).toBe("running"); // the timer that waited for the clip starts, as at a clip's own end
+    expect(run(over, media("toggle")).media).toMatchObject({ status: "playing", ms: 0 });
+    // A clip shorter than the time is not touched: the 4 s song ends at its own end.
+    expect(run(onQuestion(3), media("play"), tick(3_999)).media.status).toBe("playing");
   });
 
   it("a video zooms like a picture and plays on: the clip, its timer and the zoom do not touch each other; Escape only leaves", () => {

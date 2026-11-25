@@ -46,7 +46,10 @@ export function createMediaCard(env: PlayEnv, commands: Commands): PanelCard {
       zoom.title = `${t("media.zoom")} (Z)`;
       setFace(play, isPlaying ? "pause" : "play", t(isPlaying ? "media.pause" : "media.play"));
       zoom.setAttribute("aria-pressed", String(state.media.zoom));
-      const total = (screen?.clipMs ?? 0) / 1000;
+      // A clip longer than the question's time stops at that time (game/step.ts): that is its length here.
+      const whole = (screen?.clipMs ?? 0) / 1000;
+      const limit = screen?.seconds ?? 0;
+      const total = limit > 0 && (whole === 0 || whole > limit) ? limit : whole;
       time.textContent = total > 0 ? `${clockText(state.media.ms / 1000)} / ${clockText(total)}` : clockText(state.media.ms / 1000);
       time.setAttribute("data-status", state.media.status);
     },

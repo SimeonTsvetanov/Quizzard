@@ -4,6 +4,10 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.22.5] - 2026-11-25
+### Changed
+- **Quiz creator, while playing — a long clip stops at the question's time.** A video or sound that is longer than the time set for its question plays from its start and stops when that time has played (30 seconds set, 30 seconds played). Play starts it again from the beginning. A shorter clip plays to its own end, and with the answer the clip is not limited.
+
 ## [0.22.4] - 2026-11-25
 ### Added
 - **Quiz creator, host panel — a Break card:** start a break of 5, 10 or 15 minutes at any time, pause and resume its countdown, and end it. A paused break says "Paused" on the big screen.
