@@ -57,6 +57,8 @@ test("an existing player's colour can be set, changed to a custom one and remove
   await sheet.getByLabel("Custom colour").fill("#00aa88");
   await sheet.getByRole("button", { name: "Done" }).click();
   await expect(nameOf(page, "Moni")).toHaveCSS("background-color", "rgb(0, 170, 136)");
+  // A custom colour always carries white text.
+  await expect(nameOf(page, "Moni")).toHaveCSS("color", "rgb(255, 255, 255)");
   expect(await savedColor(page, "Moni")).toBe("#00aa88");
 
   await expect(palette).toBeFocused();

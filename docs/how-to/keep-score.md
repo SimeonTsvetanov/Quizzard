@@ -24,7 +24,7 @@ Useful when every player has a colour on the table, for example the meeples in C
 1. Select the palette button beside the name: in the **Add Player** card before you add the player, or in the player's card at any time. On a phone, and from the fifth player on, a card shows the palette in place of the trash button while you edit the name: select the name first.
 2. In the **Name colour** window, select one of the seven colours (red, blue, yellow, green, black, pink, grey), or choose your own in **Custom colour** and select **Done**.
 
-The colour fills the name field only; the rest of the card stays the same. To take it off, open the window again and select **No colour**.
+The colour fills the name field only; the rest of the card stays the same. On the seven colours the name is written in dark or white, whichever reads better; on a custom colour it is always white, so pick one that white text shows on. To take it off, open the window again and select **No colour**.
 
 
 ## Change a score

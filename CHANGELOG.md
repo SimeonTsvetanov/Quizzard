@@ -4,6 +4,10 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.27.1] - 2026-11-25
+### Changed
+- **Scores — name colours:** the text on a meeple colour is dark or light, whichever reads better; on a custom colour it is always white.
+
 ## [0.27.0] - 2026-11-25
 ### Added
 - **Scores — a colour for each player's name.** A palette button beside the name (when you add a player and on every card) offers the seven Carcassonne meeple colours, any custom colour and "No colour". The colour fills the name field only; without one the field looks as before. It is saved with the game and travels with an exported game.

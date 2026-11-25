@@ -1,6 +1,7 @@
 // The colours offered for a player's name field: the meeple colours of Carcassonne (base game: blue, red,
 // green, yellow, black; pink and grey from the expansions). Any other colour comes from the custom picker.
-// `ink` is the text colour on top: whichever of dark and light has the higher contrast (WCAG 1.4.3).
+// The text on a meeple colour is whichever of dark and light has the higher contrast (WCAG 1.4.3); on a custom
+// colour it is always white — the user picks a colour that reads with it.
 
 /** One offered colour: `id` names it in the i18n keys (`app.color.<id>`). */
 export interface MeepleColor {
@@ -41,5 +42,7 @@ export function inkOn(color: string): string {
 /** Returns the attributes that paint a name field in `color`; none when the player has no colour (field.css). */
 export function nameColorProps(color: string | null | undefined): { "data-colored"?: ""; style?: React.CSSProperties } {
   if (color === null || color === undefined) return {};
-  return { "data-colored": "", style: { "--name-fill": color, "--name-ink": inkOn(color) } as React.CSSProperties };
+  // A meeple colour gets the ink that contrasts more; a custom colour always gets white text (Moni 2026-11-25).
+  const ink = MEEPLE_COLORS.some((meeple) => meeple.value === color) ? inkOn(color) : LIGHT_INK;
+  return { "data-colored": "", style: { "--name-fill": color, "--name-ink": ink } as React.CSSProperties };
 }
