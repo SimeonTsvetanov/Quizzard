@@ -119,6 +119,22 @@ Rules that keep it extendable:
 - **SR-04 checks and docs:** e2e (create, edit, play both kinds; walk places), screenshots, user docs (make a
   quiz, play a quiz, limits), Help, CHANGELOG, DECISIONS.
 
+### Slice 7 — cut and shrink a clip while adding it (trial in `lab/`, Moni 2026-11-25)
+Not started in the app: the trial page `/Quizzard/lab/` (Mediabunny, WebCodecs) waits for reports from an iPhone and an Android phone.
+- **The limits check the result, not the file picked.** A video or sound over its limit (50 MB / 15 MB) is taken in, not refused:
+  the question says what is wrong ("the file is too big" or "this format cannot be used") and that it must be changed, and
+  the button that changes it ("Cut and shrink") is the accented one. The question is not finished until the file fits.
+  A picture is already scaled down on the way in; one that is still too big gets the same message.
+- A file that fits needs nothing: cutting stays an offer, never a step.
+- The trim bar of the trial as it is (frames or loudness along one track, a handle at each end, Play for the kept part).
+- Where the browser cannot encode: the part to keep is only remembered and played ("from – to"), and a file over the limit is
+  refused with that reason, as today.
+- A file that is still over the limit after a cut says so and offers a shorter part or a lower quality.
+- Open: where an oversize original is kept until it is cut (memory only, never IndexedDB or the 250 MB of the quiz), and the
+  largest file a phone can take in at all — to be measured.
+- Mediabunny is loaded only when the bar opens; the CSP and the offline copy are checked with it; the original stays until the
+  new file is confirmed.
+
 ## 4. Definition of done (every task)
 `pnpm verify` green; the Chromium e2e suites green locally; screenshots looked at on 360, 412, 800 and 1280 px in
 light and dark, EN and BG; no `infinite` animation, no backdrop blur on repeated items; docs and CHANGELOG updated;
