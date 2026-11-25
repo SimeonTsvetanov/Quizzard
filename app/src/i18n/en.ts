@@ -8,7 +8,7 @@ export const en = {
   shell: {
     skip: "Skip to content",
     home: "{{name}} — home",
-    back: "Back to Home",
+    back: "Back",
     cancel: "Cancel",
     undo: "Undo",
     undone: "Undone ✓",

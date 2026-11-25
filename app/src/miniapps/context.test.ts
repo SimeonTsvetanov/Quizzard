@@ -67,7 +67,7 @@ let doc: EventTarget;
 let scheme: EventTarget;
 let storage: ReturnType<typeof memoryStorage>;
 const headerActions = { prepend: vi.fn() };
-const navigation: Navigation = { home: vi.fn(), open: vi.fn() };
+const navigation: Navigation = { home: vi.fn(), back: vi.fn(), open: vi.fn() };
 
 function mount(languages?: readonly Lang[]) {
   // because the context only calls prepend() on the header group

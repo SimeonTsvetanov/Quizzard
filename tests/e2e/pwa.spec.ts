@@ -138,7 +138,7 @@ test("a busy mini-app that unmounts releases the update offer", async ({ page, b
   await openBusyProbe(page);
   await deployNextVersion(page);
   await expect(updateOffer(page)).toHaveCount(0);
-  await page.getByRole("banner").getByRole("button", { name: "Back to Home" }).click();
+  await page.getByRole("banner").getByRole("button", { name: "Back", exact: true }).click();
   await expect(page.locator("[data-view=home]")).toBeVisible();
   await expect(updateOffer(page)).toBeVisible();
 });

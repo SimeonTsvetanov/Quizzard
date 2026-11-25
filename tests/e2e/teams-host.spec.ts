@@ -12,7 +12,7 @@ const teamsCard = (page: Page) => page.locator('[data-card="teams"]');
 const screenRoot = (page: Page) => page.locator('[data-miniapp="teams"] [data-workspace]');
 const namesBox = (page: Page) => screenRoot(page).locator("#names");
 const backButton = (page: Page) =>
-  page.getByRole("banner").getByRole("button", { name: "Back to Home" });
+  page.getByRole("banner").getByRole("button", { name: "Back", exact: true });
 const homeView = (page: Page) => page.locator("[data-view=home]");
 
 /** Picks a Settings option (radio `<name>-<value>`) the way a person does: menu → Settings. */

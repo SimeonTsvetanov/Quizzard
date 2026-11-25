@@ -4,6 +4,10 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.27.2] - 2026-11-25
+### Changed
+- **The Back arrow at the top goes one step back.** In the Quiz creator it leads from a question to its round, then to the quiz and to your quizzes, and only then Home (it used to jump Home from anywhere). The Quizzard logo still goes Home in one step.
+
 ## [0.27.1] - 2026-11-25
 ### Changed
 - **Scores — name colours:** the text on a meeple colour is dark or light, whichever reads better; on a custom colour it is always white.

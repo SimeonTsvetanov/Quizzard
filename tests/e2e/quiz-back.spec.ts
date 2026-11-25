@@ -6,7 +6,7 @@ import { control, focused, longRound, openQuiz, pubNight, root, screen, stage, v
 // expects, with the focus on the thing they came from. And the main rows are symmetric to the pixel:
 // equal buttons in a row, equal page margins left and right, dialogs in the middle of a wide screen.
 const SIZES = [[360, 740], [412, 915], [800, 1100], [1280, 860], [1920, 1080]] as const;
-const headerBack = (page: Page): Locator => page.getByRole("banner").getByRole("button", { name: "Back to Home" });
+const headerBack = (page: Page): Locator => page.getByRole("banner").getByRole("button", { name: "Back", exact: true });
 const box = async (target: Locator): Promise<{ x: number; y: number; width: number; height: number }> => (await target.boundingBox()) ?? { x: -1, y: -1, width: -1, height: -1 };
 const sizes = (targets: Locator): Promise<string[]> => targets.evaluateAll((list) => list.filter((one) => (one as HTMLElement).checkVisibility()).map((one) => `${String((one as HTMLElement).offsetWidth)}×${String((one as HTMLElement).offsetHeight)}@${String(Math.round(one.getBoundingClientRect().top))}`));
 /** How far the middle of an element is from the middle of the window, in px. */
@@ -84,7 +84,7 @@ for (const [width, height] of SIZES) {
       await page.keyboard.press("Escape");
       await expect(page.locator("dialog[data-menu][open]")).toHaveCount(0);
       await expect(page.locator("[data-menu-open]")).toBeFocused();
-      // One browser Back from the library is Home; Forward and deep in, the header's arrow is Home in one step.
+      // One browser Back from the library is Home; Forward and deep in, the header's arrow walks one screen at a time.
       await page.goBack();
       await expect(page.locator("[data-view=home]")).toBeVisible();
       await page.goForward();
@@ -92,6 +92,12 @@ for (const [width, height] of SIZES) {
       await roundCard.click();
       await card.click();
       await expect(screen(page, "editor")).toBeVisible();
+      // One step: the editor closes and the tool stays (a wide screen shows the round inside the quiz, so the steps differ).
+      await headerBack(page).click();
+      await expect(screen(page, "editor")).toBeHidden();
+      await expect(page).toHaveURL(/#\/quiz/);
+      for (let step = 0; step < 3 && !(await screen(page, "library").isVisible()); step += 1) await headerBack(page).click();
+      await expect(screen(page, "library")).toBeVisible();
       await headerBack(page).click();
       await expect(page.locator("[data-view=home]")).toBeVisible();
       await expect(page).not.toHaveURL(/#\/quiz/);

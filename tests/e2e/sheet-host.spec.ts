@@ -262,7 +262,7 @@ test("the game is saved and is there after a reload and after going Home and bac
   await expect(total(page)).toHaveText("2");
   // Typing is saved on the way out, without waiting for the timer.
   await write(page, 1, "Rome");
-  await page.getByRole("banner").getByRole("button", { name: "Back to Home" }).click();
+  await page.getByRole("banner").getByRole("button", { name: "Back", exact: true }).click();
   await expect(clearGame(page)).toHaveCount(0); // the header button leaves with the screen
   await page.locator('[data-card="sheet"]').click();
   await expect(answer(rows(page).nth(1))).toHaveValue("Rome");

@@ -47,7 +47,7 @@ const mountRoot = (page: Page) => page.locator('[data-miniapp="scores"]');
 const headerSlot = (page: Page) => page.locator('[data-header-slot="scores"]');
 const header = (page: Page) => page.locator("[data-header]");
 const backButton = (page: Page) =>
-  page.getByRole("banner").getByRole("button", { name: "Back to Home" });
+  page.getByRole("banner").getByRole("button", { name: "Back", exact: true });
 const homeView = (page: Page) => page.locator("[data-view=home]");
 const addField = (page: Page) =>
   mountRoot(page).getByRole("textbox", { name: "Player name", exact: true });

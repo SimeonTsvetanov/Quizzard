@@ -11,7 +11,7 @@ const questions = (page: Page) => root(page).locator("[data-question]");
 const form = (page: Page) => root(page).locator(".quiz-form");
 const liveSlide = (page: Page) => root(page).locator("[data-live-slide]");
 const toast = (page: Page) => page.getByRole("status").filter({ hasText: /deleted|изтрит/ });
-const back = (page: Page) => page.getByRole("banner").getByRole("button", { name: "Back to Home" });
+const back = (page: Page) => page.getByRole("banner").getByRole("button", { name: "Back", exact: true });
 const isWide = (page: Page): boolean => (page.viewportSize()?.width ?? 0) >= 700;
 
 /** The quizzes as they are stored: straight from the creator's IndexedDB database. */
@@ -343,7 +343,7 @@ test("library: rename in place, duplicate, and an empty quiz is deleted without 
   await expect(cards(page)).toHaveCount(2);
 });
 
-test("the Back button walks the screens: editor → round → quiz → library → Home; “Back to Home” leaves in one step", async ({ page }) => {
+test("the Back button walks the screens: editor → round → quiz → library → Home; the header's Back does the same", async ({ page }) => {
   test.setTimeout(LONG_FLOW_MS);
   await page.goto("./");
   await page.locator('[data-card="quiz"]').click();
@@ -369,13 +369,19 @@ test("the Back button walks the screens: editor → round → quiz → library �
   await page.goBack();
   await expect(page.locator("[data-view=home]")).toBeVisible();
   await expect(page).not.toHaveURL(/#\/quiz/);
-  // Forward again, deep into the tool, then the header's Back: Home in one step, over every screen of the tool.
+  // Forward again, deep into the tool, then the header's Back: one screen at a time, like the browser's (Moni 2026-11-25).
   await page.goForward();
   await expect(screen(page, "library")).toBeVisible();
   await cards(page).first().getByRole("button", { name: /Pub night/ }).first().click();
   await roundCards(page).first().locator(".quiz-round-open").click();
   await questions(page).first().getByRole("button", { name: /^Question 1/ }).click();
   await expect(screen(page, "editor")).toBeVisible();
+  // One step: the editor closes and the tool stays (a wide screen shows the round inside the quiz, so the steps differ).
+  await back(page).click();
+  await expect(screen(page, "editor")).toBeHidden();
+  await expect(page).toHaveURL(/#\/quiz/);
+  for (let step = 0; step < 3 && !(await screen(page, "library").isVisible()); step += 1) await back(page).click();
+  await expect(screen(page, "library")).toBeVisible();
   await back(page).click();
   await expect(page.locator("[data-view=home]")).toBeVisible();
   await expect(page).not.toHaveURL(/#\/quiz/);

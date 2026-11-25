@@ -19,7 +19,7 @@ Inside a tool, the header has the following buttons from left to right. Each has
 
 | Button | What it does |
 |---|---|
-| **Back to Home** (arrow) | Goes back to the home screen. |
+| **Back** (arrow) | Goes one step back: in the Quiz creator from a question to its round, then the quiz, then your quizzes; from a tool's first screen to the home screen. The Quizzard logo goes straight to the home screen. |
 | The tool's own buttons | **Scores**: **Open leaderboard** and **Clear session**. **Answer sheet**: **Clear game**. **Teams** and **Quiz creator** have none. |
 | **Share app** | Shares the name and address of Quizzard. Shown only when the window is wider than 600 pixels; on a phone it is in the menu. |
 | **Theme** | Goes through **System**, **Light** and **Dark**. Shown only when the window is wider than 600 pixels. |

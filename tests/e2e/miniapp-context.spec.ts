@@ -18,7 +18,7 @@ const out = (page: Page, name: string) => probe(page).locator(`[data-probe-${nam
 const control = (page: Page, name: string) =>
   probe(page).getByRole("button", { name, exact: true });
 const slot = (page: Page) => page.locator("[data-header-slot]");
-const back = (page: Page) => page.getByRole("banner").getByRole("button", { name: "Back to Home" });
+const back = (page: Page) => page.getByRole("banner").getByRole("button", { name: "Back", exact: true });
 
 const counters = async (page: Page): Promise<ProbeCounters> => {
   const value: unknown = await page.evaluate((): unknown => Reflect.get(window, "quizzardProbe"));

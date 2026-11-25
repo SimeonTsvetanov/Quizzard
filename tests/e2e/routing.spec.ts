@@ -28,7 +28,7 @@ const counters = async (page: Page): Promise<ProbeCounters> => {
 };
 const homeView = (page: Page) => page.locator("[data-view=home]");
 const probe = (page: Page) => page.locator('[data-miniapp="probe"] [data-probe]');
-const back = (page: Page) => page.getByRole("banner").getByRole("button", { name: "Back to Home" });
+const back = (page: Page) => page.getByRole("banner").getByRole("button", { name: "Back", exact: true });
 const hashOf = (page: Page): string => new URL(page.url()).hash;
 
 /** Opens the probe from Home the way a link does: one native hash navigation. */

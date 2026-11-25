@@ -10,7 +10,7 @@ export const bg: Messages = {
   shell: {
     skip: "Към съдържанието",
     home: "{{name}} — начало",
-    back: "Към началото",
+    back: "Назад",
     cancel: "Отказ",
     undo: "Отмени",
     undone: "Отменено ✓",

@@ -15,7 +15,7 @@ const cards = (page: Page) => page.locator("[data-launcher] [data-card]");
 const card = (page: Page, id: string) => page.locator(`[data-card="${id}"]`);
 const ids = (page: Page): Promise<string[]> =>
   cards(page).evaluateAll((all) => all.map((el) => el.getAttribute("data-card") ?? ""));
-const back = (page: Page) => page.getByRole("banner").getByRole("button", { name: "Back to Home" });
+const back = (page: Page) => page.getByRole("banner").getByRole("button", { name: "Back", exact: true });
 /** Registry order of the e2e build's ready cards, then its coming ones (shipped first). */
 const E2E_ORDER = [
   "teams",

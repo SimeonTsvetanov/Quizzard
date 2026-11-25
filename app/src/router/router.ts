@@ -7,6 +7,7 @@ import {
   isMarked,
   markCurrent,
   pushScreen,
+  readSubEntries,
   rememberScreen,
   replaceScreen,
   seedHomeBelow,
@@ -23,6 +24,11 @@ export interface Navigation {
    * entries too, in one step), otherwise replaces this entry.
    */
   home(): void;
+  /**
+   * One step back, as the header's Back button: inside a mini-app with screens of its own, to the screen
+   * below (the browser's Back); from its first screen, Home.
+   */
+  back(): void;
   /** Opens a mini-app on a new history entry; an unknown id goes Home. */
   open(id: string, query?: URLSearchParams): void;
 }
@@ -93,6 +99,11 @@ function createNavigation(state: RouterState): Navigation {
       }
       state.isGoingBack = true;
       history.go(-steps); // the hashchange that follows shows Home
+    },
+    back() {
+      // The tool shows the screen below on the popstate that follows (its own entries share one address).
+      if (state.current?.kind === "miniapp" && !state.isGoingBack && readSubEntries(history.state) > 0) history.back();
+      else navigation.home();
     },
     open(id, query = new URLSearchParams()) {
       if (!state.ids.includes(id)) {

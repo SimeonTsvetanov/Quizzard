@@ -75,7 +75,7 @@ export function startScreens(entries: readonly MiniAppEntry[]): void {
     });
   };
 
-  elements.back.addEventListener("click", () => { router.navigation.home(); });
+  elements.back.addEventListener("click", () => { router.navigation.back(); });
   elements.brand.addEventListener("click", (event) => {
     if (active === null) return; // on Home the link reloads the start page, as before routing
     event.preventDefault();
