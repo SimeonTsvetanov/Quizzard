@@ -4,7 +4,7 @@
 
 /** Square side of one star tile, in px; a tile and its copy right below it scroll up by exactly this much. */
 const FIELD = 2000;
-/** Wider than tall: a wide screen shows no empty band at the right. */
+/** Wider than tall: a wide screen shows no empty band at the right. A monitor wider than this gets a field of its own width (see `fieldWidth`). */
 const FIELD_WIDTH = 2600;
 /** Star counts per layer (small, medium, big): the classic pen's density on a wider field. */
 const STARS = [800, 240, 110] as const;
@@ -21,12 +21,19 @@ function seeded(seed: number): () => number {
   };
 }
 
-/** One layer's stars as a box-shadow list (each shadow of a 1px dot is a star). */
-function stars(count: number, random: () => number): string {
+/**
+ * The width the stars are spread over: the monitor's own width where it is wider than the usual field
+ * (Moni 2026-11-25: on a 3200 px wide screen the sky ended two thirds of the way across).
+ */
+function fieldWidth(): number {
+  return Math.max(FIELD_WIDTH, window.screen.width, window.innerWidth);
+}
+
+/** One layer's stars as a box-shadow list (each shadow of a 1px dot is a star): the same density on any width. */
+function stars(count: number, random: () => number, width: number): string {
   return Array.from(
-    { length: count },
-    () =>
-      `${String(Math.round(random() * FIELD_WIDTH))}px ${String(Math.round(random() * FIELD))}px`,
+    { length: Math.round((count * width) / FIELD_WIDTH) },
+    () => `${String(Math.round(random() * width))}px ${String(Math.round(random() * FIELD))}px`,
   ).join(", ");
 }
 
@@ -64,10 +71,11 @@ export function buildScene(): HTMLElement {
   scene.setAttribute("aria-hidden", "true");
   const night = div("scene-night");
   const random = seeded(20261123);
+  const width = fieldWidth();
   STARS.forEach((count, index) => {
     const layer = div(`scene-stars scene-stars--${String(index + 1)}`);
     // A custom property, so the layer's ::after (the copy below it) draws the same stars.
-    layer.style.setProperty("--scene-stars", stars(count, random));
+    layer.style.setProperty("--scene-stars", stars(count, random, width));
     night.append(layer);
   });
   const day = div("scene-day");

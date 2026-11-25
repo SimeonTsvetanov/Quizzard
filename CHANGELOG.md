@@ -4,6 +4,14 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.22.1] - 2026-11-25
+### Added
+- **Quiz creator, host panel:** start, pause and restart the timer from the Timer card, and see and correct every team's points per round in a Scores table right on the panel.
+### Changed
+- **Quiz creator, while playing:** the Scores and Menu windows and the host panel now have the look of the stage — deep violet, soft rows, gold numbers — instead of grey boxes.
+### Fixed
+- **Background:** on a very wide screen (wider than 2600 px) the stars stopped part of the way across; they now cover the whole screen.
+
 ## [0.22.0] - 2026-11-24
 ### Added
 - **Quiz creator — two special rounds: Golden pyramid and Safe.** "Add round" asks for the kind. A

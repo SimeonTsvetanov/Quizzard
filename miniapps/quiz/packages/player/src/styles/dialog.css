@@ -1,5 +1,26 @@
 /* The dialogs (menu, scores) in real px, following the page's theme. */
 
+/* || The stage's look for the dialogs and the host panel (Moni 2026-11-25: "wooden" grey boxes did
+   not belong to the stage): the same deep violet in both themes, soft translucent fills, gold for
+   what is chosen. The parts below keep reading the page tokens; here they get the stage's values. */
+.qp-dialog,
+.qp-panel {
+  color-scheme: dark;
+
+  --qp-page: oklch(14% 0.06 283);
+  --qp-raised: oklch(22% 0.1 290);
+  --qp-surface: oklch(100% 0 0 / 0.1);
+  --qp-text: oklch(98% 0.01 293);
+  --qp-text-2: oklch(98% 0.01 293 / 0.76);
+  --qp-line: oklch(100% 0 0 / 0.18);
+  --qp-accent: oklch(87.9% 0.143 92);
+  --qp-on-accent: oklch(24% 0.06 85);
+  --qp-danger: oklch(80% 0.14 30);
+  --qp-page-lift: inset 0 1px 0 oklch(100% 0 0 / 0.1), 0 6px 18px oklch(8% 0.06 283 / 0.3);
+  --qp-page-tint: oklch(100% 0 0 / 0.07);
+  --qp-well: oklch(12% 0.05 283 / 0.55);
+}
+
 /* || Dialogs */
 .qp-dialog {
   width: min(34rem, calc(100vw - 24px));
@@ -8,9 +29,12 @@
   padding: 0;
   overflow: hidden;
   border: 0;
-  border-radius: 20px;
-  background: var(--qp-raised);
-  box-shadow: 0 24px 64px oklch(0% 0 0 / 0.4);
+  border-radius: 24px;
+  background:
+    radial-gradient(80% 70% at 100% 0%, oklch(52% 0.22 305 / 0.38), transparent 62%),
+    radial-gradient(70% 70% at 0% 100%, oklch(46% 0.17 262 / 0.3), transparent 60%),
+    linear-gradient(150deg, oklch(27% 0.12 293), oklch(17% 0.07 283));
+  box-shadow: inset 0 1px 0 oklch(100% 0 0 / 0.14), 0 28px 72px oklch(5% 0.05 283 / 0.6);
   color: var(--qp-text);
   font-family: var(--qp-sans);
   font-size: 16px;
@@ -21,7 +45,8 @@
   }
 
   &::backdrop {
-    background: oklch(0% 0 0 / 0.6);
+    background: oklch(8% 0.05 283 / 0.62);
+    backdrop-filter: blur(6px);
   }
 
   &[data-dialog="scores"] {
@@ -301,63 +326,82 @@
   }
 }
 
-/* || Scores table */
+/* || Scores table: each team a soft row, each number a well with the stage's gold, the total largest */
 .qp-table-box {
   max-width: 100%;
   overflow: auto;
-  border-radius: 12px;
-  box-shadow: var(--qp-page-lift);
 }
 
 .qp-table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0 8px;
   font-variant-numeric: tabular-nums;
 
   & :is(th, td) {
-    padding: 6px 8px;
+    padding: 8px 10px;
     text-align: center;
   }
 
-  /* Rows told apart by a tint, not by lines. */
-  & tbody tr:nth-child(odd) :is(th, td) {
-    background: var(--qp-page-tint);
+  & tbody :is(th, td) {
+    background: var(--qp-surface);
+  }
+
+  & tbody :is(th, td):first-child {
+    border-start-start-radius: 18px;
+    border-end-start-radius: 18px;
+  }
+
+  & tbody :is(th, td):last-child {
+    border-start-end-radius: 18px;
+    border-end-end-radius: 18px;
   }
 
   & thead th {
+    padding-block: 0;
     color: var(--qp-text-2);
     font-size: 13px;
     font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
   }
 
-  & :is(th:first-child) {
-    position: sticky;
-    inset-inline-start: 0;
-    max-width: 11rem;
+  & th:first-child {
+    max-width: 12rem;
+    padding-inline-start: 18px;
     overflow: hidden;
-    background: var(--qp-raised);
+    font-size: 17px;
+    font-weight: 700;
     text-align: start;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+
+  & thead th:first-child {
+    font-size: 13px;
+  }
 }
 
 .qp-table-field {
-  width: 3.6rem;
+  width: 4rem;
   min-height: 44px;
   padding: 0 4px;
   border: 0;
-  border-radius: 10px;
-  background: var(--qp-surface);
-  box-shadow: var(--qp-page-lift);
-  color: var(--qp-text);
-  font-size: 16px;
+  border-radius: 14px;
+  background: var(--qp-well);
+  box-shadow: inset 0 2px 6px oklch(5% 0.05 283 / 0.5);
+  color: var(--qp-accent);
+  font-family: var(--qp-display);
+  font-size: 17px;
   font-weight: 700;
   text-align: center;
 }
 
 .qp-table-total {
+  padding-inline-end: 18px;
+  color: var(--qp-text);
   font-family: var(--qp-display);
+  font-size: 22px;
   font-weight: 700;
 }
 

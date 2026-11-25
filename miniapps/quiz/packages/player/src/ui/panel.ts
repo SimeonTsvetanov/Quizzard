@@ -10,6 +10,7 @@ import { contextOf, type DrawnView, type PlayEnv } from "../views/context.ts";
 import { fallbackView } from "../views/index.ts";
 import type { Commands } from "./commands.ts";
 import { createCover, createMediaCard } from "./panel-media.ts";
+import { createScoresCard, createTimerCard } from "./panel-tools.ts";
 import { count, roundCount } from "../views/parts.ts";
 import { createStage } from "./stage.ts";
 
@@ -31,12 +32,6 @@ function whereParts(env: PlayEnv, state: GameState): (Node | string)[] {
   const parts: (Node | string)[] = [...roundCount(env, context.round), " · ", context.round.name];
   if (context.question) parts.push(" · ", `${env.t("question.word")} `, count(env, context.round.questions.indexOf(context.question) + 1, context.round.questions.length));
   return parts;
-}
-
-/** The timer as the host reads it: m:ss. */
-function clockText(leftMs: number): string {
-  const seconds = Math.ceil(leftMs / 1000);
-  return `${String(Math.floor(seconds / 60))}:${String(seconds % 60).padStart(2, "0")}`;
 }
 
 /** The answer card's content for the screen on show. */
@@ -85,7 +80,8 @@ export function createPanel(env: PlayEnv, commands: Commands): Panel {
   const now = createStage(env, { canEdit: false, isLive: false });
   const next = createStage(env, { canEdit: false, isLive: false });
   const where = h("p", { class: "qp-host-where", "data-host-where": "" });
-  const clock = h("p", { class: "qp-host-clock", "data-host-clock": "" });
+  const timer = createTimerCard(env, commands);
+  const scores = createScoresCard(env);
   const answer = card(t("host.answer"), "answer");
   const controls = createControls(env);
   const media = createMediaCard(env, commands);
@@ -94,21 +90,20 @@ export function createPanel(env: PlayEnv, commands: Commands): Panel {
     h("header", { class: "qp-panel-head" },
       h("div", { class: "qp-panel-titles" }, h("h2", { class: "qp-panel-title" }, env.file.quiz.name.trim() === "" ? t("title.unnamed") : env.file.quiz.name), where)),
     h("div", { class: "qp-panel-screens" }, card(t("host.now"), "now", now.element), card(t("host.next"), "next", next.element)),
-    h("div", { class: "qp-panel-side" }, cover.element, card(t("host.timer"), "timer", clock), media.element, answer),
-    controls.element);
+    h("div", { class: "qp-panel-side" }, cover.element, timer.element, media.element, answer),
+    controls.element, scores.element);
   // The way through the game is the player's own control bar: the player puts it under this part (player.ts).
   const element = h("div", { class: "qp-panel", "data-panel": "" }, body);
   return {
     element,
     update(state) {
       const upcoming = peekNext(state);
-      const hasTimer = state.timer.totalMs > 0;
       now.show(state);
       next.show(upcoming);
       next.element.toggleAttribute("data-same", upcoming === state);
       where.replaceChildren(...whereParts(env, state));
-      clock.textContent = hasTimer ? clockText(state.timer.leftMs) : t("host.noTimer");
-      clock.setAttribute("data-status", hasTimer ? state.timer.status : "none");
+      timer.update(state);
+      scores.update(state);
       answer.replaceChildren(h("h3", { class: "qp-card-title" }, t("host.answer")), ...answerLines(env, state));
       controls.update(state);
       media.update(state);
