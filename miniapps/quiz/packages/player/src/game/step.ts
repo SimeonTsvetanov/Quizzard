@@ -281,3 +281,9 @@ export function peekNext(state: GameState, kinds: Kinds = screenKinds): GameStat
   const moved = next(state, kinds);
   return moved === state ? state : { ...moved, timer: freshTimer(moved.screens[moved.index]?.seconds ?? 0) };
 }
+
+/** Whether time matters to the game right now: a running timer or cue, a playing clip, a break counting down. */
+export function needsTicks(state: GameState): boolean {
+  if (state.curtain !== null) return state.curtain.kind === "break" && state.curtain.leftMs > 0;
+  return state.timer.status === "running" || state.timer.status === "cue" || state.media.status === "playing";
+}

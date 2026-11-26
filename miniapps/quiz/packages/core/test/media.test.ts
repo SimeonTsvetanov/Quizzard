@@ -3,7 +3,7 @@
 import { describe, expect, it } from "vitest";
 import * as core from "../src/index.ts";
 import sample from "./fixtures/v1/sample.quiz.json" with { type: "json" };
-import { deepFreeze, questionAt, sampleQuiz, testEnv } from "./helpers.ts";
+import { NOW, deepFreeze, questionAt, sampleQuiz, testEnv } from "./helpers.ts";
 
 const entry = (id: string, bytes: number, more: Partial<core.MediaEntry> = {}): core.MediaEntry => ({ id, type: "image", mime: "image/jpeg", name: `${id}.jpg`, bytes, ...more });
 
@@ -199,5 +199,54 @@ describe("the picture shown with an answer", () => {
     const clip: core.MediaEntry = { ...entry, type: "audio", seconds: 3 };
     expect(question && core.answerMediaOf(question, [clip])).toEqual(clip);
     expect(question && core.answerMediaOf(question, [])).toBeUndefined();
+  });
+});
+
+// Moni 2026-11-26: music under a question, and a playlist over the whole quiz.
+describe("music under the questions", () => {
+  const env = testEnv();
+  const build = (): core.Quiz => {
+    let quiz = core.addRound(core.createQuiz({ name: "Q", language: "en", now: NOW }, env), "R", env);
+    const roundId = quiz.rounds[0]?.id ?? "";
+    for (const kind of ["text", "picture", "audio", "text", "video", "text"]) quiz = core.addQuestion(quiz, roundId, { kind }, env);
+    return quiz;
+  };
+  const musicIds = (quiz: core.Quiz): (string | undefined)[] => (quiz.rounds[0]?.questions ?? []).map((question) => question.music?.id);
+
+  it("only a question whose own file is not a clip can have music", () => {
+    expect((build().rounds[0]?.questions ?? []).map((question) => core.canHaveMusic(question, env.registries))).toEqual([true, true, false, true, false, true]);
+  });
+
+  it("a playlist goes to the questions without music in order, starts again when it is shorter, and skips the ones that have a song", () => {
+    const quiz = build();
+    expect(musicIds(core.assignMusic(quiz, ["a", "b", "c", "d", "e"], env.registries))).toEqual(["a", "b", undefined, "c", undefined, "d"]);
+    expect(musicIds(core.assignMusic(quiz, ["a", "b"], env.registries))).toEqual(["a", "b", undefined, "a", undefined, "b"]);
+    const own = core.editQuestion(quiz, quiz.rounds[0]?.questions[1]?.id ?? "", { music: { id: "mine" } });
+    expect(musicIds(core.assignMusic(own, ["a", "b"], env.registries))).toEqual(["a", "mine", undefined, "b", undefined, "a"]);
+    expect(core.assignMusic(quiz, [], env.registries)).toBe(quiz);
+  });
+
+  it("the questions without music are listed with their place; the quiz remembers that it asks for music", () => {
+    const quiz = build();
+    expect(core.questionsWithoutMusic(quiz, env.registries).map((item) => `${String(item.roundIndex)}:${String(item.index)}`)).toEqual(["0:0", "0:1", "0:3", "0:5"]);
+    const wanted = core.setWantsMusic(core.assignMusic(quiz, ["a"], env.registries), true);
+    expect(core.wantsMusic(wanted)).toBe(true);
+    expect(core.questionsWithoutMusic(wanted, env.registries)).toEqual([]);
+    const cleared = core.clearMusic(wanted);
+    expect(core.wantsMusic(cleared)).toBe(false);
+    expect(musicIds(cleared)).toEqual([undefined, undefined, undefined, undefined, undefined, undefined]);
+    expect(cleared.settings).toEqual(quiz.settings);
+  });
+
+  it("a song counts as used, is shared by its questions, and goes when the question becomes a clip", () => {
+    const quiz = core.assignMusic(build(), ["song"], env.registries);
+    const entry: core.MediaEntry = { id: "song", type: "audio", mime: "audio/mpeg", name: "s.mp3", bytes: 50, seconds: 30 };
+    expect(core.mediaUses(quiz, "song")).toBe(4);
+    expect(core.usedMediaBytes(quiz, [entry])).toBe(50);
+    const first = quiz.rounds[0]?.questions[0];
+    expect(first && core.musicOf(first, [entry])).toEqual(entry);
+    expect(first && core.musicOf(first, [{ ...entry, type: "image" }])).toBeUndefined();
+    const asAudio = core.setQuestionKind(quiz, first?.id ?? "", "audio", env);
+    expect(asAudio.rounds[0]?.questions[0]?.music).toBeUndefined();
   });
 });

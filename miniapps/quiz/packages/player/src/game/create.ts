@@ -47,7 +47,9 @@ function roundScreens(round: Round, media: ReadonlyMap<string, MediaEntry>, roun
     const ofScreen = mediaOfScreen(shown ? media.get(shown.id) : undefined);
     // The clip leads where it is new to the room: with the question, or as the answer's own file.
     const leads = ofScreen.media === "clip" && (place.screen !== STANDARD_SCREENS.answer || shown === forAnswer);
-    return { ...place, seconds, steps: kind?.steps ?? 0, ...(kind?.upright ? { upright: true as const } : {}), ...ofScreen, ...(leads ? { clipFirst: true as const } : {}) };
+    // Music belongs to the question's own screen, and never plays over a clip.
+    const song = place.screen === STANDARD_SCREENS.question && ofScreen.media !== "clip" && question?.music && media.get(question.music.id)?.type === "audio" ? question.music.id : undefined;
+    return { ...place, seconds, steps: kind?.steps ?? 0, ...(kind?.upright ? { upright: true as const } : {}), ...ofScreen, ...(leads ? { clipFirst: true as const } : {}), ...(song === undefined ? {} : { music: song }) };
   });
 }
 

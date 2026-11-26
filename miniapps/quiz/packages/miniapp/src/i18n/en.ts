@@ -77,7 +77,7 @@ export const en = {
     media: "Media: {{used}} of {{limit}}",
     unfinished_one: "{{count}} question is not finished",
     unfinished_other: "{{count}} questions are not finished",
-    more: "Quiz file and printing",
+    more: "Quiz file, printing and music",
     exportShort: "Export",
     notLoaded: "The quiz could not be opened: a part of the app did not load. Check the connection and try again.",
   },

@@ -82,7 +82,7 @@ export const bg: Messages = {
     media: "Медия: {{used}} от {{limit}}",
     unfinished_one: "{{count}} въпрос не е довършен",
     unfinished_other: "{{count}} въпроса не са довършени",
-    more: "Файл и печат",
+    more: "Файл, печат и музика",
     exportShort: "Експорт",
     notLoaded: "Куизът не можа да се отвори: част от приложението не се зареди. Проверете връзката и опитайте пак.",
   },

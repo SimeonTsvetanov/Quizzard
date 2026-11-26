@@ -14,6 +14,7 @@ export function usedMediaIds(quiz: Quiz): ReadonlySet<string> {
     for (const question of round.questions) {
       if (question.media) ids.add(question.media.id);
       if (question.answerMedia) ids.add(question.answerMedia.id);
+      if (question.music) ids.add(question.music.id);
     }
   }
   return ids;
@@ -40,12 +41,12 @@ export function unusedMedia(quiz: Quiz, media: readonly MediaEntry[]): readonly 
 }
 
 /**
- * How many times the quiz points at a file: as a question's file or as the picture with its answer.
+ * How many times the quiz points at a file: as a question's file, as the file with its answer or as its music.
  * @param quiz - the quiz
  * @param mediaId - the file's id
  */
 export function mediaUses(quiz: Quiz, mediaId: string): number {
-  const uses = (question: Question): number => (question.media?.id === mediaId ? 1 : 0) + (question.answerMedia?.id === mediaId ? 1 : 0);
+  const uses = (question: Question): number => (question.media?.id === mediaId ? 1 : 0) + (question.answerMedia?.id === mediaId ? 1 : 0) + (question.music?.id === mediaId ? 1 : 0);
   return quiz.rounds.reduce((sum, round) => sum + round.questions.reduce((count, question) => count + uses(question), 0), 0);
 }
 

@@ -2,7 +2,7 @@
 // here — the checks and the preparation (media/import.ts, loaded with the first file), the room on
 // the device, the storing, and the question's pointer to the file. The file is stored first and the
 // question changed after: a refused file leaves nothing behind (AC5).
-import { MEDIA_RULES, type MediaEntry, type MediaType, type Question, type Quiz, answerMediaOf, changeQuestion, editQuestion, findQuestion, mediaOf, mediaUses, mimeOf, usedMediaBytes, withMedia, without } from "@simeonts/quizzard-quiz-core";
+import { MEDIA_RULES, type MediaEntry, type MediaType, type Question, type Quiz, answerMediaOf, changeQuestion, editQuestion, findQuestion, mediaOf, mediaUses, mimeOf, musicOf, usedMediaBytes, withMedia, without } from "@simeonts/quizzard-quiz-core";
 import { stillOf } from "@simeonts/quizzard-quiz-player/render";
 import type { App } from "../app/state.ts";
 import { canCut, mustCut } from "../media/cut/can-cut.ts";
@@ -12,8 +12,15 @@ import { bytesText } from "../format.ts";
 import type { QuestionFiles } from "../ui-registry.ts";
 import { offerUndo } from "./common.ts";
 
-/** Which of a question's files: its own (what the kind shows) or the picture shown with its answer. */
-export type FileSlot = "question" | "answer";
+/** Which of a question's files: its own (what the kind shows), the file shown with its answer, or the music under it. */
+export type FileSlot = "question" | "answer" | "music";
+
+/** Where each slot keeps its file on the question, and the form part that gets the focus after a change. */
+const SLOTS = {
+  question: { field: "media", focus: '[data-focus="media"]' },
+  answer: { field: "answerMedia", focus: '[data-focus="answer-media"]' },
+  music: { field: "music", focus: '[data-focus="music-media"]' },
+} as const;
 
 /** How a question lost its file: taken off, swapped for another, or dropped by a change of kind. */
 export type MediaLoss = "removed" | "replaced";
@@ -38,10 +45,13 @@ export function offerMediaUndo(app: App, before: Question, entry: MediaEntry, ho
   }));
   // The answer's picture is its own field: the question's kind and its own file are left as they are now.
   const restoreAnswer = (quiz: Quiz): Quiz => (before.answerMedia ? editQuestion(quiz, before.id, { answerMedia: before.answerMedia }) : quiz);
-  offerUndo(app, app.t(`media.${how}.${type}`), slot === "answer" ? restoreAnswer : restoreOwn, () => {
+  const restoreMusic = (quiz: Quiz): Quiz => (before.music ? editQuestion(quiz, before.id, { music: before.music }) : quiz);
+  const restore = { question: restoreOwn, answer: restoreAnswer, music: restoreMusic }[slot];
+  offerUndo(app, app.t(`media.${how}.${type}`), restore, () => {
     const now = app.current;
     if (now) app.change(now.quiz, withMedia(now.media, entry));
-    if (app.route.screen === "editor" && app.route.question === before.id) app.draw(slot === "answer" ? '[data-focus="answer-media"]' : '[data-focus="media"]');
+    if (app.route.screen === "editor" && app.route.question === before.id) app.draw(SLOTS[slot].focus);
+    else if (slot === "music") app.draw();
   });
 }
 
@@ -70,7 +80,7 @@ async function attach(app: App, questionId: string, entry: MediaEntry, blob: Blo
   if (app.signal.aborted || now?.quiz.id !== quizId || !findQuestion(now.quiz, questionId)) return false;
   app.media.add(entry.id, blob);
   askToKeep(app);
-  const edit = slot === "answer" ? { answerMedia: { id: entry.id } } : { media: { id: entry.id } };
+  const edit = { [SLOTS[slot].field]: { id: entry.id } };
   return app.change(editQuestion(now.quiz, questionId, edit), withMedia(now.media, entry));
 }
 
@@ -106,11 +116,19 @@ export function questionFiles(app: App, questionId: string, slot: FileSlot = "qu
   const answers = question && current ? answerMediaOf(question, current.media) : undefined;
   // The answer's file may be a picture or a clip: its type comes from the file itself (the one it has, or the one picked).
   const answerType: MediaType | null = question ? (answers?.type ?? "image") : null;
-  const type = isAnswer ? answerType : ownType;
+  const isMusic = slot === "music";
+  const music = question && current ? musicOf(question, current.media) : undefined;
+  const musicType: MediaType | null = question ? "audio" : null;
+  const slotType = isMusic ? musicType : ownType;
+  const type = isAnswer ? answerType : slotType;
   const typeOf = (file: File): MediaType | null => (isAnswer ? fileType(file) : type);
   const own = question && current && ownType !== null ? mediaOf(question, current.media, ownType) : undefined;
-  const entry = isAnswer ? answers : own;
-  const redraw = (): void => { if (app.route.screen === "editor" && app.route.question === questionId) app.draw(isAnswer ? '[data-focus="answer-media"]' : '[data-focus="media"]'); };
+  const entry = { question: own, answer: answers, music }[slot];
+  // The music's picker also stands in a round's own panel (a round that states its task): there the round is drawn again.
+  const redraw = (): void => {
+    if (app.route.screen === "editor" && app.route.question === questionId) app.draw(SLOTS[slot].focus);
+    else if (isMusic) app.draw();
+  };
   const files: QuestionFiles = {
     type,
     entry,
@@ -138,7 +156,7 @@ export function questionFiles(app: App, questionId: string, slot: FileSlot = "qu
     },
     remove() {
       const now = app.current?.quiz;
-      if (!now || !app.change(editQuestion(now, questionId, isAnswer ? { answerMedia: null } : { media: null }))) return;
+      if (!now || !app.change(editQuestion(now, questionId, { [SLOTS[slot].field]: null }))) return;
       redraw();
       if (question && entry) offerMediaUndo(app, question, entry, "removed", slot);
     },

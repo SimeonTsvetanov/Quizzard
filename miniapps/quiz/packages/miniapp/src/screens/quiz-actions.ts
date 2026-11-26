@@ -10,6 +10,7 @@ import { bytesText } from "../format.ts";
 import { checkUnfinished, playQuiz } from "./launch.ts";
 import { edit } from "./question-moves.ts";
 import { exportControl, quizFileRow } from "./quiz-files.ts";
+import { musicNote, musicRow } from "./quiz-music.ts";
 
 /** "3 questions are not finished": a way to the first of them; nothing for a finished quiz. */
 function unfinishedNote(app: App, quiz: Quiz): HTMLElement | null {
@@ -34,11 +35,12 @@ function printRow(app: App, quiz: Quiz): HTMLElement {
 }
 
 /** The quiz file, folded away under the main actions: what it is for, "Save quiz file", "Share" — and more tools next to them. */
-function fileTools(app: App, quiz: Quiz): HTMLElement {
+function fileTools(app: App, quiz: Quiz, music: HTMLElement): HTMLElement {
   const tools = h("details", { class: "quiz-more", "data-quiz-more": "" },
     h("summary", { class: "quiz-settings-summary" }, icon("file", 20), h("span", { class: "quiz-settings-name" }, app.t("quiz.more"))),
     quizFileRow(app, quiz),
-    printRow(app, quiz));
+    printRow(app, quiz),
+    music);
   tools.open = app.view.isMoreOpen;
   tools.addEventListener("toggle", () => { app.view.isMoreOpen = tools.open; });
   return tools;
@@ -62,9 +64,12 @@ export function quizActions(app: App, quiz: Quiz): HTMLElement {
   const box = h("div", { class: "quiz-actions-box" }, h("div", { class: "quiz-actions" }, play, preview, exportButton), progress);
   const note = unfinishedNote(app, quiz);
   if (note) box.append(note);
+  const music = musicRow(app, quiz);
+  const noMusic = musicNote(app, quiz, music.pick);
+  if (noMusic) box.append(noMusic);
   const made = app.view.exported;
   if (made?.quiz === quiz.id) box.append(h("p", { class: "quiz-hint", "data-exported": "" }, t("export.saved", { name: made.name, size: bytesText(made.bytes, app.lang) })));
   else if (first === undefined) box.append(h("p", { class: "quiz-hint" }, t("quiz.playHint")));
-  if (first !== undefined) box.append(fileTools(app, quiz));
+  if (first !== undefined) box.append(fileTools(app, quiz, music.element));
   return box;
 }

@@ -8,6 +8,7 @@ import { MEDIA_RULES, type MediaType, clockText } from "@simeonts/quizzard-quiz-
 import { h } from "../dom/h.ts";
 import { icon, type IconName } from "../dom/icons.ts";
 import { bytesText } from "../format.ts";
+import type { TextKey } from "../i18n/translate.ts";
 import type { KindEditorContext } from "../ui-registry.ts";
 
 /** The file-name endings offered next to the MIME types (some pickers filter by ending only). */
@@ -39,6 +40,8 @@ function facts({ files, lang, t }: KindEditorContext): string {
 /** A picker's place: the question's own file or the picture with its answer — its hooks (`data-media-*` / `data-answer-*`) and its focus name. */
 interface Slot {
   readonly isAnswer: boolean;
+  /** The words of a slot that is not the question's own file: the button and what it accepts. */
+  readonly words: { readonly choose: TextKey; readonly accepts: TextKey } | null;
   readonly focus: string;
   readonly hook: (name: string) => string;
 }
@@ -65,11 +68,11 @@ function current(context: KindEditorContext, type: MediaType, choose: () => void
 }
 
 /** No file yet: one wide button and what is accepted. */
-function empty({ t, lang, files }: KindEditorContext, type: MediaType, choose: () => void, { focus, hook, isAnswer }: Slot): HTMLElement {
+function empty({ t, lang, files }: KindEditorContext, type: MediaType, choose: () => void, { focus, hook, isAnswer, words }: Slot): HTMLElement {
   const button = h("button", { type: "button", class: "quiz-drop-button", [hook("choose")]: "", "data-focus": focus },
     h("span", { class: "quiz-drop-mark", "aria-hidden": "true" }, icon(MARKS[type], 28)),
-    h("span", { class: "quiz-drop-words" }, isAnswer ? t("media.answerChoose") : t(`media.choose.${type}`)),
-    h("span", { class: "quiz-hint" }, isAnswer ? t("media.answerAccepts") : t(`media.accepts.${type}`, { limit: bytesText(MEDIA_RULES[type].maxBytes, lang) })),
+    h("span", { class: "quiz-drop-words" }, words ? t(words.choose) : t(`media.choose.${type}`)),
+    h("span", { class: "quiz-hint" }, words ? t(words.accepts, { limit: bytesText(MEDIA_RULES[type].maxBytes, lang) }) : t(`media.accepts.${type}`, { limit: bytesText(MEDIA_RULES[type].maxBytes, lang) })),
     h("span", { class: "quiz-hint quiz-wide-only" }, t("media.drop")));
   if (files.canCut && (type !== "image" || isAnswer)) button.append(h("span", { class: "quiz-hint", "data-media-cut-hint": "" }, t("media.cutHint")));
   button.addEventListener("click", choose);
@@ -87,18 +90,36 @@ function failed({ t }: KindEditorContext, error: unknown): string {
   return t("media.failed");
 }
 
+/** The hooks, the focus name and the words of a slot. */
+function placeOf(slot: "question" | "answer" | "music"): Slot {
+  const names = { question: "media", answer: "answer", music: "music" }[slot];
+  const words = { question: null, answer: { choose: "media.answerChoose", accepts: "media.answerAccepts" }, music: { choose: "media.musicChoose", accepts: "media.musicAccepts" } } as const;
+  return { isAnswer: slot === "answer", words: words[slot], focus: slot === "question" ? "media" : `${names}-media`, hook: (name) => `data-${names}-${name}` };
+}
+
+/** The picker's box under its label; the music's is folded away until it is wanted — open while the question has one. */
+function framed({ t, files }: KindEditorContext, slot: "question" | "answer" | "music", type: MediaType, box: HTMLElement): HTMLElement {
+  if (slot === "music") {
+    const fold = h("details", { class: "quiz-fold", "data-music-fold": "" }, h("summary", { class: "quiz-fold-summary" }, t("media.musicLabel")), h("p", { class: "quiz-hint" }, t("media.musicHint")), box);
+    fold.open = files.entry !== undefined;
+    return fold;
+  }
+  if (slot === "answer") return h("div", { class: "quiz-group" }, h("span", { class: "quiz-label" }, t("media.answerLabel")), box, h("p", { class: "quiz-hint" }, t("media.answerHint")));
+  return h("div", { class: "quiz-group" }, h("span", { class: "quiz-label" }, t(`media.label.${type}`)), box);
+}
+
 /**
  * Draws the file part of the editor.
  * @param context - the question, its file and how to change it
  * @param slot - the question's own file, or the picture shown with its answer (its own hooks and words)
  * @returns the part, or `null` for a kind without a file
  */
-export function mediaPicker(context: KindEditorContext, slot: "question" | "answer" = "question"): HTMLElement | null {
+export function mediaPicker(context: KindEditorContext, slot: "question" | "answer" | "music" = "question"): HTMLElement | null {
   const { files, t, signal } = context;
   const type = files.type;
   if (type === null) return null;
-  const isAnswer = slot === "answer";
-  const place: Slot = { isAnswer, focus: isAnswer ? "answer-media" : "media", hook: (name) => `data-${isAnswer ? "answer" : "media"}-${name}` };
+  const isOwn = slot === "question";
+  const place = placeOf(slot);
   const problem = h("p", { class: "quiz-field-error", role: "alert", [place.hook("error")]: "" });
   problem.hidden = true;
   const busy = h("p", { class: "quiz-hint", role: "status", [place.hook("busy")]: "" }, t("media.busy"));
@@ -148,10 +169,9 @@ export function mediaPicker(context: KindEditorContext, slot: "question" | "answ
   document.addEventListener("paste", (event) => {
     const file = fileOf(event.clipboardData);
     // A pasted picture belongs to the question's own picker, not to the answer's.
-    if (!file || !box.isConnected || isAnswer) return;
+    if (!file || !box.isConnected || !isOwn) return;
     event.preventDefault();
     take(file);
   }, { signal });
-  if (isAnswer) return h("div", { class: "quiz-group" }, h("span", { class: "quiz-label" }, t("media.answerLabel")), box, h("p", { class: "quiz-hint" }, t("media.answerHint")));
-  return h("div", { class: "quiz-group" }, h("span", { class: "quiz-label" }, t(`media.label.${type}`)), box);
+  return framed(context, slot, type, box);
 }

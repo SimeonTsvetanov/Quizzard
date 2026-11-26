@@ -4,7 +4,7 @@
 // you type; typing never rebuilds the form. The live preview is the shared slide: next to the form
 // on a wide screen, behind the "Preview" switch on a phone.
 import {
-  EXPLANATION_MAX, HOST_NOTE_MAX, PROMPT_MAX, type Answer, type Quiz, canAddQuestion, editQuestion, freeAnswerTypes, mediaOf, setAnswerType, setQuestionKind, setRoundDefaults, shapeOf,
+  EXPLANATION_MAX, HOST_NOTE_MAX, PROMPT_MAX, type Answer, type Quiz, canAddQuestion, canHaveMusic, editQuestion, freeAnswerTypes, mediaOf, setAnswerType, setQuestionKind, setRoundDefaults, shapeOf,
 } from "@simeonts/quizzard-quiz-core";
 import { type LocalMedia, createLocalMedia } from "@simeonts/quizzard-quiz-player/render";
 import type { App } from "../app/state.ts";
@@ -133,7 +133,9 @@ function form(app: App, place: CardPlace, live: Live, signal: AbortSignal): HTML
   // A task (answer type `none`) reveals nothing, so it has no text or picture to show with an answer.
   const hasAnswer = env.registries.answers.get(question.answer.type)?.reveals !== false;
   const answerPicture = hasAnswer ? mediaPicker({ question, t, lang: app.lang, files: questionFiles(app, id, "answer"), signal }, "answer") : null;
-  const parts = [picker.kind, prompt, kindPart, picker.answer, answerPart, timingFields(app, id, live.refresh), hasAnswer ? explanation : null, answerPicture, note, ending(app, place)];
+  // Music while the time runs: for every question whose own file is not a clip (core music.ts).
+  const music = canHaveMusic(question, env.registries) ? mediaPicker({ question, t, lang: app.lang, files: questionFiles(app, id, "music"), signal }, "music") : null;
+  const parts = [picker.kind, prompt, kindPart, picker.answer, answerPart, timingFields(app, id, live.refresh), music, hasAnswer ? explanation : null, answerPicture, note, ending(app, place)];
   const element = h("form", { class: "quiz-form quiz-panel", novalidate: "" }, ...parts.filter((part) => part !== null));
   element.addEventListener("submit", (event) => { event.preventDefault(); });
   return element;

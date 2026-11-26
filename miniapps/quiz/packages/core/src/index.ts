@@ -26,6 +26,7 @@ export * from "./kinds/text.ts";
 export * from "./kinds/video.ts";
 export * from "./limits.ts";
 export * from "./media.ts";
+export * from "./music.ts";
 export * from "./migrate.ts";
 export * from "./model.ts";
 export * from "./ops.ts";

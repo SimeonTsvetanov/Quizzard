@@ -7,7 +7,9 @@ import type { App } from "../app/state.ts";
 import { textField } from "../dom/controls.ts";
 import { h } from "../dom/h.ts";
 import type { RoundKindUi } from "../round-kinds-ui.ts";
+import { mediaPicker } from "../kinds-ui/media-picker.ts";
 import { renderSlide } from "../render/slide.ts";
+import { questionFiles } from "./editor-files.ts";
 import { roundPlace, thumbProps } from "./slide-props.ts";
 
 /** The round's one screen as a small slide. */
@@ -38,9 +40,12 @@ export function taskPanel(app: App, round: Round, own: NonNullable<RoundKindUi["
       if (quiz && app.change(editQuestion(quiz, question.id, { prompt: value }))) redraw();
     },
   });
+  const music = question === undefined ? null : mediaPicker({ question, t, lang: app.lang, files: questionFiles(app, question.id, "music"), signal: app.signal }, "music");
   return h("div", { class: "quiz-panel quiz-task", "data-round-task": round.kind },
     h("h3", { class: "quiz-section" }, t(own.title)),
     h("p", { class: "quiz-task-note" }, t(own.note)),
     thumb,
-    ...(extra ? [extra] : []));
+    ...(extra ? [extra] : []),
+    // Music for the long wait: it goes round until the round's time is up.
+    ...(music ? [music] : []));
 }

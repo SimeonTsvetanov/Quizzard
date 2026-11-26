@@ -129,7 +129,7 @@ For a long round, select **List** over the questions. Each question is then one 
 
 ## Save, share and print
 
-Select **Quiz file and printing** on the quiz to open these tools:
+Select **Quiz file, printing and music** on the quiz to open these tools:
 
 - **Save quiz file** saves the quiz with its pictures, audio and video as one `.quizzard` file. Use it as your backup and to move the quiz to another device. On a phone, **Share** sends the same file.
 - **Print answers** prints a sheet for the host: every question with its answer, explanation, host note and points, one round to a page.

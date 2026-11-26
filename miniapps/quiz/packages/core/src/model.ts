@@ -61,6 +61,8 @@ export interface Question {
   readonly media?: MediaRef;
   /** A picture shown with the answer at the reveal, in place of the question's own file; several questions may share it. */
   readonly answerMedia?: MediaRef;
+  /** A sound played while the question's time runs (music.ts); several questions may share it. Not for a question whose own file is a clip. */
+  readonly music?: MediaRef;
   readonly answer: Answer;
   /** Shown with the answer at the reveal. */
   readonly explanation?: string;
@@ -103,7 +105,7 @@ export interface Quiz {
   readonly updatedAt: string;
   readonly language: string;
   readonly rounds: readonly Round[];
-  readonly settings: { readonly teams: number };
+  readonly settings: { readonly teams: number; /** The quiz asks for music on every question that can have it (music.ts). */ readonly music?: boolean };
 }
 
 /** A quiz as it is stored and sent: the versioned wrapper every reader opens through `open()`. */
@@ -129,6 +131,7 @@ export const questionSchema = z.looseObject({
   prompt: z.string(),
   media: z.looseObject({ id }).optional(),
   answerMedia: z.looseObject({ id }).optional(),
+  music: z.looseObject({ id }).optional(),
   answer: answerSchema,
   explanation: z.string().optional(),
   note: z.string().optional(),
@@ -156,7 +159,7 @@ export const quizSchema = z.looseObject({
   updatedAt: z.string(),
   language: z.string(),
   rounds: z.array(roundSchema),
-  settings: z.looseObject({ teams: z.number().int().positive() }),
+  settings: z.looseObject({ teams: z.number().int().positive(), music: z.boolean().optional() }),
 });
 
 /** Schema of one media entry. */

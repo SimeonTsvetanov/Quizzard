@@ -7,7 +7,7 @@ import { createEnv } from "./env.ts";
 import { createGame } from "./game/create.ts";
 import { restore, toSaved } from "./game/save.ts";
 import type { GameAction, GameState } from "./game/state.ts";
-import { step } from "./game/step.ts";
+import { needsTicks, step } from "./game/step.ts";
 import { type Translate, createTranslator, playerLang } from "./i18n/translate.ts";
 import { h } from "./render/h.ts";
 import { type Bar, createBar } from "./ui/bar.ts";
@@ -18,6 +18,7 @@ import { menuContent } from "./ui/menu.ts";
 import { type Panel, createPanel } from "./ui/panel.ts";
 import { createScoreboard } from "./ui/scoreboard.ts";
 import { type Stage, createStage, showsAllParts } from "./ui/stage.ts";
+import { type Music, createMusic } from "./ui/music.ts";
 import { playTimeUp, ranOut } from "./ui/sound.ts";
 import { offerRestart } from "./ui/resume.ts";
 import { type UndoStrip, createUndoStrip } from "./ui/undo.ts";
@@ -50,6 +51,7 @@ interface Session {
   readonly bar: Bar;
   readonly commands: Commands;
   readonly undo: UndoStrip;
+  readonly music: Music;
   state: GameState;
   overlay: Overlay | null;
   presenter: Presenter | null;
@@ -79,6 +81,7 @@ function draw(session: Session): void {
   options.root.setAttribute("data-mode", presenter ? "panel" : "stage");
   if (presenter) presenter.panel.update(state); else session.stage.show(state);
   session.bar.update(state, presenter !== null);
+  session.music.update(state);
   session.overlay?.sync?.(state);
 }
 
@@ -102,12 +105,6 @@ function replace(session: Session, state: GameState): void {
   save(session);
   session.presenter?.channel.send({ kind: "state", state });
   draw(session);
-}
-
-/** Whether time matters to the game right now: a running timer or cue, a playing clip, a break counting down. */
-function needsTicks(state: GameState): boolean {
-  if (state.curtain !== null) return state.curtain.kind === "break" && state.curtain.leftMs > 0;
-  return state.timer.status === "running" || state.timer.status === "cue" || state.media.status === "playing";
 }
 
 /** What a dialog shows and how it follows the game. */
@@ -215,6 +212,7 @@ function createSession(options: InnerOptions): Session {
     options, t, env, commands, undo,
     stage: createStage(env, { canEdit: true, isLive: true }),
     bar: createBar(t, commands),
+    music: createMusic(options.mediaUrl),
     // A player that takes another's place goes on with its game as it is — never through storage, which
     // keeps neither a running timer nor a break and may not be there at all (an exported page).
     state: options.resume?.state ?? startAt(restore(fresh, readSaved(options.storage)), options.startAt),
@@ -269,6 +267,7 @@ export function startPlayer(options: InnerOptions): InnerPlayer {
     window.clearInterval(ticker);
     session.overlay?.close();
     session.undo.clear();
+    session.music.destroy();
   };
   return {
     getState: () => session.state,

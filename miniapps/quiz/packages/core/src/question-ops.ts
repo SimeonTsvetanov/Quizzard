@@ -78,6 +78,8 @@ export interface QuestionEdit {
   readonly media?: MediaRef | null;
   /** The picture shown with the answer; `null` removes it. */
   readonly answerMedia?: MediaRef | null;
+  /** The sound played while the question's time runs; `null` removes it. */
+  readonly music?: MediaRef | null;
   readonly data?: QuestionData;
 }
 
@@ -94,6 +96,7 @@ function applyOptional(question: Question, edit: QuestionEdit): Question {
   }
   if (edit.media !== undefined) next = edit.media === null ? without(next, "media") : { ...next, media: edit.media };
   if (edit.answerMedia !== undefined) next = edit.answerMedia === null ? without(next, "answerMedia") : { ...next, answerMedia: edit.answerMedia };
+  if (edit.music !== undefined) next = edit.music === null ? without(next, "music") : { ...next, music: edit.music };
   return next;
 }
 
@@ -129,7 +132,10 @@ export function setQuestionKind(quiz: Quiz, questionId: string, kind: string, en
   return changeQuestion(quiz, questionId, (question) => {
     if (question.kind === kind) return question;
     const keepsMedia = entry.mediaType !== null && env.registries.kinds.get(question.kind)?.mediaType === entry.mediaType;
-    const base: Question = { ...without(keepsMedia ? question : without(question, "media"), "data"), kind };
+    // A kind whose own file is a clip makes its own sound: the question's music goes.
+    const isClip = entry.mediaType === "audio" || entry.mediaType === "video";
+    const kept = isClip ? without(question, "music") : question;
+    const base: Question = { ...without(keepsMedia ? kept : without(kept, "media"), "data"), kind };
     const data = entry.defaultData();
     return data ? { ...base, data } : base;
   });
