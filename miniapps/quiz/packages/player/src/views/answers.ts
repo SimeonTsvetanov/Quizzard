@@ -12,10 +12,10 @@ export const answersView: ViewEntry = {
   tile: ({ env }) => ({ mark: env.t("answers.title"), name: env.t("answers.title") }),
 };
 
-/** One answer: the question again, then — at the reveal step — its answer and explanation. */
+/** One answer: the question again with its answer and explanation, which come in a moment later by themselves. */
 export const answerView: ViewEntry = {
   id: "answer",
-  stage: (context) => slideView(context, slideOf(context, context.state.step >= 1, null, "answer")),
+  stage: (context) => slideView(context, slideOf(context, true, null, "answer")),
   answer: hostAnswer,
   tile: (context) => ({ mark: String(questionNumber(context)), name: context.env.t("tile.answer", { n: questionNumber(context) }), group: context.env.t("answers.title") }),
 };

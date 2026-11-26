@@ -20,8 +20,8 @@ describe("the saved game", () => {
   it("a reload in the middle continues: position, reveal, teams, scores, settings", () => {
     const fresh = newGame([2, 1]);
     const played = play(fresh, { type: "setTeamName", teamId: "t1", name: "Foxes" }, { type: "addTeam", name: "Late" }, { type: "setAuto", value: false },
-      { type: "setScore", roundId: "r1", teamId: "t1", value: 2.5 }, { type: "addBonus", teamId: "t2", by: 1 }, { type: "pickWinner", teamId: "t2" }, { type: "jump", index: 7 }, { type: "next" });
-    expect(at(played)).toBe("answer q1.2 revealed");
+      { type: "setScore", roundId: "r1", teamId: "t1", value: 2.5 }, { type: "addBonus", teamId: "t2", by: 1 }, { type: "pickWinner", teamId: "t2" }, { type: "jump", index: 8 }, { type: "next" });
+    expect(at(played)).toBe("score r1 revealed");
     expect(restore(fresh, stored(played))).toEqual(played);
   });
 

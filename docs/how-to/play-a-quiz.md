@@ -12,7 +12,7 @@ This guide shows you how to run a quiz you made with **Quiz creator**: in Quizza
 1. Open the quiz and select **Play**. To start in the middle, select the three dots (**More**) on a round or a question and then **Play from this round** or **Play from here**.
 2. On the title screen, select **Start**.
 3. On **Teams**, enter each team's name. **Add team** adds a team; a game takes 2 to 12 teams and starts with 4.
-4. Select **Next** to go on. Each round shows its rules, its questions with their timer, the **Answers** one by one (**Show answer**), the **Scores** and the **Leaderboard**. The game ends with the **Final result**.
+4. Select **Next** to go on. Each round shows its rules, its questions with their timer, the **Answers** one by one, the **Scores** and the **Leaderboard**. The game ends with the **Final result**.
 5. To leave, select the cross (**Back to the quiz**). The game is saved, and **Play** continues where you left it.
 
 When you open a game you left, a message says "Continuing your last game". To play from the beginning, select **Start again** on that message: it clears the points and goes back to the first screen.
@@ -23,7 +23,7 @@ If first place is shared at the end, **A tie for first place** shows the teams t
 
 - **Where you are:** the question as "3/10" and the round as "Round 1/3", with the total dimmer.
 - **The timer:** seconds, or a clock such as "5:00" for a time over 99 seconds. A round's rules give whole minutes as minutes, for example "5 min per question".
-- **The answer:** when you select **Show answer**, the answer is the large text in the middle and the question moves to the top, smaller. The explanation shows in full under it; a long one is set smaller. If the question has a file with its answer (**Picture, audio or video with the answer (optional)**), that picture or clip takes the place of the question's own picture or clip.
+- **The answer:** each answer is one slide and one press of **Next**. The question stands at the top, smaller, and about a second later the answer comes in as the large text in the middle. The explanation shows in full under it; a long one is set smaller. If the question has a file with its answer (**Picture, audio or video with the answer (optional)**), that picture or clip takes the place of the question's own picture or clip.
 - **The Quizzard logo:** large on the title and the final screen, small in a corner on the others. In an exported quiz the logo is a link to the Quizzard website, which opens in another tab.
 
 The screen stays awake while you play.
@@ -64,7 +64,7 @@ The same bar is under the stage and, when the audience window is open, under the
 | **Back** | ← or Page Up | The screen before. |
 | **Start timer** / **Pause timer** | T | Starts or pauses the question's timer. |
 | **Restart timer** | R | Sets the timer back to the full time. |
-| **Start**, **Next** or **Show answer** | Space, → or Page Down | Goes on. The button stays in the same place whatever it says. |
+| **Start**, **Next** or **Play the clip** | Space, → or Page Down | Goes on. The button stays in the same place whatever it says. |
 | **Black screen** | B | Covers the stage until you select it again or go on. |
 | **Scores** | S | Shows and corrects every round's points. |
 | **Open audience window** / **Close audience window** | | Shows the stage alone in a second window, or closes it. |

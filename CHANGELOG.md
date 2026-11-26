@@ -4,6 +4,10 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.32.0] - 2026-11-26
+### Changed
+- **While playing — an answer is one slide and one press.** "Next" shows the answer's slide with the question at the top, and about a second later the answer comes in by itself, then the text with it. There is no second press ("Show answer") on an answer any more.
+
 ## [0.31.1] - 2026-11-26
 ### Fixed
 - **Music for the whole quiz:** the two pickers stand one under the other with their whole names — "Choose a folder of songs" and "Choose single songs" — instead of two buttons cut to "Songs…".

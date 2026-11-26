@@ -143,6 +143,16 @@
     animation-name: qp-rise;
     animation-delay: 260ms;
   }
+
+  /* The answer's slide comes with one press (Moni 2026-11-26): the question is read first, then — a second
+     later — the answer comes in, and the text with it after that. */
+  .qp-slide-view[data-enter] .quiz-slide[data-reveal] :is(.quiz-slide-right, .quiz-slide-kicker) {
+    animation-delay: 1000ms;
+  }
+
+  .qp-slide-view[data-enter] .quiz-slide[data-reveal] .quiz-slide-explanation {
+    animation-delay: 1260ms;
+  }
 }
 
 @keyframes qp-rise {

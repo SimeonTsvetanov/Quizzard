@@ -26,7 +26,8 @@ export function createScreenKinds(): Registry<ScreenKind> {
     { id: STANDARD_SCREENS.rules },
     { id: STANDARD_SCREENS.question, seconds: effectiveSeconds },
     { id: STANDARD_SCREENS.answers },
-    { id: STANDARD_SCREENS.answer, steps: 1 },
+    // One press shows the answer's slide whole (Moni 2026-11-26): the answer comes in by itself a moment after the question (styles/clock.css).
+    { id: STANDARD_SCREENS.answer },
     // The round's answers in one list, then the points entry: two parts on an upright screen, one screen on a wide one.
     { id: STANDARD_SCREENS.score, steps: 1, upright: true },
     // A round without answers: the points alone, in one part on any screen.

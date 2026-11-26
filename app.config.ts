@@ -87,7 +87,7 @@ export const app = {
   description: "Free pub quiz and game night toolkit: quiz maker, random team generator, score keeper and answer sheet. Works offline, no account, data stays with you.",
   url: "https://simeontsvetanov.github.io/Quizzard/",
   repo: "https://github.com/SimeonTsvetanov/Quizzard",
-  version: "0.31.1",
+  version: "0.32.0",
   languages: ["en", "bg"],
   // Palette C · Emerald (DECISIONS 2026-11-22): white text on the light one (5.00:1), dark text on the dark one.
   accent: { light: "#00804F", dark: "#34D399" },

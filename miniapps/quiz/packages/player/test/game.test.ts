@@ -29,12 +29,12 @@ describe("createGame", () => {
     ]);
   });
 
-  it("writes each screen's timer and reveals next to it: a question has its time, an answer one reveal", () => {
+  it("writes each screen's timer and reveals next to it: a question has its time, an answer shows whole at once", () => {
     const file = quizFile([2]);
     const withOwnTime = { ...file, quiz: { ...file.quiz, rounds: file.quiz.rounds.map((round) => ({ ...round, questions: round.questions.map((question, index) => (index === 1 ? { ...question, seconds: 45 } : question)) })) } };
     const screens = buildScreens(withOwnTime);
     expect(screens.filter((screen) => screen.screen === "question").map((screen) => screen.seconds)).toEqual([10, 45]);
-    expect(screens.filter((screen) => screen.screen === "answer").map((screen) => screen.steps)).toEqual([1, 1]);
+    expect(screens.filter((screen) => screen.screen === "answer").map((screen) => screen.steps)).toEqual([0, 0]);
     expect(screens.filter((screen) => screen.screen !== "question").every((screen) => screen.seconds === 0)).toBe(true);
   });
 
@@ -63,7 +63,7 @@ describe("createGame", () => {
 });
 
 describe("next, back and jump", () => {
-  it("next walks every screen; an answer is revealed before the game moves on", () => {
+  it("next walks every screen; an answer's slide takes one press (Moni 2026-11-26)", () => {
     const walk: string[] = [];
     let game = newGame([2]);
     for (let moves = 0; moves < 40; moves += 1) {
@@ -75,7 +75,7 @@ describe("next, back and jump", () => {
     expect(walk).toEqual([
       "title", "teams", "rules r1", "question q1.1", "question q1.2", "answers r1",
       // An upright screen (no `wide`): the score entry has two parts — the round's answers, then the points.
-      "answer q1.1", "answer q1.1 revealed", "answer q1.2", "answer q1.2 revealed", "score r1", "score r1 revealed", "board r1", "final",
+      "answer q1.1", "answer q1.2", "score r1", "score r1 revealed", "board r1", "final",
     ]);
   });
 
@@ -89,17 +89,14 @@ describe("next, back and jump", () => {
     expect(at(board)).toBe("board r1");
     const again = deepFreeze(step(board, { type: "back", wide: true }));
     expect(at(again)).toBe("score r1 revealed");
-    expect(at(step(again, { type: "back", wide: true }))).toBe("answer q1.2 revealed");
+    expect(at(step(again, { type: "back", wide: true }))).toBe("answer q1.2");
     expect(at(step(again, { type: "next", wide: true }))).toBe("board r1");
     // Upright: the answers, then the points, then the leaderboard — and the same way back.
     const points = deepFreeze(step(score, { type: "next", wide: false }));
     expect(at(points)).toBe("score r1 revealed");
     expect(at(step(points, { type: "next" }))).toBe("board r1");
     expect(at(step(points, { type: "back" }))).toBe("score r1");
-    expect(at(step(step(points, { type: "back" }), { type: "back" }))).toBe("answer q1.2 revealed");
-    // A real reveal is never passed over, whoever asks.
-    const answer = step(score, { type: "back", wide: true });
-    expect(at(step(step(answer, { type: "back", wide: true }), { type: "next", wide: true }))).toBe("answer q1.2 revealed");
+    expect(at(step(step(points, { type: "back" }), { type: "back" }))).toBe("answer q1.2");
     // Points are entered on either part.
     expect(step(score, { type: "setScore", roundId: "r1", teamId: "t1", value: 3 }).scores).toEqual({ r1: { t1: 3 } });
   });
@@ -112,19 +109,22 @@ describe("next, back and jump", () => {
     expect(step(end, { type: "next" })).toBe(end);
   });
 
-  it("back hides a revealed answer first, and shows the screen before with its answer revealed", () => {
-    const revealed = forward(newGame([2]), 9); // answer q1.2 revealed
-    expect(at(revealed)).toBe("answer q1.2 revealed");
-    expect(at(play(revealed, "back"))).toBe("answer q1.2");
-    expect(at(play(revealed, "back", "back"))).toBe("answer q1.1 revealed");
-    expect(at(play(revealed, "back", "back", "next"))).toBe("answer q1.2");
+  it("back from an answer shows the answer before, and next comes back to it", () => {
+    const second = forward(newGame([2]), 7);
+    expect(at(second)).toBe("answer q1.2");
+    expect(at(play(second, "back"))).toBe("answer q1.1");
+    expect(at(play(second, "back", "back"))).toBe("answers r1");
+    expect(at(play(second, "back", "next"))).toBe("answer q1.2");
   });
 
-  it("reveal shows the answer and does nothing more; on a screen without one it does nothing", () => {
-    const hidden = forward(newGame([1]), 5);
-    expect(at(hidden)).toBe("answer q1.1");
-    const shown = step(hidden, { type: "reveal" });
-    expect(at(shown)).toBe("answer q1.1 revealed");
+  it("reveal shows a screen's next part and does nothing more; on a screen without parts — an answer too — it does nothing", () => {
+    const answer = forward(newGame([1]), 5);
+    expect(at(answer)).toBe("answer q1.1");
+    expect(step(answer, { type: "reveal" })).toBe(answer);
+    const score = forward(answer, 1);
+    expect(at(score)).toBe("score r1");
+    const shown = step(score, { type: "reveal" });
+    expect(at(shown)).toBe("score r1 revealed");
     expect(step(shown, { type: "reveal" })).toBe(shown);
     const title = newGame([1]);
     expect(step(title, { type: "reveal" })).toBe(title);
