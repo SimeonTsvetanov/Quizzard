@@ -4,6 +4,10 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.36.1] - 2026-11-26
+### Changed
+- **User docs, README, Help and the texts for search engines and AI assistants are up to date** with this week's changes: name colours, music under questions and for the whole quiz, the Back arrow, answers with one press, the pyramid's one screen, the Safe's sequence, the round's switches, clips that run with their timer, blurred questions. Every screenshot was made again (light and dark) and six were added: the round with its settings, the music tools, an answer slide, the pyramid, the Safe and the name-colour window.
+
 ## [0.36.0] - 2026-11-26
 ### Changed
 - **Quiz creator — the questions of a round are blurred until you ask to see them.** An eye button in the round's header, beside copy and delete, shows them and hides them again; hidden is the start. The players may be watching your screen while you get the quiz ready: the cards keep their kind, time and points, the text and pictures are not readable.

@@ -24,6 +24,12 @@ If first place is shared at the end, **A tie for first place** shows the teams t
 - **Where you are:** the question as "3/10" and the round as "Round 1/3", with the total dimmer.
 - **The timer:** seconds, or a clock such as "5:00" for a time over 99 seconds. A round's rules give whole minutes as minutes, for example "5 min per question".
 - **The answer:** each answer is one slide and one press of **Next**. The question stands at the top, smaller, and about a second later the answer comes in as the large text in the middle. The explanation shows in full under it; a long one is set smaller. If the question has a file with its answer (**Picture, audio or video with the answer (optional)**), that picture or clip takes the place of the question's own picture or clip.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="../images/play-a-quiz/answer-dark.png">
+  <img src="../images/play-a-quiz/answer-light.png" alt="The answer slide of question 1/3: the question at the top, smaller, the answer The Seine large in the middle, and the explanation under it." width="640">
+</picture>
+
 - **The Quizzard logo:** large on the title and the final screen, small in a corner on the others. In an exported quiz the logo is a link to the Quizzard website, which opens in another tab.
 
 The screen stays awake while you play.
@@ -49,7 +55,19 @@ To start a break from the score screen, select **5 min**, **10 min** or **15 min
 ## Play the special rounds
 
 - **Golden pyramid:** one screen shows the pyramid of gold blocks beside all four questions, each with how many answers it asks for. The timer is the four questions' times together: 2 minutes each make 8. Then the answers come one by one: at each answer its blocks turn over and the accepted answers appear, the first 12, then "+N more".
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="../images/play-a-quiz/pyramid-dark.png">
+  <img src="../images/play-a-quiz/pyramid-light.png" alt="The Golden pyramid's screen: the pyramid of gold blocks beside four questions, each with how many answers to write, and one timer." width="640">
+</picture>
+
 - **Safe:** a vault door. After **Answers**, one press of **Next** dials the whole code: each digit's slide turns the dial, clicks the digit into its window and gives way to the next by itself, and after the fifth the door opens. The digits found so far stay beside the vault, and the timer button pauses the sequence. With **Show the answers one by one** off, one slide shows the whole code. At score entry you enter each team's right digits (0 to 5); all five add the bonus, shown as "5 + 3 bonus".
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="../images/play-a-quiz/safe-dark.png">
+  <img src="../images/play-a-quiz/safe-light.png" alt="The Safe's third answer: the vault with 4, 7 and 1 in its windows; beside it the code so far, 4 and 7 small and 1 large." width="640">
+</picture>
+
 - **Make the quizmaster laugh** and **Free game:** the rules with the prizes, the task with its timer, the points and the leaderboard. The task of **Make the quizmaster laugh** is built in and is shown in the language you play in, with your own text under it if you added one. There are no answers to show. In **Make the quizmaster laugh**, give the prize for first place to the funniest team and the prize for second place to the next one.
 
 Each special round opens with a short animated explanation of how it scores.

@@ -87,7 +87,7 @@ export const app = {
   description: "Free pub quiz and game night toolkit: quiz maker, random team generator, score keeper and answer sheet. Works offline, no account, data stays with you.",
   url: "https://simeontsvetanov.github.io/Quizzard/",
   repo: "https://github.com/SimeonTsvetanov/Quizzard",
-  version: "0.36.0",
+  version: "0.36.1",
   languages: ["en", "bg"],
   // Palette C · Emerald (DECISIONS 2026-11-22): white text on the light one (5.00:1), dark text on the dark one.
   accent: { light: "#00804F", dark: "#34D399" },
@@ -137,9 +137,9 @@ export const app = {
     // The four tools, one sentence each: Help → Features, llms.txt, llms-full.txt and the JSON-LD featureList.
     features: [
       { name: "Teams", route: "#/teams", text: "A random team generator: paste or type the names, choose 2 to 10 teams and get fair teams whose sizes differ by at most one, ready to copy or share." },
-      { name: "Scores", route: "#/scores", text: "A score keeper for game night: add up to 50 players, change a score with + and − or by any amount, follow the ranked leaderboard and each score's history, and share the leaderboard as text." },
+      { name: "Scores", route: "#/scores", text: "A score keeper for game night: add up to 50 players, change a score with + and − or by any amount, give each name a colour (the meeple colours of board games, or your own), follow the ranked leaderboard and each score's history, and share the leaderboard as text." },
       { name: "Answer sheet", route: "#/sheet", text: "A team's own answer sheet for a pub quiz: write the answers round by round, mark each ✓ or ✗ and see the points per question and per round, bonus points and the running total." },
-      { name: "Quiz creator", route: "#/quiz", text: "A quiz maker for your own pub quiz or quiz night: questions with open, multiple-choice or true/false answers, pictures, audio and video, and time and points per round or per question. Cut and shrink a clip while you add it (in most current browsers) and show a picture, a sound or a video with the answer. Five round kinds: Standard, Golden pyramid, Safe, Make the quizmaster laugh and Free game. Play it on a TV or projector with a timer, points, a leaderboard and breaks, from a host panel with a separate audience window, in English or Bulgarian. Or export it as one HTML file that plays offline in any browser. Quizzes stay on your device; a quiz file moves one to another device." },
+      { name: "Quiz creator", route: "#/quiz", text: "A quiz maker for your own pub quiz or quiz night: questions with open, multiple-choice or true/false answers, pictures, audio and video, and time and points per round or per question. Cut and shrink a clip while you add it (in most current browsers) and show a picture, a sound or a video with the answer. Add music that plays while a question's time runs — a song per question, or a folder of songs for the whole quiz. Five round kinds: Standard, Golden pyramid, Safe, Make the quizmaster laugh and Free game. Play it on a TV or projector with a timer, points, a leaderboard and breaks, from a host panel with a separate audience window, in English or Bulgarian. Or export it as one HTML file that plays offline in any browser. Quizzes stay on your device; a quiz file moves one to another device." },
     ],
   },
   // Was a GitHub search for repositories named "simeonts-microapp": it found none of the apps (Moni 2026-11-25).
@@ -177,9 +177,9 @@ export const app = {
         ],
         features: [
           { name: "Отбори", text: "Генератор на случайни отбори: напишете или поставете имената, изберете от 2 до 10 отбора и получете честни отбори, чийто размер се различава най-много с един, готови за копиране или споделяне." },
-          { name: "Точки", text: "Водене на резултат за игрална вечер: добавете до 50 играчи, променяйте точките с + и − или с произволна стойност, следете класирането и историята на всеки резултат и споделете класирането като текст." },
+          { name: "Точки", text: "Водене на резултат за игрална вечер: добавете до 50 играчи, променяйте точките с + и − или с произволна стойност, дайте цвят на всяко име (цветовете на мипълите от настолните игри или Ваш), следете класирането и историята на всеки резултат и споделете класирането като текст." },
           { name: "Лист с отговори", text: "Собствен лист с отговори на отбора за куиз: записвайте отговорите рунд по рунд, отбелязвайте всеки с ✓ или ✗ и вижте точките за въпрос и за рунд, бонус точките и общия резултат." },
-          { name: "Създател на куизове", text: "Създател на куизове за Вашия куиз или куиз вечер: въпроси с отворен отговор, избор от няколко или вярно/невярно, снимки, аудио и видео, време и точки за рунд или за отделен въпрос. Изрежете и смалете клип още при добавянето му (в повечето съвременни браузъри) и покажете картина, звук или видео с отговора. Пет вида рундове: „Обикновен“, „Златна пирамида“, „Сейф“, „Разсмей куизмастъра“ и „Свободна игра“. Играйте на телевизор или проектор с таймер, точки, класиране и почивки, от панел за водещия с отделен прозорец за публиката, на английски или български. Или го експортирайте като един HTML файл, който работи офлайн във всеки браузър. Куизовете остават на Вашето устройство; файл на куиз го пренася на друго устройство." },
+          { name: "Създател на куизове", text: "Създател на куизове за Вашия куиз или куиз вечер: въпроси с отворен отговор, избор от няколко или вярно/невярно, снимки, аудио и видео, време и точки за рунд или за отделен въпрос. Изрежете и смалете клип още при добавянето му (в повечето съвременни браузъри) и покажете картина, звук или видео с отговора. Добавете музика, която свири, докато тече времето на въпроса — песен за въпрос или папка с песни за целия куиз. Пет вида рундове: „Обикновен“, „Златна пирамида“, „Сейф“, „Разсмей куизмастъра“ и „Свободна игра“. Играйте на телевизор или проектор с таймер, точки, класиране и почивки, от панел за водещия с отделен прозорец за публиката, на английски или български. Или го експортирайте като един HTML файл, който работи офлайн във всеки браузър. Куизовете остават на Вашето устройство; файл на куиз го пренася на друго устройство." },
         ],
       },
       faq: [

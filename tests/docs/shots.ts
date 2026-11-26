@@ -3,6 +3,7 @@
 // The four images the README also shows (home, teams-result, scores-game, answer-sheet) have `page: ""`
 // and sit directly in docs/images/; every other image is in the folder of the page that embeds it.
 // Sample data only: mixed, real-looking first names, no personal data.
+import { readFileSync } from "node:fs";
 import type { Locator, Page } from "@playwright/test";
 
 /** One docs image: where it goes, how to reach the state, and what to crop to. */
@@ -83,7 +84,7 @@ const QUIZ_FILE = {
 };
 
 /** Puts the sample quiz into the Quiz creator's library (its IndexedDB database) and opens the library. */
-async function seedQuiz(page: Page): Promise<void> {
+async function seedQuiz(page: Page, file: object = QUIZ_FILE): Promise<void> {
   await openTool(page, "#/quiz", async (p) => { await p.locator('[data-miniapp="quiz"] [data-screen="library"]').waitFor(); });
   await page.evaluate((record) => new Promise<void>((resolve, reject) => {
     const request = indexedDB.open("quizzard-quiz");
@@ -93,7 +94,7 @@ async function seedQuiz(page: Page): Promise<void> {
       transaction.oncomplete = () => { request.result.close(); resolve(); };
       transaction.onerror = () => { reject(new Error("seed failed")); };
     };
-  }), QUIZ_FILE);
+  }), file);
   await page.reload();
   await page.locator('[data-miniapp="quiz"] .quiz-card').first().waitFor();
   await waitOutOfflineToast(page);
@@ -103,6 +104,26 @@ async function seedQuiz(page: Page): Promise<void> {
 async function settle(page: Page): Promise<void> {
   await page.evaluate(() => Promise.all(document.getAnimations().filter((one) => one.effect?.getComputedTiming().iterations !== Infinity).map((animation) => animation.finished.catch(() => undefined))));
   await blurFocus(page);
+}
+
+/** A quiz with a Golden pyramid and a Safe (the core's own fixture), for the pictures of the special rounds. */
+const SPECIAL_FILE = JSON.parse(readFileSync(new URL("../../miniapps/quiz/packages/core/test/fixtures/v1/special-rounds.quiz.json", import.meta.url), "utf8")) as object;
+
+const quizRoot = '[data-miniapp="quiz"]';
+const stage = '.qp-stage[data-stage="live"]';
+
+/** Seeds a quiz, opens it and starts Play on its title screen. */
+async function playQuiz(page: Page, file: object = QUIZ_FILE): Promise<void> {
+  await seedQuiz(page, file);
+  await page.locator(`${quizRoot} .quiz-card-open`).first().click();
+  await page.locator(`${quizRoot} [data-play-quiz]`).click();
+  await page.locator(`${stage} [data-view="title"]`).waitFor();
+}
+
+/** Jumps to a screen through the player's menu: the `nth` tile of a kind ("answers", "score"). */
+async function jumpTo(page: Page, screen: string, nth: number): Promise<void> {
+  await page.keyboard.press("KeyM");
+  await page.locator(`[data-dialog="menu"] [data-jump-screen="${screen}"]`).nth(nth).click();
 }
 
 /** The Quiz creator pictures of "Make a quiz" and "Play a quiz". */
@@ -126,6 +147,66 @@ const QUIZ_SHOTS: readonly DocsShot[] = [
       await page.locator('[data-miniapp="quiz"] [data-focus="round:r1"]').click();
       await page.locator('[data-miniapp="quiz"] [data-focus="question:q1"]').click();
       await page.locator('[data-miniapp="quiz"] [data-screen="editor"]').waitFor();
+      await settle(page);
+    },
+  },
+  {
+    // The open round with its questions shown (the eye) and its settings: time, points and the two switches.
+    page: "make-a-quiz", name: "round", device: "phone",
+    setUp: async (page) => {
+      await page.setViewportSize({ width: 390, height: 1500 });
+      await seedQuiz(page);
+      await page.locator(`${quizRoot} .quiz-card-open`).first().click();
+      await page.locator(`${quizRoot} [data-focus="round:r1"]`).click();
+      await page.locator(`${quizRoot} [data-round-action="peek"]`).click();
+      await page.locator(`${quizRoot} [data-round-settings] summary`).click();
+      await page.locator(`${quizRoot} [data-round-one-by-one]`).waitFor();
+      await settle(page);
+    },
+  },
+  {
+    page: "make-a-quiz", name: "music", device: "phone",
+    setUp: async (page) => {
+      await page.setViewportSize({ width: 390, height: 1300 });
+      await seedQuiz(page);
+      await page.locator(`${quizRoot} .quiz-card-open`).first().click();
+      await page.locator(`${quizRoot} [data-quiz-more] summary`).click();
+      await page.locator(`${quizRoot} [data-music-row]`).waitFor();
+      await settle(page);
+    },
+    crop: (page) => page.locator(`${quizRoot} [data-quiz-more]`),
+  },
+  {
+    page: "play-a-quiz", name: "answer", device: "desktop",
+    setUp: async (page) => {
+      await playQuiz(page);
+      await jumpTo(page, "answers", 0);
+      await page.keyboard.press("Space");
+      await page.locator(`${stage} .quiz-slide-right`).waitFor();
+      await page.waitForTimeout(1800); // the answer comes in a second after its slide
+      await settle(page);
+    },
+  },
+  {
+    page: "play-a-quiz", name: "pyramid", device: "desktop",
+    setUp: async (page) => {
+      await playQuiz(page, SPECIAL_FILE);
+      for (let press = 0; press < 3; press += 1) await page.keyboard.press("Space");
+      await page.locator(`${stage} [data-view="pyramid"]`).waitFor();
+      await page.keyboard.press("KeyT"); // the timer rests: the picture is the same every time
+      await settle(page);
+    },
+  },
+  {
+    page: "play-a-quiz", name: "safe", device: "desktop",
+    setUp: async (page) => {
+      await playQuiz(page, SPECIAL_FILE);
+      await jumpTo(page, "answers", 1);
+      await page.keyboard.press("Space");
+      // The code dials itself: the picture is of the third digit, with two found before it.
+      await page.locator(`${stage} [data-code-line] [data-code="set"]`).nth(1).waitFor({ timeout: 20_000 });
+      await page.keyboard.press("KeyT");
+      await page.waitForTimeout(2200);
       await settle(page);
     },
   },
@@ -163,12 +244,20 @@ const NAMES = ["Maria", "Liam", "Aisha", "Kenji", "Elena", "Noah", "Priya", "Car
 /** The Scores game: each player's name and the amount entered, in the order they are entered (Liam last: his card is the last-scored one). */
 const SCORES: readonly (readonly [string, number])[] = [["Maria", 34], ["Aisha", 27], ["Kenji", 12], ["Elena", -3], ["Liam", 27]];
 
+/** The colour of each player's name, as picked in the palette; Elena has none. */
+const NAME_COLOURS: Readonly<Record<string, string>> = { Maria: "Red", Liam: "Blue", Aisha: "Yellow", Kenji: "Green" };
+
 /** Adds the players through the Add Player card and enters their amounts through Adjust score. */
 async function playScoresGame(page: Page): Promise<void> {
   const nameField = page.getByRole("textbox", { name: "Player name", exact: true });
   await nameField.waitFor();
   for (const [name] of [...SCORES].sort(([a], [b]) => NAMES.indexOf(a) - NAMES.indexOf(b))) {
     await nameField.fill(name);
+    const colour = NAME_COLOURS[name];
+    if (colour !== undefined) {
+      await page.getByRole("button", { name: "Colour of the new player's name" }).click();
+      await page.getByRole("dialog").getByRole("button", { name: colour, exact: true }).click();
+    }
     await nameField.press("Enter");
   }
   for (const [name, amount] of SCORES) {
@@ -224,6 +313,19 @@ export const DOCS_SHOTS: readonly DocsShot[] = [
       await playScoresGame(page);
       await waitOutOfflineToast(page);
     },
+  },
+  {
+    page: "keep-score", name: "name-colour", device: "phone",
+    setUp: async (page: Page): Promise<void> => {
+      await openTool(page, "#/scores", async (p) => { await p.getByRole("textbox", { name: "Player name", exact: true }).waitFor(); });
+      await playScoresGame(page);
+      await waitOutOfflineToast(page);
+      await page.getByRole("textbox", { name: "Player name for Elena" }).focus();
+      await page.getByRole("button", { name: "Name colour for Elena" }).click();
+      await page.getByRole("dialog", { name: "Name colour" }).waitFor();
+      await page.waitForTimeout(400);
+    },
+    crop: (page) => page.getByRole("dialog", { name: "Name colour" }),
   },
   {
     page: "", name: "answer-sheet", device: "phone",

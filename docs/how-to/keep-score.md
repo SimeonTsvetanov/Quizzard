@@ -4,7 +4,7 @@ This guide shows you how to keep score for a game with **Scores**: add players, 
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="../images/scores-game-dark.png">
-  <img src="../images/scores-game-light.png" alt="Scores with five player cards: Maria with 34 and a gold medal, Liam and Aisha with 27 and silver medals, Kenji with 12 and Elena with -3." width="390">
+  <img src="../images/scores-game-light.png" alt="Scores with five player cards and medals; the names of Maria, Liam, Aisha and Kenji are filled red, blue, yellow and green, Elena's is plain." width="390">
 </picture>
 
 ## Add players
@@ -23,6 +23,11 @@ Useful when every player has a colour on the table, for example the meeples in C
 
 1. Select the palette button beside the name: in the **Add Player** card before you add the player, or in the player's card at any time. On a phone, and from the fifth player on, a card shows the palette in place of the trash button while you edit the name: select the name first.
 2. In the **Name colour** window, select one of the seven colours (red, blue, yellow, green, black, pink, grey), or choose your own in **Custom colour** and select **Done**.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="../images/keep-score/name-colour-dark.png">
+  <img src="../images/keep-score/name-colour-light.png" alt="The Name colour window: seven round colours, a Custom colour field, and the buttons No colour and Done." width="390">
+</picture>
 
 The colour fills the name field only; the rest of the card stays the same. On the seven colours the name is written in dark or white, whichever reads better; on a custom colour it is always white, so pick one that white text shows on. To take it off, open the window again and select **No colour**.
 

@@ -33,6 +33,11 @@ If some questions of the round have their own time or points, **Apply time and p
 
 A quiz can have up to 20 rounds.
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="../images/make-a-quiz/round-dark.png">
+  <img src="../images/make-a-quiz/round-light.png" alt="The round History with the eye button on and its settings open: time, points, and the two switches for answers and for moving on." width="390">
+</picture>
+
 ## Add a Golden pyramid or a Safe
 
 These two special rounds come ready to fill in: their questions are already there, with their answer kind, points, time and a rules text in the quiz's language. You can change the text and, in **Round settings**, the time.
@@ -146,6 +151,11 @@ To add music to the whole quiz:
 2. Select **Choose a folder of songs** (on a computer) or **Choose single songs** and choose your songs.
 
 Every question without music gets one of the songs, in the order of their names. With fewer songs than questions, the songs start again from the first. A question that already has a song keeps it. Where the browser can cut a clip, each song is cut to the time of its question.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="../images/make-a-quiz/music-dark.png">
+  <img src="../images/make-a-quiz/music-light.png" alt="The quiz's tools: Save quiz file, Print answers, and the buttons Choose a folder of songs and Choose single songs." width="390">
+</picture>
 
 When you add questions later, the quiz shows how many have no music, for example **2 questions have no music**. Select the message to see them, such as "Round 1 (History) – question 3", and select **Choose songs** to fill them. **Remove the music** takes the music off every question; **Undo** brings it back.
 

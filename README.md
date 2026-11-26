@@ -83,9 +83,9 @@ Your team's sheet at a pub quiz, instead of paper. Write the answers of each rou
 
 Build your own quiz night and run it from the same app.
 
-- **Make it:** rounds and questions with open, multiple-choice or true/false answers; pictures, audio and video; cut and shrink a clip on the device while you add it; a picture shown with the answer; time and points per round or per question; a live preview of every slide.
+- **Make it:** rounds and questions with open, multiple-choice or true/false answers; pictures, audio and video; cut and shrink a clip on the device while you add it; a picture or a clip shown with the answer; music under the questions — one song each, or a whole folder handed out over the quiz; time and points per round or per question; a live preview of every slide. The questions stay blurred until you ask to see them.
 - **Round kinds:** *Standard*, *Golden pyramid* (4 questions that ask for 1, 2, 3 and 4 answers — 10 points), *Safe* (5 one-digit answers that open a vault, with a bonus for the full code), *Make the quizmaster laugh* (one ready-made screen: every team tells a joke; the two funniest score) and *Free game* (your own task — draw, build, sing — with a timer and points).
-- **Play it:** a stage for the big screen with a timer, the answers of each round, points entry, standings and a break; an audience window with a host panel beside it (timer, break, scores, your notes); the stage in English or Bulgarian, whatever the quiz's language.
+- **Play it:** a stage for the big screen with a timer, the answers of each round — one by one or all at once, as the round is set — points entry, standings and a break with music; questions that follow by themselves, clips that start with their timer; an audience window with a host panel beside it (timer, break, scores, your notes); the stage in English or Bulgarian, whatever the quiz's language.
 - **Take it with you:** export the quiz as one HTML file that plays offline in any browser, or save it as a quiz file to move it to another device.
 
 ## Why people use it
