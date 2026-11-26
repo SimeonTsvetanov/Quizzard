@@ -16,6 +16,8 @@ export interface ViewState {
   lastRound: string | null;
   /** The round's settings strip is open. */
   isSettingsOpen: boolean;
+  /** The questions of a round are shown readable; `false` = blurred, so a screen shared with the players gives nothing away (the start). */
+  showsQuestions: boolean;
   /** What is typed in the library's search field. */
   query: string;
   /** The library asks for a new quiz's name ("New quiz" was pressed; nothing is created yet). */

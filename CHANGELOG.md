@@ -4,6 +4,10 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.36.0] - 2026-11-26
+### Changed
+- **Quiz creator — the questions of a round are blurred until you ask to see them.** An eye button in the round's header, beside copy and delete, shows them and hides them again; hidden is the start. The players may be watching your screen while you get the quiz ready: the cards keep their kind, time and points, the text and pictures are not readable.
+
 ## [0.35.1] - 2026-11-26
 ### Changed
 - The quiz creator may load up to 75 KB of code on its first open (60 KB before): room for what was added this week.

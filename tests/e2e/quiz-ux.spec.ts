@@ -296,6 +296,9 @@ test("S8: a long round as a compact list — 56 px rows, remembered on this devi
   await expect(page.locator(".toast")).toHaveCount(0, { timeout: 8000 }); // on a phone the note lies over the first rows for a moment
   await drag(page, '[data-question="lq1"]', '[data-question="lq3"]');
   expect((await order(page, "data-question")).slice(0, 3)).toEqual(["lq2", "lq3", "lq1"]);
+  // At the end of the page the "Add question" button rests under the list. Anywhere else it lies over whichever
+  // row is passing under it, and how much of that row shows depends on the header's height — luck, not the list.
+  await page.evaluate(() => { window.scrollTo(0, document.documentElement.scrollHeight); });
   await axe(page, "round as a list");
   await page.reload();
   await expect(root(page).locator(".quiz-qrow")).toHaveCount(14);
@@ -449,4 +452,23 @@ test("T11: “Play from here” starts the game at that question; a reload of Pl
   await root(page).locator('[data-round-card="r2"] [data-more]').click();
   await root(page).locator("[data-sheet] [data-play-from]").click();
   await expect(live.locator('[data-view="rules"]')).toContainText("Music");
+});
+
+// Moni 2026-11-26: the players may be watching the host's screen before Play.
+test("a round's questions are blurred until the eye in its header is pressed, and blurred again with it", async ({ page }) => {
+  await openQuiz(page);
+  await root(page).locator(".quiz-round-open").first().click();
+  const pane = root(page).locator(".quiz-pane--round");
+  const eye = pane.getByRole("button", { name: "Show the questions" });
+  await expect(pane).toHaveAttribute("data-questions-hidden", "");
+  await expect(eye).toHaveAttribute("aria-pressed", "false");
+  await expect(pane.locator(".quiz-thumb").first()).toHaveCSS("filter", /blur/);
+  await eye.click();
+  await expect(pane).not.toHaveAttribute("data-questions-hidden");
+  await expect(eye).toHaveAttribute("aria-pressed", "true");
+  await expect(pane.locator(".quiz-thumb").first()).toHaveCSS("filter", "none");
+  if (process.env["LOOK"]) await page.screenshot({ path: `${process.env["LOOK"]}/eye-on.png` });
+  await eye.click();
+  await expect(pane).toHaveAttribute("data-questions-hidden", "");
+  if (process.env["LOOK"]) await page.screenshot({ path: `${process.env["LOOK"]}/eye-off.png` });
 });

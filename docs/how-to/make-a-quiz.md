@@ -127,6 +127,10 @@ For a long round, select **List** over the questions. Each question is then one 
 - Select **Preview** to see the questions as they will be played. **Show answer** shows the reveal.
 - Select **Play** to run the whole quiz. If questions are not finished, Quizzard lists them first. Select one to finish it, or select **Play anyway**.
 
+## Keep the questions out of sight
+
+The questions of a round are blurred when you open the quiz, in case the players can see your screen. To read them, select the eye button (**Show the questions**) in the round's header, beside copy and delete. Select it again to blur them. A question you open is always readable in its editor.
+
 ## Add music
 
 Music plays while a question's time runs, so the teams can talk without the next table hearing them. It starts by itself with the timer and stops with it; a song shorter than the time goes round. A question with audio or video has no music.

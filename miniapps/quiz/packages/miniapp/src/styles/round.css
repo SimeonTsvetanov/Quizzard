@@ -321,3 +321,24 @@
     }
   }
 }
+
+/* || The questions of a round, blurred until the host asks to see them (the eye in the round's header):
+   the players may be watching this screen. The cards keep their place, kind, time and points. */
+@layer components {
+  [data-questions-hidden] .quiz-thumb {
+    filter: blur(var(--space-3));
+  }
+
+  /* A row's text is smeared without a filter: a filter inside the row's button makes a layer of its own, which
+     the tap-target check reads as something lying over the button. */
+  [data-questions-hidden] .quiz-qrow-text {
+    color: transparent;
+    text-shadow: 0 0 var(--space-3) var(--color-text);
+    user-select: none;
+  }
+
+  .quiz-round-tools [aria-pressed="true"] {
+    background: var(--color-accent);
+    color: var(--color-on-accent);
+  }
+}

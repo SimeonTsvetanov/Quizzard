@@ -80,7 +80,14 @@ function headActions(app: App, round: Round): HTMLElement {
       openRoundMenu(app, { ...now, move: (to) => { moveRoundTo(app, round.id, to, "[data-drag]"); }, preview: hasQuestions ? () => { previewRound(app, now.round); } : null, playFrom: hasQuestions ? () => { playFromRound(app, round.id); } : null });
     });
   });
-  return h("div", { class: "quiz-round-tools" }, copy, trash, more);
+  // The questions are blurred until the host asks to see them: the players may be watching this screen (Moni 2026-11-26).
+  const peek = iconButton("eye", t("round.showQuestions"), { "data-round-action": "peek", "aria-pressed": String(app.view.showsQuestions) });
+  peek.addEventListener("click", () => {
+    app.view.showsQuestions = !app.view.showsQuestions;
+    peek.setAttribute("aria-pressed", String(app.view.showsQuestions));
+    peek.closest("[data-round]")?.toggleAttribute("data-questions-hidden", !app.view.showsQuestions);
+  });
+  return h("div", { class: "quiz-round-tools" }, peek, copy, trash, more);
 }
 
 /** "2 not finished": a way to the first unfinished question of the round; nothing when all are finished. */
@@ -131,7 +138,7 @@ export function roundPane(app: App, quiz: Quiz, round: Round): HTMLElement {
     h("span", { class: "quiz-round-number", "aria-hidden": "true", ...(shapeOf(round, app.env.registries) ? { "data-round-kind": round.kind } : {}) }, String(number)),
     h("div", { class: "quiz-round-names" }, h("h2", { class: "visually-hidden", id: "quiz-round-title", tabindex: "-1", "data-screen-title": "" }, t("round.title", { n: number, name: round.name })), name, h("div", { class: "quiz-round-line" }, ...[kindBadge(app, round)].filter((part) => part !== null), summary, ...(badge ? [badge] : []), headActions(app, round))));
   const bar = h("div", { class: "quiz-round-bar" }, h("h3", { class: "quiz-section" }, t("round.questions")), ...(round.questions.length > 0 ? [viewToggle(app, mode)] : []));
-  return h("section", { class: "quiz-pane quiz-pane--round", "aria-labelledby": "quiz-round-title", "data-round": round.id },
+  return h("section", { class: "quiz-pane quiz-pane--round", "aria-labelledby": "quiz-round-title", "data-round": round.id, ...(app.view.showsQuestions ? {} : { "data-questions-hidden": "" }) },
     backLink(quiz.name === "" ? t("quiz.unnamed") : quiz.name, () => { up(app); }, "quiz-narrow-only"),
     head,
     roundSettings(app, round, refresh),

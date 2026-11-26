@@ -91,6 +91,7 @@ export const en = {
     settings: "Round settings",
     time: "Time per question",
     timeOwn: "Time",
+    showQuestions: "Show the questions",
     oneByOne: "Show the answers one by one",
     oneByOneHint: "Off: all answers at once, on the score screen.",
     auto: "Questions follow by themselves",
