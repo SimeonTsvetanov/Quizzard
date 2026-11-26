@@ -645,7 +645,7 @@ for (const viewport of [{ width: 390, height: 844 }, { width: 1920, height: 1080
         await page.keyboard.press("KeyT"); // a running timer would move the game on its own
         await next(page);
       }
-      expect([...new Set(screens)]).toEqual(["title", "teams-view", "rules", "slide-view", "answers", "score", "board", "tie", "final"]); // teams 3 and 12 are level: the tiebreak too
+      expect(new Set(screens)).toEqual(new Set(["title", "teams-view", "rules", "slide-view", "pyramid", "answers", "score", "board", "tie", "final"])); // teams 3 and 12 are level: the tiebreak too
       // The bar's controls are real-size targets on every screen.
       const targets = await page.locator(".qp-bar button:visible").evaluateAll((buttons) => buttons.map((button) => Math.min(button.getBoundingClientRect().width, button.getBoundingClientRect().height)));
       expect(Math.min(...targets)).toBeGreaterThanOrEqual(44);
