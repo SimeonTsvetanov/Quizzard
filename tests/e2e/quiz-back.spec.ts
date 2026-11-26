@@ -96,7 +96,12 @@ for (const [width, height] of SIZES) {
       await headerBack(page).click();
       await expect(screen(page, "editor")).toBeHidden();
       await expect(page).toHaveURL(/#\/quiz/);
-      for (let step = 0; step < 3 && !(await screen(page, "library").isVisible()); step += 1) await headerBack(page).click();
+      // One click per entry the tool added: the count is in the entry itself, so no click races the screen change.
+      const depth = (): Promise<number> => page.evaluate(() => (history.state as { quizzardSub?: number } | null)?.quizzardSub ?? 0);
+      for (let left = await depth(); left > 0; left = await depth()) {
+        await headerBack(page).click();
+        await expect.poll(depth).toBe(left - 1);
+      }
       await expect(screen(page, "library")).toBeVisible();
       await headerBack(page).click();
       await expect(page.locator("[data-view=home]")).toBeVisible();

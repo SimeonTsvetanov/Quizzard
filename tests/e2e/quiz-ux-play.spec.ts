@@ -188,14 +188,14 @@ test("B (owner): one control bar for the stage and the host panel — same butto
   await page.setViewportSize({ width: 1280, height: 860 });
   await play(page);
   const onTitle = await barButtons(page);
-  expect(onTitle.map((button) => button.id)).toEqual(["exit", "back", "timer", "reset", "next", "black", "scores", "audience", "fullscreen", "menu"]);
+  expect(onTitle.map((button) => button.id)).toEqual(["exit", "back", "forward", "timer", "reset", "next", "black", "scores", "audience", "fullscreen", "menu"]);
   expect(onTitle.find((button) => button.id === "next")?.label).toBe("Start");
   // Every button 44 px high on one line; the icon buttons 44 px wide; 8 px between neighbours in a group.
   expect(new Set(onTitle.map((button) => `${String(button.y)}/${String(button.h)}`)).size).toBe(1);
   expect(onTitle[0]?.h).toBe(44);
-  expect(onTitle.filter((button) => button.id !== "next").map((button) => button.w)).toEqual(Array.from({ length: 9 }, () => 44));
+  expect(onTitle.filter((button) => button.id !== "next").map((button) => button.w)).toEqual(Array.from({ length: 10 }, () => 44));
   const gaps = (list: typeof onTitle, ids: string[]): number[] => ids.slice(1).map((id, index) => { const a = list.find((button) => button.id === ids[index]); const b = list.find((button) => button.id === id); return (b?.x ?? 0) - ((a?.x ?? 0) + (a?.w ?? 0)); });
-  expect(gaps(onTitle, ["exit", "back", "timer", "reset"])).toEqual([8, 8, 8]);
+  expect(gaps(onTitle, ["exit", "back", "forward", "timer", "reset"])).toEqual([8, 8, 8, 8]);
   expect(gaps(onTitle, ["black", "scores", "audience", "fullscreen", "menu"])).toEqual([8, 8, 8, 8]);
   // The primary button: in the middle of the bar, one width whatever it says.
   const primary = onTitle.find((button) => button.id === "next");
