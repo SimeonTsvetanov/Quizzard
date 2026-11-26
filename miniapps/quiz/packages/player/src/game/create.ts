@@ -44,7 +44,10 @@ function roundScreens(round: Round, media: ReadonlyMap<string, MediaEntry>, roun
     // question's own file. One whose file the quiz does not carry is passed over.
     const forAnswer = question?.answerMedia && media.has(question.answerMedia.id) ? question.answerMedia : undefined;
     const shown = place.screen === STANDARD_SCREENS.answer && forAnswer ? forAnswer : question?.media;
-    return { ...place, seconds, steps: kind?.steps ?? 0, ...(kind?.upright ? { upright: true as const } : {}), ...mediaOfScreen(shown ? media.get(shown.id) : undefined) };
+    const ofScreen = mediaOfScreen(shown ? media.get(shown.id) : undefined);
+    // The clip leads where it is new to the room: with the question, or as the answer's own file.
+    const leads = ofScreen.media === "clip" && (place.screen !== STANDARD_SCREENS.answer || shown === forAnswer);
+    return { ...place, seconds, steps: kind?.steps ?? 0, ...(kind?.upright ? { upright: true as const } : {}), ...ofScreen, ...(leads ? { clipFirst: true as const } : {}) };
   });
 }
 

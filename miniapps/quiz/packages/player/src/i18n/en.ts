@@ -176,6 +176,7 @@ export const en = {
   control: {
     back: "Back",
     forward: "Forward",
+    playClip: "Play the clip",
     next: "Next",
     reveal: "Show answer",
     start: "Start timer",

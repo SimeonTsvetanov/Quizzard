@@ -4,6 +4,10 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.30.0] - 2026-11-26
+### Changed
+- **While playing — "Next" starts the clip first.** On a question with audio or video, and on an answer with a clip of its own, the first press of Next (the button, the forward arrow, Space or →) plays the clip and the button says "Play the clip"; the next press moves on. The clip's own play button works as before, and a clip that was already started is not started again.
+
 ## [0.29.1] - 2026-11-26
 ### Added
 - **While playing: a forward arrow beside Back** in the control bar, on a computer and a tablet. The wide button in the middle stays as it is.

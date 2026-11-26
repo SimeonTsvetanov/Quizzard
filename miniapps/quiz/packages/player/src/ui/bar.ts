@@ -3,6 +3,7 @@
 // and, unchanged, under the host panel once the audience window is open. Real size (44 px targets)
 // whatever the stage's scale. Every button has its name as a tooltip, with its key.
 import type { GameState } from "../game/state.ts";
+import { startsClip } from "../game/step.ts";
 import type { Translate } from "../i18n/translate.ts";
 import { h, releaseAfterPointer } from "../render/h.ts";
 import { icon, type StageIcon } from "../render/icons.ts";
@@ -71,11 +72,13 @@ function hinted(button: HTMLButtonElement): void {
 }
 
 /** What the primary button says: "Start" on the first screen, "Show answer" while a reveal is left, else "Next". */
-function primaryFace(state: GameState): { readonly icon: StageIcon; readonly label: "control.begin" | "control.reveal" | "control.next" } {
+function primaryFace(state: GameState): { readonly icon: StageIcon; readonly label: "control.begin" | "control.reveal" | "control.next" | "control.playClip" } {
   const screen = state.screens[state.index];
   // The parts of an upright screen are not answers to show: its button says "Next".
   const hasReveal = state.step < (screen?.steps ?? 0) && screen?.upright !== true;
   if (hasReveal) return { icon: "eye", label: "control.reveal" };
+  // The clip of the screen has not played yet: the button starts it, and moves on at the next press.
+  if (startsClip(state)) return { icon: "play", label: "control.playClip" };
   return state.index === 0 ? { icon: "play", label: "control.begin" } : { icon: "right", label: "control.next" };
 }
 

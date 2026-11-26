@@ -31,8 +31,14 @@ const run = (state: GameState, ...actions: GameAction[]): GameState => actions.r
 const next: GameAction = { type: "next" };
 const media = (command: Extract<GameAction, { type: "media" }>["command"]): GameAction => ({ type: "media", command });
 const tick = (ms: number): GameAction => ({ type: "tick", ms });
+/** Presses next until the game is on question `n` (1-based) of the round — twice on a clip's screen on the way (it plays first). */
+function walkTo(state: GameState, n: number): GameState {
+  let now = state;
+  for (let press = 0; press < 20 && at(now) !== `question q1.${String(n)}`; press += 1) now = run(now, next);
+  return now;
+}
 /** title → teams → rules → question `n` (1-based). */
-const onQuestion = (n: number): GameState => run(fresh(), ...Array.from({ length: 2 + n }, () => next));
+const onQuestion = (n: number): GameState => walkTo(fresh(), n);
 
 describe("what a question's file is to the game", () => {
   it("a picture is a still, audio and video are clips with their length when known", () => {
@@ -54,6 +60,53 @@ describe("what a question's file is to the game", () => {
     const file = mediaFile();
     const game = createGame({ ...file, media: [] }, { teamName: () => "T" });
     expect(game.screens.every((screen) => screen.media === undefined)).toBe(true);
+  });
+});
+
+// Moni 2026-11-26: on a screen with a clip, "next" starts the clip; the following "next" moves on.
+describe("the host's next on a screen with a clip", () => {
+  it("the first next plays the question's clip, the second moves on; a clip already started is not started again", () => {
+    const clip = onQuestion(3);
+    const playing = run(clip, next);
+    expect(at(playing)).toBe("question q1.3");
+    expect(playing.media.status).toBe("playing");
+    expect(at(run(playing, next))).toBe("question q1.4");
+    // Started with the clip's own button, paused or ended: next moves on at once.
+    expect(at(run(clip, media("play"), next))).toBe("question q1.4");
+    expect(at(run(clip, media("play"), tick(500), media("pause"), next))).toBe("question q1.4");
+    expect(at(run(clip, media("play"), media("ended"), next))).toBe("question q1.4");
+  });
+
+  it("a text or picture question moves on at the first next; a covered stage is uncovered first", () => {
+    expect(at(run(onQuestion(1), next))).toBe("question q1.2");
+    expect(at(run(onQuestion(2), next))).toBe("question q1.3");
+    const covered = run(onQuestion(3), { type: "black" }, next);
+    expect(covered.curtain).toBeNull();
+    expect(covered.media.status).toBe("idle");
+    expect(run(covered, next).media.status).toBe("playing");
+  });
+
+  it("an answer screen that only shows the question's clip again does not ask for it; the host's preview shows the screen after", () => {
+    const screens = fresh().screens;
+    expect(screens.filter((screen) => screen.clipFirst === true).map((screen) => `${screen.screen} ${screen.questionId ?? ""}`)).toEqual(["question q1.3", "question q1.4"]);
+    expect(at(peekNext(onQuestion(3)))).toBe("question q1.4");
+  });
+
+  it("a clip kept for the answer leads its answer screen: after the reveal, next plays it, then moves on", () => {
+    const file = mediaFile();
+    const [round] = file.quiz.rounds;
+    if (!round) throw new Error("round");
+    const questions = round.questions.map((question, index) => (index === 0 ? { ...question, answerMedia: { id: "song" } } : question));
+    const game = deepFreeze(createGame({ ...file, quiz: { ...file.quiz, rounds: [{ ...round, questions }] } }, { teamName: () => "T" }));
+    const index = game.screens.findIndex((screen) => screen.screen === "answer" && screen.questionId === "q1.1");
+    expect(game.screens[index]).toMatchObject({ media: "clip", clipFirst: true });
+    let state = run(game, { type: "jump", index });
+    for (let reveal = 0; reveal < (game.screens[index]?.steps ?? 0); reveal += 1) state = run(state, next);
+    expect(state.media.status).toBe("idle");
+    state = run(state, next);
+    expect(state.index).toBe(index);
+    expect(state.media.status).toBe("playing");
+    expect(run(state, next).index).toBe(index + 1);
   });
 });
 
@@ -82,7 +135,7 @@ describe("clips and the timer", () => {
   });
 
   it("with \"questions run by themselves\" off, the clip's end starts nothing", () => {
-    const manual = run(fresh(), { type: "setAuto", value: false }, next, next, next, next, next, media("play"), media("ended"));
+    const manual = run(walkTo(run(fresh(), { type: "setAuto", value: false }), 3), media("play"), media("ended"));
     expect(at(manual)).toBe("question q1.3");
     expect(manual.timer.status).toBe("idle");
   });

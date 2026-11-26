@@ -178,6 +178,7 @@ export const bg: Messages = {
   control: {
     back: "Назад",
     forward: "Напред",
+    playClip: "Пусни клипа",
     next: "Напред",
     reveal: "Покажи отговора",
     start: "Пусни таймера",

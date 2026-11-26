@@ -53,6 +53,24 @@ function next(state: GameState, kinds: Kinds, isWide = false): GameState {
   return index === null ? state : enter(state, index, 0, true);
 }
 
+/**
+ * Whether the host's "next" starts the screen's clip instead of moving on: the clip leads the screen,
+ * nothing covers the stage, every reveal is out and the clip has not been started yet.
+ * @param state - the game
+ * @param isWide - whether the host's screen is wide (an upright screen's parts are passed over there)
+ */
+export function startsClip(state: GameState, isWide = false): boolean {
+  const screen = state.screens[state.index];
+  if (screen?.clipFirst !== true || state.curtain !== null) return false;
+  if (state.step < screen.steps && walksSteps(state, isWide)) return false;
+  return state.media.status === "idle" && state.media.ms === 0;
+}
+
+/** The host's "next": the screen's clip first, where it leads and has not played; else on. */
+function hostNext(state: GameState, kinds: Kinds, isWide: boolean): GameState {
+  return startsClip(state, isWide) ? media(state, "play") : next(state, kinds, isWide);
+}
+
 function back(state: GameState, kinds: Kinds, isWide = false): GameState {
   if (state.curtain !== null) return { ...state, curtain: null };
   if (state.step > 0 && walksSteps(state, isWide)) return { ...state, step: state.step - 1 };
@@ -211,7 +229,7 @@ function restart(state: GameState): GameState {
 }
 
 const HANDLERS: { readonly [T in GameAction["type"]]: Handler<T> } = {
-  next: (state, action, kinds) => next(state, kinds, action.wide === true),
+  next: (state, action, kinds) => hostNext(state, kinds, action.wide === true),
   back: (state, action, kinds) => back(state, kinds, action.wide === true),
   jump: (state, action, kinds) => jump(state, action.index, kinds),
   reveal: (state) => (state.step < (state.screens[state.index]?.steps ?? 0) ? { ...state, step: state.step + 1 } : state),

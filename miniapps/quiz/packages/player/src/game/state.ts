@@ -38,6 +38,12 @@ export interface GameScreen {
   readonly media?: "still" | "clip";
   /** A clip's length in milliseconds; left out when it is not known. */
   readonly clipMs?: number;
+  /**
+   * The clip is what the screen is for — a question's own clip, or the clip kept for an answer: the host's
+   * "next" starts it first and moves on at the following press (Moni 2026-11-26). Left out on an answer
+   * screen that only shows the question's clip again.
+   */
+  readonly clipFirst?: true;
 }
 
 /** A team; its id never changes, its name is what the host typed. */
