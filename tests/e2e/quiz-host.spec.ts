@@ -208,7 +208,7 @@ test("AC2: a question shows the round's time until changed, then keeps its own w
   await expect.poll(async () => (await stored(page))[0]?.quiz.rounds[0]?.defaults.seconds).toBe(60);
   // The way back to the round's value.
   await questions(page).nth(0).getByRole("button", { name: /^Question 1/ }).click();
-  await time.getByRole("button", { name: "Back to the round's: 60 s" }).click();
+  await time.getByRole("button", { name: "Back to the round's: 1 min" }).click();
   await expect(time.getByLabel("Seconds", { exact: true })).toHaveValue("60");
   await expect(time.getByText("From the round")).toBeVisible();
   await expect.poll(async () => (await stored(page))[0]?.quiz.rounds[0]?.questions[0]?.seconds).toBeUndefined();
