@@ -317,7 +317,7 @@ test("audio and video are tried on import, kept as they are and play in the prev
 });
 
 for (const viewport of [{ width: 390, height: 844 }, { width: 1280, height: 860 }]) {
-  test(`AC4: Play shows portrait, landscape and panorama pictures whole on a ${String(viewport.width)} × ${String(viewport.height)} screen; Z zooms; the clip waits for the host and its end starts the timer`, async ({ page }) => {
+  test(`AC4: Play shows portrait, landscape and panorama pictures whole on a ${String(viewport.width)} × ${String(viewport.height)} screen; Z zooms; the clip waits for the host and the timer starts with it`, async ({ page }) => {
     test.slow(); // a clip plays to its end
     await page.setViewportSize(viewport);
     await openMediaQuiz(page);
@@ -340,7 +340,7 @@ for (const viewport of [{ width: 390, height: 844 }, { width: 1280, height: 860 
     await page.keyboard.press("KeyZ");
     await expect(stage(page).locator(".quiz-slide-frame[data-zoom]")).toHaveCount(0);
 
-    // The audio question: with "run by themselves" on, the timer still waits — for the clip.
+    // The audio question: with "run by themselves" on, the timer waits for the clip and starts with it (Moni 2026-11-26).
     await page.keyboard.press("KeyM");
     await page.locator('[data-dialog="menu"] [data-auto]').check();
     await page.keyboard.press("Escape");
@@ -351,11 +351,12 @@ for (const viewport of [{ width: 390, height: 844 }, { width: 1280, height: 860 
     await expect(stage(page)).not.toContainText("zebra-note-7"); // the host note is never on the stage
     await page.keyboard.press("KeyP");
     await expect(stage(page).locator(".quiz-slide-clip")).toHaveAttribute("data-status", "playing");
-    await expect.poll(() => clipTime(stage(page))).toBeGreaterThan(0.2);
-    await expect(stage(page).locator("[data-dial]")).toHaveAttribute("data-status", "idle");
-    await expect(stage(page).locator(".quiz-slide-clip")).toHaveAttribute("data-status", "ended", { timeout: 8000 });
+    // The timer runs with the clip; paused here, so the time does not run out and bring the next question by itself.
     await expect(stage(page).locator("[data-dial]")).toHaveAttribute("data-status", "running");
     await page.keyboard.press("KeyT");
+    await expect(stage(page).locator("[data-dial]")).toHaveAttribute("data-status", "paused");
+    await expect.poll(() => clipTime(stage(page))).toBeGreaterThan(0.2);
+    await expect(stage(page).locator(".quiz-slide-clip")).toHaveAttribute("data-status", "ended", { timeout: 8000 });
 
     // The video: whole, in its shape; the slide's own button plays it, "from the start" rewinds.
     await page.keyboard.press("Space");
