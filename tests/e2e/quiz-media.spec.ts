@@ -842,7 +842,12 @@ test("music: a song on one question, then a playlist fills the others in order a
   });
   await root(page).locator("[data-play-quiz]").click();
   if (await page.locator("[data-unfinished-go]").isVisible().catch(() => false)) await page.locator("[data-unfinished-go]").click();
-  for (let press = 0; press < 8 && !(await prompt(page).isVisible().catch(() => false)); press += 1) await page.keyboard.press("Space");
+  await expect(stage(page).locator('[data-view="title"]')).toBeVisible();
+  for (const screen of ["teams", "rules"]) {
+    await page.keyboard.press("Space");
+    await expect(stage(page).locator(`[data-view="${screen}"], [data-view="${screen}-view"]`)).toBeVisible();
+  }
+  await page.keyboard.press("Space");
   await expect(prompt(page)).toHaveText("One?");
   await expect.poll(() => page.evaluate(() => (window as unknown as { quizMusicPlayed: string[] }).quizMusicPlayed)).toEqual(["loop"]);
   await page.keyboard.press("Escape");

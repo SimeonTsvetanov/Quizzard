@@ -114,7 +114,23 @@ test("SR4: the vault turns, fills and opens on the Safe's answers", async ({ pag
   const vault = stage(page).locator(".quiz-vault");
   await expect(vault).toHaveAttribute("data-door", "opening");
   await expect(vault.locator(".quiz-vault-window text")).toHaveText(["4", "7", "1", "9", "2"]);
-  await expect(stage(page).locator(".quiz-digit-value")).toHaveText("2");
+  // Beside the vault the whole code stands: the four digits found before, small, and the fifth large (Moni 2026-11-26).
+  await expect(stage(page).locator("[data-code-line] .quiz-digit-value")).toHaveText(["4", "7", "1", "9", "2"]);
+});
+
+test("the Safe's code is dialled as one sequence: one press, and the digits follow by themselves to the open door", async ({ page }) => {
+  await play(page, SPECIAL);
+  await page.keyboard.press("KeyM");
+  await page.locator('[data-dialog="menu"] [data-jump-screen="answers"]').nth(1).click();
+  await next(page); // the first digit; the rest come by themselves
+  const line = stage(page).locator("[data-code-line] .quiz-digit-box");
+  await expect(line).toHaveCount(5);
+  await expect(stage(page).locator('[data-code-line] [data-code="set"]')).toHaveCount(0);
+  await expect(stage(page).locator('[data-code-line] [data-code="set"]')).toHaveCount(2, { timeout: 15_000 }); // on the third digit, with no press
+  await expect(stage(page).locator(".quiz-vault")).toHaveAttribute("data-door", "opening", { timeout: 20_000 });
+  await expect(stage(page).locator('[data-code-line] [data-code="set"] .quiz-digit-value')).toHaveText(["4", "7", "1", "9"]);
+  // The last digit stays: the score entry comes with a press.
+  await expect(view(page, "score")).toHaveCount(0);
 });
 
 // Moni 2026-11-25: "Make the quizmaster laugh" asks for no question — the round is ready when it is added.
