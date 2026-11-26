@@ -202,7 +202,7 @@ test("AC2: a question shows the round's time until changed, then keeps its own w
   await root(page).locator("[data-round-settings] summary").click();
   await root(page).locator("[data-round-settings]").getByLabel("Seconds", { exact: true }).fill("60");
   await expect(questions(page).nth(0).locator("[data-slide-time]")).toHaveText("45 s");
-  await expect(questions(page).nth(1).locator("[data-slide-time]")).toHaveText("60 s");
+  await expect(questions(page).nth(1).locator("[data-slide-time]")).toHaveText("1 min");
   await expect.poll(async () => (await stored(page))[0]?.quiz.rounds[0]?.questions.map((question) => question.seconds)).toEqual([45, undefined]);
   // Polled: the save is debounced, and the questions above already matched before this change was written.
   await expect.poll(async () => (await stored(page))[0]?.quiz.rounds[0]?.defaults.seconds).toBe(60);
