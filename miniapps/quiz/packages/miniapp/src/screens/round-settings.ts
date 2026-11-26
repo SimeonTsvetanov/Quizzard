@@ -13,7 +13,7 @@ import { answerChoices, kindChoices } from "../ui-registry.ts";
 import { copyRound, removeRound } from "./round-moves.ts";
 import { specialPoints } from "./round-special.ts";
 import { roundKindUis } from "../round-kinds-ui.ts";
-import { pointsFields, secondsField } from "./value-fields.ts";
+import { minutesField, minutesNumber, pointsFields, secondsField } from "./value-fields.ts";
 
 /** The open round as it is in the quiz right now (the strip outlives many edits). */
 function live(app: App, roundId: string): { quiz: Quiz; round: Round } | undefined {
@@ -22,12 +22,19 @@ function live(app: App, roundId: string): { quiz: Quiz; round: Round } | undefin
   return quiz && round ? { quiz, round } : undefined;
 }
 
+/** Whether the round states its own task and so has no questions to set up (round-kinds-ui.ts `ownScreen`). */
+function ownsScreen(app: App, round: Round): boolean {
+  return shapeOf(round, app.env.registries) !== undefined && roundKindUis.get(round.kind)?.ownScreen !== undefined;
+}
+
 /** "30 s · 1 point" — what the closed strip says. */
 function gist(app: App, round: Round): string {
   const labels = slideLabels(app.t, app.lang);
   // A special round's points are its whole: "60 s · 10 points".
   const points = shapeOf(round, app.env.registries) ? labels.points(roundMaxPoints(round)) : pointsText(round.defaults.points, labels);
-  return `${labels.seconds(round.defaults.seconds)} · ${points}`;
+  // A round that is one long screen reads its time in minutes: "5 min · 3 points".
+  const time = ownsScreen(app, round) ? `${minutesNumber(round.defaults.seconds, app.lang)} ${app.t("unit.minutesShort")}` : labels.seconds(round.defaults.seconds);
+  return `${time} · ${points}`;
 }
 
 /** The pickers of what a new question starts as. */
@@ -63,10 +70,11 @@ export function roundSettings(app: App, round: Round, onChange: () => void): HTM
     const now = live(app, round.id);
     if (now && app.change(change(now.quiz))) changed();
   };
-  const time = secondsField(app, t("round.time"), round.defaults.seconds, (seconds) => { edit((quiz) => setRoundDefaults(quiz, round.id, { seconds })); });
+  const isOwn = ownsScreen(app, round);
+  const timeLabel = t(isOwn ? "round.timeOwn" : "round.time");
+  const time = (isOwn ? minutesField : secondsField)(app, timeLabel, round.defaults.seconds, (seconds) => { edit((quiz) => setRoundDefaults(quiz, round.id, { seconds })); });
   const points = pointsFields(app, t("round.points"), round.defaults.points, (value) => { edit((quiz) => setRoundDefaults(quiz, round.id, { points: value })); });
   const rules = textField({ label: t("round.rules"), value: round.rules ?? "", max: RULES_MAX, rows: 2, placeholder: t("round.rulesPlaceholder"), onInput: (value) => { edit((quiz) => setRoundRules(quiz, round.id, value)); } });
-  const ownsScreen = shapeOf(round, app.env.registries) !== undefined && roundKindUis.get(round.kind)?.ownScreen !== undefined;
   const copy = labelButton("copy", t("round.duplicate"), { class: "button", "data-duplicate-round": "" });
   copy.addEventListener("click", () => { copyRound(app, round.id); });
   const trash = labelButton("trash", t("round.delete"), { class: "button button--destructive", "data-delete-round": "" });
@@ -74,13 +82,13 @@ export function roundSettings(app: App, round: Round, onChange: () => void): HTM
   const strip = h("details", { class: "quiz-settings quiz-panel", "data-round-settings": "" },
     h("summary", { class: "quiz-settings-summary" }, icon("settings", 20), h("span", { class: "quiz-settings-name" }, t("round.settings")), summaryText),
     h("div", { class: "quiz-settings-body" },
-      h("div", { class: "quiz-group" }, h("span", { class: "quiz-label" }, t("round.time")), time.element),
+      h("div", { class: "quiz-group" }, h("span", { class: "quiz-label" }, timeLabel), time.element),
       ...(specialPoints(app, round, changed) ?? [h("div", { class: "quiz-group" }, h("span", { class: "quiz-label" }, t("round.points")), points.element, h("p", { class: "quiz-hint" }, t("points.hint")))]),
       // A round that states its own task has no questions to set up: time and prizes are all it asks (rules written earlier stay editable).
-      ...(ownsScreen ? [] : [applyAllRow(app, round.id, () => gist(app, live(app, round.id)?.round ?? round), changed), ...defaultsPickers(app, round, changed)]),
-      ...(ownsScreen && (round.rules ?? "") === "" ? [] : [rules]),
+      ...(isOwn ? [] : [applyAllRow(app, round.id, () => gist(app, live(app, round.id)?.round ?? round), changed), ...defaultsPickers(app, round, changed)]),
+      ...(isOwn && (round.rules ?? "") === "" ? [] : [rules]),
       h("div", { class: "quiz-settings-actions" }, copy, trash)));
-  strip.open = app.view.isSettingsOpen || ownsScreen;
+  strip.open = app.view.isSettingsOpen || isOwn;
   strip.addEventListener("toggle", () => { app.view.isSettingsOpen = strip.open; });
   return strip;
 }

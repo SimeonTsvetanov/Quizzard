@@ -127,6 +127,15 @@ test("a laugh round has no questions: its screen with the built-in explanation, 
   // Time and the two prizes are in the settings, which are open.
   await expect(pane.locator("[data-round-settings]")).toHaveAttribute("open", "");
   await expect(pane.locator('[data-round-value="first"]')).toHaveValue("3");
+  // The time is in minutes, in steps of half a minute (Moni 2026-11-26).
+  await expect(pane.locator("[data-minutes]")).toHaveText("5");
+  await expect(pane.locator("[data-round-gist]")).toHaveText("5 min · 3 points");
+  await pane.locator("[data-minutes-less]").click();
+  await expect(pane.locator("[data-minutes]")).toHaveText("4.5");
+  await pane.locator("[data-minutes-more]").click();
+  await pane.locator("[data-minutes-more]").click();
+  await expect(pane.locator("[data-minutes]")).toHaveText("5.5");
+  await expect(pane.locator("[data-round-gist]")).toHaveText("5.5 min · 3 points");
   // The optional text is shown under the explanation.
   await panel.locator("[data-round-task-text]").fill("The joke must be about the birthday girl");
   await expect(panel.locator(".quiz-slide-prompt")).toContainText("birthday girl");

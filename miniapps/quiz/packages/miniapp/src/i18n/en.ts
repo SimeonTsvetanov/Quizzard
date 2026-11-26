@@ -28,6 +28,7 @@ export const en = {
   unit: {
     seconds: "{{n}} s",
     secondsShort: "s",
+    minutesShort: "min",
     points_one: "{{n}} point",
     points_other: "{{n}} points",
     pointsShort: "pts",
@@ -89,6 +90,7 @@ export const en = {
     nameLabel: "Name of round {{n}}",
     settings: "Round settings",
     time: "Time per question",
+    timeOwn: "Time",
     points: "Points per question",
     defaultKind: "New questions are",
     defaultAnswer: "New questions are answered with",

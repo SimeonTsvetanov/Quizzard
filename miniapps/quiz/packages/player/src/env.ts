@@ -28,8 +28,8 @@ export function stageLabels(t: Translate, lang: Lang): SlideLabels {
   return {
     trueText: t("slide.true"),
     falseText: t("slide.false"),
-    // Whole minutes from two up read as minutes: "5 min", not "300 s".
-    seconds: (count) => (count >= 120 && count % 60 === 0 ? t("unit.minutes", { n: numberText(count / 60, lang) }) : t("unit.seconds", { n: numberText(count, lang) })),
+    // From a minute up, whole and half minutes read as minutes: "5 min", "1.5 min" — not "300 s" (Moni 2026-11-26).
+    seconds: (count) => (count >= 60 && count % 30 === 0 ? t("unit.minutes", { n: (count / 60).toLocaleString(lang, { maximumFractionDigits: 1 }) }) : t("unit.seconds", { n: numberText(count, lang) })),
     points: (count) => t("unit.points", { count, n: numberText(count, lang) }),
     roundTask: (kind) => (kind === "laugh" ? t("task.laughTask") : undefined),
     emptyPrompt: t("slide.emptyPrompt"),

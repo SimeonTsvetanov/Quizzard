@@ -33,6 +33,7 @@ export const bg: Messages = {
   unit: {
     seconds: "{{n}} сек",
     secondsShort: "сек",
+    minutesShort: "мин",
     points_one: "{{n}} точка",
     points_other: "{{n}} точки",
     pointsShort: "т.",
@@ -94,6 +95,7 @@ export const bg: Messages = {
     nameLabel: "Име на рунд {{n}}",
     settings: "Настройки на рунда",
     time: "Време за въпрос",
+    timeOwn: "Време",
     points: "Точки за въпрос",
     defaultKind: "Новите въпроси са",
     defaultAnswer: "На новите въпроси се отговаря с",

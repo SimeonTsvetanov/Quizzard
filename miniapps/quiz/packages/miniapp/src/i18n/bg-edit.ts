@@ -73,6 +73,7 @@ export const bgEdit = {
   },
   time: {
     seconds: "Секунди",
+    minutes: "Минути",
     less: "{{n}} секунди по-малко",
     more: "{{n}} секунди повече",
   },

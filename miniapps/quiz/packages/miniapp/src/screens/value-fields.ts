@@ -56,6 +56,51 @@ export function secondsField(app: App, label: string, value: number, onChange: (
   return { element, set: (seconds) => { current = seconds; show(); } };
 }
 
+/** One tap on − or + of a {@link minutesField} changes the time by this many seconds. */
+const MINUTES_STEP = 30;
+
+/**
+ * Seconds as minutes for reading: "5", "1.5" ("1,5" in Bulgarian), "0.5".
+ * @param seconds - the time
+ * @param lang - the UI language, for the decimal sign
+ */
+export function minutesNumber(seconds: number, lang: string): string {
+  return (seconds / 60).toLocaleString(lang, { maximumFractionDigits: 2 });
+}
+
+/**
+ * The time stepper of a round that is one long screen: − [minutes] +, in steps of half a minute, 0.5–10 min
+ * (Moni 2026-11-26: five-second steps are slow for a five-minute task). The value is shown, not typed.
+ * @param app - gives the translator and the language
+ * @param label - what the time is of
+ * @param value - the seconds shown first
+ * @param onChange - called with every new value, in seconds
+ */
+export function minutesField(app: App, label: string, value: number, onChange: (seconds: number) => void): SecondsField {
+  const { t } = app;
+  let current = value;
+  const shown = h("output", { class: "quiz-input quiz-number", "aria-label": t("time.minutes"), "data-minutes": "" });
+  const less = iconButton("minus", t("time.less", { n: MINUTES_STEP }), { class: "quiz-step", "data-minutes-less": "" });
+  const more = iconButton("plus", t("time.more", { n: MINUTES_STEP }), { class: "quiz-step", "data-minutes-more": "" });
+  const show = (): void => {
+    shown.textContent = minutesNumber(current, app.lang);
+    less.disabled = current <= MINUTES_STEP;
+    more.disabled = current >= MAX_SECONDS;
+  };
+  const step = (by: number): void => {
+    // From a time between two steps (set in seconds earlier) the first tap lands on the next half minute.
+    const next = by > 0 ? Math.floor(current / MINUTES_STEP) * MINUTES_STEP + MINUTES_STEP : Math.ceil(current / MINUTES_STEP) * MINUTES_STEP - MINUTES_STEP;
+    current = clamp(next, MINUTES_STEP, MAX_SECONDS);
+    onChange(current);
+    show();
+  };
+  less.addEventListener("click", () => { step(-1); });
+  more.addEventListener("click", () => { step(1); });
+  show();
+  const element = h("div", { class: "quiz-stepper", role: "group", "aria-label": label }, less, shown, h("span", { class: "quiz-unit", "aria-hidden": "true" }, t("unit.minutesShort")), more);
+  return { element, set: (seconds) => { current = seconds; show(); } };
+}
+
 /** The points fields and the way to set them from outside. */
 export interface PointsFields {
   readonly element: HTMLElement;

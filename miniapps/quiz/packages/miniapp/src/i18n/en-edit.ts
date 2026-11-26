@@ -73,6 +73,7 @@ export const enEdit = {
   },
   time: {
     seconds: "Seconds",
+    minutes: "Minutes",
     less: "{{n}} seconds less",
     more: "{{n}} seconds more",
   },

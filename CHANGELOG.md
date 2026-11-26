@@ -4,6 +4,10 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.28.1] - 2026-11-26
+### Changed
+- **Quiz creator — "Make the quizmaster laugh": the time is set in minutes,** in steps of half a minute (0.5 to 10 min), instead of seconds in steps of five. On every slide — in the creator and on the stage — a time of whole or half minutes reads as minutes ("5 min", "1.5 min"), not as seconds.
+
 ## [0.28.0] - 2026-11-25
 ### Changed
 - **Quiz creator — "Make the quizmaster laugh" needs no question.** The round is ready as soon as it is added: its screen carries a built-in explanation in the language the quiz is played in, the opening says the rules in four lines, and the round shows "What the teams see" with one optional field for a text of your own. Time (5 minutes) and the two prizes (3 and 1) are in the round's settings. The round is never "not finished".

@@ -77,7 +77,8 @@ export function slideLabels(t: Translate, lang: Lang): SlideLabels {
   return {
     trueText: t("trueFalse.true"),
     falseText: t("trueFalse.false"),
-    seconds: (count) => t("unit.seconds", { n: numberText(count, lang) }),
+    // From a minute up, whole and half minutes read as minutes, as on the stage: "5 min", "1.5 min" — not "300 s" (Moni 2026-11-26).
+    seconds: (count) => (count >= 60 && count % 30 === 0 ? `${(count / 60).toLocaleString(lang, { maximumFractionDigits: 1 })} ${t("unit.minutesShort")}` : t("unit.seconds", { n: numberText(count, lang) })),
     points: (count) => t("unit.points", { count, n: numberText(count, lang) }),
     roundTask: (kind) => (kind === "laugh" ? t("slide.laughTask") : undefined),
     emptyPrompt: t("slide.emptyPrompt"),

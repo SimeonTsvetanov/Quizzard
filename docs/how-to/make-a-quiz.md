@@ -50,7 +50,7 @@ A special round always has its number of questions: there is no **Add question**
 
 - **What the teams see** shows the round's screen. Its explanation is built in and is shown in the language the quiz is played in.
 - Optional: in **More text on the screen**, add a line of your own, for example a theme for the jokes. It is shown under the explanation.
-- In **Round settings**, change **Time per question** (5 minutes to start with) and the two prizes.
+- In **Round settings**, change **Time** (5 minutes to start with; **−** and **+** change it by half a minute) and the two prizes.
 
 **Free game** is your own task:
 
