@@ -27,9 +27,9 @@ export const MINIAPP_JS_BUDGETS_KB: Readonly<Record<string, number>> = { teams: 
  * statically (what opening it loads before the first frame), Home's first load not counted again. Its
  * lazy parts — Help, a dialog's content, another language — are not first-open. SPEC §7: GG Counter's
  * screen ≤ 125 KB (React, Radix and Tailwind's output included; its standalone first load had the same
- * budget with its own shell in it). Quiz creator SPEC AC11: "the creator's code ≤ 60 KB gzip on first open".
+ * budget with its own shell in it). Quiz creator SPEC AC11: "the creator's code ≤ 75 KB gzip on first open" (60 until 2026-11-26, raised by Moni: DECISIONS).
  */
-export const MINIAPP_FIRST_OPEN_BUDGETS_KB: Readonly<Record<string, number>> = { scores: 125, quiz: 60 };
+export const MINIAPP_FIRST_OPEN_BUDGETS_KB: Readonly<Record<string, number>> = { scores: 125, quiz: 75 };
 
 /**
  * Budget of the quiz player's template in KB gzip, the embedded fonts not counted (quiz-creator SPEC

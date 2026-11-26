@@ -155,7 +155,7 @@ play; JPEG, PNG, GIF, SVG and WebP are listed for all versions of Chrome, Edge, 
 | AC8 | A version-1 sample file kept in the repo opens in every later version (migration test); a file of a newer version is refused with a message; an unknown question kind is kept through open → save. |
 | AC9 | The player runs a whole game: teams, timer with auto-advance, reveal, score entry, leaderboard, podium, tie handling; a reload in the middle continues where it was. |
 | AC10 | Adding a new question kind in a test (a fake "kind") needs no change outside its own registry entry. |
-| AC11 | Accessibility AA (contrast, 44 px targets, keyboard, screen-reader names) in the creator; reduced motion respected in both. Size: the creator's code ≤ 60 KB gzip on first open; the player template ≤ 80 KB gzip without media. |
+| AC11 | Accessibility AA (contrast, 44 px targets, keyboard, screen-reader names) in the creator; reduced motion respected in both. Size: the creator's code ≤ 75 KB gzip on first open (60 KB until 2026-11-26); the player template ≤ 80 KB gzip without media. |
 
 ## 8. Risks
 

@@ -4,6 +4,10 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.35.1] - 2026-11-26
+### Changed
+- The quiz creator may load up to 75 KB of code on its first open (60 KB before): room for what was added this week.
+
 ## [0.35.0] - 2026-11-26
 ### Changed
 - **Safe — the code is dialled as one sequence.** After "Answers", one press starts it: each digit's slide turns the dial, clicks the digit in and gives way to the next by itself, and the door opens after the fifth. Beside the vault the code stands as it grows — the digits found so far, the current one large, the rest as "?". The timer button pauses the sequence; a round with "Questions follow by themselves" off shows each digit with Next.
