@@ -18,8 +18,8 @@ export const enMore = {
   },
   music: {
     hint: "Music for the whole quiz: choose your songs and every question without music gets one, in the order of their names; with fewer songs than questions they start again from the first. A question that has a song keeps it; audio and video questions get none. Each song is cut to its question's time where the browser can.",
-    fromFolder: "Songs from a folder",
-    fromFiles: "Songs from files",
+    fromFolder: "Choose a folder of songs",
+    fromFiles: "Choose single songs",
     remove: "Remove the music",
     removed: "The music is off every question",
     reading: "Reading the songs…",

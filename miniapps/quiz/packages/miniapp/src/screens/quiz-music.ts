@@ -1,5 +1,5 @@
-// Music over the whole quiz (core music.ts, media/playlist.ts): in the quiz's folded tools, "Songs from a
-// folder" and "Songs from files" hand the picked songs out to the questions without music, and "Remove the
+// Music over the whole quiz (core music.ts, media/playlist.ts): in the quiz's folded tools, "Choose a folder of
+// songs" and "Choose single songs" hand the picked songs out to the questions without music, and "Remove the
 // music" takes it off again; on the header card, while the quiz asks for music, a note says how many
 // questions have none — it opens their list, each a way to its question, with the pickers under it.
 import { type Quiz, type WithoutMusic, clearMusic, questionsWithoutMusic, wantsMusic } from "@simeonts/quizzard-quiz-core";
@@ -68,10 +68,10 @@ function pickers(app: App): { readonly element: HTMLElement; readonly pick: () =
   const fileInput = songInput(false, "data-music-files-input", take);
   const files = labelButton("audio", t("music.fromFiles"), { class: "button", "data-music-files": "" });
   files.addEventListener("click", () => { fileInput.click(); });
-  const row = h("div", { class: "quiz-actions" }, files, fileInput);
+  const row = h("div", { class: "quiz-actions quiz-actions--stack" }, files, fileInput);
   if (!canPickFolder()) return { element: h("div", { class: "quiz-music-pick" }, row, status), pick: () => { fileInput.click(); } };
   const folderInput = songInput(true, "data-music-folder-input", take);
-  const folder = labelButton("open", t("music.fromFolder"), { class: "button", "data-music-folder": "" });
+  const folder = labelButton("folder", t("music.fromFolder"), { class: "button", "data-music-folder": "" });
   folder.addEventListener("click", () => { folderInput.click(); });
   row.prepend(folder, folderInput);
   return { element: h("div", { class: "quiz-music-pick" }, row, status), pick: () => { folderInput.click(); } };

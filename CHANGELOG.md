@@ -4,10 +4,14 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.31.1] - 2026-11-26
+### Fixed
+- **Music for the whole quiz:** the two pickers stand one under the other with their whole names — "Choose a folder of songs" and "Choose single songs" — instead of two buttons cut to "Songs…".
+
 ## [0.31.0] - 2026-11-26
 ### Added
 - **Quiz creator — music under a question.** "Music while the time runs (optional)" in every question that is not audio or video, and in "Make the quizmaster laugh": a song that starts by itself with the question's timer and stops with it, and goes round when it is shorter. Added and cut like any audio clip.
-- **Music for the whole quiz.** Under "Quiz file, printing and music", "Songs from a folder" or "Songs from files" gives every question without music one of your songs, in the order of their names, starting again from the first when there are fewer songs than questions. Questions that have a song keep it; audio and video questions get none. While some questions have no music the quiz says how many, lists them ("Round 1 – question 3") and "Choose songs" fills them. "Remove the music" takes it off all questions, with Undo.
+- **Music for the whole quiz.** Under "Quiz file, printing and music", "Choose a folder of songs" or "Choose single songs" gives every question without music one of your songs, in the order of their names, starting again from the first when there are fewer songs than questions. Questions that have a song keep it; audio and video questions get none. While some questions have no music the quiz says how many, lists them ("Round 1 – question 3") and "Choose songs" fills them. "Remove the music" takes it off all questions, with Undo.
 
 ## [0.30.0] - 2026-11-26
 ### Changed

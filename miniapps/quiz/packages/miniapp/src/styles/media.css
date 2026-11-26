@@ -249,3 +249,10 @@
     margin-block-end: var(--space-2);
   }
 }
+
+/* || Components: buttons one under the other, each with its whole label (the songs pickers) */
+@layer components {
+  .quiz-actions.quiz-actions--stack {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

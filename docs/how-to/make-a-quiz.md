@@ -139,7 +139,7 @@ To give one question a song:
 To add music to the whole quiz:
 
 1. On the quiz, select **Quiz file, printing and music**.
-2. Select **Songs from a folder** (on a computer) or **Songs from files** and choose your songs.
+2. Select **Choose a folder of songs** (on a computer) or **Choose single songs** and choose your songs.
 
 Every question without music gets one of the songs, in the order of their names. With fewer songs than questions, the songs start again from the first. A question that already has a song keeps it. Where the browser can cut a clip, each song is cut to the time of its question.
 
@@ -149,7 +149,7 @@ When you add questions later, the quiz shows how many have no music, for example
 
 Select **Quiz file, printing and music** on the quiz to open these tools:
 
-- **Songs from a folder** and **Songs from files** add music to the whole quiz, see [Add music](#add-music).
+- **Choose a folder of songs** and **Choose single songs** add music to the whole quiz, see [Add music](#add-music).
 
 - **Save quiz file** saves the quiz with its pictures, audio and video as one `.quizzard` file. Use it as your backup and to move the quiz to another device. On a phone, **Share** sends the same file.
 - **Print answers** prints a sheet for the host: every question with its answer, explanation, host note and points, one round to a page.
