@@ -48,7 +48,7 @@ To start a break from the score screen, select **5 min**, **10 min** or **15 min
 
 - **Golden pyramid:** a pyramid of gold blocks stands beside each question, and the question's tier glows. At each answer its blocks turn over and the accepted answers appear: the first 12, then "+N more".
 - **Safe:** a vault door. At each answer the dial turns to the digit and it clicks into its window; after the fifth digit the door opens. At score entry you enter each team's right digits (0 to 5); all five add the bonus, shown as "5 + 3 bonus".
-- **Make the quizmaster laugh** and **Free game:** the rules with the prizes, the task with its timer, the points and the leaderboard. There are no answers to show. In **Make the quizmaster laugh**, give the prize for first place to the funniest team and the prize for second place to the next one.
+- **Make the quizmaster laugh** and **Free game:** the rules with the prizes, the task with its timer, the points and the leaderboard. The task of **Make the quizmaster laugh** is built in and is shown in the language you play in, with your own text under it if you added one. There are no answers to show. In **Make the quizmaster laugh**, give the prize for first place to the funniest team and the prize for second place to the next one.
 
 Each special round opens with a short animated explanation of how it scores.
 

@@ -25,7 +25,7 @@ The buttons on a quiz's card rename it, make a copy or delete it. A deleted quiz
 ## Add rounds
 
 1. Select **Add round**. The **Add a round** window opens.
-2. Select the kind of round: **Standard**, **Golden pyramid**, **Safe**, **Make the quizmaster laugh** or **Free game**. A standard round opens with its name selected; any other kind opens on its questions.
+2. Select the kind of round: **Standard**, **Golden pyramid**, **Safe**, **Make the quizmaster laugh** or **Free game**. A standard round opens with its name selected; any other kind opens on its questions, and **Make the quizmaster laugh** on its one screen.
 3. Enter the name of the round, for example "History".
 4. Optional: open **Round settings** to set **Time per question** and **Points per question**, what **New questions are** and what **New questions are answered with**, and the **Rules shown before the round (optional)**.
 
@@ -63,7 +63,7 @@ A special round always has its number of questions: there is no **Add question**
 
 The two rounds differ in their points:
 
-- **Make the quizmaster laugh**: every team has 5 minutes to think up a joke, and one of them tells it. You pick the two funniest teams. **Points for first place** (3) and **Points for second place** (1) set the prizes; every other team scores 0.
+- **Make the quizmaster laugh**: every team has the round's time (5 minutes to start with) to think up a joke, and one of them tells it. You pick the two funniest teams. **Points for first place** (3) and **Points for second place** (1) set the prizes; every other team scores 0.
 - **Free game**: your own task, such as drawing, building or singing, for 3 minutes. **Most points for a team** (3) is the most you can give one team.
 
 For another task, add another **Free game**.
@@ -122,7 +122,8 @@ For a long round, select **List** over the questions. Each question is then one 
 
 ## Check the quiz
 
-- A question without a text, a file or an answer is marked **Not finished**. The round and the quiz show how many there are; select the message to open the first one.
+- A question without a text, a file or an answer is marked **Not finished**, and its card has a red edge and a red light. The round and the quiz show how many there are; select the message to open the first one.
+- A long question, answer or explanation is never cut: the slide draws the texts smaller until all of them fit. The preview beside the editor shows the result.
 - Select **Preview** to see the questions as they will be played. **Show answer** shows the reveal.
 - Select **Play** to run the whole quiz. If questions are not finished, Quizzard lists them first. Select one to finish it, or select **Play anyway**.
 

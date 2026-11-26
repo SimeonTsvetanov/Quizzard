@@ -27,6 +27,7 @@ Other rules:
 | Characters in a name | 40. Spaces at the start and the end don't count, and a simple emoji counts as one character. |
 | Score | -999,999 to 999,999 |
 | Changes kept for each player | 50. Older changes are added together as **Earlier points**. |
+| Colour of a name | None, one of 7 colours (red, blue, yellow, green, black, pink, grey) or any custom colour |
 
 Other rules:
 
@@ -66,7 +67,7 @@ Other rules:
 | Characters in a question | 500 |
 | Characters in an open answer | 300 |
 | Characters in an option | 120 |
-| Characters in an explanation | 700. On the stage a long one is set smaller so that all of it shows. |
+| Characters in an explanation | 700 |
 | Characters in a host note | 500 |
 | Characters in a round's rules | 600 |
 | Characters in a points note | 80 |
@@ -82,7 +83,7 @@ Other rules:
 | Points of a team in one round | 0 to 999; a Golden pyramid 0 to 10, a Safe 0 to 5 digits plus the bonus, a round without answers up to its prize or most points |
 | Golden pyramid | 4 questions; question n asks for n answers; up to 60 accepted answers each; 10 points; 60 seconds per question to start with |
 | Safe | 5 questions with one digit 0–9 each; bonus 0 to 20 (3 to start with); 45 seconds per question to start with |
-| Make the quizmaster laugh | 1 screen; 5 minutes to start with; first-place prize 0 to 20 (3 to start with), second-place prize 0 to 20 (1 to start with) |
+| Make the quizmaster laugh | 1 screen, no question to write; 0.5 to 10 minutes in steps of half a minute (5 to start with); optional text of up to 500 characters; first-place prize 0 to 20 (3 to start with), second-place prize 0 to 20 (1 to start with) |
 | Free game | 1 screen; 3 minutes to start with; most points for a team 0 to 20 (3 to start with) |
 | Break | 5, 10 or 15 minutes |
 
@@ -95,6 +96,8 @@ Other rules:
 - On the stage a Golden pyramid answer shows its first 12 accepted answers and "+N more"; the host panel and **Print answers** show all of them.
 - An export over 100 MB asks first: large files may not open on a phone.
 - **Play** and **Export** ask first while questions are not finished.
+- A slide never cuts a question, an answer, an option or an explanation: long texts are drawn smaller until all of them fit.
+- On a slide a time of whole or half minutes, from one minute up, reads as minutes ("1 min", "1.5 min", "5 min"); other times read as seconds.
 - The search field in **Your quizzes** shows from 6 quizzes.
 
 ## Import

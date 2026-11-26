@@ -4,6 +4,10 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.28.2] - 2026-11-26
+### Changed
+- **Help and the user docs follow the app:** the laugh round without a question, the red mark of an unfinished question, texts that shrink to fit, times read in minutes, the Back arrow, and name colours in Scores (Help of Scores, limits, README).
+
 ## [0.28.1] - 2026-11-26
 ### Changed
 - **Quiz creator — "Make the quizmaster laugh": the time is set in minutes,** in steps of half a minute (0.5 to 10 min), instead of seconds in steps of five. On every slide — in the creator and on the stage — a time of whole or half minutes reads as minutes ("5 min", "1.5 min"), not as seconds.
