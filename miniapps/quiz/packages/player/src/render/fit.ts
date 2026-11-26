@@ -11,6 +11,24 @@ const BLOCKS = ".quiz-slide-prompt, .quiz-slide-answer, .quiz-slide-explanation"
 const TEXT_FIT_MIN = 0.2;
 const TEXT_FIT_STEP = 0.05;
 
+/** The texts in which a word is never broken over two lines while a smaller size can keep it whole (Moni 2026-11-26: "Австрали-я"). */
+const WHOLE_WORDS = ".quiz-slide-right";
+/** The smallest a text is drawn at so that its longest word stays on one line; below it the word breaks after all. */
+const WORD_FIT_MIN = 0.3;
+
+/** Draws a text smaller until its longest word fits its line; a word too long even for that is broken as before. */
+function keepWordsWhole(text: HTMLElement): void {
+  text.style.removeProperty("zoom");
+  text.style.setProperty("overflow-wrap", "normal");
+  for (let fit = 1 - TEXT_FIT_STEP; text.scrollWidth > text.clientWidth + 1 && fit >= WORD_FIT_MIN - 0.001; fit -= TEXT_FIT_STEP) {
+    text.style.setProperty("zoom", fit.toFixed(2));
+  }
+  if (text.scrollWidth > text.clientWidth + 1) {
+    text.style.removeProperty("zoom");
+    text.style.removeProperty("overflow-wrap");
+  }
+}
+
 /** Whether a block is squeezed shorter than its text; a quarter of a line is the letters' own overhang, not a cut. */
 function isSqueezed(block: HTMLElement): boolean {
   return block.scrollHeight - block.clientHeight > (parseFloat(getComputedStyle(block).lineHeight) || 4) / 4;
@@ -29,6 +47,7 @@ export function fitSlideText(slide: HTMLElement): void {
   const canvas = slide.querySelector<HTMLElement>(".quiz-slide-canvas");
   if (!canvas || canvas.clientHeight === 0) return;
   for (const text of slide.querySelectorAll<HTMLElement>(CLAMPED)) text.style.setProperty("-webkit-line-clamp", "none");
+  for (const text of slide.querySelectorAll<HTMLElement>(WHOLE_WORDS)) keepWordsWhole(text);
   const blocks = [...slide.querySelectorAll<HTMLElement>(BLOCKS)];
   for (const block of blocks) block.style.removeProperty("zoom");
   for (let fit = 1 - TEXT_FIT_STEP; isCut(canvas, blocks) && fit >= TEXT_FIT_MIN - 0.001; fit -= TEXT_FIT_STEP) {

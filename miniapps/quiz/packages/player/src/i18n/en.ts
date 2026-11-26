@@ -175,6 +175,7 @@ export const en = {
   },
   control: {
     back: "Back",
+    forward: "Forward",
     next: "Next",
     reveal: "Show answer",
     start: "Start timer",

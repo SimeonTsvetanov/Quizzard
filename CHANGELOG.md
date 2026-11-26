@@ -4,6 +4,12 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.29.1] - 2026-11-26
+### Added
+- **While playing: a forward arrow beside Back** in the control bar, on a computer and a tablet. The wide button in the middle stays as it is.
+### Fixed
+- **Quiz creator — a word of the answer is not broken over two lines.** An answer whose longest word does not fit its line ("Австрали" + "я") is drawn smaller until the word is whole; only a word too long even at the smallest size is still broken.
+
 ## [0.29.0] - 2026-11-26
 ### Added
 - **Quiz creator — the file with the answer can be a clip.** "Picture, audio or video with the answer (optional)" takes a picture, an audio clip or a video; it is shown or played when the answer is revealed. A clip that is too long or too big opens the cut window, with the same limits as a question's clip.

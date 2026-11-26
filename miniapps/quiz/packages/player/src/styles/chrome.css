@@ -103,7 +103,7 @@
     width: 100%;
   }
 
-  .qp-bar :is([data-control="reset"], [data-control="black"], [data-control="scores"], [data-control="audience"], [data-control="fullscreen"]) {
+  .qp-bar :is([data-control="forward"], [data-control="reset"], [data-control="black"], [data-control="scores"], [data-control="audience"], [data-control="fullscreen"]) {
     display: none;
   }
 }

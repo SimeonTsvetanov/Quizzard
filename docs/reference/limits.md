@@ -96,7 +96,7 @@ Other rules:
 - On the stage a Golden pyramid answer shows its first 12 accepted answers and "+N more"; the host panel and **Print answers** show all of them.
 - An export over 100 MB asks first: large files may not open on a phone.
 - **Play** and **Export** ask first while questions are not finished.
-- A slide never cuts a question, an answer, an option or an explanation: long texts are drawn smaller until all of them fit.
+- A slide never cuts a question, an answer, an option or an explanation: long texts are drawn smaller until all of them fit. A word of the answer is not broken over two lines either: the answer is drawn smaller until the word is whole.
 - On a slide a time of whole or half minutes, from one minute up, reads as minutes ("1 min", "1.5 min", "5 min"); other times read as seconds.
 - The search field in **Your quizzes** shows from 6 quizzes.
 

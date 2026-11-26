@@ -82,13 +82,15 @@ function primaryFace(state: GameState): { readonly icon: StageIcon; readonly lab
 /**
  * Creates the control bar: one bar for the whole player. Under the stage and — once the audience
  * window is open — under the host panel it is the same element with the same buttons in the same
- * places: leave · back, timer, restart · the primary button, always in the middle and of one width ·
+ * places: leave · back, forward, timer, restart · the primary button, always in the middle and of one width ·
  * black screen, scores, audience window, full screen, menu.
  * @param t - the translator
  * @param commands - what the buttons do
  */
 export function createBar(t: Translate, commands: Commands): Bar {
   const back = barButton("left", t("control.back"), () => { commands.dispatch({ type: "back" }); }, { "data-control": "back" });
+  // A second way forward beside Back, where one looks for it (Moni 2026-11-26); the wide button in the middle stays the main one.
+  const forward = barButton("right", t("control.forward"), () => { commands.dispatch({ type: "next" }); }, { "data-control": "forward" });
   const timer = barButton("play", t("control.start"), () => { commands.dispatch({ type: "timerToggle" }); }, { "data-control": "timer" });
   const reset = barButton("reset", t("control.reset"), () => { commands.dispatch({ type: "timerReset" }); }, { "data-control": "reset" });
   const next = barButton("right", t("control.next"), () => { commands.dispatch({ type: "next" }); }, { "data-control": "next", "data-words": "", "data-primary": "" });
@@ -100,7 +102,7 @@ export function createBar(t: Translate, commands: Commands): Bar {
     audience,
     barButton("fullscreen", t("control.fullscreen"), commands.toggleFullscreen, { "data-control": "fullscreen" }),
     barButton("menu", t("control.menu"), commands.openMenu, { "data-control": "menu" }));
-  const start = h("div", { class: "qp-bar-group qp-bar-start" }, back, timer, reset);
+  const start = h("div", { class: "qp-bar-group qp-bar-start" }, back, forward, timer, reset);
   if (commands.exit) start.prepend(barButton("x", t("control.exit"), commands.exit, { "data-control": "exit" }));
   const element = h("div", { class: "qp-bar", role: "toolbar", "aria-label": t("host.title") }, start, next, tools);
   const buttons = [...element.querySelectorAll("button")];
@@ -112,7 +114,9 @@ export function createBar(t: Translate, commands: Commands): Bar {
       const hasTimer = state.timer.totalMs > 0;
       const face = primaryFace(state);
       setOff(back, state.index === 0 && state.step === 0);
-      setOff(next, state.index === state.screens.length - 1 && face.label !== "control.reveal");
+      const isLast = state.index === state.screens.length - 1 && face.label !== "control.reveal";
+      setOff(next, isLast);
+      setOff(forward, isLast);
       setOff(timer, !hasTimer);
       setOff(reset, !hasTimer);
       black.setAttribute("aria-pressed", String(state.curtain?.kind === "black"));

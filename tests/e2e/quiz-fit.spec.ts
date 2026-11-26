@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
-import { openQuiz, pubNight, root, screen, type SeedFile } from "./support/quiz-ux.ts";
+import { openQuiz, pubNight, root, screen, stage, type SeedFile } from "./support/quiz-ux.ts";
 
 // A slide never cuts its text (Moni 2026-11-25): a long answer, question or text with the answer is drawn
 // smaller until all of it is on the slide — in the editor's live preview and on the thumbnails
@@ -61,3 +61,33 @@ for (const number of [1, 2, 3]) {
     await expect(slide.locator(".quiz-slide-right")).toHaveCSS("-webkit-line-clamp", "none");
   });
 }
+
+// Moni 2026-11-26: "От Австралия" beside a picture ended as "Австрали" + "я" on the next line.
+test("a long word of the answer is never broken over two lines: the answer is drawn smaller instead", async ({ page }) => {
+  await page.goto("#/quiz");
+  const base = pubNight();
+  const [first] = base.quiz.rounds;
+  if (!first) throw new Error("pubNight has no round");
+  const question = { id: "q1", kind: "picture", prompt: "От коя държава е текстът?", media: { id: "m-land" }, explanation: "G'day, mate!", answer: { type: "open", text: "От Австралия" } };
+  await openQuiz(page, { ...base, quiz: { ...base.quiz, rounds: [{ ...first, questions: [question] }] } });
+  await openQuestion(page, 1);
+  await screen(page, "editor").locator("[data-live] [data-reveal-toggle]").click();
+  const right = screen(page, "editor").locator("[data-live-slide] .quiz-slide[data-reveal] .quiz-slide-right");
+  await expect(right).toBeVisible();
+  // Two words: at most two lines, and no word wider than its line (a broken word would make a third line).
+  await expect.poll(() => right.evaluate((element) => ({
+    isBroken: Math.round(element.getBoundingClientRect().height / parseFloat(getComputedStyle(element).lineHeight)) > 2,
+    isWide: element.scrollWidth > element.clientWidth + 1,
+  }))).toEqual({ isBroken: false, isWide: false });
+  // The same on the stage, where the picture leaves the answer a narrow column.
+  await page.goBack();
+  await root(page).locator("[data-play-quiz]").click();
+  const shown = stage(page).locator(".quiz-slide[data-reveal] .quiz-slide-right");
+  for (let press = 0; press < 12 && !(await shown.isVisible()); press += 1) await page.keyboard.press("Space");
+  await expect(shown).toHaveText("От Австралия");
+  await expect.poll(() => shown.evaluate((element) => ({
+    isBroken: Math.round(element.getBoundingClientRect().height / parseFloat(getComputedStyle(element).lineHeight)) > 2,
+    isWide: element.scrollWidth > element.clientWidth + 1,
+  }))).toEqual({ isBroken: false, isWide: false });
+  if (process.env["LOOK"]) await page.screenshot({ path: `${process.env["LOOK"]}/word.png` });
+});

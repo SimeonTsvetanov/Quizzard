@@ -177,6 +177,7 @@ export const bg: Messages = {
   },
   control: {
     back: "Назад",
+    forward: "Напред",
     next: "Напред",
     reveal: "Покажи отговора",
     start: "Пусни таймера",
