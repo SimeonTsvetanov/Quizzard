@@ -17,7 +17,7 @@ export const enMore = {
     delete: "Delete",
   },
   music: {
-    hint: "Music for the whole quiz: choose your songs and every question without music gets one, in the order of their names; with fewer songs than questions they start again from the first. A question that has a song keeps it; audio and video questions get none. Each song is cut to its question's time where the browser can.",
+    hint: "Music for the whole quiz: every question without music gets one of your songs, in the order of their names, round again when they run out. Audio and video questions get none.",
     fromFolder: "Choose a folder of songs",
     fromFiles: "Choose single songs",
     remove: "Remove the music",
@@ -36,7 +36,7 @@ export const enMore = {
     missing_other: "{{count}} questions have no music",
     missingTitle_one: "{{count}} question has no music",
     missingTitle_other: "{{count}} questions have no music",
-    missingText: "This quiz has music on its questions. Open a question to give it a song, or choose songs to fill every one of these.",
+    missingText: "Open a question to give it a song, or choose songs to fill all of these.",
     where: "Round {{round}} ({{name}}) – question {{n}}",
     fill: "Choose songs",
   },

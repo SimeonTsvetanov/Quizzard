@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 // The special rounds in the player (SPEC §10): their screens, the slide's picture in each state, the
 // answer areas, the score entry through the round kind, the answer list with the Safe's code.
-import type { Question, QuizFile } from "@simeonts/quizzard-quiz-core/play";
+import { type Question, type QuizFile, safeCode } from "@simeonts/quizzard-quiz-core/play";
 import { describe, expect, it } from "vitest";
 import special from "../../core/test/fixtures/v1/special-rounds.quiz.json" with { type: "json" };
 import { createEnv } from "../src/env.ts";
@@ -28,6 +28,24 @@ function slide(roundIndex: 0 | 1, index: number, reveal: boolean, phase: "questi
 }
 
 describe("the special rounds play the standard flow", () => {
+  it("the Safe's answers play as one sequence: each digit's slide gives way to the next by itself, the last one stays; at once = one slide with the code", () => {
+    const game = createGame(file, { teamName: (n) => `Team ${String(n)}` });
+    const safeAnswers = game.screens.filter((screen) => screen.screen === "answer" && file.quiz.rounds.find((round) => round.id === screen.roundId)?.kind === "safe");
+    expect(safeAnswers.map((screen) => [screen.seconds, screen.silent ?? false])).toEqual([[4.5, true], [4.5, true], [4.5, true], [4.5, true], [0, false]]);
+    const first = step(game, { type: "jump", index: game.screens.findIndex((screen) => screen === safeAnswers[0]) - 1 });
+    const running = step(first, { type: "next" });
+    expect(running.timer.status).toBe("running");
+    const second = step(running, { type: "tick", ms: 4500 });
+    expect(second.index).toBe(running.index + 1);
+    expect(second.timer.status).toBe("running"); // and on it goes, without "Time is up"
+    const last = step(step(step(second, { type: "tick", ms: 4500 }), { type: "tick", ms: 4500 }), { type: "tick", ms: 4500 });
+    expect(last.index).toBe(running.index + 4);
+    expect(step(last, { type: "tick", ms: 60_000 })).toBe(last);
+    const atOnce = { ...file, quiz: { ...file.quiz, rounds: file.quiz.rounds.map((round) => (round.kind === "safe" ? { ...round, answersTogether: true } : round)) } };
+    const names = createGame(atOnce, { teamName: (n) => `Team ${String(n)}` }).screens.filter((screen) => atOnce.quiz.rounds.find((round) => round.id === screen.roundId)?.kind === "safe").map((screen) => screen.screen);
+    expect(names).toEqual(["rules", "question", "question", "question", "question", "question", "code", "score", "board"]);
+  });
+
   it("rules, questions, Answers, answers, scores and the board — the pyramid's four questions on one screen (Moni 2026-11-26)", () => {
     const game = createGame(file, { teamName: (n) => `Team ${String(n)}` });
     const names = screenNames(game).map((name) => name.split(" ")[0]);
@@ -86,7 +104,13 @@ describe("the Safe on the slide", () => {
   it("the slide draws the vault and, at the reveal, \"Digit 3 of the code\" with the digit", () => {
     const drawn = slide(1, 2, true, "answer");
     expect(drawn.querySelector(".quiz-vault")?.getAttribute("aria-label")).toBe("Safe, digit 3 of 5");
-    expect(drawn.querySelector(".quiz-digit")?.textContent).toBe("Digit 3 of the code1");
+    expect(drawn.querySelector(".quiz-slide-kicker")?.textContent).toBe("Digit 3 of the code");
+    const safe = file.quiz.rounds.find((round) => round.kind === "safe");
+    const code = safe ? safeCode(safe) : [];
+    // The code as it stands: the two digits found before, this one large, two still to come (Moni 2026-11-26).
+    const line = [...drawn.querySelectorAll("[data-code-line] .quiz-digit-box")];
+    expect(line.map((box) => box.getAttribute("data-code") ?? "now")).toEqual(["set", "set", "now", "ahead", "ahead"]);
+    expect(line.map((box) => box.textContent)).toEqual([String(code[0]), String(code[1]), String(code[2]), "?", "?"]);
     expect(slide(1, 2, false, "question").querySelector(".quiz-digit-value")?.textContent).toBe("?");
   });
 });

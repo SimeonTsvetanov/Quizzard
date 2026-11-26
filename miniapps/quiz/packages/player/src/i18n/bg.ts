@@ -129,6 +129,7 @@ export const bg: Messages = {
     safeName: "Сейф",
     tier_one: "{{count}} отговор",
     tier_other: "{{count}} отговора",
+    codeTitle: "Кодът на сейфа",
     perAnswer: "1 точка за всеки приет отговор",
     overRule: "Повече отговори от исканите: 0 за въпроса",
     perDigit: "1 точка за всяка вярна цифра",

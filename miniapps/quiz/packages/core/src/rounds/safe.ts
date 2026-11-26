@@ -3,8 +3,8 @@
 import { SAFE_BONUS_DEFAULT } from "../limits.ts";
 import type { Round } from "../model.ts";
 import { digitOf } from "../answers/special-shapes.ts";
-import type { RoundKind } from "./round-kind.ts";
-import { standardScreens } from "./standard.ts";
+import type { PlayerScreen, RoundKind } from "./round-kind.ts";
+import { STANDARD_SCREENS, standardScreens } from "./standard.ts";
 
 /** Questions of a Safe round: the digits of its code. */
 export const SAFE_QUESTIONS = 5;
@@ -31,10 +31,38 @@ function digits(round: Round): number {
   return round.questions.length;
 }
 
+/** The Safe's own screen. */
+export const SAFE_SCREENS = {
+  /** The whole code at once and the door opening: what a Safe shows when its answers are not shown one by one. */
+  code: "code",
+} as const;
+
+/** How long each digit's slide stays before the next comes by itself, in seconds (Moni 2026-11-26: the code is dialled as one sequence). */
+export const SAFE_ANSWER_SECONDS = 4.5;
+
+/**
+ * A Safe's screens: as a standard round — or, when its answers are not shown one by one, the questions and
+ * then one slide with the whole code.
+ * @param round - a Safe round
+ */
+export function safeScreens(round: Round): readonly PlayerScreen[] {
+  const last = round.questions.at(-1);
+  if (round.answersTogether !== true || !last) return standardScreens(round);
+  const roundId = round.id;
+  return [
+    { screen: STANDARD_SCREENS.rules, roundId },
+    ...round.questions.map((question) => ({ screen: STANDARD_SCREENS.question, roundId, questionId: question.id })),
+    { screen: SAFE_SCREENS.code, roundId, questionId: last.id },
+    { screen: STANDARD_SCREENS.score, roundId },
+    { screen: STANDARD_SCREENS.board, roundId },
+  ];
+}
+
 /** Round kind `safe`. */
 export const safeRound: RoundKind = {
   id: "safe",
-  screens: standardScreens,
+  answerSeconds: SAFE_ANSWER_SECONDS,
+  screens: safeScreens,
   shape: { count: SAFE_QUESTIONS, answerType: "digit", canReorder: true, seconds: 45, pointsAt: () => 1, defaultData: () => ({ bonus: SAFE_BONUS_DEFAULT }) },
   isDataValid: (data) => data?.["bonus"] === undefined || (typeof data["bonus"] === "number" && Number.isFinite(data["bonus"]) && data["bonus"] >= 0),
   maxPoints: (round) => digits(round) + safeBonus(round),

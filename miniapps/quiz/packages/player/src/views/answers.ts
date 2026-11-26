@@ -12,6 +12,17 @@ export const answersView: ViewEntry = {
   tile: ({ env }) => ({ mark: env.t("answers.title"), name: env.t("answers.title") }),
 };
 
+/** A Safe's whole code on one slide — its last digit's slide under the code's own heading, without that question's text. */
+export const codeView: ViewEntry = {
+  id: "code",
+  stage: (context) => {
+    const { question, env } = context;
+    if (!question) return slideView(context, null);
+    return slideView(context, slideOf({ ...context, question: { ...question, prompt: env.t("special.codeTitle"), explanation: "" } }, true, null, "answer"));
+  },
+  tile: ({ env }) => ({ mark: env.t("special.code"), name: env.t("special.codeTitle"), group: env.t("answers.title") }),
+};
+
 /** One answer: the question again with its answer and explanation, which come in a moment later by themselves. */
 export const answerView: ViewEntry = {
   id: "answer",

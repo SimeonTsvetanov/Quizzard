@@ -49,7 +49,7 @@ To start a break from the score screen, select **5 min**, **10 min** or **15 min
 ## Play the special rounds
 
 - **Golden pyramid:** one screen shows the pyramid of gold blocks beside all four questions, each with how many answers it asks for. The timer is the four questions' times together: 2 minutes each make 8. Then the answers come one by one: at each answer its blocks turn over and the accepted answers appear, the first 12, then "+N more".
-- **Safe:** a vault door. At each answer the dial turns to the digit and it clicks into its window; after the fifth digit the door opens. At score entry you enter each team's right digits (0 to 5); all five add the bonus, shown as "5 + 3 bonus".
+- **Safe:** a vault door. After **Answers**, one press of **Next** dials the whole code: each digit's slide turns the dial, clicks the digit into its window and gives way to the next by itself, and after the fifth the door opens. The digits found so far stay beside the vault, and the timer button pauses the sequence. With **Show the answers one by one** off, one slide shows the whole code. At score entry you enter each team's right digits (0 to 5); all five add the bonus, shown as "5 + 3 bonus".
 - **Make the quizmaster laugh** and **Free game:** the rules with the prizes, the task with its timer, the points and the leaderboard. The task of **Make the quizmaster laugh** is built in and is shown in the language you play in, with your own text under it if you added one. There are no answers to show. In **Make the quizmaster laugh**, give the prize for first place to the funniest team and the prize for second place to the next one.
 
 Each special round opens with a short animated explanation of how it scores.

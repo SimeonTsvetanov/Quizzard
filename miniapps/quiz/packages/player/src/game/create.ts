@@ -39,7 +39,10 @@ function roundScreens(round: Round, media: ReadonlyMap<string, MediaEntry>, roun
   return (rounds.get(round.kind)?.screens(round) ?? []).map((place) => {
     const kind = kinds.get(place.screen);
     const question = place.questionId === undefined ? undefined : questions.get(place.questionId);
-    const seconds = question && kind?.seconds ? kind.seconds(round, question) : (kind?.roundSeconds?.(round) ?? 0);
+    // The answers of a round that plays them as one sequence stay a moment each, then the next comes; the last one stays.
+    const stay = place.screen === STANDARD_SCREENS.answer && question !== round.questions.at(-1) ? (rounds.get(round.kind)?.answerSeconds ?? 0) : 0;
+    const timed = question && kind?.seconds ? kind.seconds(round, question) : (kind?.roundSeconds?.(round) ?? 0);
+    const seconds = stay > 0 ? stay : timed;
     // At the reveal the file kept for the answer — a picture or a clip (Moni 2026-11-26) — takes the place of the
     // question's own file. One whose file the quiz does not carry is passed over.
     const forAnswer = question?.answerMedia && media.has(question.answerMedia.id) ? question.answerMedia : undefined;
@@ -51,7 +54,7 @@ function roundScreens(round: Round, media: ReadonlyMap<string, MediaEntry>, roun
     const ownSong = place.screen === STANDARD_SCREENS.question && ofScreen.media !== "clip" && question?.music && media.get(question.music.id)?.type === "audio" ? question.music.id : undefined;
     // A round's own timed screen (the pyramid's questions together) plays the first song its questions have.
     const song = ownSong ?? (kind?.roundSeconds ? round.questions.map((one) => one.music?.id).find((id) => id !== undefined && media.get(id)?.type === "audio") : undefined);
-    return { ...place, seconds, steps: kind?.steps ?? 0, ...(kind?.upright ? { upright: true as const } : {}), ...ofScreen, ...(leads ? { clipFirst: true as const } : {}), ...(song === undefined ? {} : { music: song }), ...(round.manualAdvance === true ? { manual: true as const } : {}) };
+    return { ...place, seconds, steps: kind?.steps ?? 0, ...(kind?.upright ? { upright: true as const } : {}), ...ofScreen, ...(leads ? { clipFirst: true as const } : {}), ...(song === undefined ? {} : { music: song }), ...(round.manualAdvance === true ? { manual: true as const } : {}), ...(stay > 0 ? { silent: true as const } : {}) };
   });
 }
 

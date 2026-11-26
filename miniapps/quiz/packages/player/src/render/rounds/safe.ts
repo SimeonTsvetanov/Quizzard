@@ -50,9 +50,21 @@ function art(_question: Question, view: RoundSlideView): HTMLElement {
   return h("div", { class: "quiz-slide-art", "data-art": "safe" }, vaultFigure(vaultState(view)));
 }
 
-/** The answer area: "Answer with one digit"; at the reveal "Digit 3 of the code" and the digit. */
+/**
+ * The answer area: "Answer with one digit"; on an answer "Digit 3 of the code" and the code as it stands —
+ * the digits found before, small; this one large; the ones to come as "?" — so the room follows the whole code.
+ */
 function answer(question: Question, view: RoundSlideView): HTMLElement {
-  return digitPart(digitOf(question.answer), view, view.reveal ? view.labels.special.codeDigit(view.index + 1) : view.labels.special.oneDigit);
+  const part = digitPart(digitOf(question.answer), view, view.reveal ? view.labels.special.codeDigit(view.index + 1) : view.labels.special.oneDigit);
+  const box = part.querySelector(".quiz-digit-box");
+  if (view.phase !== "answer" || !box) return part;
+  const small = (text: string, state: string): HTMLElement => h("span", { class: "quiz-digit-box quiz-digit-box--small", "data-code": state }, h("span", { class: "quiz-digit-value" }, text));
+  const code = safeCode(view.round);
+  const row = h("span", { class: "quiz-code-line", "data-code-line": "" },
+    ...code.slice(0, view.index).map((digit) => small(digit === null ? "?" : String(digit), "set")));
+  box.replaceWith(row);
+  row.append(box, ...code.slice(view.index + 1).map(() => small("?", "ahead")));
+  return part;
 }
 
 /** Round kind `safe` on the slide. */

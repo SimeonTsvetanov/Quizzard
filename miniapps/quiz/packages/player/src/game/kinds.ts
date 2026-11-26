@@ -2,7 +2,7 @@
 // the game needs to know to move through it — whether it has a timer, how many reveals, whether it
 // is left out right now. The reducer asks this registry and never switches on a screen's name, so a
 // later round kind adds its screen here (and its view) and nothing else changes.
-import { type Question, type Registry, type RegistryEntry, type Round, PYRAMID_SCREENS, STANDARD_SCREENS, TASK_SCREENS, createRegistry, effectiveSeconds, pyramidSeconds } from "@simeonts/quizzard-quiz-core/play";
+import { type Question, type Registry, type RegistryEntry, type Round, PYRAMID_SCREENS, SAFE_SCREENS, STANDARD_SCREENS, TASK_SCREENS, createRegistry, effectiveSeconds, pyramidSeconds } from "@simeonts/quizzard-quiz-core/play";
 import { isFirstShared } from "./scores.ts";
 import { PLAYER_SCREENS, type GameState } from "./state.ts";
 
@@ -31,6 +31,8 @@ export function createScreenKinds(): Registry<ScreenKind> {
     { id: STANDARD_SCREENS.answers },
     // One press shows the answer's slide whole (Moni 2026-11-26): the answer comes in by itself a moment after the question (styles/clock.css).
     { id: STANDARD_SCREENS.answer },
+    // A Safe whose answers are not shown one by one: the whole code on one slide.
+    { id: SAFE_SCREENS.code },
     // The round's answers in one list, then the points entry: two parts on an upright screen, one screen on a wide one.
     { id: STANDARD_SCREENS.score, steps: 1, upright: true },
     // A round without answers: the points alone, in one part on any screen.

@@ -127,6 +127,7 @@ export const en = {
     safeName: "Safe",
     tier_one: "{{count}} answer",
     tier_other: "{{count}} answers",
+    codeTitle: "The code of the safe",
     perAnswer: "1 point per accepted answer",
     overRule: "More answers than asked: 0 for that question",
     perDigit: "1 point per right digit",

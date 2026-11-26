@@ -129,7 +129,7 @@ export const enEdit = {
     answerAccepts: "A picture, an audio clip or a video · the same limits as in a question",
     answerHint: "Shown or played when the answer is revealed, in place of the question's own picture or clip.",
     musicLabel: "Music while the time runs (optional)",
-    musicHint: "A song that starts by itself with the question's timer and stops with it; a shorter one goes round. The teams can talk under it.",
+    musicHint: "Starts by itself with the question's timer and stops with it; a shorter song goes round.",
     musicChoose: "Song for this question",
     musicAccepts: "MP3 or M4A up to {{limit}} · a longer song can be cut here",
     replace: "Replace",

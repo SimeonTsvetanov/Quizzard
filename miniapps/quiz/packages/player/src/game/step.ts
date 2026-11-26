@@ -120,6 +120,11 @@ function tickTimer(state: GameState, elapsed: number, kinds: Kinds): GameState {
   if (status === "running") {
     const left = Math.max(0, leftMs - elapsed);
     if (left > 0) return withTimer(state, { leftMs: left });
+    // A silent screen (an answer of a sequence) just gives way to the next; by hand, it stays.
+    if (state.screens[state.index]?.silent === true) {
+      const on = runsItself(state) ? next(state, kinds) : state;
+      return on === state ? withTimer(state, { status: "done", leftMs: 0 }) : on;
+    }
     // The time is up: a clip still playing stops with it (Moni 2026-11-26).
     const over = state.media.status === "playing" ? { ...state, media: playbackStep(state.media, "ended") } : state;
     return withTimer(over, runsItself(state) ? { status: "cue", leftMs: 0, cueMs: CUE_MS } : { status: "done", leftMs: 0 });

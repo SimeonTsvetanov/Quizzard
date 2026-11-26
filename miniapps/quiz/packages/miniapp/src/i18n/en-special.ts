@@ -20,7 +20,7 @@ export const enSpecial = {
     laughRules: "Every team has {{minutes}} minutes to think up a joke. One of you tells it. The quizmaster picks the funniest: {{first}} points for first place, {{second}} for second. Only two teams score in this round.",
     laughFixed: "This round is one screen: the task and its timer.",
     ownTitle: "What the teams see",
-    laughNote: "This round has no questions. The screen below comes up with a timer: every team thinks up a joke, one of them tells it, and you pick the two funniest. The explanation is shown in the language the quiz is played in. Time and points are in the round's settings above.",
+    laughNote: "This round has no questions: the screen below comes up with a timer. Its explanation is shown in the language you play in. Time and points are in the round's settings.",
     ownExtra: "More text on the screen (optional)",
     ownExtraHint: "Shown under the explanation, for example a theme for the jokes.",
     laughPlaceholder: "For example: the joke must be about the birthday girl",

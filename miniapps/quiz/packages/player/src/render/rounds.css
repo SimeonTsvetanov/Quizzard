@@ -221,6 +221,29 @@
     gap: 1.4cqi;
   }
 
+  /* The code as it stands on an answer: the digits found before, this one large, the ones to come (rounds/safe.ts). */
+  .quiz-code-line {
+    display: flex;
+    align-items: flex-end;
+    gap: 1.2cqi;
+  }
+
+  .quiz-digit-box.quiz-digit-box--small {
+    width: 6.4cqi;
+    height: 7.6cqi;
+    border-radius: 1cqi;
+    font-size: 4.4cqi;
+
+    &[data-code="set"] {
+      box-shadow: inset 0 0 0 0.3cqi #2fd27d;
+      color: #6dffb0;
+    }
+
+    &[data-code="ahead"] {
+      opacity: 0.55;
+    }
+  }
+
   .quiz-digit-box {
     display: grid;
     place-items: center;
@@ -235,7 +258,7 @@
     font-weight: var(--weight-bold);
     line-height: 1;
 
-    [data-revealed] > & {
+    [data-revealed] &:not(.quiz-digit-box--small) {
       box-shadow: inset 0 0 0 0.4cqi #3fbf6b, 0 0 3cqi rgb(79 224 126 / 0.35);
       color: #7dffa6;
     }
@@ -477,11 +500,11 @@
       animation: quiz-tile-in 0.5s cubic-bezier(0.2, 0.8, 0.3, 1.2) calc(var(--quiz-wait, 0.15s) + var(--quiz-i, 0) * 0.09s) both;
     }
 
-    [data-revealed] > .quiz-digit-box {
+    [data-revealed] .quiz-digit-box:not(.quiz-digit-box--small) {
       animation: quiz-digit-box 0.4s ease 1.5s both;
     }
 
-    [data-revealed] > .quiz-digit-box > .quiz-digit-value,
+    [data-revealed] .quiz-digit-box:not(.quiz-digit-box--small) > .quiz-digit-value,
     .quiz-vault-window[data-state="setting"] text {
       animation: quiz-click-in 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.4) 1.5s both;
     }
