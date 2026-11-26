@@ -44,6 +44,8 @@ export interface GameScreen {
    * screen that only shows the question's clip again.
    */
   readonly clipFirst?: true;
+  /** The screen's round is moved on by hand (`Round.manualAdvance`): its time running out brings nothing by itself. */
+  readonly manual?: true;
   /** The id of the sound that plays while this screen's time runs (a question's music); left out for none. */
   readonly music?: string;
 }

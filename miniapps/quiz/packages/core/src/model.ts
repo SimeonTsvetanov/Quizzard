@@ -95,6 +95,13 @@ export interface Round {
   readonly questions: readonly Question[];
   /** The round kind's own values (a Safe's bonus), checked by its entry; absent for a standard round. */
   readonly data?: Readonly<Record<string, unknown>>;
+  /**
+   * The round's answers are shown all at once with the score entry, not one slide each; absent = one by one
+   * (Moni 2026-11-26: the host decides per round).
+   */
+  readonly answersTogether?: boolean;
+  /** The host moves on by hand in this round: a question's time running out does not bring the next; absent = it does. */
+  readonly manualAdvance?: boolean;
 }
 
 /** A quiz: the deck. Timestamps are ISO 8601 strings; `language` is the player's language ("en", "bg"). */
@@ -146,6 +153,8 @@ export const roundSchema = z.looseObject({
   kind: id,
   name: z.string(),
   rules: z.string().optional(),
+  answersTogether: z.boolean().optional(),
+  manualAdvance: z.boolean().optional(),
   defaults: z.looseObject({ seconds: z.number().positive(), points: pointsSchema, questionKind: id, answerType: id }),
   questions: z.array(questionSchema),
   data: z.record(z.string(), z.unknown()).optional(),

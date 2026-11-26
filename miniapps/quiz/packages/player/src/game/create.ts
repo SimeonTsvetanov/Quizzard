@@ -51,7 +51,7 @@ function roundScreens(round: Round, media: ReadonlyMap<string, MediaEntry>, roun
     const ownSong = place.screen === STANDARD_SCREENS.question && ofScreen.media !== "clip" && question?.music && media.get(question.music.id)?.type === "audio" ? question.music.id : undefined;
     // A round's own timed screen (the pyramid's questions together) plays the first song its questions have.
     const song = ownSong ?? (kind?.roundSeconds ? round.questions.map((one) => one.music?.id).find((id) => id !== undefined && media.get(id)?.type === "audio") : undefined);
-    return { ...place, seconds, steps: kind?.steps ?? 0, ...(kind?.upright ? { upright: true as const } : {}), ...ofScreen, ...(leads ? { clipFirst: true as const } : {}), ...(song === undefined ? {} : { music: song }) };
+    return { ...place, seconds, steps: kind?.steps ?? 0, ...(kind?.upright ? { upright: true as const } : {}), ...ofScreen, ...(leads ? { clipFirst: true as const } : {}), ...(song === undefined ? {} : { music: song }), ...(round.manualAdvance === true ? { manual: true as const } : {}) };
   });
 }
 

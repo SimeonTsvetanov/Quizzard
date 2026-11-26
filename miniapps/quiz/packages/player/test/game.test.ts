@@ -101,6 +101,20 @@ describe("next, back and jump", () => {
     expect(step(score, { type: "setScore", roundId: "r1", teamId: "t1", value: 3 }).scores).toEqual({ r1: { t1: 3 } });
   });
 
+  it("a round that shows its answers at once has no answer slides; one moved on by hand never moves by itself (Moni 2026-11-26)", () => {
+    const file = quizFile([2]);
+    const together = { ...file, quiz: { ...file.quiz, rounds: file.quiz.rounds.map((round) => ({ ...round, answersTogether: true })) } };
+    expect(buildScreens(together).map((screen) => screen.screen)).toEqual(["title", "teams", "rules", "question", "question", "score", "board", "tie", "final"]);
+    const byHand = { ...file, quiz: { ...file.quiz, rounds: file.quiz.rounds.map((round) => ({ ...round, manualAdvance: true })) } };
+    const game = createGame(byHand, { teamName: (n) => `Team ${String(n)}` });
+    const question = play(game, "next", "next", "next");
+    expect(at(question)).toBe("question q1.1");
+    expect(question.timer.status).toBe("idle"); // the host starts it
+    const over = play(question, { type: "timerStart" }, { type: "tick", ms: 60_000 });
+    expect(at(over)).toBe("question q1.1");
+    expect(over.timer.status).toBe("done");
+  });
+
   it("stays put at both ends: back on the title and next on the podium return the same game", () => {
     const start = newGame([1]);
     expect(step(start, { type: "back" })).toBe(start);

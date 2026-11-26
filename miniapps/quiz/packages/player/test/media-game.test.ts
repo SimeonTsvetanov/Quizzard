@@ -121,17 +121,34 @@ describe("clips and the timer", () => {
     expect(run(clip, tick(5000))).toBe(clip);
   });
 
-  it("the host plays the clip; when it ends the timer starts", () => {
+  it("the timer starts with the clip and goes on after a shorter clip has ended (Moni 2026-11-26)", () => {
     const playing = run(onQuestion(3), media("play"), tick(1500));
     expect(playing.media).toMatchObject({ status: "playing", ms: 1500 });
-    expect(playing.timer.status).toBe("idle");
+    expect(playing.timer).toMatchObject({ status: "running", leftMs: 8500 });
     const ended = run(playing, media("ended"));
     expect(ended.media.status).toBe("ended");
-    expect(ended.timer.status).toBe("running");
-    expect(run(ended, tick(1000)).timer.leftMs).toBe(9000);
+    expect(run(ended, tick(1000)).timer).toMatchObject({ status: "running", leftMs: 7500 });
     // Played again, the clip does not touch a timer that is already running or over.
     const again = run(ended, tick(1000), media("play"), media("ended"));
-    expect(again.timer).toMatchObject({ status: "running", leftMs: 9000 });
+    expect(again.timer).toMatchObject({ status: "running", leftMs: 7500 });
+  });
+
+  it("the time running out stops a clip that still plays, and the game moves on to the next clip and starts it", () => {
+    // Question 3's song was paused for a while, so it is behind the timer when the time is up.
+    const behind = run(onQuestion(3), media("play"), tick(1000), media("pause"), tick(8000), media("play"), tick(999));
+    expect(behind.media.status).toBe("playing");
+    const over = run(behind, tick(1));
+    expect(over.timer.status).toBe("cue");
+    expect(over.media.status).toBe("ended");
+    // After the cue the game is on question 4 — a video — which plays by itself, with its timer.
+    const moved = run(over, tick(60_000));
+    expect(at(moved)).toBe("question q1.4");
+    expect(moved.media.status).toBe("playing");
+    expect(moved.timer.status).toBe("running");
+    // With "questions run by themselves" off nothing starts by itself.
+    const manual = run(walkTo(run(fresh(), { type: "setAuto", value: false }), 3), media("play"), tick(10_000));
+    expect(manual.timer.status).toBe("idle");
+    expect(at(manual)).toBe("question q1.3");
   });
 
   it("with \"questions run by themselves\" off, the clip's end starts nothing", () => {
@@ -167,7 +184,7 @@ describe("clips and the timer", () => {
     expect(almost.media.status).toBe("playing");
     const over = run(almost, tick(1));
     expect(over.media.status).toBe("ended");
-    expect(over.timer.status).toBe("running"); // the timer that waited for the clip starts, as at a clip's own end
+    expect(over.timer.status).toBe("cue"); // the timer ran with the clip: the time is up for both
     expect(run(over, media("toggle")).media).toMatchObject({ status: "playing", ms: 0 });
     // A clip shorter than the time is not touched: the 4 s song ends at its own end.
     expect(run(onQuestion(3), media("play"), tick(3_999)).media.status).toBe("playing");
@@ -179,11 +196,11 @@ describe("clips and the timer", () => {
     expect(zoomed.media).toMatchObject({ status: "playing", ms: 700, zoom: true });
     expect(run(zoomed, tick(300)).media).toMatchObject({ status: "playing", ms: 1000, zoom: true });
     expect(run(zoomed, media("pause")).media).toMatchObject({ status: "paused", zoom: true });
-    // The clip's end starts the waiting timer while zoomed, and the timer runs under the zoom.
+    // The timer started with the clip and runs on under the zoom, also after the clip's end.
     const ended = run(zoomed, media("ended"));
     expect(ended.media).toMatchObject({ status: "ended", zoom: true });
     expect(ended.timer.status).toBe("running");
-    expect(run(ended, tick(1000)).timer.leftMs).toBe(9000);
+    expect(run(ended, tick(1000)).timer.leftMs).toBe(8300);
     // Escape (`unzoom`) leaves the zoom and does nothing when there is none; Z (`zoom`) goes both ways.
     expect(run(zoomed, media("unzoom")).media).toMatchObject({ status: "playing", zoom: false });
     expect(step(video, media("unzoom"))).toBe(video);

@@ -4,6 +4,13 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.34.0] - 2026-11-26
+### Added
+- **Round settings — "Show the answers one by one".** On by default. Off: the round has no answer slides; all its answers show at once on the screen where the points are entered.
+- **Round settings — "Questions follow by themselves".** On by default. Off: in this round a question's time running out brings nothing by itself; the host moves on with Next. The switch in the player's menu still turns it off for the whole game.
+### Changed
+- **Audio and video questions — the timer runs with the clip.** It starts when the clip starts. A clip longer than the time stops when the time is up; a shorter one ends and the timer runs on. When the time is up the game moves on by itself and, when the next question has a clip, plays it at once.
+
 ## [0.33.1] - 2026-11-26
 ### Fixed
 - **A special round's rules text follows its numbers.** The text a Safe, "Make the quizmaster laugh" or a Free game starts with named the starting values for good ("3 points for first place, 1 for second", "5 minutes"); now it changes with the prizes, the bonus, the most points and the time — also in quizzes made earlier. A text you rewrote yourself is left as it is.

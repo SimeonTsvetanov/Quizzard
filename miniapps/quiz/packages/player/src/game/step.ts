@@ -26,13 +26,23 @@ function seek(state: GameState, from: number, direction: 1 | -1, kinds: Kinds): 
 }
 
 /**
+ * Whether the game runs by itself on a screen: the host's switch is on and the screen's round is not one
+ * that is moved on by hand.
+ * @param state - the game
+ * @param index - the screen; the one on show when left out
+ */
+export function runsItself(state: GameState, index: number = state.index): boolean {
+  return state.auto && state.screens[index]?.manual !== true;
+}
+
+/**
  * Shows a screen: its reveals at `step`, its media at rest, nothing covering the stage, its timer
  * full — running only when the game got here by going on, and never on a screen with a clip: there
- * the timer waits for the clip to end or for the host (the clip itself waits for the host too).
+ * the timer starts with the clip (the clip itself waits for the host, or for the game moving on by itself).
  */
 function enter(state: GameState, index: number, step: number, isForward: boolean): GameState {
   const screen = state.screens[index];
-  const isRunning = isForward && state.auto && screen?.media !== "clip";
+  const isRunning = isForward && runsItself(state, index) && screen?.media !== "clip";
   return { ...state, index, step, timer: freshTimer(screen?.seconds ?? 0, isRunning), media: RESTING_PLAYBACK, curtain: null };
 }
 
@@ -110,16 +120,24 @@ function tickTimer(state: GameState, elapsed: number, kinds: Kinds): GameState {
   if (status === "running") {
     const left = Math.max(0, leftMs - elapsed);
     if (left > 0) return withTimer(state, { leftMs: left });
-    return withTimer(state, state.auto ? { status: "cue", leftMs: 0, cueMs: CUE_MS } : { status: "done", leftMs: 0 });
+    // The time is up: a clip still playing stops with it (Moni 2026-11-26).
+    const over = state.media.status === "playing" ? { ...state, media: playbackStep(state.media, "ended") } : state;
+    return withTimer(over, runsItself(state) ? { status: "cue", leftMs: 0, cueMs: CUE_MS } : { status: "done", leftMs: 0 });
   }
   if (status !== "cue") return state;
   const left = cueMs - elapsed;
   if (left > 0) return withTimer(state, { cueMs: left });
   const moved = next(state, kinds);
-  return moved === state ? withTimer(state, { status: "done", cueMs: 0 }) : moved;
+  if (moved === state) return withTimer(state, { status: "done", cueMs: 0 });
+  // The game came here by itself: a clip that leads the new screen starts by itself too, and its timer with it.
+  return moved.screens[moved.index]?.clipFirst === true && runsItself(moved) ? media(moved, "play") : moved;
 }
 
-/** A command for the screen's picture or clip. When a clip ends, the timer that waited for it starts. */
+/**
+ * A command for the screen's picture or clip. The question's timer starts with the clip (Moni 2026-11-26:
+ * the time is the clip's time too — a longer clip stops with it, a shorter one leaves the rest of the time),
+ * where the game runs by itself; a timer still waiting when the clip ends starts then.
+ */
 function media(state: GameState, command: PlaybackCommand): GameState {
   const screen = state.screens[state.index];
   const kind = screen?.media;
@@ -128,8 +146,10 @@ function media(state: GameState, command: PlaybackCommand): GameState {
   if (kind === undefined || (isZoom ? screen?.zoom !== true : kind !== "clip")) return state;
   const moved = playbackStep(state.media, command);
   if (moved === state.media) return state;
+  const hasStarted = moved.status === "playing" && state.media.status === "idle";
   const hasEnded = moved.status === "ended" && state.media.status !== "ended";
-  const timer = hasEnded && state.auto && state.timer.status === "idle" && state.timer.totalMs > 0 ? { ...state.timer, status: "running" as const } : state.timer;
+  const isWaiting = state.timer.status === "idle" && state.timer.totalMs > 0;
+  const timer = (hasStarted || hasEnded) && runsItself(state) && isWaiting ? { ...state.timer, status: "running" as const } : state.timer;
   return { ...state, media: moved, timer };
 }
 

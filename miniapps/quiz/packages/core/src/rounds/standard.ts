@@ -18,17 +18,26 @@ export const STANDARD_SCREENS = {
 } as const;
 
 /**
+ * The answer part of a round: "Answers" and one slide per answer — or nothing, when the round shows its
+ * answers all at once with the score entry (`answersTogether`).
+ * @param round - the round
+ */
+export function answerScreens(round: Round): readonly PlayerScreen[] {
+  if (round.answersTogether === true) return [];
+  const roundId = round.id;
+  return [{ screen: STANDARD_SCREENS.answers, roundId }, ...round.questions.map((question) => ({ screen: STANDARD_SCREENS.answer, roundId, questionId: question.id }))];
+}
+
+/**
  * rules → every question → "Answers" → every answer → score entry → leaderboard. The special rounds play the same.
  * @param round - the round
  */
 export function standardScreens(round: Round): readonly PlayerScreen[] {
   const roundId = round.id;
-  const each = (screen: string): PlayerScreen[] => round.questions.map((question) => ({ screen, roundId, questionId: question.id }));
   return [
     { screen: STANDARD_SCREENS.rules, roundId },
-    ...each(STANDARD_SCREENS.question),
-    { screen: STANDARD_SCREENS.answers, roundId },
-    ...each(STANDARD_SCREENS.answer),
+    ...round.questions.map((question) => ({ screen: STANDARD_SCREENS.question, roundId, questionId: question.id })),
+    ...answerScreens(round),
     { screen: STANDARD_SCREENS.score, roundId },
     { screen: STANDARD_SCREENS.board, roundId },
   ];

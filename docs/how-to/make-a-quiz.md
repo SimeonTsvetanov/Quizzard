@@ -27,7 +27,7 @@ The buttons on a quiz's card rename it, make a copy or delete it. A deleted quiz
 1. Select **Add round**. The **Add a round** window opens.
 2. Select the kind of round: **Standard**, **Golden pyramid**, **Safe**, **Make the quizmaster laugh** or **Free game**. A standard round opens with its name selected; any other kind opens on its questions, and **Make the quizmaster laugh** on its one screen.
 3. Enter the name of the round, for example "History".
-4. Optional: open **Round settings** to set **Time per question** and **Points per question**, what **New questions are** and what **New questions are answered with**, and the **Rules shown before the round (optional)**.
+4. Optional: open **Round settings** to set **Time per question** and **Points per question**, whether to **Show the answers one by one** (off: all answers at once with the score entry) and whether **Questions follow by themselves** (off: you move on with **Next**), what **New questions are** and what **New questions are answered with**, and the **Rules shown before the round (optional)**.
 
 If some questions of the round have their own time or points, **Apply time and points to all questions** in **Round settings** gives all of them the round's values. It says how many questions change first, and **Undo** brings their own values back.
 

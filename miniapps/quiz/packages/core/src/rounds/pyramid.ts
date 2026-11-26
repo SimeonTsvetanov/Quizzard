@@ -6,7 +6,7 @@ import { acceptedItems } from "../answers/special-shapes.ts";
 import { effectiveSeconds } from "../effective.ts";
 import type { Round } from "../model.ts";
 import type { PlayerScreen, RoundKind } from "./round-kind.ts";
-import { STANDARD_SCREENS } from "./standard.ts";
+import { STANDARD_SCREENS, answerScreens } from "./standard.ts";
 
 /** Questions of a Golden pyramid round. */
 export const PYRAMID_QUESTIONS = 4;
@@ -43,8 +43,7 @@ export function pyramidScreens(round: Round): readonly PlayerScreen[] {
   return [
     { screen: STANDARD_SCREENS.rules, roundId },
     { screen: PYRAMID_SCREENS.all, roundId },
-    { screen: STANDARD_SCREENS.answers, roundId },
-    ...round.questions.map((question) => ({ screen: STANDARD_SCREENS.answer, roundId, questionId: question.id })),
+    ...answerScreens(round),
     { screen: STANDARD_SCREENS.score, roundId },
     { screen: STANDARD_SCREENS.board, roundId },
   ];

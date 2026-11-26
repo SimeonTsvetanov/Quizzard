@@ -1,7 +1,7 @@
 // The round's settings strip (SPEC F2): default time and points, what a new question starts as,
 // optional rules, and the round's own actions. Closed it is one line that says what the round gives;
 // changing a value never rebuilds the strip, so the caret stays where it is.
-import { RULES_MAX, type Quiz, type Round, freeAnswerTypes, roundMaxPoints, setRoundDefaults, setRoundRules, shapeOf } from "@simeonts/quizzard-quiz-core";
+import { RULES_MAX, type Quiz, type Round, freeAnswerTypes, roundMaxPoints, setRoundDefaults, setRoundPlay, setRoundRules, shapeOf } from "@simeonts/quizzard-quiz-core";
 import { applyAllRow } from "./round-apply.ts";
 import type { App } from "../app/state.ts";
 import { chipPicker, labelButton, textField } from "../dom/controls.ts";
@@ -52,6 +52,25 @@ function defaultsPickers(app: App, round: Round, onChange: () => void): HTMLElem
   ];
 }
 
+/** One switch of how the round is played: a checkbox with its sentence and a line of what it means. */
+function playSwitch(label: string, hint: string, isOn: boolean, hook: string, onChange: (isOn: boolean) => void): HTMLElement {
+  const box = h("input", { type: "checkbox", [hook]: "" });
+  box.checked = isOn;
+  box.addEventListener("change", () => { onChange(box.checked); });
+  return h("div", { class: "quiz-group" }, h("label", { class: "quiz-switch" }, box, h("span", {}, label)), h("p", { class: "quiz-hint" }, hint));
+}
+
+/** How the round is played: its answers one by one or all at once, and whether it moves on by itself (Moni 2026-11-26). */
+function playSwitches(app: App, round: Round, edit: (change: (quiz: Quiz) => Quiz) => void): HTMLElement[] {
+  const { t } = app;
+  const kind = app.env.registries.rounds.get(round.kind);
+  // A round without answers (a task) has none to show; every round has a timer that can bring the next screen.
+  const hasAnswers = round.questions.some((question) => app.env.registries.answers.get(question.answer.type)?.reveals !== false) && kind?.statesTask !== true;
+  const answers = playSwitch(t("round.oneByOne"), t("round.oneByOneHint"), round.answersTogether !== true, "data-round-one-by-one", (isOn) => { edit((quiz) => setRoundPlay(quiz, round.id, { answersTogether: !isOn })); });
+  const auto = playSwitch(t("round.auto"), t("round.autoHint"), round.manualAdvance !== true, "data-round-auto", (isOn) => { edit((quiz) => setRoundPlay(quiz, round.id, { manualAdvance: !isOn })); });
+  return hasAnswers ? [answers, auto] : [auto];
+}
+
 /**
  * Draws the settings strip of a round.
  * @param app - the mounted creator
@@ -91,6 +110,7 @@ export function roundSettings(app: App, round: Round, onChange: () => void): HTM
       ...(specialPoints(app, round, changed) ?? [h("div", { class: "quiz-group" }, h("span", { class: "quiz-label" }, t("round.points")), points.element, h("p", { class: "quiz-hint" }, t("points.hint")))]),
       // A round that states its own task has no questions to set up: time and prizes are all it asks (rules written earlier stay editable).
       ...(isOwn ? [] : [applyAllRow(app, round.id, () => gist(app, live(app, round.id)?.round ?? round), changed), ...defaultsPickers(app, round, changed)]),
+      ...playSwitches(app, round, edit),
       ...(isOwn && (round.rules ?? "") === "" ? [] : [rules]),
       h("div", { class: "quiz-settings-actions" }, copy, trash)));
   strip.open = app.view.isSettingsOpen || isOwn;

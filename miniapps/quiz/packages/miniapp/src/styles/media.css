@@ -256,3 +256,22 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* || Components: a switch of the form — a checkbox with its sentence (how a round is played) */
+@layer components {
+  .quiz-switch {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    min-height: var(--tap-target);
+    font-weight: var(--weight-semibold);
+    cursor: pointer;
+
+    & input {
+      flex: none;
+      width: var(--space-6);
+      height: var(--space-6);
+      accent-color: var(--color-accent);
+    }
+  }
+}

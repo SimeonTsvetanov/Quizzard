@@ -215,6 +215,22 @@ export function setRoundRules(quiz: Quiz, roundId: string, rules: string): Quiz 
 }
 
 /**
+ * Sets how a round is played: its answers one slide each or all at once, and whether it moves on by itself.
+ * A value that is the usual one (one by one; by itself) is not kept on the round.
+ * @param quiz - the quiz
+ * @param roundId - the round
+ * @param how - the choices to change
+ */
+export function setRoundPlay(quiz: Quiz, roundId: string, how: { readonly answersTogether?: boolean; readonly manualAdvance?: boolean }): Quiz {
+  return changeRound(quiz, roundId, (round) => {
+    let next = round;
+    if (how.answersTogether !== undefined) next = how.answersTogether ? { ...next, answersTogether: true } : without(next, "answersTogether");
+    if (how.manualAdvance !== undefined) next = how.manualAdvance ? { ...next, manualAdvance: true } : without(next, "manualAdvance");
+    return next;
+  });
+}
+
+/**
  * Seconds as the model keeps them: whole, inside the allowed range.
  * @param seconds - the number as typed
  */

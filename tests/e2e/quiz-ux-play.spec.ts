@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { LONG_NOTE, hiddenLines, control, focused, panel, play, pubNight, root, stage, view } from "./support/quiz-ux.ts";
+import { LONG_NOTE, hiddenLines, control, focused, openQuiz, panel, play, pubNight, root, stage, stored, view } from "./support/quiz-ux.ts";
 
 // Quiz creator — the player's side of the UX review of 2026-11-24 (docs/quiz-creator/UX-REVIEW-2026-11-24.md).
 
@@ -327,4 +327,33 @@ test("a game that is opened again says it continues and offers Start again; the 
     return answer ? Math.abs((answer.top + answer.bottom) / 2 - (box.top + box.bottom) / 2) / box.height : 1;
   });
   expect(middle).toBeLessThan(0.2);
+});
+
+// Moni 2026-11-26: per round — answers one by one or all at once, and whether it moves on by itself.
+test("round settings: answers all at once skip the answer slides; a round moved on by hand keeps its question when time is up", async ({ page }) => {
+  await openQuiz(page);
+  await root(page).locator(".quiz-round-open").first().click();
+  const settings = root(page).locator("[data-round-settings]");
+  await settings.locator("summary").click();
+  await expect(settings.locator("[data-round-one-by-one]")).toBeChecked();
+  await expect(settings.locator("[data-round-auto]")).toBeChecked();
+  await settings.locator("[data-round-one-by-one]").uncheck();
+  await settings.locator("[data-round-auto]").uncheck();
+  await expect.poll(async () => (await stored(page))[0]?.quiz.rounds[0]).toMatchObject({ answersTogether: true, manualAdvance: true });
+  // Switched on again, nothing is kept on the round.
+  await settings.locator("[data-round-auto]").check();
+  await expect.poll(async () => Object.keys((await stored(page))[0]?.quiz.rounds[0] ?? {}).includes("manualAdvance")).toBe(false);
+  await settings.locator("[data-round-auto]").uncheck();
+
+  if (!(await root(page).locator("[data-play-quiz]").isVisible())) await root(page).locator("[data-up]:visible").first().click();
+  await root(page).locator("[data-play-quiz]").click();
+  await expect(view(page, "title")).toBeVisible();
+  await next(page, 3); // teams, rules, question 1
+  await expect(stage(page).locator(".quiz-slide-prompt")).toHaveText("Which river flows through Paris?");
+  // Moved on by hand: the timer waits for the host.
+  await expect(stage(page).locator("[data-dial]")).toHaveAttribute("data-status", "idle");
+  await next(page, 2); // questions 2 and 3
+  await next(page); // no "Answers", no answer slides: the score entry with every answer on it
+  await expect(view(page, "score")).toBeVisible();
+  await expect(view(page, "score").locator("[data-recap-line]")).toHaveCount(3);
 });
