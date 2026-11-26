@@ -82,6 +82,7 @@ export const en = {
   },
   score: {
     title: "Scores",
+    withAnswers: "Answers and scores",
     sub: "Points for {{round}}",
     points: "Points of {{team}}",
     less: "One point less for {{team}}",

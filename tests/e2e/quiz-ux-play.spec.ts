@@ -353,7 +353,10 @@ test("round settings: answers all at once skip the answer slides; a round moved 
   // Moved on by hand: the timer waits for the host.
   await expect(stage(page).locator("[data-dial]")).toHaveAttribute("data-status", "idle");
   await next(page, 2); // questions 2 and 3
-  await next(page); // no "Answers", no answer slides: the score entry with every answer on it
+  await next(page); // "Answers": the stop before they show
+  await expect(view(page, "answers")).toContainText("Answers");
+  await next(page); // no answer slides: the score entry with every answer on it, named so
   await expect(view(page, "score")).toBeVisible();
+  await expect(view(page, "score").locator(".qp-heading")).toContainText("Answers and scores");
   await expect(view(page, "score").locator("[data-recap-line]")).toHaveCount(3);
 });

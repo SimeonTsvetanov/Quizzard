@@ -101,10 +101,10 @@ describe("next, back and jump", () => {
     expect(step(score, { type: "setScore", roundId: "r1", teamId: "t1", value: 3 }).scores).toEqual({ r1: { t1: 3 } });
   });
 
-  it("a round that shows its answers at once has no answer slides; one moved on by hand never moves by itself (Moni 2026-11-26)", () => {
+  it("a round that shows its answers at once has no answer slides, only the \"Answers\" stop; one moved on by hand never moves by itself (Moni 2026-11-26)", () => {
     const file = quizFile([2]);
     const together = { ...file, quiz: { ...file.quiz, rounds: file.quiz.rounds.map((round) => ({ ...round, answersTogether: true })) } };
-    expect(buildScreens(together).map((screen) => screen.screen)).toEqual(["title", "teams", "rules", "question", "question", "score", "board", "tie", "final"]);
+    expect(buildScreens(together).map((screen) => screen.screen)).toEqual(["title", "teams", "rules", "question", "question", "answers", "score", "board", "tie", "final"]); // "Answers" stays: a stop before they show
     const byHand = { ...file, quiz: { ...file.quiz, rounds: file.quiz.rounds.map((round) => ({ ...round, manualAdvance: true })) } };
     const game = createGame(byHand, { teamName: (n) => `Team ${String(n)}` });
     const question = play(game, "next", "next", "next");

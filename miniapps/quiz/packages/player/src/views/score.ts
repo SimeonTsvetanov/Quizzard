@@ -101,8 +101,10 @@ export const scoreView: ViewEntry = {
     const { env, round, canEdit, state } = context;
     const table = scoreTable(context, canEdit);
     // One heading, two words: "Scores" — and "Answers" where the answers are a part of their own.
-    const title = heading(env.t("score.title"));
-    title.replaceChildren(h("span", { class: "qp-score-word" }, env.t("score.title")), h("span", { class: "qp-recap-word" }, env.t("answers.title")));
+    // A round that shows its answers here and nowhere else says so: "Answers and scores" (Moni 2026-11-26).
+    const word = env.t(round?.answersTogether === true ? "score.withAnswers" : "score.title");
+    const title = heading(word);
+    title.replaceChildren(h("span", { class: "qp-score-word" }, word), h("span", { class: "qp-recap-word" }, env.t("answers.title")));
     const titles = h("div", { class: "qp-view-titles" }, kicker(...roundLine(env, round)), title);
     const root = viewRoot("score",
       h("header", { class: "qp-view-head" }, titles, ...(canEdit ? [breakRow(env)] : [])),

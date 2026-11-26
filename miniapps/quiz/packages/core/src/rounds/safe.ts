@@ -52,6 +52,7 @@ export function safeScreens(round: Round): readonly PlayerScreen[] {
   return [
     { screen: STANDARD_SCREENS.rules, roundId },
     ...round.questions.map((question) => ({ screen: STANDARD_SCREENS.question, roundId, questionId: question.id })),
+    { screen: STANDARD_SCREENS.answers, roundId },
     { screen: SAFE_SCREENS.code, roundId, questionId: last.id },
     { screen: STANDARD_SCREENS.score, roundId },
     { screen: STANDARD_SCREENS.board, roundId },

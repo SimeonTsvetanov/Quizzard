@@ -8,6 +8,7 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 ### Changed
 - **Safe — the code is dialled as one sequence.** After "Answers", one press starts it: each digit's slide turns the dial, clicks the digit in and gives way to the next by itself, and the door opens after the fifth. Beside the vault the code stands as it grows — the digits found so far, the current one large, the rest as "?". The timer button pauses the sequence; a round with "Questions follow by themselves" off shows each digit with Next.
 - **Safe with "Show the answers one by one" off** shows one slide with the whole code and the door opening, then the score entry.
+- **A round with "Show the answers one by one" off keeps the "Answers" slide** after its last question — a stop you pass by hand, so the answers never come up by themselves — and the screen after it is headed "Answers and scores".
 
 ## [0.34.0] - 2026-11-26
 ### Added

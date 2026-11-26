@@ -18,14 +18,16 @@ export const STANDARD_SCREENS = {
 } as const;
 
 /**
- * The answer part of a round: "Answers" and one slide per answer — or nothing, when the round shows its
- * answers all at once with the score entry (`answersTogether`).
+ * The answer part of a round: "Answers" — pens down, a stop the host moves on from by hand — and one slide
+ * per answer; or "Answers" alone, when the round shows its answers all at once with the score entry
+ * (`answersTogether`): the stop stays, so the answers never come up by themselves after the last question.
  * @param round - the round
  */
 export function answerScreens(round: Round): readonly PlayerScreen[] {
-  if (round.answersTogether === true) return [];
   const roundId = round.id;
-  return [{ screen: STANDARD_SCREENS.answers, roundId }, ...round.questions.map((question) => ({ screen: STANDARD_SCREENS.answer, roundId, questionId: question.id }))];
+  const stop: PlayerScreen = { screen: STANDARD_SCREENS.answers, roundId };
+  if (round.answersTogether === true) return [stop];
+  return [stop, ...round.questions.map((question) => ({ screen: STANDARD_SCREENS.answer, roundId, questionId: question.id }))];
 }
 
 /**

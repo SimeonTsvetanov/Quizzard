@@ -84,6 +84,7 @@ export const bg: Messages = {
   },
   score: {
     title: "Точки",
+    withAnswers: "Отговори и точки",
     sub: "Точки за {{round}}",
     points: "Точки на {{team}}",
     less: "Една точка по-малко за {{team}}",

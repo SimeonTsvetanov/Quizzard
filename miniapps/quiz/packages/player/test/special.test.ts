@@ -43,7 +43,7 @@ describe("the special rounds play the standard flow", () => {
     expect(step(last, { type: "tick", ms: 60_000 })).toBe(last);
     const atOnce = { ...file, quiz: { ...file.quiz, rounds: file.quiz.rounds.map((round) => (round.kind === "safe" ? { ...round, answersTogether: true } : round)) } };
     const names = createGame(atOnce, { teamName: (n) => `Team ${String(n)}` }).screens.filter((screen) => atOnce.quiz.rounds.find((round) => round.id === screen.roundId)?.kind === "safe").map((screen) => screen.screen);
-    expect(names).toEqual(["rules", "question", "question", "question", "question", "question", "code", "score", "board"]);
+    expect(names).toEqual(["rules", "question", "question", "question", "question", "question", "answers", "code", "score", "board"]);
   });
 
   it("rules, questions, Answers, answers, scores and the board — the pyramid's four questions on one screen (Moni 2026-11-26)", () => {
