@@ -17,7 +17,7 @@ export const enSpecial = {
     safePoints: "1 point per right digit",
     laugh: "Make the quizmaster laugh",
     laughText: "Every team thinks up a joke and tells it. The two funniest win points.",
-    laughRules: "Every team has 5 minutes to think up a joke. One of you tells it. The quizmaster picks the funniest: {{first}} points for first place, {{second}} for second. Only two teams score in this round.",
+    laughRules: "Every team has {{minutes}} minutes to think up a joke. One of you tells it. The quizmaster picks the funniest: {{first}} points for first place, {{second}} for second. Only two teams score in this round.",
     laughFixed: "This round is one screen: the task and its timer.",
     ownTitle: "What the teams see",
     laughNote: "This round has no questions. The screen below comes up with a timer: every team thinks up a joke, one of them tells it, and you pick the two funniest. The explanation is shown in the language the quiz is played in. Time and points are in the round's settings above.",

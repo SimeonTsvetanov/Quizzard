@@ -2,7 +2,7 @@
 // shape by the creator, filled in, and played to the end with their pictures and the Safe's bonus.
 import { readFileSync } from "node:fs";
 import { expect, test, type Page } from "@playwright/test";
-import { type SeedFile, openQuiz, play, pubNight, root, stage, view, unfinishedNight } from "./support/quiz-ux.ts";
+import { type SeedFile, openQuiz, play, pubNight, root, stage, stored, view, unfinishedNight } from "./support/quiz-ux.ts";
 
 const SPECIAL: SeedFile = JSON.parse(readFileSync(new URL("../../miniapps/quiz/packages/core/test/fixtures/v1/special-rounds.quiz.json", import.meta.url), "utf8")) as SeedFile;
 
@@ -58,7 +58,7 @@ test("SR1–SR3: Add round offers the kinds; a Golden pyramid and a Safe arrive 
   await safe.locator("[data-bonus-more]").click();
   await expect(safe.locator("[data-bonus-hint]")).toHaveText("Added on top: 5 + 4 = 9 points.");
   await expect(safe.locator("[data-round-gist]")).toHaveText("45 s · 9 points");
-  await expect(safe.locator('[data-round-settings] textarea')).toHaveValue(/crack the whole code for 3 bonus points/);
+  await expect(safe.locator('[data-round-settings] textarea')).toHaveValue(/crack the whole code for 4 bonus points/); // the given text follows the bonus
   await safe.locator(".quiz-qcard-open").first().click();
   await root(page).locator(".quiz-digit-key").nth(7).click();
   await expect(root(page).locator("[data-digit-missing]")).toBeHidden();
@@ -143,6 +143,12 @@ test("a laugh round has no questions: its screen with the built-in explanation, 
   await pane.locator("[data-minutes-more]").click();
   await expect(pane.locator("[data-minutes]")).toHaveText("5.5");
   await expect(pane.locator("[data-round-gist]")).toHaveText("5.5 min · 3 points");
+  // The rules text the round was given follows the prizes and the time (Moni 2026-11-26: it said 3 and 1 after they were 4 and 2).
+  const rules = (): Promise<string> => stored(page).then((all) => (all[0]?.quiz.rounds.at(-1) as { rules?: string } | undefined)?.rules ?? "");
+  await expect.poll(rules).toContain("5.5 minutes");
+  await pane.locator('[data-round-value-more="first"]').click();
+  await pane.locator('[data-round-value-more="second"]').click();
+  await expect.poll(rules).toContain("4 points for first place, 2 for second");
   // The optional text is shown under the explanation.
   await panel.locator("[data-round-task-text]").fill("The joke must be about the birthday girl");
   await expect(panel.locator(".quiz-slide-prompt")).toContainText("birthday girl");

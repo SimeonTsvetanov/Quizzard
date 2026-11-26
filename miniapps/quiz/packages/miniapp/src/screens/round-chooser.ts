@@ -29,7 +29,7 @@ async function add(app: App, kind: RoundKindUi): Promise<void> {
   const draft = addRoundOfKind(quiz, { kind: kind.id, name }, app.env);
   const added = draft.rounds.at(-1);
   if (draft === quiz || !added) return;
-  const rules = kind.rules === undefined ? "" : words(kind.rules, { bonus: safeBonus(added), ...laughPrizes(added), points: taskPoints(added) });
+  const rules = kind.rules === undefined ? "" : words(kind.rules, { bonus: safeBonus(added), ...laughPrizes(added), points: taskPoints(added), minutes: (added.defaults.seconds / 60).toLocaleString(lang, { maximumFractionDigits: 1 }) });
   const next = rules === "" ? draft : addRoundOfKind(quiz, { kind: kind.id, name, rules }, app.env);
   const round = next.rounds.at(-1);
   if (!app.change(next) || !round) return;

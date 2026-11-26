@@ -61,10 +61,15 @@ function defaultsPickers(app: App, round: Round, onChange: () => void): HTMLElem
 export function roundSettings(app: App, round: Round, onChange: () => void): HTMLElement {
   const { t } = app;
   const summaryText = h("span", { class: "quiz-settings-gist", "data-round-gist": "" }, gist(app, round));
+  const freshRules = (): void => { void import("./round-rules.ts").then(({ syncRules }) => syncRules(app, round.id)).catch(() => undefined); };
+  // Also once when the round is shown: a quiz made before the text followed its numbers is put right.
+  freshRules();
   const changed = (): void => {
     const now = live(app, round.id);
     if (now) summaryText.textContent = gist(app, now.round);
     onChange();
+    // The rules text the round was given names these numbers: it follows them (screens/round-rules.ts).
+    freshRules();
   };
   const edit = (change: (quiz: Quiz) => Quiz): void => {
     const now = live(app, round.id);
@@ -74,7 +79,7 @@ export function roundSettings(app: App, round: Round, onChange: () => void): HTM
   const timeLabel = t(isOwn ? "round.timeOwn" : "round.time");
   const time = (isOwn ? minutesField : secondsField)(app, timeLabel, round.defaults.seconds, (seconds) => { edit((quiz) => setRoundDefaults(quiz, round.id, { seconds })); });
   const points = pointsFields(app, t("round.points"), round.defaults.points, (value) => { edit((quiz) => setRoundDefaults(quiz, round.id, { points: value })); });
-  const rules = textField({ label: t("round.rules"), value: round.rules ?? "", max: RULES_MAX, rows: 2, placeholder: t("round.rulesPlaceholder"), onInput: (value) => { edit((quiz) => setRoundRules(quiz, round.id, value)); } });
+  const rules = textField({ label: t("round.rules"), value: round.rules ?? "", max: RULES_MAX, rows: 2, placeholder: t("round.rulesPlaceholder"), props: { "data-round-rules": "" }, onInput: (value) => { edit((quiz) => setRoundRules(quiz, round.id, value)); } });
   const copy = labelButton("copy", t("round.duplicate"), { class: "button", "data-duplicate-round": "" });
   copy.addEventListener("click", () => { copyRound(app, round.id); });
   const trash = labelButton("trash", t("round.delete"), { class: "button button--destructive", "data-delete-round": "" });

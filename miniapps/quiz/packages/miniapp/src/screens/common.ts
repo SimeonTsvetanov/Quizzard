@@ -1,6 +1,5 @@
 // What the screens share: the way up, the Undo toast, empty states, the round's short summary and a
 // question's name for buttons and screen readers.
-import { roundKindUis } from "../round-kinds-ui.ts";
 import { type Question, type Quiz, type Round, changeRound, findQuestion, roundTotals, totals } from "@simeonts/quizzard-quiz-core";
 import type { App } from "../app/state.ts";
 import { labelButton } from "../dom/controls.ts";
@@ -176,7 +175,7 @@ export function emptyState(options: EmptyStateOptions): HTMLElement {
 export function roundSummary(app: App, round: Round): string {
   const size = roundTotals(round);
   // A round that states its own task has no questions to count: its time alone.
-  if (roundKindUis.get(round.kind)?.ownScreen !== undefined) return app.t("count.minutes", { count: wholeMinutes(size.seconds) });
+  if (app.env.registries.rounds.get(round.kind)?.statesTask === true) return app.t("count.minutes", { count: wholeMinutes(size.seconds) });
   return `${app.t("count.questions", { count: size.questions })} · ${app.t("count.minutes", { count: wholeMinutes(size.seconds) })}`;
 }
 
