@@ -756,3 +756,28 @@ test("the export of a quiz with media shows its progress and the size; the creat
   await expect.poll(() => clipTime(stage(page))).toBeGreaterThan(0.2);
   expect(violations).toEqual([]);
 });
+
+// Moni 2026-11-26: the file with the answer may be a clip too — a short video or a sound played at the reveal.
+test("a video can be kept with the answer: it is on the answer's slide, not with the question", async ({ page }) => {
+  await newQuizWithRound(page);
+  await root(page).locator("[data-add-question]").click();
+  await root(page).locator("[data-prompt]").fill("Who scored the goal?");
+  await root(page).locator("[data-open-answer]").fill("Stoichkov");
+  const answerPicker = root(page).locator("[data-answer-picker]");
+  await expect(answerPicker).toContainText("File for the answer");
+  await root(page).locator("[data-answer-input]").setInputFiles(file("clip.mp4"));
+  await expect(answerPicker.locator("[data-answer-name]")).toHaveText("clip.mp4");
+  await expect(answerPicker).toHaveAttribute("data-answer-picker", "video");
+  expect((await storedMedia(page)).length).toBe(1);
+  await root(page).locator("[data-done]").click();
+  await root(page).locator("[data-question] [data-more]").first().click();
+  await root(page).locator("[data-sheet] [data-play-from]").click();
+  await expect(prompt(page)).toHaveText("Who scored the goal?");
+  await expect(stage(page).locator("[data-slide-video]")).toHaveCount(0);
+  await page.keyboard.press("Space"); // "Answers"
+  await page.keyboard.press("Space"); // the answer's slide
+  await page.keyboard.press("Space"); // revealed
+  await expect(stage(page).locator(".quiz-slide-right")).toHaveText("Stoichkov");
+  await expectWhole(stage(page).locator("[data-slide-video]"));
+  await page.keyboard.press("Escape");
+});

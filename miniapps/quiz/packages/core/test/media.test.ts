@@ -195,7 +195,9 @@ describe("the picture shown with an answer", () => {
     const without = core.editQuestion(withPicture, id, { answerMedia: null });
     expect(without.rounds[0]?.questions[0]?.answerMedia).toBeUndefined();
     expect(core.unusedMedia(without, [entry])).toEqual([entry]);
-    // A clip is not a picture for the answer.
-    expect(question && core.answerMediaOf(question, [{ ...entry, type: "audio", seconds: 3 }])).toBeUndefined();
+    // A clip can be kept with the answer too (Moni 2026-11-26); a file the quiz does not carry is none.
+    const clip: core.MediaEntry = { ...entry, type: "audio", seconds: 3 };
+    expect(question && core.answerMediaOf(question, [clip])).toEqual(clip);
+    expect(question && core.answerMediaOf(question, [])).toBeUndefined();
   });
 });

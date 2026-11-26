@@ -1,6 +1,6 @@
 <!-- From the forge template app-shell/templates/legal/privacy.md (legal-pages §2, 2026-11-07), filled for Quizzard on 2026-11-22 with the wording of GG Counter's and TeamSync's privacy texts where the facts are the same, and checked against the code the same day (where: docs/DECISIONS.md 2026-11-22 "Policy pages filled"). Not legal advice. One bullet per layer the app really has: no feedback webhook, no API, no AI features. {App} and {email} are filled by scripts/generate.ts from app.config.ts. -->
 
-**Privacy** — Last updated: 25 November 2026
+**Privacy** — Last updated: 26 November 2026
 
 - **Who is responsible:** {App} is made by Simeon Tsvetanov, Bulgaria (contact: {email}). The
   names, players and scores you enter stay on your device and under your control only; where data
@@ -35,8 +35,8 @@
     without the data the camera wrote into it (such as the place it was taken), audio and video
     are kept as you added them, or — when you cut and shrink one — as the smaller file your
     browser makes on your device with the Mediabunny library that comes with the app; the clip is
-    not uploaded, and only the cut file is kept. A picture you add to an answer is kept the same
-    way as a question's picture. A game you are playing (team names, scores, where the
+    not uploaded, and only the cut file is kept. A picture, an audio clip or a video you add to an answer is kept the same
+    way as a question's own file. A game you are playing (team names, scores, where the
     game is, whether questions run by themselves, whether the time-up sound is on and the language
     you picked while playing) is kept in local storage; a quiz exported to one file keeps its game
     the same way in the browser that opens that file, where the browser allows it. If you close or reload the page right after a change, that

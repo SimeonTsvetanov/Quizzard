@@ -4,6 +4,10 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.29.0] - 2026-11-26
+### Added
+- **Quiz creator — the file with the answer can be a clip.** "Picture, audio or video with the answer (optional)" takes a picture, an audio clip or a video; it is shown or played when the answer is revealed. A clip that is too long or too big opens the cut window, with the same limits as a question's clip.
+
 ## [0.28.2] - 2026-11-26
 ### Changed
 - **Help and the user docs follow the app:** the laugh round without a question, the red mark of an unfinished question, texts that shrink to fit, times read in minutes, the Back arrow, and name colours in Scores (Help of Scores, limits, README).

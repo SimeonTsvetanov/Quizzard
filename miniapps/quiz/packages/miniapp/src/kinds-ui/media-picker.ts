@@ -15,9 +15,9 @@ const ENDINGS: Readonly<Record<MediaType, string>> = { image: ".jpg,.jpeg,.png,.
 const MARKS: Readonly<Record<MediaType, IconName>> = { image: "picture", audio: "audio", video: "video" };
 
 /** The hidden file input behind "Choose …" and "Replace". */
-function fileInput(type: MediaType, canCut: boolean, hook: string, onFile: (file: File) => void): HTMLInputElement {
+function fileInput(types: readonly MediaType[], canCut: boolean, hook: string, onFile: (file: File) => void): HTMLInputElement {
   // Where a clip can be cut, any clip can be picked (a phone's .mov, a long recording): it is cut on the way in.
-  const accept = canCut && type !== "image" ? `${type}/*,${ENDINGS[type]}` : `${MEDIA_RULES[type].mimes.join(",")},${ENDINGS[type]}`;
+  const accept = types.map((type) => (canCut && type !== "image" ? `${type}/*,${ENDINGS[type]}` : `${MEDIA_RULES[type].mimes.join(",")},${ENDINGS[type]}`)).join(",");
   const input = h("input", { type: "file", class: "visually-hidden", accept, tabindex: "-1", "aria-hidden": "true", [hook]: "" });
   input.addEventListener("change", () => {
     const [file] = input.files ?? [];
@@ -69,9 +69,9 @@ function empty({ t, lang, files }: KindEditorContext, type: MediaType, choose: (
   const button = h("button", { type: "button", class: "quiz-drop-button", [hook("choose")]: "", "data-focus": focus },
     h("span", { class: "quiz-drop-mark", "aria-hidden": "true" }, icon(MARKS[type], 28)),
     h("span", { class: "quiz-drop-words" }, isAnswer ? t("media.answerChoose") : t(`media.choose.${type}`)),
-    h("span", { class: "quiz-hint" }, t(`media.accepts.${type}`, { limit: bytesText(MEDIA_RULES[type].maxBytes, lang) })),
+    h("span", { class: "quiz-hint" }, isAnswer ? t("media.answerAccepts") : t(`media.accepts.${type}`, { limit: bytesText(MEDIA_RULES[type].maxBytes, lang) })),
     h("span", { class: "quiz-hint quiz-wide-only" }, t("media.drop")));
-  if (files.canCut && type !== "image") button.append(h("span", { class: "quiz-hint", "data-media-cut-hint": "" }, t("media.cutHint")));
+  if (files.canCut && (type !== "image" || isAnswer)) button.append(h("span", { class: "quiz-hint", "data-media-cut-hint": "" }, t("media.cutHint")));
   button.addEventListener("click", choose);
   return button;
 }
@@ -131,7 +131,7 @@ export function mediaPicker(context: KindEditorContext, slot: "question" | "answ
     else work(files.pick(file), null);
   };
   fixButton.addEventListener("click", () => { if (pending) fix(pending); });
-  const input = fileInput(type, files.canCut, place.hook("input"), take);
+  const input = fileInput(files.anyType === true ? ["image", "audio", "video"] : [type], files.canCut, place.hook("input"), take);
   const choose = (): void => { input.click(); };
   box.append(files.entry ? current(context, type, choose, fix, place) : empty(context, type, choose, place), input, busy, problem, fixButton);
   box.addEventListener("dragover", (event) => {

@@ -24,7 +24,7 @@ Header:
 - `file` is the same versioned `QuizFile` every stored quiz is (SPEC §3.1); its `media` lists exactly
   the files that follow, and each entry's `bytes` equals its part's `bytes`.
 - Optional fields of version 1 added on 2026-11-25 (older code keeps them and ignores them): a question's
-  `answerMedia: { id }` — a picture shown with its answer; a round's `data` for the kinds `laugh`
+  `answerMedia: { id }` — a picture or a clip shown with its answer (a clip since 0.29.0; older players show pictures only); a round's `data` for the kinds `laugh`
   (`first`, `second`: the two prizes) and `task` (`points`: the most a team can get), whole numbers 0–20;
   the answer type `none` (`{ "type": "none" }`) of those kinds' one question.
 - `parts` gives the order and the exact size of each media file. The file's total size must be

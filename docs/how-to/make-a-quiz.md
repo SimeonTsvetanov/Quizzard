@@ -77,7 +77,7 @@ For another task, add another **Free game**.
 5. Under **How it is answered**, select **Open answer**, **Multiple choice** or **True / false**, and enter the answer. For **Multiple choice**, enter 2 to 8 options and tick every correct one in the **Correct** column.
 6. Optional: change **Time** and **Points** for this question.
 7. Optional: enter an **Explanation shown with the answer (optional)**. It can be up to 700 characters, and the stage shows all of it with the answer.
-8. Optional: under **Picture with the answer (optional)**, select **Picture for the answer** and choose a picture. It is shown when the answer is revealed, in place of the question's own picture or clip.
+8. Optional: under **Picture, audio or video with the answer (optional)**, select **File for the answer** and choose a picture, an audio clip or a video. It is shown or played when the answer is revealed, in place of the question's own picture or clip. A clip that is too long or too big opens the cut window, as in a question.
 9. Optional: enter a **Host note (optional)**. The host note is for you alone: it shows in the editor and on the host panel, never on the stage.
 10. Select **Add another** to go straight to the next question, or **Done** to go back to the round.
 

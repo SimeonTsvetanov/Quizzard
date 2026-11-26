@@ -45,6 +45,14 @@ export function offerMediaUndo(app: App, before: Question, entry: MediaEntry, ho
   });
 }
 
+/** What a picked file is, by its type or its name's ending: a clip with sound and picture, a sound, else a picture. */
+function fileType(file: File): MediaType {
+  const mime = mimeOf(file.type, file.name);
+  if (mime.startsWith("video/") || /\.(mp4|mov|m4v|webm|mkv|avi)$/i.test(file.name)) return "video";
+  if (mime.startsWith("audio/") || /\.(mp3|m4a|wav|ogg|oga|aac|flac|opus)$/i.test(file.name)) return "audio";
+  return "image";
+}
+
 /** With the first media file the browser is asked, once, to keep this site's storage (SPEC §3.5). */
 function askToKeep(app: App): void {
   if (app.view.hasAskedToKeep) return;
@@ -66,6 +74,23 @@ async function attach(app: App, questionId: string, entry: MediaEntry, blob: Blo
   return app.change(editQuestion(now.quiz, questionId, edit), withMedia(now.media, entry));
 }
 
+/** Opens the cut window for a picked file — or, with `null`, for the file the slot has — and takes what it makes like a picked file. */
+async function cutFor(app: App, files: QuestionFiles, type: MediaType | null, entry: MediaEntry | undefined, source: File | null, signal: AbortSignal): Promise<string | null> {
+  const { t } = app;
+  if (type === null || !canCut(type)) return null;
+  const own = entry ? app.media.blob(entry.id) : undefined;
+  const file = source ?? (entry && own ? new File([own], entry.name, { type: entry.mime }) : null);
+  if (file === null) return null;
+  const maxBytes = MEDIA_RULES[type].maxBytes;
+  const { openCutDialog } = await import("../media/cut/dialog.ts");
+  const made = await openCutDialog({ host: app.host, file, type, t, lang: app.lang, maxBytes, fits: source === null, signal });
+  // No clip this browser can read: the usual check says what is wrong with it (its format, its size).
+  if (made === "unreadable") return files.pick(file);
+  // Closed without a new file: the question's own stays as it is; a picked one that had to be cut is still not in.
+  if (made === null) return source === null ? null : t("media.mustCut", { name: file.name, size: bytesText(file.size, app.lang) });
+  return files.pick(made);
+}
+
 /**
  * The file of the question in the editor and how to change it.
  * @param app - the mounted creator
@@ -78,10 +103,12 @@ export function questionFiles(app: App, questionId: string, slot: FileSlot = "qu
   const question = current ? findQuestion(current.quiz, questionId)?.question : undefined;
   const isAnswer = slot === "answer";
   const ownType = question ? (app.env.registries.kinds.get(question.kind)?.mediaType ?? null) : null;
-  const answerType: MediaType | null = question ? "image" : null;
-  const type = isAnswer ? answerType : ownType;
-  const own = question && current && ownType !== null ? mediaOf(question, current.media, ownType) : undefined;
   const answers = question && current ? answerMediaOf(question, current.media) : undefined;
+  // The answer's file may be a picture or a clip: its type comes from the file itself (the one it has, or the one picked).
+  const answerType: MediaType | null = question ? (answers?.type ?? "image") : null;
+  const type = isAnswer ? answerType : ownType;
+  const typeOf = (file: File): MediaType | null => (isAnswer ? fileType(file) : type);
+  const own = question && current && ownType !== null ? mediaOf(question, current.media, ownType) : undefined;
   const entry = isAnswer ? answers : own;
   const redraw = (): void => { if (app.route.screen === "editor" && app.route.question === questionId) app.draw(isAnswer ? '[data-focus="answer-media"]' : '[data-focus="media"]'); };
   const files: QuestionFiles = {
@@ -91,6 +118,7 @@ export function questionFiles(app: App, questionId: string, slot: FileSlot = "qu
     sharedWith: entry && current ? mediaUses(current.quiz, entry.id) - 1 : 0,
     async pick(file) {
       const now = app.current;
+      const type = typeOf(file);
       if (!now || type === null) return t("media.failed");
       // The file being replaced no longer counts against the quiz — unless another question shows it too.
       const withoutOld = entry && mediaUses(now.quiz, entry.id) <= 1 ? entry.bytes : 0;
@@ -114,22 +142,13 @@ export function questionFiles(app: App, questionId: string, slot: FileSlot = "qu
       redraw();
       if (question && entry) offerMediaUndo(app, question, entry, "removed", slot);
     },
-    canCut: type !== null && canCut(type),
-    needsCut: (file) => type !== null && mustCut(type, file, mimeOf(file.type, file.name)),
-    async cut(source, signal) {
-      if (type === null || !canCut(type)) return null;
-      const own = entry ? app.media.blob(entry.id) : undefined;
-      const file = source ?? (entry && own ? new File([own], entry.name, { type: entry.mime }) : null);
-      if (file === null) return null;
-      const maxBytes = MEDIA_RULES[type].maxBytes;
-      const { openCutDialog } = await import("../media/cut/dialog.ts");
-      const made = await openCutDialog({ host: app.host, file, type, t, lang: app.lang, maxBytes, fits: source === null, signal });
-      // No clip this browser can read: the usual check says what is wrong with it (its format, its size).
-      if (made === "unreadable") return files.pick(file);
-      // Closed without a new file: the question's own stays as it is; a picked one that had to be cut is still not in.
-      if (made === null) return source === null ? null : t("media.mustCut", { name: file.name, size: bytesText(file.size, app.lang) });
-      return files.pick(made);
+    anyType: isAnswer,
+    canCut: isAnswer ? canCut("video") || canCut("audio") : type !== null && canCut(type),
+    needsCut: (file) => {
+      const picked = typeOf(file);
+      return picked !== null && mustCut(picked, file, mimeOf(file.type, file.name));
     },
+    cut: (source, signal) => cutFor(app, files, source === null ? (entry?.type ?? null) : typeOf(source), entry, source, signal),
   };
   return files;
 }

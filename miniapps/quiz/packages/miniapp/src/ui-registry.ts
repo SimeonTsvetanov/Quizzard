@@ -28,6 +28,8 @@ export interface AnswerEditorContext {
 export interface QuestionFiles {
   /** The media type the question's kind takes (core `QuestionKind.mediaType`); `null` for a kind without a file. */
   readonly type: MediaType | null;
+  /** The slot takes a picture, an audio clip or a video (the file shown with the answer): the picker offers all three. */
+  readonly anyType?: boolean;
   /** The file the question has now. */
   readonly entry: MediaEntry | undefined;
   /** A small picture of the file for the form, or `null` (an audio clip, no file). */

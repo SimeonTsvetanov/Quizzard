@@ -40,9 +40,9 @@ function roundScreens(round: Round, media: ReadonlyMap<string, MediaEntry>, roun
     const kind = kinds.get(place.screen);
     const question = place.questionId === undefined ? undefined : questions.get(place.questionId);
     const seconds = question && kind?.seconds ? kind.seconds(round, question) : 0;
-    // At the reveal the picture kept for the answer takes the place of the question's own file.
-    // Only a picture: a quiz file from elsewhere may point at a clip, which would make the answer screen wait for it.
-    const forAnswer = question?.answerMedia && media.get(question.answerMedia.id)?.type === "image" ? question.answerMedia : undefined;
+    // At the reveal the file kept for the answer — a picture or a clip (Moni 2026-11-26) — takes the place of the
+    // question's own file. One whose file the quiz does not carry is passed over.
+    const forAnswer = question?.answerMedia && media.has(question.answerMedia.id) ? question.answerMedia : undefined;
     const shown = place.screen === STANDARD_SCREENS.answer && forAnswer ? forAnswer : question?.media;
     return { ...place, seconds, steps: kind?.steps ?? 0, ...(kind?.upright ? { upright: true as const } : {}), ...mediaOfScreen(shown ? media.get(shown.id) : undefined) };
   });

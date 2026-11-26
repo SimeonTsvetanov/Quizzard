@@ -50,14 +50,13 @@ export function mediaUses(quiz: Quiz, mediaId: string): number {
 }
 
 /**
- * The description of the picture shown with a question's answer, when it is there and a picture.
+ * The description of the file shown with a question's answer — a picture or a clip — when the quiz carries it.
  * @param question - the question
  * @param media - the descriptions kept with the quiz
  */
 export function answerMediaOf(question: Question, media: readonly MediaEntry[]): MediaEntry | undefined {
   const id = question.answerMedia?.id;
-  const entry = id === undefined ? undefined : media.find((candidate) => candidate.id === id);
-  return entry?.type === "image" ? entry : undefined;
+  return id === undefined ? undefined : media.find((candidate) => candidate.id === id);
 }
 
 /**

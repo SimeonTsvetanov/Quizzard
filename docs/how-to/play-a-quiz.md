@@ -23,7 +23,7 @@ If first place is shared at the end, **A tie for first place** shows the teams t
 
 - **Where you are:** the question as "3/10" and the round as "Round 1/3", with the total dimmer.
 - **The timer:** seconds, or a clock such as "5:00" for a time over 99 seconds. A round's rules give whole minutes as minutes, for example "5 min per question".
-- **The answer:** when you select **Show answer**, the answer is the large text in the middle and the question moves to the top, smaller. The explanation shows in full under it; a long one is set smaller. If the question has a **Picture with the answer (optional)**, that picture takes the place of the question's own picture or clip.
+- **The answer:** when you select **Show answer**, the answer is the large text in the middle and the question moves to the top, smaller. The explanation shows in full under it; a long one is set smaller. If the question has a file with its answer (**Picture, audio or video with the answer (optional)**), that picture or clip takes the place of the question's own picture or clip.
 - **The Quizzard logo:** large on the title and the final screen, small in a corner on the others. In an exported quiz the logo is a link to the Quizzard website, which opens in another tab.
 
 The screen stays awake while you play.
