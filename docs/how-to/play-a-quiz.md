@@ -32,6 +32,8 @@ The screen stays awake while you play.
 
 A picture or a video is as large as the slide allows. To show it over the whole stage, select the picture, or the zoom button in the corner of the video, or press Z. Press Esc or Z to go back; a video keeps playing.
 
+A question with music plays its song by itself while the timer runs: pausing the timer rests it, and it stops when the time is up. The song plays from your own window, also when the audience window is open.
+
 An audio or video clip never starts by itself. Select **Next** (it reads **Play the clip**), the forward arrow, Space or →: the first press plays the clip and the next one moves on. Its own play button and P work too. On a question with a clip, the timer waits and starts when the clip ends; T starts it at any time.
 
 A clip that is longer than the time of its question plays from its start and stops when that time has played: with 30 seconds set, 30 seconds play. **Play** starts it again from the beginning. A shorter clip plays to its own end. When the answer is shown, the clip plays in full.

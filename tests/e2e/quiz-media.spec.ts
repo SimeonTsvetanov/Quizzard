@@ -4,6 +4,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { expect, test, type Browser, type BrowserContext, type Locator, type Page, type TestInfo } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { putInLibrary, storedMediaSizes } from "./support/quiz-db.ts";
+import { stored } from "./support/quiz-ux.ts";
 
 // Quiz creator, slices 3–5 (docs/quiz-creator SPEC F7, F10, §3.5, §5; AC4–AC7): pictures, audio and
 // video from the device — picked, checked, shown whole in every place a slide is drawn, played by
@@ -779,5 +780,70 @@ test("a video can be kept with the answer: it is on the answer's slide, not with
   await page.keyboard.press("Space"); // revealed
   await expect(stage(page).locator(".quiz-slide-right")).toHaveText("Stoichkov");
   await expectWhole(stage(page).locator("[data-slide-video]"));
+  await page.keyboard.press("Escape");
+});
+
+// Moni 2026-11-26: a song under a question, and a playlist over the whole quiz.
+test("music: a song on one question, then a playlist fills the others in order and the quiz lists what is left", async ({ page }) => {
+  await newQuizWithRound(page);
+  // Three text questions and one audio question.
+  for (const prompt of ["One?", "Two?", "Three?"]) {
+    await root(page).locator("[data-add-question]").click();
+    await root(page).locator("[data-prompt]").fill(prompt);
+    await root(page).locator("[data-open-answer]").fill("Yes");
+    await root(page).locator("[data-done]").click();
+  }
+  // The first question gets its own song in the editor: the fold opens with it.
+  await root(page).locator("[data-question]").first().locator(".quiz-qcard-open, .quiz-qrow-open").click();
+  const fold = root(page).locator("[data-music-fold]");
+  await expect(fold).not.toHaveAttribute("open", "");
+  await fold.locator("summary").click();
+  await root(page).locator("[data-music-input]").setInputFiles(file("clip.mp3"));
+  await expect(root(page).locator("[data-music-picker] [data-music-name]")).toHaveText("clip.mp3");
+  await expect(root(page).locator("[data-music-fold]")).toHaveAttribute("open", "");
+  await root(page).locator("[data-done]").click();
+  const music = (): Promise<(string | null)[]> => stored(page).then((all) => (all[0]?.quiz.rounds[0]?.questions ?? []).map((question) => (question as { music?: { id: string } }).music?.id ?? null));
+  await expect.poll(async () => (await music()).map((id) => id !== null)).toEqual([true, false, false]);
+
+  // The quiz's tools: one song for the two questions left — it goes to both, the first keeps its own.
+  // The quiz's header card is beside the round on a wide screen; on a phone it is one level up.
+  const toQuiz = async (): Promise<void> => { if (!(await root(page).locator("[data-play-quiz]").isVisible())) await root(page).locator("[data-up]:visible").first().click(); };
+  await toQuiz();
+  await root(page).locator("[data-quiz-more] summary").click();
+  await root(page).locator("[data-music-files-input]").setInputFiles([file("clip.m4a")]);
+  await expect.poll(async () => (await music()).filter((id) => id !== null).length, { timeout: 20_000 }).toBe(3);
+  const ids = await music();
+  expect(ids[1]).toBe(ids[2]);
+  expect(ids[0]).not.toBe(ids[1]);
+  await expect(root(page).locator("[data-quiz-no-music]")).toHaveCount(0);
+
+  // A new question has no music: the quiz says so and lists it.
+  if (!(await root(page).locator("[data-add-question]").isVisible())) await root(page).locator(".quiz-round-open").first().click();
+  await root(page).locator("[data-add-question]").click();
+  await root(page).locator("[data-prompt]").fill("Four?");
+  await root(page).locator("[data-open-answer]").fill("No");
+  await root(page).locator("[data-done]").click();
+  await toQuiz();
+  const note = root(page).locator("[data-quiz-no-music]");
+  await expect(note).toHaveText("1 question has no music");
+  await note.click();
+  await expect(page.locator("[data-music-missing-item]")).toHaveText(/Round 1 .* question 4/);
+  await page.locator("[data-music-missing-cancel]").click();
+
+  // Playing: on the first question the song starts with the timer, by itself, and rests when the timer is paused.
+  await page.evaluate(() => {
+    const played: string[] = [];
+    Object.assign(window, { quizMusicPlayed: played });
+    const play = Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype, "play")?.value as (this: HTMLMediaElement) => Promise<void>;
+    HTMLMediaElement.prototype.play = function patched(this: HTMLMediaElement): Promise<void> {
+      if (!this.isConnected) played.push(this.loop ? "loop" : "once");
+      return play.call(this);
+    };
+  });
+  await root(page).locator("[data-play-quiz]").click();
+  if (await page.locator("[data-unfinished-go]").isVisible().catch(() => false)) await page.locator("[data-unfinished-go]").click();
+  for (let press = 0; press < 8 && !(await prompt(page).isVisible().catch(() => false)); press += 1) await page.keyboard.press("Space");
+  await expect(prompt(page)).toHaveText("One?");
+  await expect.poll(() => page.evaluate(() => (window as unknown as { quizMusicPlayed: string[] }).quizMusicPlayed)).toEqual(["loop"]);
   await page.keyboard.press("Escape");
 });

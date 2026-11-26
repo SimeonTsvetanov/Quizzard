@@ -77,6 +77,7 @@ Other rules:
 | Audio | MP3 or M4A, up to 15 MB. A bigger file, or another format such as WAV, can be cut and made smaller while you add it (Chrome, Edge, Safari 26 or later, Firefox on a computer). |
 | Video | MP4 (H.264 + AAC), up to 50 MB. A bigger file, or another format such as MOV, can be cut and made smaller while you add it (the same browsers). |
 | A file to cut | Up to 2 GB. The limit of its kind applies to the cut file. |
+| Music under a question | One MP3 or M4A, up to 15 MB; not for audio and video questions. Questions can share a song. |
 | Pictures, audio and video of one quiz | 250 MB together, files with the answer included. A file with the answer has the limits of its kind. |
 | Teams in a game | 2 to 12; a game starts with 4 |
 | Characters in a team name | 40 |

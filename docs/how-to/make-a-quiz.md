@@ -127,9 +127,29 @@ For a long round, select **List** over the questions. Each question is then one 
 - Select **Preview** to see the questions as they will be played. **Show answer** shows the reveal.
 - Select **Play** to run the whole quiz. If questions are not finished, Quizzard lists them first. Select one to finish it, or select **Play anyway**.
 
+## Add music
+
+Music plays while a question's time runs, so the teams can talk without the next table hearing them. It starts by itself with the timer and stops with it; a song shorter than the time goes round. A question with audio or video has no music.
+
+To give one question a song:
+
+1. Open the question and select **Music while the time runs (optional)**.
+2. Select **Song for this question** and choose an MP3 or M4A file. A longer song opens the cut window, as any audio clip.
+
+To add music to the whole quiz:
+
+1. On the quiz, select **Quiz file, printing and music**.
+2. Select **Songs from a folder** (on a computer) or **Songs from files** and choose your songs.
+
+Every question without music gets one of the songs, in the order of their names. With fewer songs than questions, the songs start again from the first. A question that already has a song keeps it. Where the browser can cut a clip, each song is cut to the time of its question.
+
+When you add questions later, the quiz shows how many have no music, for example **2 questions have no music**. Select the message to see them, such as "Round 1 (History) – question 3", and select **Choose songs** to fill them. **Remove the music** takes the music off every question; **Undo** brings it back.
+
 ## Save, share and print
 
 Select **Quiz file, printing and music** on the quiz to open these tools:
+
+- **Songs from a folder** and **Songs from files** add music to the whole quiz, see [Add music](#add-music).
 
 - **Save quiz file** saves the quiz with its pictures, audio and video as one `.quizzard` file. Use it as your backup and to move the quiz to another device. On a phone, **Share** sends the same file.
 - **Print answers** prints a sheet for the host: every question with its answer, explanation, host note and points, one round to a page.

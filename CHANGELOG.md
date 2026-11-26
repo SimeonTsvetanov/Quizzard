@@ -4,6 +4,11 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.31.0] - 2026-11-26
+### Added
+- **Quiz creator — music under a question.** "Music while the time runs (optional)" in every question that is not audio or video, and in "Make the quizmaster laugh": a song that starts by itself with the question's timer and stops with it, and goes round when it is shorter. Added and cut like any audio clip.
+- **Music for the whole quiz.** Under "Quiz file, printing and music", "Songs from a folder" or "Songs from files" gives every question without music one of your songs, in the order of their names, starting again from the first when there are fewer songs than questions. Questions that have a song keep it; audio and video questions get none. While some questions have no music the quiz says how many, lists them ("Round 1 – question 3") and "Choose songs" fills them. "Remove the music" takes it off all questions, with Undo.
+
 ## [0.30.0] - 2026-11-26
 ### Changed
 - **While playing — "Next" starts the clip first.** On a question with audio or video, and on an answer with a clip of its own, the first press of Next (the button, the forward arrow, Space or →) plays the clip and the button says "Play the clip"; the next press moves on. The clip's own play button works as before, and a clip that was already started is not started again.
