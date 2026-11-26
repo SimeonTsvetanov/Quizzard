@@ -176,7 +176,7 @@ test("AC9: Play runs a whole game in the app — teams, timer with auto-advance,
   // Round 2, then level on points: the tiebreak, the host names the winner, the podium.
   await next(page, 2);
   await expect(stage(page).locator(".quiz-slide-prompt")).toHaveText("The Beatles played a concert on a rooftop.");
-  await next(page, 3);
+  await next(page, 2); // "Answers", then the answer's slide
   await expect(stage(page).locator(".quiz-slide-option[data-correct]")).toHaveText("True");
   await next(page);
   await toPointsEntry(page);

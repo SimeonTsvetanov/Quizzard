@@ -308,7 +308,7 @@
 }
 
 /* || The Golden pyramid's questions: the pyramid beside all four at once, under one timer (views/pyramid.ts) */
-.qp-pyramid {
+.qp-view.qp-pyramid {
   display: grid;
   grid-template-columns: 460px minmax(0, 1fr);
   align-items: center;
@@ -402,4 +402,31 @@
   margin: 0;
   opacity: 0.72;
   font-size: 22px;
+}
+
+/* The pyramid and the dial are sized by a slide elsewhere (cqi of the slide): here by this screen. */
+.qp-pyramid-figure .quiz-pyramid {
+  --quiz-block: 21cqi;
+}
+
+.qp-pyramid-top .qp-dial {
+  width: 104px;
+  height: 104px;
+  margin: 0;
+
+  & svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+  }
+
+  & .qp-dial-number {
+    font-size: 34px;
+
+    &[data-long] {
+      font-size: 24px;
+    }
+  }
 }

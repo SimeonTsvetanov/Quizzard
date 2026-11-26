@@ -72,13 +72,21 @@ test("SR4: both rounds play in the app — pictures, accepted answers, the code,
   await expect(rules.locator("[data-intro='pyramid'] .quiz-pyramid-tier")).toHaveCount(4);
   await expect(rules).toContainText("Up to 10 points");
 
-  await next(page, 3); // question 3
-  const slide = stage(page).locator(".quiz-slide");
-  await expect(slide).toHaveAttribute("data-art", "pyramid");
-  await expect(slide.locator(".quiz-pyramid-tier[data-state='current'] .quiz-pyramid-block")).toHaveCount(3);
-  await expect(slide.locator(".quiz-pyramid-line")).toHaveCount(3);
+  // The pyramid's four questions on one screen, under one timer of their times together (Moni 2026-11-26).
+  await next(page);
+  const all = view(page, "pyramid");
+  await expect(all.locator("[data-pyramid-question]")).toHaveCount(4);
+  await expect(all.locator(".quiz-pyramid-tier")).toHaveCount(4);
+  await expect(all.locator(".qp-pyramid-asks")).toHaveText(["Write 1 answer", "Write 2 answers", "Write 3 answers", "Write 4 answers"]);
+  await expect(all.locator("[data-dial]")).toBeVisible();
+  // Nothing of the four is below the stage's edge.
+  expect(await all.evaluate((element) => element.scrollHeight <= element.clientHeight + 1)).toBe(true);
+  if (process.env["LOOK"]) {
+    await page.waitForTimeout(1200);
+    await page.screenshot({ path: `${process.env["LOOK"]}/pyramid-all.png` });
+  }
 
-  await next(page, 2); // question 4, "Answers"
+  await next(page); // "Answers"
   await next(page, 3); // answer 1, 2, 3 — each one slide with its answer
   await expect(stage(page).locator(".quiz-tile")).toHaveText(["Helium", "Neon", "Argon", "Krypton", "Xenon", "Radon"]);
 
