@@ -44,11 +44,11 @@ After the answers of a round, the **Scores** screen lists all of them in short, 
 
 Enter each team's points with the field or the plus and minus buttons. Next to them, **Points in this round** shows what each question gives. To correct a round later, select **Scores** in the control bar or press S: a table shows every team's points per round, and you can change any number.
 
-To start a break from the score screen, select **5 min**, **10 min** or **15 min** next to **Break**. During a break the stage shows the countdown, the standings so far and the answers of the round that ended.
+To start a break from the score screen, select **5 min**, **10 min** or **15 min** next to **Break**. During a break the stage shows the countdown, the standings so far and the answers of the round that ended. If the quiz has music, the break plays its songs one after the other from the first; pausing the break rests the music, and it stops when the break ends.
 
 ## Play the special rounds
 
-- **Golden pyramid:** a pyramid of gold blocks stands beside each question, and the question's tier glows. At each answer its blocks turn over and the accepted answers appear: the first 12, then "+N more".
+- **Golden pyramid:** one screen shows the pyramid of gold blocks beside all four questions, each with how many answers it asks for. The timer is the four questions' times together: 2 minutes each make 8. Then the answers come one by one: at each answer its blocks turn over and the accepted answers appear, the first 12, then "+N more".
 - **Safe:** a vault door. At each answer the dial turns to the digit and it clicks into its window; after the fifth digit the door opens. At score entry you enter each team's right digits (0 to 5); all five add the bonus, shown as "5 + 3 bonus".
 - **Make the quizmaster laugh** and **Free game:** the rules with the prizes, the task with its timer, the points and the leaderboard. The task of **Make the quizmaster laugh** is built in and is shown in the language you play in, with your own text under it if you added one. There are no answers to show. In **Make the quizmaster laugh**, give the prize for first place to the funniest team and the prize for second place to the next one.
 

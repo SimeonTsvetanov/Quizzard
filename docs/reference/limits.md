@@ -82,7 +82,7 @@ Other rules:
 | Teams in a game | 2 to 12; a game starts with 4 |
 | Characters in a team name | 40 |
 | Points of a team in one round | 0 to 999; a Golden pyramid 0 to 10, a Safe 0 to 5 digits plus the bonus, a round without answers up to its prize or most points |
-| Golden pyramid | 4 questions; question n asks for n answers; up to 60 accepted answers each; 10 points; 60 seconds per question to start with |
+| Golden pyramid | 4 questions; question n asks for n answers; up to 60 accepted answers each; 10 points; 60 seconds per question to start with. While playing, the four questions share one screen and one timer of their times added up. |
 | Safe | 5 questions with one digit 0–9 each; bonus 0 to 20 (3 to start with); 45 seconds per question to start with |
 | Make the quizmaster laugh | 1 screen, no question to write; 0.5 to 10 minutes in steps of half a minute (5 to start with); optional text of up to 500 characters; first-place prize 0 to 20 (3 to start with), second-place prize 0 to 20 (1 to start with) |
 | Free game | 1 screen; 3 minutes to start with; most points for a team 0 to 20 (3 to start with) |

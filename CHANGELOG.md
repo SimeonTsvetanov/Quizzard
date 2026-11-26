@@ -4,6 +4,12 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.33.0] - 2026-11-26
+### Changed
+- **Golden pyramid — the four questions are on one screen.** While playing, the pyramid stands beside all four questions at once, each with how many answers it asks for, under one timer of their times added up (2 minutes each make 8). The music of the round plays on. The answers follow one by one as before.
+### Added
+- **Music in a break.** When the quiz has music, a break plays its songs one after the other from the first, and round again; pausing the break rests the music and it stops when the break ends. A quiz without music has a silent break.
+
 ## [0.32.0] - 2026-11-26
 ### Changed
 - **While playing — an answer is one slide and one press.** "Next" shows the answer's slide with the question at the top, and about a second later the answer comes in by itself, then the text with it. There is no second press ("Show answer") on an answer any more.

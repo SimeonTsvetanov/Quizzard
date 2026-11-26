@@ -28,9 +28,16 @@ function slide(roundIndex: 0 | 1, index: number, reveal: boolean, phase: "questi
 }
 
 describe("the special rounds play the standard flow", () => {
-  it("rules, questions, Answers, answers, scores and the board — for both", () => {
-    const names = screenNames(createGame(file, { teamName: (n) => `Team ${String(n)}` })).map((name) => name.split(" ")[0]);
-    expect(names.filter((name) => name === "question")).toHaveLength(9);
+  it("rules, questions, Answers, answers, scores and the board — the pyramid's four questions on one screen (Moni 2026-11-26)", () => {
+    const game = createGame(file, { teamName: (n) => `Team ${String(n)}` });
+    const names = screenNames(game).map((name) => name.split(" ")[0]);
+    // The Safe's five questions one by one; the pyramid's four together, under their times added up.
+    expect(names.filter((name) => name === "question")).toHaveLength(5);
+    expect(names.filter((name) => name === "pyramid")).toHaveLength(1);
+    const all = game.screens.find((screen) => screen.screen === "pyramid");
+    const pyramid = file.quiz.rounds.find((round) => round.kind === "pyramid");
+    expect(all?.seconds).toBe((pyramid?.defaults.seconds ?? 0) * 4);
+    expect(all?.questionId).toBeUndefined();
     expect(names.filter((name) => name === "answer")).toHaveLength(9);
     expect(names.filter((name) => name === "rules")).toHaveLength(2);
   });

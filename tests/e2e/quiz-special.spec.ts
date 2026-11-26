@@ -79,8 +79,7 @@ test("SR4: both rounds play in the app — pictures, accepted answers, the code,
   await expect(slide.locator(".quiz-pyramid-line")).toHaveCount(3);
 
   await next(page, 2); // question 4, "Answers"
-  await next(page, 5); // answer 1, 2, 3 — then its reveal
-  await page.keyboard.press("Space");
+  await next(page, 3); // answer 1, 2, 3 — each one slide with its answer
   await expect(stage(page).locator(".quiz-tile")).toHaveText(["Helium", "Neon", "Argon", "Krypton", "Xenon", "Radon"]);
 
   // To the Safe's score entry through the menu.

@@ -206,8 +206,7 @@ test("B (owner): one control bar for the stage and the host panel — same butto
   expect(Object.fromEntries(onTitle.map((button) => [button.id, button.title]))).toMatchObject({ back: "Back (←)", next: "Start (Space)", timer: "Start timer (T)", reset: "Restart timer (R)", black: "Black screen (B)", scores: "Scores (S)", fullscreen: "Full screen (F)", menu: "Menu (M)", audience: "Open audience window", exit: "Back to the quiz" });
   await next(page, 3); // a question: "Next"
   const onQuestion = await barButtons(page);
-  await next(page, 4); // the answers: "Show answer"
-  await expect(control(page, "next")).toHaveAttribute("aria-label", "Show answer");
+  await next(page, 4); // an answer's slide: "Next" again
   const onReveal = await barButtons(page);
   const places = (list: typeof onTitle): string[] => list.map((button) => `${button.id}:${String(button.x)},${String(button.y)},${String(button.w)},${String(button.h)}`);
   expect(places(onQuestion)).toEqual(places(onTitle));

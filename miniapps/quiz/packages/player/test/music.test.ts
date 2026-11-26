@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 import { createGame } from "../src/game/create.ts";
 import type { GameAction, GameState } from "../src/game/state.ts";
 import { step } from "../src/game/step.ts";
-import { createMusic, musicCue } from "../src/ui/music.ts";
+import { createMusic, musicCue, songsOf } from "../src/ui/music.ts";
 import { at, quizFile } from "./helpers.ts";
 
 const MEDIA: readonly MediaEntry[] = [
@@ -30,9 +30,10 @@ const next: GameAction = { type: "next" };
 const fresh = (): GameState => createGame(musicFile(), { teamName: (n) => `Team ${String(n)}` });
 
 /** A stand-in for the audio element that records what was asked of it. */
-function fakeAudio(): { readonly made: string[]; readonly create: (url: string) => HTMLAudioElement; readonly last: () => { paused: boolean; currentTime: number; loop: boolean } } {
+function fakeAudio(): { readonly made: string[]; readonly create: (url: string) => HTMLAudioElement; readonly last: () => { paused: boolean; currentTime: number; loop: boolean }; readonly end: () => void } {
   const made: string[] = [];
-  let element = { paused: true, currentTime: 0, loop: false, volume: 1, play() { this.paused = false; return Promise.resolve(); }, pause() { this.paused = true; }, removeAttribute() { /* nothing to drop */ } };
+  const listeners: (() => void)[] = [];
+  let element = { paused: true, currentTime: 0, loop: false, volume: 1, addEventListener(_name: string, run: () => void) { listeners.push(run); }, play() { this.paused = false; return Promise.resolve(); }, pause() { this.paused = true; }, removeAttribute() { /* nothing to drop */ } };
   return {
     made,
     create: (url) => {
@@ -41,6 +42,7 @@ function fakeAudio(): { readonly made: string[]; readonly create: (url: string) 
       return element as unknown as HTMLAudioElement;
     },
     last: () => element,
+    end: () => { listeners.at(-1)?.(); },
   };
 }
 
@@ -63,7 +65,7 @@ describe("music under a question", () => {
 
   it("the player's music loops one sound per question and lets it go on the next screen", () => {
     const audio = fakeAudio();
-    const music = createMusic((id) => `blob:${id}`, audio.create);
+    const music = createMusic((id) => `blob:${id}`, [], audio.create);
     const question = run(fresh(), next, next, next);
     music.update(question);
     expect(audio.made).toEqual(["blob:song"]);
@@ -79,8 +81,33 @@ describe("music under a question", () => {
 
   it("without a way to the quiz's files there is no music, and nothing fails", () => {
     const audio = fakeAudio();
-    const music = createMusic(undefined, audio.create);
+    const music = createMusic(undefined, [], audio.create);
     music.update(run(fresh(), next, next, next));
     expect(audio.made).toEqual([]);
+  });
+
+  it("a break plays the quiz's songs one after the other from the first, rests while it is paused and stops when it ends", () => {
+    const file = musicFile();
+    const two: QuizFile = { ...file, media: [...MEDIA, { id: "song2", type: "audio", mime: "audio/mpeg", name: "t.mp3", bytes: 10, seconds: 4 }], quiz: { ...file.quiz, rounds: file.quiz.rounds.map((round) => ({ ...round, questions: round.questions.map((question, index) => (index === 1 ? { ...question, music: { id: "song2" } } : question)) })) } };
+    expect(songsOf(two)).toEqual(["song", "song2"]);
+    const audio = fakeAudio();
+    const music = createMusic((id) => `blob:${id}`, songsOf(two), audio.create);
+    const game = createGame(two, { teamName: (n) => `Team ${String(n)}` });
+    const onBreak = run(game, { type: "break", minutes: 5 });
+    music.update(onBreak);
+    expect(audio.made).toEqual(["blob:song"]);
+    expect(audio.last()).toMatchObject({ paused: false, loop: false });
+    audio.end();
+    expect(audio.made).toEqual(["blob:song", "blob:song2"]);
+    audio.end();
+    expect(audio.made).toEqual(["blob:song", "blob:song2", "blob:song"]); // round again
+    music.update(run(onBreak, { type: "breakToggle" }));
+    expect(audio.last().paused).toBe(true);
+    music.update(run(onBreak, { type: "uncover" }));
+    expect(audio.last().paused).toBe(true); // the break is over: the song is let go
+    // A quiz without songs has a silent break.
+    const silent = fakeAudio();
+    createMusic((id) => `blob:${id}`, [], silent.create).update(onBreak);
+    expect(silent.made).toEqual([]);
   });
 });

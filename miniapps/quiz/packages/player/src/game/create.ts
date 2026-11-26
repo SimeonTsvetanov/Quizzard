@@ -39,7 +39,7 @@ function roundScreens(round: Round, media: ReadonlyMap<string, MediaEntry>, roun
   return (rounds.get(round.kind)?.screens(round) ?? []).map((place) => {
     const kind = kinds.get(place.screen);
     const question = place.questionId === undefined ? undefined : questions.get(place.questionId);
-    const seconds = question && kind?.seconds ? kind.seconds(round, question) : 0;
+    const seconds = question && kind?.seconds ? kind.seconds(round, question) : (kind?.roundSeconds?.(round) ?? 0);
     // At the reveal the file kept for the answer — a picture or a clip (Moni 2026-11-26) — takes the place of the
     // question's own file. One whose file the quiz does not carry is passed over.
     const forAnswer = question?.answerMedia && media.has(question.answerMedia.id) ? question.answerMedia : undefined;
@@ -48,7 +48,9 @@ function roundScreens(round: Round, media: ReadonlyMap<string, MediaEntry>, roun
     // The clip leads where it is new to the room: with the question, or as the answer's own file.
     const leads = ofScreen.media === "clip" && (place.screen !== STANDARD_SCREENS.answer || shown === forAnswer);
     // Music belongs to the question's own screen, and never plays over a clip.
-    const song = place.screen === STANDARD_SCREENS.question && ofScreen.media !== "clip" && question?.music && media.get(question.music.id)?.type === "audio" ? question.music.id : undefined;
+    const ownSong = place.screen === STANDARD_SCREENS.question && ofScreen.media !== "clip" && question?.music && media.get(question.music.id)?.type === "audio" ? question.music.id : undefined;
+    // A round's own timed screen (the pyramid's questions together) plays the first song its questions have.
+    const song = ownSong ?? (kind?.roundSeconds ? round.questions.map((one) => one.music?.id).find((id) => id !== undefined && media.get(id)?.type === "audio") : undefined);
     return { ...place, seconds, steps: kind?.steps ?? 0, ...(kind?.upright ? { upright: true as const } : {}), ...ofScreen, ...(leads ? { clipFirst: true as const } : {}), ...(song === undefined ? {} : { music: song }) };
   });
 }

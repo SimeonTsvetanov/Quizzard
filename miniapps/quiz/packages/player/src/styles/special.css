@@ -306,3 +306,100 @@
     translate: 0 24px;
   }
 }
+
+/* || The Golden pyramid's questions: the pyramid beside all four at once, under one timer (views/pyramid.ts) */
+.qp-pyramid {
+  display: grid;
+  grid-template-columns: 460px minmax(0, 1fr);
+  align-items: center;
+  gap: 72px;
+
+  [data-shape="tall"] & {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    justify-items: center;
+    gap: 28px;
+  }
+}
+
+.qp-pyramid-figure {
+  width: 460px;
+  container-type: inline-size;
+
+  [data-shape="tall"] & {
+    width: 300px;
+  }
+}
+
+.qp-pyramid-side {
+  display: grid;
+  gap: 30px;
+  min-width: 0;
+  width: 100%;
+}
+
+.qp-pyramid-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+
+  & .qp-kicker {
+    margin: 0;
+  }
+}
+
+.qp-pyramid-lines {
+  display: grid;
+  gap: 24px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.qp-pyramid-line {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 22px;
+}
+
+.qp-pyramid-number {
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  border-radius: 14px;
+  background: var(--qp-gold);
+  color: var(--qp-on-gold);
+  font-family: var(--qp-display);
+  font-size: 30px;
+  font-weight: 700;
+}
+
+.qp-pyramid-words {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.qp-pyramid-prompt {
+  font-size: 36px;
+  font-weight: 600;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.qp-pyramid-asks {
+  color: var(--qp-gold);
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.qp-pyramid-rule {
+  margin: 0;
+  opacity: 0.72;
+  font-size: 22px;
+}

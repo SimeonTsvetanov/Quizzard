@@ -143,16 +143,12 @@ test("AC9: Play runs a whole game in the app — teams, timer with auto-advance,
   await next(page);
   await expect(view(page, "answers")).toContainText("Answers");
 
-  // Answers one by one: the question first, the answer and its explanation only at the reveal.
+  // Answers one by one, each one slide and one press (Moni 2026-11-26): the question with its answer and explanation.
   await next(page);
   await expect(stage(page).locator(".quiz-slide-prompt")).toHaveText("Which river flows through Paris?");
-  await expect(stage(page).getByText("The Seine")).toHaveCount(0);
-  await expect(control(page, "next")).toHaveAccessibleName("Show answer");
-  await control(page, "next").click();
+  await expect(control(page, "next")).toHaveAccessibleName("Next");
   await expect(stage(page).locator(".quiz-slide-right")).toHaveText("The Seine");
   await expect(stage(page).locator(".quiz-slide-explanation")).toContainText("It splits around two islands.");
-  await next(page);
-  await expect(stage(page).locator(".quiz-slide-option[data-correct]")).toHaveCount(0);
   await next(page);
   await expect(stage(page).locator(".quiz-slide-option[data-correct]")).toHaveText(["AMars", "CVenus"]);
 
@@ -294,11 +290,10 @@ test("AC6: Export to play saves one HTML file that opens from disk with the netw
   await next(file, 3);
   await expect(stage(file).locator(".quiz-slide-prompt")).toHaveText("Which river flows through Paris?");
   await file.keyboard.press("KeyT");
+  await expect(stage(file).getByText("The Seine")).toHaveCount(0); // not with the question
   await next(file, 3); // question 2, "Answers", answer 1
-  await expect(stage(file).getByText("The Seine")).toHaveCount(0);
-  await next(file);
   await expect(stage(file).locator(".quiz-slide-right")).toHaveText("The Seine");
-  await next(file, 3);
+  await next(file, 2);
   await more(view(file, "score"), "Team 2").click();
   await next(file);
   await expect(view(file, "board").locator(".qp-board-name").first()).toHaveText("Team 2");
@@ -354,23 +349,19 @@ test("presenter mode from a local file: the audience window shows only the stage
 
   await forward.click();
   await forward.click();
-  await forward.click(); // answer 1, not yet revealed
+  await expect(audience.getByText("The Seine")).toHaveCount(0); // "Answers": nothing of an answer yet
+  await forward.click(); // answer 1: one slide, the answer with it
   await expect(stage(audience).locator(".quiz-slide-prompt")).toHaveText("Which river flows through Paris?");
   await expect(panel(host).locator("[data-host-answer]")).toHaveText("The Seine");
-  await expect(audience.getByText("The Seine")).toHaveCount(0);
-  await expect(audience.getByText("It splits around two islands.")).toHaveCount(0);
-  await expect(forward).toHaveAccessibleName("Show answer");
-  await forward.click();
   await expect(stage(audience).locator(".quiz-slide-right")).toHaveText("The Seine");
 
   // A key pressed in the audience window is a move of the host's game.
   await audience.keyboard.press("Space");
   // The counters are drawn as "n/total" (owner, 2026-11-24): question 2 of 2 is "2/2".
   await expect(panel(host).locator("[data-host-where] [data-count]").last()).toHaveAttribute("data-count", "2/2");
-  await expect(audience.locator(".quiz-slide-option[data-correct]")).toHaveCount(0);
+  await expect(audience.locator(".quiz-slide-option[data-correct]")).toHaveCount(2);
 
   // Score entry happens in the panel; the audience sees the numbers.
-  await forward.click();
   await forward.click();
   await more(panel(host), "Foxes").click();
   await expect(view(audience, "score").locator('[data-score-value="t1"]')).toHaveText("1");
@@ -542,9 +533,9 @@ test(`AC11: the stage, the menu and the host panel have no serious accessibility
   await next(page, 2);
   await page.keyboard.press("KeyT");
   await check(page, "question");
-  await next(page, 4);
-  await check(page, "answer revealed");
   await next(page, 3);
+  await check(page, "answer revealed");
+  await next(page, 2);
   await toPointsEntry(page);
   await more(view(page, "score"), "Team 1").click();
   await check(page, "score entry");

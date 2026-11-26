@@ -18,7 +18,7 @@ import { menuContent } from "./ui/menu.ts";
 import { type Panel, createPanel } from "./ui/panel.ts";
 import { createScoreboard } from "./ui/scoreboard.ts";
 import { type Stage, createStage, showsAllParts } from "./ui/stage.ts";
-import { type Music, createMusic } from "./ui/music.ts";
+import { type Music, createMusic, songsOf } from "./ui/music.ts";
 import { playTimeUp, ranOut } from "./ui/sound.ts";
 import { offerRestart } from "./ui/resume.ts";
 import { type UndoStrip, createUndoStrip } from "./ui/undo.ts";
@@ -212,7 +212,7 @@ function createSession(options: InnerOptions): Session {
     options, t, env, commands, undo,
     stage: createStage(env, { canEdit: true, isLive: true }),
     bar: createBar(t, commands),
-    music: createMusic(options.mediaUrl),
+    music: createMusic(options.mediaUrl, songsOf(file)),
     // A player that takes another's place goes on with its game as it is — never through storage, which
     // keeps neither a running timer nor a break and may not be there at all (an exported page).
     state: options.resume?.state ?? startAt(restore(fresh, readSaved(options.storage)), options.startAt),

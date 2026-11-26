@@ -402,8 +402,7 @@ test("a picture can be kept with the answer: it shows at the reveal — in the e
   await expect(prompt(page)).toHaveText("Which animal is this about?");
   await expect(stage(page).locator("[data-slide-picture]")).toHaveCount(0);
   await page.keyboard.press("Space"); // "Answers"
-  await page.keyboard.press("Space"); // the answer's slide
-  await page.keyboard.press("Space"); // revealed
+  await page.keyboard.press("Space"); // the answer's slide, with its answer
   await expect(stage(page).locator(".quiz-slide-right")).toHaveText("A cow");
   await expectWhole(stage(page).locator("[data-slide-picture]"));
   // Removing it frees the file.
