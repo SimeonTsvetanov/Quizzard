@@ -4,6 +4,10 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.37.2] - 2026-11-27
+### Changed
+- **The animated light background has no sun any more.** In its place, abstract clouds hang from the top edge — three soft rounded bands in the same style as the mountains at the bottom — and drift slowly sideways.
+
 ## [0.37.1] - 2026-11-27
 ### Changed
 - **Teams:** the number of members on a team's band is plain words, without a ringed pill; on a phone the buttons under the teams sit on a frosted bar instead of a solid block.

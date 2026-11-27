@@ -1,5 +1,5 @@
 // The animated background behind every screen (styles/components/scene.css): a starry sky that drifts slowly
-// upwards in the dark theme, soft mountains under a turning sun in the light one. Settings → Background switches
+// upwards in the dark theme, soft mountains under slowly drifting abstract clouds in the light one. Settings → Background switches
 // between it and the simple glow ("Simple"); theme-init.js applies the saved choice before the first paint.
 import { prefs } from "../storage/index.ts";
 import { buildScene } from "./scene-dom.ts";

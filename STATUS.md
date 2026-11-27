@@ -1,6 +1,6 @@
 # STATUS — Quizzard
 
-**Updated:** 2026-11-27 · **Phase:** 3 Build — v0.37.1 (the stage redesigned: "Night sky" dark and warm-paper light, no outlines or pills, one sheet for menu and confirmations; this week: name colours in Scores; in the Quiz creator music and playlists, answers with one press, the pyramid's one screen, the Safe's sequence, per-round switches, blurred questions; docs and screenshots refreshed): Teams, Scores, Answer sheet and the Quiz creator (make, play, export, presenter view, media, quiz files; UX pass with one control bar, n/total counters, drag, search, print) live in this repo with their own data; next T-17…T-25
+**Updated:** 2026-11-27 · **Phase:** 3 Build — v0.37.2 (the stage redesigned: "Night sky" dark and warm-paper light, no outlines or pills, one sheet for menu and confirmations; this week: name colours in Scores; in the Quiz creator music and playlists, answers with one press, the pyramid's one screen, the Safe's sequence, per-round switches, blurred questions; docs and screenshots refreshed): Teams, Scores, Answer sheet and the Quiz creator (make, play, export, presenter view, media, quiz files; UX pass with one control bar, n/total counters, drag, search, print) live in this repo with their own data; next T-17…T-25
 
 ## Done
 - Old code in branch `legacy-2025`. Spec and plan approved by Moni (2026-11-22). Brand in `brand/` (logo A, palette C Emerald).

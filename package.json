@@ -2,7 +2,7 @@
   "name": "quizzard",
   "private": true,
   "type": "module",
-  "version": "0.37.1",
+  "version": "0.37.2",
   "packageManager": "pnpm@12.18.0",
   "engines": {
     "node": ">=24"

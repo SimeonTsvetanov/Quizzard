@@ -59,6 +59,29 @@ function mountains(): SVGSVGElement {
   return svg;
 }
 
+/**
+ * Three bands of abstract clouds hanging from the top edge, back to front: the mountains' own rounded shapes,
+ * turned over (Moni 2026-11-27: no sun — the same idea as the bottom, as clouds).
+ */
+function clouds(): SVGSVGElement {
+  const svg = document.createElementNS(SVG, "svg");
+  svg.setAttribute("class", "scene-clouds");
+  svg.setAttribute("viewBox", "0 0 1440 300");
+  svg.setAttribute("preserveAspectRatio", "xMidYMin slice");
+  const bands = [
+    "M0 0 H1440 V150 C1380 196 1290 204 1210 168 C1150 214 1040 226 950 180 C880 232 760 236 680 184 C610 222 500 226 430 176 C360 214 250 212 190 166 C130 190 50 186 0 160Z",
+    "M0 0 H1440 V96 C1370 142 1270 146 1190 108 C1120 152 1010 154 930 112 C850 158 730 156 660 110 C580 148 470 146 400 104 C320 144 210 142 140 100 C90 122 40 120 0 104Z",
+    "M0 0 H1440 V46 C1360 84 1250 86 1160 52 C1080 90 960 90 880 54 C790 92 670 90 590 52 C500 86 390 86 310 50 C230 82 110 82 0 50Z",
+  ];
+  bands.forEach((d, index) => {
+    const path = document.createElementNS(SVG, "path");
+    path.setAttribute("d", d);
+    path.setAttribute("class", `scene-cloud scene-cloud--${String(index + 1)}`);
+    svg.append(path);
+  });
+  return svg;
+}
+
 const div = (className: string): HTMLDivElement => {
   const element = document.createElement("div");
   element.className = className;
@@ -79,8 +102,7 @@ export function buildScene(): HTMLElement {
     night.append(layer);
   });
   const day = div("scene-day");
-  // The beams fall over the mountains too (lighter, never darker): they reach the bottom of the screen.
-  day.append(mountains(), div("scene-rays"), div("scene-sun"));
+  day.append(mountains(), clouds());
   scene.append(night, day);
   document.body.prepend(scene);
   return scene;
