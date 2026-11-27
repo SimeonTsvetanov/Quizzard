@@ -4,6 +4,13 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.37.1] - 2026-11-27
+### Changed
+- **Teams:** the number of members on a team's band is plain words, without a ringed pill; on a phone the buttons under the teams sit on a frosted bar instead of a solid block.
+- **Answer sheet:** "Add an answer" is a quiet tinted button, without the dashed outline.
+### Fixed
+- **What's new** showed the raw `**` marks of a headline; headlines are bold now.
+
 ## [0.37.0] - 2026-11-27
 ### Changed
 - **The quiz stage has a new, cleaner look, in a dark and a light theme.** Dark: a calm night sky — near-black with one soft blue glow rising from the bottom and a few still stars; light: warm paper with a soft glow. The stage follows the theme you chose in Settings (the exported quiz file follows the device).

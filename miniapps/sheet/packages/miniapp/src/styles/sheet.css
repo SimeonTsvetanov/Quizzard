@@ -532,13 +532,13 @@
     }
   }
 
-  /* "Add an answer": an empty line waiting to be filled — a dashed outline, no fill. */
+  /* "Add an answer": an empty line waiting to be filled — a quiet tint, no outline (Moni 2026-11-27). */
   .sheet-add {
     flex: 1;
-    /* The outline takes the room the padding had: the Bulgarian label still fits one line at 320 px. */
+    /* Narrow padding: the Bulgarian label still fits one line at 320 px. */
     padding-inline: 0;
-    border: var(--focus-ring-width) dashed color-mix(in oklch, var(--color-text-secondary) 60%, transparent);
-    background: none;
+    border: 0;
+    background: color-mix(in oklch, var(--color-text-secondary) 10%, transparent);
     transition: background-color var(--duration-fast) var(--ease-standard);
 
     @media (hover: hover) {

@@ -128,15 +128,7 @@
   }
 
   .chip {
-    /* A slim pill: the space scale starts at 4px, too tall for a count badge. */
-    --chip-padding-block: 2px;
-
-    padding: var(--chip-padding-block) var(--space-2);
-    border-radius: var(--radius-full);
-    /* The darker accent under the on-accent text (more contrast than the band itself), ringed in a
-       faint on-accent line. */
-    background: var(--color-accent-pressed);
-    box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--color-on-accent) 40%, transparent);
+    /* The count is plain words on the band: no pill and no ring around a secondary value (Moni 2026-11-27). */
     color: var(--color-on-accent);
     font-size: var(--text-sm);
     font-weight: var(--weight-semibold);
@@ -174,9 +166,11 @@
     column-gap: var(--space-3);
     margin-top: var(--space-4);
     margin-inline: calc(-1 * var(--space-2));
-    padding: var(--space-6) var(--space-2) calc(var(--space-3) + var(--safe-bottom));
-    /* The teams fade out under the bar instead of ending at a hard edge. */
-    background: linear-gradient(to top, var(--color-bg) 70%, color-mix(in oklch, var(--color-bg) 0%, transparent));
+    padding: var(--space-3) var(--space-2) calc(var(--space-3) + var(--safe-bottom));
+    /* A frosted bar, like the header: the page's scenery shows through instead of a solid block (Moni 2026-11-27). */
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    background: color-mix(in oklch, var(--color-bg) 55%, transparent);
+    backdrop-filter: blur(16px);
 
     @media (width > 600px) {
       position: static;
@@ -184,7 +178,9 @@
       z-index: auto;
       margin-inline: 0;
       padding: 0;
-      background-image: none;
+      border-radius: 0;
+      background: none;
+      backdrop-filter: none;
       column-gap: var(--space-4);
     }
 
