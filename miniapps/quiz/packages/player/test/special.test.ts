@@ -46,6 +46,18 @@ describe("the special rounds play the standard flow", () => {
     expect(names).toEqual(["rules", "question", "question", "question", "question", "question", "answers", "code", "score", "board"]);
   });
 
+  it("a Safe with its answers at once: the code slide is the fifth digit's place — every digit in its window, the door opening, the whole code beside it", () => {
+    const atOnce = { ...file, quiz: { ...file.quiz, rounds: file.quiz.rounds.map((round) => (round.kind === "safe" ? { ...round, answersTogether: true } : round)) } };
+    const live = createEnv({ file: atOnce, dispatch: () => undefined });
+    const game = createGame(atOnce, { teamName: (n) => `Team ${String(n)}` });
+    const onCode = step(game, { type: "jump", index: game.screens.findIndex((screen) => screen.screen === "code") });
+    const drawn = live.views.get("code")?.stage(contextOf(live, onCode, { canEdit: false, clock: null })).element;
+    expect(drawn?.querySelector("[data-slide-number] [data-count]")?.getAttribute("data-count")).toBe("5/5");
+    expect(drawn?.querySelector(".quiz-vault")?.getAttribute("data-door")).toBe("opening");
+    expect([...(drawn?.querySelectorAll("[data-code-line] .quiz-digit-box") ?? [])].map((box) => box.textContent)).toEqual(["4", "7", "1", "9", "2"]);
+    expect(drawn?.querySelector(".quiz-slide-prompt")?.textContent).toBe("The code of the safe");
+  });
+
   it("rules, questions, Answers, answers, scores and the board — the pyramid's four questions on one screen (Moni 2026-11-26)", () => {
     const game = createGame(file, { teamName: (n) => `Team ${String(n)}` });
     const names = screenNames(game).map((name) => name.split(" ")[0]);

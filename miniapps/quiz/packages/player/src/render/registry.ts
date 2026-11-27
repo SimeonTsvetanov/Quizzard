@@ -121,7 +121,7 @@ export interface SlideAnswer extends RegistryEntry {
 }
 
 /** Where a special round's slide is shown: with a question, or with its answer (SPEC §10). */
-export type SlidePhase = "question" | "answer";
+export type SlidePhase = "question" | "answer" | "code";
 
 /** What a round kind's slide parts get besides the view. */
 export interface RoundSlideView extends SlideView {

@@ -18,7 +18,7 @@ export const codeView: ViewEntry = {
   stage: (context) => {
     const { question, env } = context;
     if (!question) return slideView(context, null);
-    return slideView(context, slideOf({ ...context, question: { ...question, prompt: env.t("special.codeTitle"), explanation: "" } }, true, null, "answer"));
+    return slideView(context, slideOf({ ...context, question: { ...question, prompt: env.t("special.codeTitle"), explanation: "" } }, true, null, "code"));
   },
   tile: ({ env }) => ({ mark: env.t("special.code"), name: env.t("special.codeTitle"), group: env.t("answers.title") }),
 };

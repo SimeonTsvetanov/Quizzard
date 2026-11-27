@@ -228,6 +228,15 @@
     gap: 1.2cqi;
   }
 
+  /* The whole code on one slide: five boxes of one size. */
+  .quiz-digit-box.quiz-digit-box--code {
+    width: 9cqi;
+    height: 10.6cqi;
+    box-shadow: inset 0 0 0 0.4cqi #3fbf6b, 0 0 3cqi rgb(79 224 126 / 0.35);
+    color: #7dffa6;
+    font-size: 6.2cqi;
+  }
+
   .quiz-digit-box.quiz-digit-box--small {
     width: 6.4cqi;
     height: 7.6cqi;
@@ -515,6 +524,44 @@
 
     .quiz-vault-dial[data-turning] {
       animation: quiz-dial-turn 1.4s cubic-bezier(0.22, 0.9, 0.2, 1) 0.1s both;
+    }
+
+    /* The whole code on one slide (rounds/safe.ts, `data-whole`): the digits click in 0.8 s apart while the dial
+       spins, and everything of the door waits for the last of them. */
+    .quiz-vault[data-whole] .quiz-vault-window[data-state="setting"] text,
+    [data-revealed] .quiz-digit-box.quiz-digit-box--code:not(.quiz-digit-box--small) > .quiz-digit-value {
+      animation: quiz-click-in 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.4) calc(0.9s + var(--quiz-i, 0) * 0.8s) both;
+    }
+
+    .quiz-vault[data-whole] .quiz-vault-lamp[data-state="setting"] {
+      animation-delay: calc(0.9s + var(--quiz-i, 0) * 0.8s);
+    }
+
+    .quiz-vault[data-whole] .quiz-vault-dial[data-turning] {
+      animation-duration: 4.4s;
+    }
+
+    .quiz-vault[data-whole][data-door="opening"] {
+      & .quiz-vault-handle {
+        animation-delay: 4.9s;
+      }
+
+      & .quiz-vault-bolt {
+        animation-delay: 5.3s;
+      }
+
+      & > .quiz-vault-door,
+      & > .quiz-vault-door > svg {
+        animation-delay: 5.7s;
+      }
+
+      & .quiz-vault-glow {
+        animation-delay: 6.3s;
+      }
+
+      & .quiz-vault-spark {
+        animation-delay: calc(6.8s + var(--quiz-i, 0) * 0.3s);
+      }
     }
 
     [data-door="opening"] {

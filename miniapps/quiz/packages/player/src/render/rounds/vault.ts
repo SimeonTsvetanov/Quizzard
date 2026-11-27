@@ -21,6 +21,8 @@ export interface VaultInput {
   readonly door: "closed" | "opening" | "open";
   /** The drawing's name for screen readers. */
   readonly label: string;
+  /** The whole code is dialled on this one slide: the digits click in one after the other, then the door opens. */
+  readonly whole?: boolean;
 }
 
 /** The gradients of one drawing, under ids of its own. */
@@ -147,6 +149,7 @@ export function vaultFigure(input: VaultInput): HTMLElement {
   figure.setAttribute("role", "img");
   figure.setAttribute("aria-label", input.label);
   figure.setAttribute("data-door", input.door);
+  if (input.whole === true) figure.setAttribute("data-whole", "");
   const hinge = document.createElement("div");
   hinge.className = "quiz-vault-door";
   hinge.append(door(id, input));

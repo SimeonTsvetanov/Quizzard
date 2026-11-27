@@ -20,6 +20,8 @@ export function dialAngle(digit: number | null): number {
 function windowOf(code: readonly (number | null)[], k: number, { index, phase, reveal }: RoundSlideView): { state: CodeState; text: string } {
   const digit = code[k] ?? null;
   const shown = digit === null ? "?" : String(digit);
+  // The whole code on one slide: every digit clicks into its window, one after the other.
+  if (phase === "code") return { state: "setting", text: shown };
   if (phase === "question") {
     if (k === index) return { state: "current", text: "?" };
     return k < index ? { state: "asked", text: "?" } : { state: "empty", text: "·" };
@@ -37,6 +39,9 @@ export function vaultState(view: RoundSlideView): VaultInput {
   const code = safeCode(view.round);
   const count = code.length;
   const windows = code.map((_, k) => windowOf(code, k, view));
+  const last = code.at(-1) ?? null;
+  // The whole code at once: the dial spins through three turns to the last digit, and the door opens after the last click.
+  if (view.phase === "code") return { windows, dial: { from: 0, to: dialAngle(last) - 1080, isTurning: true }, door: "opening", label: view.labels.special.safe(count, count), whole: true };
   const isAnswer = view.phase === "answer";
   const from = isAnswer && view.index > 0 ? dialAngle(code[view.index - 1] ?? null) : 0;
   const isTurning = isAnswer && view.reveal;
@@ -57,7 +62,17 @@ function art(_question: Question, view: RoundSlideView): HTMLElement {
 function answer(question: Question, view: RoundSlideView): HTMLElement {
   const part = digitPart(digitOf(question.answer), view, view.reveal ? view.labels.special.codeDigit(view.index + 1) : view.labels.special.oneDigit);
   const box = part.querySelector(".quiz-digit-box");
-  if (view.phase !== "answer" || !box) return part;
+  if (view.phase === "question" || !box) return part;
+  if (view.phase === "code") {
+    // Every digit the same size, coming in with its window on the vault.
+    const all = safeCode(view.round).map((digit, k) => {
+      const one = h("span", { class: "quiz-digit-box quiz-digit-box--code" }, h("span", { class: "quiz-digit-value" }, digit === null ? "?" : String(digit)));
+      one.style.setProperty("--quiz-i", String(k));
+      return one;
+    });
+    box.replaceWith(h("span", { class: "quiz-code-line", "data-code-line": "" }, ...all));
+    return part;
+  }
   const small = (text: string, state: string): HTMLElement => h("span", { class: "quiz-digit-box quiz-digit-box--small", "data-code": state }, h("span", { class: "quiz-digit-value" }, text));
   const code = safeCode(view.round);
   const row = h("span", { class: "quiz-code-line", "data-code-line": "" },

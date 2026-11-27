@@ -4,6 +4,10 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.36.2] - 2026-11-27
+### Fixed
+- **Safe with "Show the answers one by one" off — the slide with the whole code was broken:** it said "0/5", left the vault's windows empty and ran the code off the screen. It is the fifth digit's place now, and it dials the whole code: the five digits click in one after the other while the dial spins, then the door opens.
+
 ## [0.36.1] - 2026-11-26
 ### Changed
 - **User docs, README, Help and the texts for search engines and AI assistants are up to date** with this week's changes: name colours, music under questions and for the whole quiz, the Back arrow, answers with one press, the pyramid's one screen, the Safe's sequence, the round's switches, clips that run with their timer, blurred questions. Every screenshot was made again (light and dark) and six were added: the round with its settings, the music tools, an answer slide, the pyramid, the Safe and the name-colour window.

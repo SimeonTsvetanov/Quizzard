@@ -35,7 +35,8 @@ export function slideOf({ env, round, question, media }: ViewContext, isRevealed
   return renderSlide({
     question,
     round,
-    number: round.questions.indexOf(question) + 1,
+    // By its id: a view may draw a question under other words (the Safe's whole code), and it is still that question's place.
+    number: round.questions.findIndex((one) => one.id === question.id) + 1,
     roundPlace: roundPlace(env, round),
     reveal: isRevealed,
     phase,

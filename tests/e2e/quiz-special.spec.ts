@@ -180,3 +180,22 @@ test("an unfinished question's card carries the red mark; a finished one does no
   await expect(cards.nth(0)).not.toHaveAttribute("data-card-unfinished");
   if (process.env["LOOK"]) await page.screenshot({ path: `${process.env["LOOK"]}/unfinished.png` });
 });
+
+// Moni 2026-11-27 (a recording): the Safe's one slide with the whole code said 0/5 and showed an empty vault.
+test("a Safe with its answers at once: the Answers stop, then one slide that dials the whole code and opens the door", async ({ page }) => {
+  const atOnce = { ...SPECIAL, quiz: { ...SPECIAL.quiz, rounds: SPECIAL.quiz.rounds.map((round) => (round.kind === "safe" ? { ...round, answersTogether: true } : round)) } };
+  await play(page, atOnce);
+  await page.keyboard.press("KeyM");
+  await page.locator('[data-dialog="menu"] [data-jump-screen="answers"]').nth(1).click();
+  await next(page);
+  const slide = stage(page).locator(".quiz-slide");
+  await expect(slide.locator(".quiz-slide-prompt")).toHaveText("The code of the safe");
+  await expect(slide.locator("[data-slide-number] [data-count]")).toHaveAttribute("data-count", "5/5");
+  await expect(slide.locator(".quiz-vault")).toHaveAttribute("data-door", "opening");
+  await expect(slide.locator(".quiz-vault-window text")).toHaveText(["4", "7", "1", "9", "2"]);
+  await expect(slide.locator("[data-code-line] .quiz-digit-value")).toHaveText(["4", "7", "1", "9", "2"]);
+  // The five boxes are inside the slide: none runs off its edge.
+  expect(await slide.evaluate((element) => [...element.querySelectorAll("[data-code-line] .quiz-digit-box")].every((box) => box.getBoundingClientRect().right <= element.getBoundingClientRect().right + 1))).toBe(true);
+  await next(page);
+  await expect(view(page, "score")).toBeVisible();
+});
