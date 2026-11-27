@@ -1,8 +1,10 @@
 /* Quiz creator: the slide (render/slide.ts) — the same markup as a thumbnail, the editor's live
    preview, the Preview stage and, later, the player. The slide is a 16:9 size container; everything
    on its canvas is sized in cqi (1cqi = 1 % of the slide's width), so it scales like a slide with no
-   script and stays sharp at any size. Its colours are the stage tokens (styles/tokens.css): the same
-   deep ground in light and dark, like a projector. The media area: slide-media.css. */
+   script and stays sharp at any size. Its colours are the stage tokens (styles/tokens.css): a night sky
+   in the dark theme, warm paper in the light one. Nothing has an outline or a pill around it: the number
+   and the options are soft tiles, the round, the time and the points are plain words. The media area:
+   slide-media.css. */
 @import "./slide-media.css";
 @import "./rounds.css";
 
@@ -19,10 +21,7 @@
     container-type: inline-size;
     aspect-ratio: 16 / 9;
     overflow: hidden;
-    /* The kind's colour glows from the top corner over the stage's own ground. */
-    background:
-      radial-gradient(90% 120% at 100% 0%, color-mix(in oklch, var(--quiz-tone) 55%, transparent), transparent 62%),
-      linear-gradient(140deg, var(--quiz-stage-from), var(--quiz-stage-to));
+    background: var(--quiz-stage-ground);
     color: var(--quiz-stage-ink);
     text-align: start;
   }
@@ -62,17 +61,13 @@
     height: 6.4cqi;
     padding-inline: 1.4cqi;
     border-radius: 1.8cqi;
-    background: var(--quiz-stage-ink);
-    color: var(--quiz-stage-to);
+    background: var(--quiz-stage-chip);
+    box-shadow: var(--quiz-stage-lift);
+    color: var(--quiz-stage-ink);
     font-family: var(--font-display);
     font-size: 3cqi;
     font-weight: var(--weight-bold);
     white-space: nowrap;
-
-    /* On the light badge the quiet part is the badge's own dark ink, thinned: 4.5:1 and more. */
-    & .quiz-count-of {
-      color: color-mix(in oklch, var(--quiz-stage-to) 72%, var(--quiz-stage-ink));
-    }
   }
 
   /* || Counter (render/count.ts): the place in full, the total after the stroke quieter and smaller. */
@@ -86,7 +81,7 @@
   }
 
   .quiz-count-of {
-    color: color-mix(in oklch, currentColor 72%, transparent);
+    color: var(--quiz-stage-dim);
     font-size: 0.78em;
     font-weight: var(--weight-semibold, 600);
   }
@@ -134,10 +129,7 @@
     align-items: center;
     gap: 0.9cqi;
     min-width: 0;
-    padding: 0.9cqi 1.8cqi;
-    border-radius: 99cqi;
-    background: var(--quiz-stage-chip);
-    box-shadow: var(--quiz-stage-lift);
+    color: var(--quiz-stage-dim);
     font-size: 2.3cqi;
     font-weight: var(--weight-bold);
     white-space: nowrap;
@@ -156,7 +148,6 @@
   /* The points note is what the teams must read (SPEC F6): it wraps to a second line instead of
      ending in "…" — 80 characters, the longest note, fit in two. */
   .quiz-slide-chip--points {
-    border-radius: 3.2cqi;
     color: var(--quiz-stage-gold);
     white-space: normal;
 
@@ -235,7 +226,7 @@
     align-items: center;
     gap: 1.4cqi;
     min-width: 0;
-    padding: 1.1cqi 1.6cqi;
+    padding: 1.3cqi 1.8cqi;
     border-radius: 1.8cqi;
     background: var(--quiz-stage-chip);
     box-shadow: var(--quiz-stage-lift);
@@ -252,14 +243,15 @@
     display: grid;
     flex: none;
     place-items: center;
-    width: 1.9em;
-    height: 1.9em;
-    border-radius: 99cqi;
-    background: var(--quiz-stage-ink);
-    color: var(--quiz-stage-to);
+    width: 1.5em;
+    color: var(--quiz-stage-dim);
     font-family: var(--font-display);
     font-size: 0.8em;
     font-weight: var(--weight-bold);
+
+    [data-correct] > & {
+      color: inherit;
+    }
   }
 
   .quiz-slide-option-text {
@@ -303,10 +295,6 @@
   /* "Answer" at the top of a revealed slide: the display face in the stage's gold, beside the number. */
   .quiz-slide-reveal-mark {
     flex: none;
-    padding: 0.7cqi 1.7cqi;
-    border-radius: 99cqi;
-    background: var(--quiz-stage-chip);
-    box-shadow: var(--quiz-stage-lift);
     color: var(--quiz-stage-gold);
     font-family: var(--font-display);
     font-size: 1.9cqi;

@@ -19,7 +19,7 @@
   flex: none;
   width: 96px;
   height: 96px;
-  filter: drop-shadow(0 8px 20px oklch(5% 0.05 283 / 0.45));
+  filter: drop-shadow(0 8px 20px var(--quiz-stage-shade));
 }
 
 .qp-brand-words {
@@ -58,7 +58,7 @@
     padding: 3px;
     border-radius: 50%;
     background: oklch(93% 0.04 88);
-    box-shadow: 0 4px 12px oklch(5% 0.05 283 / 0.4);
+    box-shadow: 0 4px 12px var(--quiz-stage-shade);
     filter: none;
   }
 

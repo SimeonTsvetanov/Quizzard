@@ -1,24 +1,22 @@
 /* The dialogs (menu, scores) in real px, following the page's theme. */
 
-/* || The stage's look for the dialogs and the host panel (Moni 2026-11-25: "wooden" grey boxes did
-   not belong to the stage): the same deep violet in both themes, soft translucent fills, gold for
-   what is chosen. The parts below keep reading the page tokens; here they get the stage's values. */
+/* || One window for everything that opens over the stage — the menu, the scores, a confirmation — and
+   the same surfaces for the host panel (Moni 2026-11-27): a calm sheet over the blurred stage, grouped
+   rows like a phone's settings, no outline anywhere. The parts below read the page tokens; here they
+   get the stage's values, in its theme. */
 .qp-dialog,
 .qp-panel {
-  color-scheme: dark;
-
-  --qp-page: oklch(14% 0.06 283);
-  --qp-raised: oklch(22% 0.1 290);
-  --qp-surface: oklch(100% 0 0 / 0.1);
-  --qp-text: oklch(98% 0.01 293);
-  --qp-text-2: oklch(98% 0.01 293 / 0.76);
-  --qp-line: oklch(100% 0 0 / 0.18);
-  --qp-accent: oklch(87.9% 0.143 92);
-  --qp-on-accent: oklch(24% 0.06 85);
-  --qp-danger: oklch(80% 0.14 30);
-  --qp-page-lift: inset 0 1px 0 oklch(100% 0 0 / 0.1), 0 6px 18px oklch(8% 0.06 283 / 0.3);
-  --qp-page-tint: oklch(100% 0 0 / 0.07);
-  --qp-well: oklch(12% 0.05 283 / 0.55);
+  --qp-page: var(--quiz-stage-to);
+  --qp-raised: var(--quiz-stage-sheet);
+  --qp-surface: light-dark(oklch(19.6% 0.024 295.6 / 0.05), oklch(100% 0 0 / 0.07));
+  --qp-text: var(--quiz-stage-ink);
+  --qp-text-2: var(--quiz-stage-dim);
+  --qp-line: var(--quiz-stage-edge);
+  --qp-accent: var(--quiz-stage-accent);
+  --qp-on-accent: var(--quiz-stage-on-accent);
+  --qp-danger: light-dark(oklch(53.4% 0.193 29.5), oklch(74% 0.17 28));
+  --qp-page-lift: 0 0 0 0 transparent;
+  --qp-page-tint: light-dark(oklch(19.6% 0.024 295.6 / 0.08), oklch(100% 0 0 / 0.11));
 }
 
 /* || Dialogs */
@@ -29,12 +27,9 @@
   padding: 0;
   overflow: hidden;
   border: 0;
-  border-radius: 24px;
-  background:
-    radial-gradient(80% 70% at 100% 0%, oklch(52% 0.22 305 / 0.38), transparent 62%),
-    radial-gradient(70% 70% at 0% 100%, oklch(46% 0.17 262 / 0.3), transparent 60%),
-    linear-gradient(150deg, oklch(27% 0.12 293), oklch(17% 0.07 283));
-  box-shadow: inset 0 1px 0 oklch(100% 0 0 / 0.14), 0 28px 72px oklch(5% 0.05 283 / 0.6);
+  border-radius: 28px;
+  background: var(--quiz-stage-sheet);
+  box-shadow: 0 18px 50px var(--quiz-stage-shade);
   color: var(--qp-text);
   font-family: var(--qp-sans);
   font-size: 16px;
@@ -45,8 +40,8 @@
   }
 
   &::backdrop {
-    background: oklch(8% 0.05 283 / 0.62);
-    backdrop-filter: blur(6px);
+    background: color-mix(in oklch, var(--quiz-stage-to) 72%, transparent);
+    backdrop-filter: blur(14px);
   }
 
   &[data-dialog="scores"] {
@@ -138,8 +133,7 @@
 
   @media (hover: hover) {
     &:hover {
-      box-shadow: var(--qp-page-lift), var(--shadow-2, 0 6px 16px light-dark(oklch(0% 0 0 / 0.1), oklch(0% 0 0 / 0.5)));
-      translate: 0 -1px;
+      background: var(--qp-page-tint);
     }
   }
 
@@ -186,12 +180,12 @@
   display: grid;
   gap: 8px;
   padding: 10px 12px 12px;
-  border-radius: 14px;
-  box-shadow: var(--qp-page-lift);
+  border-radius: 18px;
+  background: var(--qp-surface);
 
   /* The round the game is in: a tint of the accent, no outline. */
   &[data-here] {
-    background: color-mix(in oklch, var(--qp-accent) 12%, var(--qp-raised));
+    background: color-mix(in srgb, var(--qp-accent) 12%, var(--qp-raised));
 
     /* On the tint the quiet labels take the full text colour: AA on it in both themes. */
     & .qp-tile-label {
@@ -202,7 +196,7 @@
   /* The start and the result stand outside the rounds: no box of their own. */
   &:is(div) {
     padding: 0;
-    box-shadow: none;
+    background: none;
   }
 }
 
@@ -252,9 +246,8 @@
   min-width: 44px;
   min-height: 44px;
   padding: 4px 6px;
-  border-radius: 10px;
-  background: var(--qp-surface);
-  box-shadow: var(--qp-page-lift);
+  border-radius: 12px;
+  background: var(--qp-page-tint);
   color: var(--qp-text);
   font-size: 15px;
   font-weight: 700;
@@ -266,8 +259,7 @@
 
   @media (hover: hover) {
     &:hover {
-      box-shadow: var(--qp-page-lift), var(--shadow-2, 0 6px 16px light-dark(oklch(0% 0 0 / 0.1), oklch(0% 0 0 / 0.5)));
-      translate: 0 -1px;
+      background: var(--qp-page-tint);
     }
   }
 
@@ -388,9 +380,8 @@
   padding: 0 4px;
   border: 0;
   border-radius: 14px;
-  background: var(--qp-well);
-  box-shadow: inset 0 2px 6px oklch(5% 0.05 283 / 0.5);
-  color: var(--qp-accent);
+  background: var(--qp-page-tint);
+  color: var(--qp-text);
   font-family: var(--qp-display);
   font-size: 17px;
   font-weight: 700;

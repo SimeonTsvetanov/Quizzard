@@ -170,7 +170,7 @@
     width: 14px;
     height: 14px;
     border-radius: 4px;
-    background: var(--qp-gold);
+    background: var(--qp-fill);
     translate: 0 -4px;
   }
 
@@ -268,7 +268,7 @@
   border-radius: 50%;
   background: linear-gradient(160deg, oklch(92% 0.12 95), oklch(74% 0.15 75));
   box-shadow: var(--qp-lift-strong);
-  color: var(--qp-on-gold);
+  color: var(--qp-on-medal);
   font-family: var(--qp-display);
   font-size: 96px;
   font-weight: 700;
@@ -370,8 +370,8 @@
   width: 58px;
   height: 58px;
   border-radius: 14px;
-  background: var(--qp-gold);
-  color: var(--qp-on-gold);
+  background: var(--qp-fill);
+  color: var(--qp-on-fill);
   font-family: var(--qp-display);
   font-size: 30px;
   font-weight: 700;

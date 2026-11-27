@@ -6,9 +6,9 @@
    pairs as app.config.ts `accent` and `toolAccents`). They are dots, icon colours and card edges only,
    never text on a tint.
 
-   The stage: a slide is a projector slide — a deep violet ground with light text in both themes, so a
-   thumbnail looks like what the room will see. Its text pairs: ink on the ground ≥ 11:1, dimmed ink
-   ≥ 7:1, the dark ink on the "right answer" green ≥ 9:1. */
+   The stage follows the page's theme (Moni 2026-11-27): a night sky in the dark one, warm paper in the
+   light one, so a thumbnail looks like what the room will see. Its text pairs: ink on the ground ≥ 15:1,
+   dimmed ink ≥ 7:1, the accent words ≥ 4.5:1, the ink on the "right answer" green and on the accent ≥ 4.5:1. */
 @layer components {
   :root {
     --quiz-tone-text: var(--color-accent);
@@ -44,17 +44,28 @@
     --quiz-cut-line: oklch(100% 0 0);
     --quiz-cut-line-shadow: 0 0 6px oklch(0% 0 0 / 0.6);
 
-    --quiz-stage-from: light-dark(oklch(37% 0.2 293), oklch(29% 0.13 293));
-    --quiz-stage-to: light-dark(oklch(23% 0.12 283), oklch(17% 0.07 283));
-    --quiz-stage-ink: oklch(98% 0.01 293);
-    --quiz-stage-dim: oklch(98% 0.01 293 / 0.76);
-    --quiz-stage-chip: oklch(100% 0 0 / 0.12);
-    --quiz-stage-edge: oklch(100% 0 0 / 0.2);
-    /* A raised part of the slide (a chip, an option): a faint top light and a soft shadow, never an outline. */
-    --quiz-stage-lift: inset 0 0.12cqi 0 oklch(100% 0 0 / 0.12), 0 0.7cqi 2cqi oklch(8% 0.06 283 / 0.32);
-    --quiz-stage-gold: oklch(87.9% 0.143 92);
-    --quiz-stage-right: oklch(80% 0.17 160);
-    --quiz-stage-on-right: oklch(22% 0.04 160);
+    /* The ground: a calm base with one soft glow rising from the bottom edge. */
+    --quiz-stage-from: light-dark(oklch(90.7% 0.068 68.9), oklch(27.3% 0.082 268.9));
+    --quiz-stage-to: light-dark(oklch(97% 0.007 88.6), oklch(11.7% 0.014 272.6));
+    --quiz-stage-ground: radial-gradient(120% 70% at 50% 118%, var(--quiz-stage-from), transparent 70%) var(--quiz-stage-to);
+    --quiz-stage-star: light-dark(oklch(100% 0 0 / 0), oklch(88% 0.1 88 / 0.5));
+    --quiz-stage-ink: light-dark(oklch(19.6% 0.024 295.6), oklch(97% 0.009 292.8));
+    --quiz-stage-dim: light-dark(oklch(19.6% 0.024 295.6 / 0.74), oklch(97% 0.009 292.8 / 0.72));
+    /* A tile on the ground, a quiet track, and the window that opens over the stage. */
+    --quiz-stage-chip: light-dark(oklch(100% 0 0 / 0.8), oklch(100% 0 0 / 0.07));
+    --quiz-stage-edge: light-dark(oklch(19.6% 0.024 295.6 / 0.12), oklch(100% 0 0 / 0.14));
+    --quiz-stage-sheet: light-dark(oklch(100% 0 0), oklch(21.1% 0.014 278.7));
+    /* A raised part of the slide (the number, an option): a tint and a soft shadow, never an outline. */
+    --quiz-stage-shade: light-dark(oklch(29.9% 0.047 75.8 / 0.12), oklch(0% 0 0 / 0.4));
+    --quiz-stage-lift: 0 0.5cqi 1.6cqi var(--quiz-stage-shade);
+    /* One accent a theme: gold words on the dark stage, amber on the light one; what is filled with the
+       accent (the Next button, the chosen tile) is gold in the dark and emerald in the light. Green is the
+       right answer only. */
+    --quiz-stage-gold: light-dark(oklch(50% 0.11 70), oklch(87.6% 0.14 92.1));
+    --quiz-stage-accent: light-dark(oklch(52.8% 0.123 158.1), oklch(87.6% 0.14 92.1));
+    --quiz-stage-on-accent: light-dark(oklch(100% 0 0), oklch(22.1% 0.045 93.2));
+    --quiz-stage-right: light-dark(oklch(50% 0.118 158.6), oklch(82.1% 0.158 160.2));
+    --quiz-stage-on-right: light-dark(oklch(100% 0 0), oklch(22% 0.04 160));
 
     /* The edges of the cards under the top card of a deck. */
     --quiz-stack-1: color-mix(in oklch, var(--color-accent) 72%, var(--color-surface));

@@ -62,9 +62,9 @@
   font-size: 0.9em;
 
   [data-rank="1"] > & {
-    background: var(--qp-gold);
+    background: var(--qp-fill);
     box-shadow: none;
-    color: var(--qp-on-gold);
+    color: var(--qp-on-fill);
   }
 }
 
@@ -78,7 +78,7 @@
   height: calc(var(--qp-row) * 0.36);
   overflow: hidden;
   border-radius: 999px;
-  background: oklch(0% 0 0 / 0.24);
+  background: var(--qp-well);
 }
 
 .qp-board-fill {
@@ -86,12 +86,12 @@
   width: 100%;
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, oklch(66% 0.2 300), oklch(80% 0.13 300));
+  background: var(--qp-dim);
   transform: scaleX(var(--qp-share, 0));
   transform-origin: 0 50%;
 
   [data-rank="1"] & {
-    background: linear-gradient(90deg, oklch(78% 0.15 75), var(--qp-gold));
+    background: var(--qp-fill);
   }
 }
 

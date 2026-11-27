@@ -7,23 +7,14 @@
   position: relative;
   width: 100%;
   height: 100%;
-  /* The stage is the same deep violet in the app's light and dark theme and in the exported page:
-     the darker pair of the slide's colours (render/tokens.css). */
-  --quiz-stage-from: oklch(29% 0.13 293);
-  --quiz-stage-to: oklch(17% 0.07 283);
-
   overflow: hidden;
-  color-scheme: dark;
-  background:
-    radial-gradient(70% 90% at 100% 0%, oklch(52% 0.22 305 / 0.5), transparent 62%),
-    radial-gradient(60% 80% at 0% 100%, oklch(46% 0.17 262 / 0.45), transparent 60%),
-    linear-gradient(140deg, var(--quiz-stage-from), var(--quiz-stage-to));
+  background: var(--quiz-stage-ground);
   color: var(--qp-ink);
   font-family: var(--qp-sans);
 
-  /* A few still gold stars over the ground, as on Home: depth, not motion. */
+  /* A few still stars over the night ground: depth, not motion. The light stage has none. */
   &::before {
-    --qp-star: oklch(88% 0.12 88 / 0.55);
+    --qp-star: var(--quiz-stage-star);
 
     content: "";
     position: absolute;
@@ -39,9 +30,7 @@
       radial-gradient(circle at 4% 47%, var(--qp-star) 1.1px, transparent 2.1px),
       radial-gradient(circle at 37% 22%, var(--qp-star) 0.8px, transparent 1.8px),
       radial-gradient(circle at 62% 27%, var(--qp-star) 1px, transparent 2px),
-      radial-gradient(circle at 83% 61%, var(--qp-star) 0.8px, transparent 1.8px),
-      radial-gradient(circle at 14% 78%, var(--qp-star) 0.9px, transparent 1.9px),
-      radial-gradient(circle at 54% 91%, var(--qp-star) 0.8px, transparent 1.8px);
+      radial-gradient(circle at 83% 61%, var(--qp-star) 0.8px, transparent 1.8px);
   }
 }
 
@@ -148,10 +137,11 @@
   font-weight: 600;
 }
 
+/* What a round is made of: plain words with a small mark, no shape around them. */
 .qp-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 12px 40px;
 }
 
 .qp-chip {
@@ -159,10 +149,7 @@
   align-items: center;
   gap: 12px;
   max-width: 100%;
-  padding: 12px 26px;
-  border-radius: 999px;
-  background: var(--qp-chip);
-  box-shadow: var(--qp-lift);
+  color: var(--qp-dim);
   font-size: 32px;
   font-weight: 700;
 
@@ -220,9 +207,9 @@
   }
 
   &[aria-pressed="true"] {
-    background: var(--qp-gold);
+    background: var(--qp-fill);
     box-shadow: none;
-    color: var(--qp-on-gold);
+    color: var(--qp-on-fill);
   }
 }
 
@@ -249,9 +236,7 @@
   }
 
   &[data-curtain="break"] {
-    background:
-      radial-gradient(70% 90% at 50% 0%, oklch(52% 0.22 305 / 0.45), transparent 62%),
-      linear-gradient(160deg, var(--quiz-stage-from), var(--quiz-stage-to));
+    background: var(--quiz-stage-ground);
   }
 }
 

@@ -128,7 +128,7 @@
   display: grid;
   place-items: center;
   border-radius: 28px 28px 0 0;
-  background: linear-gradient(180deg, oklch(100% 0 0 / 0.2), oklch(100% 0 0 / 0.06));
+  background: var(--qp-chip-strong);
   box-shadow: var(--qp-lift);
   font-family: var(--qp-display);
   font-size: 84px;
@@ -136,9 +136,9 @@
   transform-origin: 50% 100%;
 
   [data-rank="1"] > & {
-    background: linear-gradient(180deg, var(--qp-gold), oklch(72% 0.15 70));
+    background: linear-gradient(180deg, var(--qp-medal), oklch(72% 0.15 70));
     box-shadow: none;
-    color: var(--qp-on-gold);
+    color: var(--qp-on-medal);
   }
 }
 

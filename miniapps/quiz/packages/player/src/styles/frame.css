@@ -1,7 +1,7 @@
 /* The player's frame: its own small reset (the exported page has no other stylesheet), its colours,
    and the two layouts of the host's window — the stage over the control bar, or the host panel. */
 
-/* || Tokens: the stage is always the dark violet stage; the host's tools follow the page's theme —
+/* || Tokens: the stage, its bar and its windows follow the page's theme (render/tokens.css) —
    Quizzard's tokens inside the app, the same pairs in the exported page. */
 .qp-player {
   --qp-ink: var(--quiz-stage-ink);
@@ -10,9 +10,9 @@
   --qp-edge: var(--quiz-stage-edge);
   /* Depth instead of outlines (Moni 2026-11-24: "without borderlines", like Home): a surface on the
      stage is a soft translucent fill with a faint top light and a soft shadow under it. */
-  --qp-lift: inset 0 1px 0 oklch(100% 0 0 / 0.1), 0 14px 36px oklch(8% 0.06 283 / 0.38);
-  --qp-lift-strong: inset 0 1px 0 oklch(100% 0 0 / 0.14), 0 20px 48px oklch(6% 0.06 283 / 0.5);
-  --qp-chip-strong: oklch(100% 0 0 / 0.17);
+  --qp-lift: 0 8px 24px var(--quiz-stage-shade);
+  --qp-lift-strong: 0 18px 50px var(--quiz-stage-shade);
+  --qp-chip-strong: light-dark(oklch(100% 0 0), oklch(100% 0 0 / 0.12));
   /* The same on the host's page (its own theme): a resting card and a dialog. */
   --qp-page-lift: var(--glass-edge, inset 0 1px 0 light-dark(oklch(100% 0 0 / 0.7), oklch(100% 0 0 / 0.08))), var(--shadow-1, 0 1px 3px light-dark(oklch(0% 0 0 / 0.08), oklch(0% 0 0 / 0.5)));
   --qp-page-tint: light-dark(oklch(0% 0 0 / 0.045), oklch(100% 0 0 / 0.06));
@@ -20,11 +20,17 @@
   --qp-r-sm: 16px;
   --qp-r-md: 24px;
   --qp-r-lg: 32px;
+  /* The accent as words (gold, amber on the light stage) and as a fill with its ink; a medal is gold in
+     both themes. */
   --qp-gold: var(--quiz-stage-gold);
-  --qp-on-gold: oklch(24% 0.06 85);
+  --qp-fill: var(--quiz-stage-accent);
+  --qp-on-fill: var(--quiz-stage-on-accent);
+  --qp-medal: oklch(87.6% 0.14 92.1);
+  --qp-on-medal: oklch(24% 0.06 85);
+  --qp-well: light-dark(oklch(19.6% 0.024 295.6 / 0.07), oklch(0% 0 0 / 0.3));
   --qp-right: var(--quiz-stage-right);
-  --qp-warn: oklch(74% 0.17 30);
-  --qp-ground: oklch(13% 0.05 283);
+  --qp-warn: light-dark(oklch(53.4% 0.193 29.5), oklch(74% 0.17 30));
+  --qp-ground: var(--quiz-stage-to);
   --qp-page: var(--color-bg, light-dark(oklch(97.1% 0.003 286.4), oklch(0% 0 0)));
   --qp-surface: var(--color-surface, light-dark(oklch(100% 0 0), oklch(22.7% 0.004 286.1)));
   --qp-raised: var(--color-surface-raised, light-dark(oklch(100% 0 0), oklch(29.4% 0.004 286.2)));
@@ -128,7 +134,7 @@
   place-content: center;
   gap: 12px;
   padding: 24px;
-  color: var(--quiz-stage-ink, oklch(98% 0.01 293));
+  color: var(--quiz-stage-ink);
   font-size: clamp(18px, 2.4vw, 28px);
   font-weight: 600;
   text-align: center;

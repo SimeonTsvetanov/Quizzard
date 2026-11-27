@@ -101,17 +101,17 @@ describe("the stage's colours", () => {
   it("are the same in the exported page and in the creator, which must declare its own (mini-app token rule)", () => {
     const player = stageTokens(join(SRC, "render/tokens.css"));
     const creator = stageTokens(join(SRC, "../../miniapp/src/styles/tokens.css"));
-    expect(Object.keys(player)).toHaveLength(10);
+    expect(Object.keys(player)).toHaveLength(16);
     expect(creator).toEqual(player);
   });
 
-  it("the stage's own ground is the darker of each pair", () => {
+  it("follow the page's theme: every colour is a light and dark pair, and the stage pins none of its own (Moni 2026-11-27)", () => {
     const tokens = stageTokens(join(SRC, "render/tokens.css"));
-    const stage = stageTokens(join(SRC, "styles/stage.css"));
-    for (const name of ["--quiz-stage-from", "--quiz-stage-to"]) {
-      expect(stage[name]).toMatch(/^oklch\(/);
-      // light-dark(<light>, <dark>): the stage takes <dark>.
-      expect(tokens[name]?.endsWith(`, ${stage[name] ?? "?"})`)).toBe(true);
+    const derived = new Set(["--quiz-stage-ground", "--quiz-stage-lift"]);
+    for (const [name, value] of Object.entries(tokens)) {
+      if (!derived.has(name)) expect(value, name).toMatch(/^light-dark\(/);
     }
+    expect(stageTokens(join(SRC, "styles/stage.css"))).toEqual({});
+    expect(readFileSync(join(SRC, "styles/stage.css"), "utf8")).not.toContain("color-scheme");
   });
 });

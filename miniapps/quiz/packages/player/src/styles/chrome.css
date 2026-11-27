@@ -1,5 +1,5 @@
 /* The control bar under the stage, in real px (44 px targets whatever the stage's scale). It is part
-   of the dark stage. The dialogs it opens: dialog.css. */
+   of the stage and follows its theme. The dialogs it opens: dialog.css. */
 
 /* || Control bar */
 /* One bar for the stage and the host panel (ui/bar.ts). Three parts: what leads back and the timer
@@ -12,9 +12,8 @@
   align-items: center;
   gap: 8px;
   padding: 8px max(12px, env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
-  color-scheme: dark;
   background: var(--qp-ground);
-  color: oklch(98% 0.01 293 / 0.82);
+  color: var(--qp-dim);
 }
 
 .qp-bar-group {
@@ -36,13 +35,17 @@
   min-width: 44px;
   min-height: 44px;
   border-radius: 12px;
-  background: oklch(100% 0 0 / 0.08);
+  background: var(--qp-chip);
+  box-shadow: 0 2px 8px var(--quiz-stage-shade);
   color: inherit;
   font-size: 15px;
   font-weight: 700;
 
-  &:hover:not(:disabled, [aria-disabled="true"]) {
-    background: oklch(100% 0 0 / 0.16);
+  @media (hover: hover) {
+    &:hover:not(:disabled, [aria-disabled="true"]) {
+      background: var(--qp-chip-strong);
+      color: var(--qp-ink);
+    }
   }
 
   /* Off, not gone: Back at the start, Next at the end and the timer's buttons on a screen without
@@ -64,8 +67,9 @@
   &[data-primary] {
     width: 13rem;
     max-width: 100%;
-    background: var(--qp-gold);
-    color: var(--qp-on-gold);
+    background: var(--qp-fill);
+    box-shadow: none;
+    color: var(--qp-on-fill);
     white-space: nowrap;
 
     & .qp-bar-words {
@@ -74,8 +78,11 @@
       text-overflow: ellipsis;
     }
 
-    &:hover:not(:disabled, [aria-disabled="true"]) {
-      background: oklch(92% 0.13 92);
+    @media (hover: hover) {
+      &:hover:not(:disabled, [aria-disabled="true"]) {
+        background: color-mix(in oklch, var(--qp-fill) 90%, var(--qp-ink));
+        color: var(--qp-on-fill);
+      }
     }
   }
 }

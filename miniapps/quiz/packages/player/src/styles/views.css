@@ -24,7 +24,7 @@
   width: 1100px;
   height: 620px;
   border-radius: 50%;
-  background: radial-gradient(closest-side, oklch(70% 0.2 300 / 0.38), transparent);
+  background: radial-gradient(closest-side, color-mix(in oklch, var(--quiz-stage-from) 55%, transparent), transparent);
   translate: -50% -50%;
   pointer-events: none;
 
@@ -132,8 +132,8 @@
   width: 1.55em;
   height: 1.55em;
   border-radius: 50%;
-  background: var(--qp-gold);
-  color: var(--qp-on-gold);
+  background: var(--qp-fill);
+  color: var(--qp-on-fill);
   font-family: var(--qp-display);
   font-size: 0.8em;
   font-weight: 700;
@@ -157,8 +157,7 @@
   padding: 0 0.45em;
   border: 0;
   border-radius: 0.55em;
-  background: oklch(0% 0 0 / 0.24);
-  box-shadow: inset 0 2px 6px oklch(0% 0 0 / 0.22);
+  background: var(--qp-well);
   color: var(--qp-ink);
   /* A field under 16 real px makes iPhone Safari zoom the page. */
   font-size: max(1em, calc(var(--qp-touch, 0px) * 0.37));
@@ -242,7 +241,6 @@
 .qp-view.qp-slide-view,
 [data-shape="tall"] .qp-view.qp-slide-view {
   padding: 0;
-  background: radial-gradient(90% 120% at 100% 0%, color-mix(in oklch, var(--quiz-tone) 38%, transparent), transparent 62%);
 
   & .quiz-slide {
     width: 100%;
@@ -508,8 +506,8 @@
    layer and would win over the slide's layered stylesheet, so their faces are said again here. */
 .qp-player .quiz-slide-clip-play,
 .qp-player .quiz-slide-clip-tap {
-  background: var(--quiz-stage-gold);
-  color: var(--qp-on-gold);
+  background: var(--quiz-stage-accent);
+  color: var(--quiz-stage-on-accent);
 }
 
 .qp-player .quiz-slide-clip-restart {

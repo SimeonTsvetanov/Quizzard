@@ -7,9 +7,9 @@
   display: grid;
   flex: none;
   place-items: center;
-  width: 8.6cqi;
-  height: 8.6cqi;
-  margin-block: -1.1cqi;
+  width: 7.4cqi;
+  height: 7.4cqi;
+  margin-block: -0.5cqi;
   color: var(--qp-ink);
 
   /* The slide sizes its marks in em; the dial's ring fills the dial. */
@@ -33,23 +33,27 @@
 .qp-dial-track,
 .qp-dial-progress {
   fill: none;
-  stroke-width: 9;
+  stroke-width: 5;
 }
 
 .qp-dial-track {
-  fill: oklch(0% 0 0 / 0.28);
+  fill: none;
   stroke: var(--qp-edge);
 }
 
 .qp-dial-progress {
-  stroke: currentColor;
+  stroke: var(--qp-gold);
   stroke-linecap: round;
+
+  [data-low] > svg > & {
+    stroke: currentColor;
+  }
 }
 
 .qp-dial-number {
   position: relative;
   font-family: var(--qp-display);
-  font-size: 3.1cqi;
+  font-size: 2.7cqi;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   line-height: 1;
@@ -71,9 +75,9 @@
   margin-inline: auto;
   padding: 18px 44px 20px;
   border-radius: 999px;
-  background: var(--qp-gold);
-  box-shadow: 0 18px 50px oklch(0% 0 0 / 0.45);
-  color: var(--qp-on-gold);
+  background: var(--qp-fill);
+  box-shadow: var(--qp-lift-strong);
+  color: var(--qp-on-fill);
   font-size: 36px;
   font-weight: 700;
   text-align: center;
@@ -88,13 +92,13 @@
   height: 8px;
   overflow: hidden;
   border-radius: 999px;
-  background: oklch(24% 0.06 85 / 0.22);
+  background: color-mix(in oklch, var(--qp-on-fill) 22%, transparent);
 
   &::after {
     display: block;
     height: 100%;
     border-radius: inherit;
-    background: var(--qp-on-gold);
+    background: var(--qp-on-fill);
     content: "";
     transform: scaleX(var(--qp-cue, 0));
     transform-origin: 0 50%;

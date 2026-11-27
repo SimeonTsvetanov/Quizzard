@@ -4,10 +4,7 @@
   display: grid;
   grid-template-rows: minmax(0, 1fr) auto;
   min-height: 0;
-  background:
-    radial-gradient(60% 70% at 100% 0%, oklch(52% 0.22 305 / 0.28), transparent 62%),
-    radial-gradient(50% 60% at 0% 100%, oklch(46% 0.17 262 / 0.25), transparent 60%),
-    linear-gradient(150deg, oklch(23% 0.1 293), oklch(13% 0.05 283));
+  background: var(--quiz-stage-ground);
   color: var(--qp-text);
   font-family: var(--qp-sans);
 }
@@ -20,8 +17,7 @@
 
   @media (hover: hover) {
     &:hover:not([aria-disabled="true"]) {
-      box-shadow: var(--qp-page-lift), var(--shadow-2, 0 6px 16px light-dark(oklch(0% 0 0 / 0.1), oklch(0% 0 0 / 0.5)));
-      translate: 0 -1px;
+      background: var(--qp-page-tint);
     }
   }
 }
@@ -183,8 +179,8 @@
   --qp-edge: var(--qp-line);
   --qp-ink: var(--qp-text);
   --qp-dim: var(--qp-text-2);
-  --qp-gold: var(--qp-accent);
-  --qp-on-gold: var(--qp-on-accent);
+  --qp-fill: var(--qp-accent);
+  --qp-on-fill: var(--qp-on-accent);
   --qp-touch: 44px;
   --qp-row: 60px;
 
@@ -365,9 +361,9 @@
 
 .qp-panel-head .qp-bar-button[aria-pressed="true"],
 .qp-bar .qp-bar-button[aria-pressed="true"] {
-  background: var(--qp-gold);
+  background: var(--qp-fill);
   box-shadow: none;
-  color: var(--qp-on-gold);
+  color: var(--qp-on-fill);
 }
 
 /* A phone: "Black screen" is its mark alone in the panel's head. */

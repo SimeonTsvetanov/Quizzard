@@ -3,8 +3,8 @@
 /* || Confirm */
 .qp-dialog.qp-confirm {
   width: min(24rem, calc(100vw - 32px));
-  padding: 22px;
-  text-align: center;
+  padding: 24px;
+  border-radius: 24px;
 
   &[open] {
     grid-template-rows: none;
@@ -28,9 +28,8 @@
   flex: 1 1 8rem;
   min-height: 44px;
   padding: 8px 16px;
-  border-radius: 12px;
-  background: var(--qp-surface);
-  box-shadow: var(--qp-page-lift);
+  border-radius: 14px;
+  background: var(--qp-page-tint);
   color: var(--qp-text);
   font-weight: 700;
   /* A label that does not fit beside the other moves both buttons to rows of their own. */
@@ -38,20 +37,14 @@
 
   @media (hover: hover) {
     &:hover {
-      box-shadow: var(--qp-page-lift), var(--shadow-2, 0 6px 16px light-dark(oklch(0% 0 0 / 0.1), oklch(0% 0 0 / 0.5)));
-      translate: 0 -1px;
+      background: color-mix(in oklch, var(--qp-text) 14%, transparent);
     }
   }
 
-  /* The one red button: solid, so its label passes AA on the raised surface in both themes. */
+  /* The action that cannot be taken back is red words on the same quiet button, never a red block: it
+     must not be the loudest thing in the window (Moni's taste). */
   &[data-danger] {
-    background: var(--qp-danger-fill);
-    box-shadow: none;
-    color: oklch(100% 0 0);
-
-    &:hover {
-      background: color-mix(in oklch, var(--qp-danger-fill) 88%, black);
-    }
+    color: var(--qp-danger);
   }
 }
 
@@ -71,7 +64,7 @@
   padding: 4px 4px 4px 18px;
   border-radius: 999px;
   background: var(--qp-raised);
-  box-shadow: var(--shadow-3, 0 12px 32px oklch(0% 0 0 / 0.4));
+  box-shadow: var(--qp-lift-strong);
   color: var(--qp-text);
   font-family: var(--qp-sans);
   font-size: 15px;

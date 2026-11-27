@@ -86,7 +86,7 @@
     height: calc(1.5 * var(--tap-target));
     overflow: hidden;
     border-radius: var(--radius-md);
-    background: linear-gradient(140deg, var(--quiz-stage-from), var(--quiz-stage-to));
+    background: var(--quiz-stage-to);
     color: var(--quiz-stage-ink);
   }
 

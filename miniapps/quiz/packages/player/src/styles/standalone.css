@@ -38,7 +38,7 @@ body {
   height: 100%;
   margin: 0;
   overflow: hidden;
-  background: oklch(13% 0.05 283);
+  background: var(--quiz-stage-to);
 }
 
 body {

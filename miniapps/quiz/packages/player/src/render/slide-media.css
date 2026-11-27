@@ -339,8 +339,8 @@
   }
 
   .quiz-slide-clip-play {
-    background: var(--quiz-stage-gold);
-    color: oklch(24% 0.06 85);
+    background: var(--quiz-stage-accent);
+    color: var(--quiz-stage-on-accent);
   }
 
   .quiz-slide-clip-restart {
@@ -452,7 +452,7 @@
       width: 2.3%;
       height: 100%;
       border-radius: 99cqi;
-      background: var(--quiz-stage-gold);
+      background: var(--quiz-stage-accent);
       transform: scaleY(var(--quiz-bar, 0.2));
       transition: transform 240ms ease-out;
     }
@@ -464,7 +464,7 @@
     width: min(100cqw, calc(100cqh * 1.7778));
     aspect-ratio: 16 / 9;
     border-radius: 2.4cqmin;
-    background: oklch(0% 0 0 / 0.35);
+    background: var(--quiz-stage-chip);
     color: var(--quiz-stage-dim);
 
     & svg {
@@ -488,9 +488,9 @@
     padding: 1.2cqi 3.4cqi;
     border: 0;
     border-radius: 99cqi;
-    background: var(--quiz-stage-gold);
-    box-shadow: 0 1cqi 4cqi oklch(0% 0 0 / 0.45);
-    color: oklch(24% 0.06 85);
+    background: var(--quiz-stage-accent);
+    box-shadow: 0 1cqi 4cqi var(--quiz-stage-shade);
+    color: var(--quiz-stage-on-accent);
     font: inherit;
     font-size: 3cqi;
     font-weight: var(--weight-bold);

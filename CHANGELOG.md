@@ -4,6 +4,13 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.37.0] - 2026-11-27
+### Changed
+- **The quiz stage has a new, cleaner look, in a dark and a light theme.** Dark: a calm night sky — near-black with one soft blue glow rising from the bottom and a few still stars; light: warm paper with a soft glow. The stage follows the theme you chose in Settings (the exported quiz file follows the device).
+- **Nothing on a slide has an outline or a pill around it any more.** The question's number and the answer options are soft tiles; the round, the time, the points and the word "Answer" are plain words; the option letters are plain letters; the timer is a thin ring. One accent a theme — gold in the dark, amber words and emerald buttons in the light; green only marks the right answer.
+- **One window for everything that opens over the stage** — the menu, the scores, the break and every confirmation: a calm rounded sheet over the blurred stage with grouped rows. An action that cannot be taken back is red words on a quiet button, never a red block.
+- The control bar, the host panel, the special rounds, the leaderboard and the final screen use the same surfaces and the same accent.
+
 ## [0.36.2] - 2026-11-27
 ### Fixed
 - **Safe with "Show the answers one by one" off — the slide with the whole code was broken:** it said "0/5", left the vault's windows empty and ran the code off the screen. It is the fifth digit's place now, and it dials the whole code: the five digits click in one after the other while the dial spins, then the door opens.
