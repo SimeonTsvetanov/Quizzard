@@ -98,6 +98,8 @@ function draw(app: App, focus?: string): void {
 /** One mount's "which show is the newest": a slow load for a screen already left is dropped. */
 interface Shows {
   count: number;
+  /** The newest show, settled once its screen is drawn (or it gave way to a newer one). */
+  last: Promise<void>;
 }
 
 /** Shows a route: loads what it needs, draws it and puts the focus where a person expects it. */
@@ -155,14 +157,22 @@ function createApp(element: HTMLElement, context: MiniAppContext, signal: AbortS
   });
   const app: App = {
     host: element, context, signal, store, saver, media: createMediaUrls(), env: defaultEnv, ui: createUiRegistries(), screens: null, lang, t: createTranslator(lang),
-    nav: createNavigator({ hash: `#/${meta.id}`, signal, onTraverse: (route) => { void show(app, shows, route, returnFocus(app.route, route)); } }),
+    nav: createNavigator({ hash: `#/${meta.id}`, signal, onTraverse: (route) => { shows.last = show(app, shows, route, returnFocus(app.route, route)); } }),
     view: { lastRound: null, isSettingsOpen: false, showsQuestions: false, isNaming: false, query: "", renaming: null, isLiveOpen: false, isRevealed: false, drafts: new Map(), isEntering: false, cleanup: null, exported: null, swept: new Set(), isMoreOpen: false, stickyFor: null, selectNext: false, hasAskedToKeep: false },
     route: LIBRARY, library: null, current: null,
     draw: (focus) => { draw(app, focus); },
     go(route, mode = "push", focus = null) {
       if (mode === "push") app.nav.push(route); else app.nav.replace(route);
       window.scrollTo({ top: 0 });
-      void show(app, shows, route, focus);
+      shows.last = show(app, shows, route, focus);
+    },
+    async shown() {
+      // A show started meanwhile (Back, another go) is waited for too: the screen in place is the newest.
+      let waited: Promise<void> | undefined;
+      while (waited !== shows.last) {
+        waited = shows.last;
+        await waited.catch(() => undefined);
+      }
     },
     change(next, media) {
       if (app.current === null || (next === app.current.quiz && media === undefined)) return false;
@@ -208,7 +218,7 @@ export function mountQuiz(element: HTMLElement, context: MiniAppContext): Unmoun
 function mountCreator(element: HTMLElement, context: MiniAppContext): Unmount {
   const controller = new AbortController();
   const { signal } = controller;
-  const shows: Shows = { count: 0 };
+  const shows: Shows = { count: 0, last: Promise.resolve() };
   const app = createApp(element, context, signal, shows);
   const { prefs } = context.storage;
   // The last typing survives closing the tab or switching apps: kept at once where a closing page
@@ -221,7 +231,7 @@ function mountCreator(element: HTMLElement, context: MiniAppContext): Unmount {
   window.addEventListener("pagehide", flush, { signal });
   document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") flush(); }, { signal });
   draw(app); // the library's frame at once; its lines follow from storage
-  void restoreUnsaved(prefs, app.store, app.env.registries).catch(() => undefined).then(() => show(app, shows, app.nav.route(), undefined)).then(() => {
+  void restoreUnsaved(prefs, app.store, app.env.registries).catch(() => undefined).then(() => { shows.last = show(app, shows, app.nav.route(), undefined); return shows.last; }).then(() => {
     // Opened by the system's share sheet (an installed app on Android): the shared text goes to "Make a quiz with AI".
     if (context.query.has(SHARED_PARAM)) void takeShared(app);
   });

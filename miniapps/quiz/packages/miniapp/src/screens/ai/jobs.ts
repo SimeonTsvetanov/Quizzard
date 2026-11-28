@@ -105,7 +105,7 @@ export function addRoundsJob(app: App, quiz: Quiz, say: AiWindow["say"]): AiJob 
       const wishes = form.wishes();
       const left = room();
       if (left <= 0) return t("ai.quizFull", { max: MAX_ROUNDS });
-      return wishes.rounds + wishes.specials.length > left ? t("ai.fewerRounds", { room: left }) : nothingChosen(app, wishes);
+      return wishes.rounds + wishes.specials.length > left ? t("ai.fewerRounds", { count: left }) : nothingChosen(app, wishes);
     },
     last: { kind: "rounds", quizId: quiz.id },
     make: t("ai.makeRounds"),

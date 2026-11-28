@@ -31,16 +31,6 @@ export async function openAiLazily(app: App, kind: AiKind, options: { readonly r
   }
 }
 
-/** Waits until the quiz is open (the screen loads it from storage); `false` when it does not come. */
-async function opened(app: App, quizId: string): Promise<boolean> {
-  for (let tries = 0; tries < 60 && !app.signal.aborted; tries += 1) {
-    if (app.current?.quiz.id === quizId && app.route.screen !== "library") return true;
-    if (tries > 0 && app.route.screen === "library") return false;
-    await new Promise((resolve) => setTimeout(resolve, 50));
-  }
-  return false;
-}
-
 /**
  * Opens the job a prompt was last given for (storage/ai-prefs.ts) with the text another app shared
  * (storage/shared.ts) — its quiz or round first; a new quiz when that is gone. The text is forgotten once shown.
@@ -53,8 +43,11 @@ export async function takeShared(app: App): Promise<void> {
   let kind: AiKind = "quiz";
   if (last.kind !== "quiz" && last.quizId !== undefined) {
     const route = last.kind === "questions" && last.roundId !== undefined ? { screen: "round", quiz: last.quizId, round: last.roundId } as const : { screen: "quiz", quiz: last.quizId } as const;
+    // The window opens once the quiz's screen is drawn (a draw clears the area, an open window with it); its quiz
+    // or round gone, the screen falls back to the library and the answer goes to a new quiz instead.
     app.go(route, "push");
-    if (await opened(app, last.quizId)) kind = last.kind;
+    await app.shown();
+    if (app.current?.quiz.id === last.quizId && app.route.screen !== "library") kind = last.kind;
   }
   const options = last.roundId === undefined ? { shared: text } : { shared: text, roundId: last.roundId };
   const isShown = (await openAiLazily(app, kind, options)) || (kind !== "quiz" && (await openAiLazily(app, "quiz", { shared: text })));

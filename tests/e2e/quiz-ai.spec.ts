@@ -123,7 +123,11 @@ test.describe("AI windows", () => {
     expect(commons.asked).toEqual(["File:Paris.jpg", "File:Made up tower.jpg"]);
     expect(await files(page)).toHaveLength(0);
     draft.rounds[0]?.questions.splice(1, 1);
-    await field(page).fill(fence(draft));
+    // The person's own paste (keys, not the Paste button) after a refused answer takes its place too.
+    await page.evaluate((text) => navigator.clipboard.writeText(text), fence(draft));
+    await field(page).focus();
+    await page.keyboard.press("ControlOrMeta+V");
+    await expect(field(page)).toHaveValue(fence(draft));
     await make(page).click();
     await expect(screen(page, "quiz")).toBeVisible();
     const [made] = await files(page);

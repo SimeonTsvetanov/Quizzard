@@ -98,6 +98,14 @@ function pasteStep(app: App, job: AiJob, number: number, parts: Parts, run: () =
       go.focus();
     }).catch(() => { field.focus(); });
   });
+  // The person's own paste after a refused answer takes its place too (the list of problems says so).
+  field.addEventListener("paste", (event) => {
+    const text = event.clipboardData?.getData("text/plain") ?? "";
+    if (!parts.isRefused || text === "") return;
+    event.preventDefault();
+    field.value = text;
+    parts.isRefused = false;
+  });
   go.addEventListener("click", () => {
     go.disabled = true;
     void run().finally(() => {

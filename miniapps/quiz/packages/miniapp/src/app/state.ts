@@ -76,6 +76,8 @@ export interface App {
   draw(focus?: string): void;
   /** Loads what a screen needs and shows it, on a new history entry or in the current one; then focuses `focus` (default: the screen's title). */
   go(route: Route, mode?: "push" | "replace", focus?: string | null): void;
+  /** Settles once the newest screen asked for (by `go` or a move through the history) is drawn. */
+  shown(): Promise<void>;
   /**
    * Applies an edit of the open quiz and saves it soon; `false` when nothing changed.
    * @param next - the quiz after the edit
