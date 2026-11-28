@@ -6,6 +6,7 @@ import { MAX_ROUNDS, QUIZ_NAME_MAX, type Quiz, type Round, canAddRound, renameQu
 import { kindBadge } from "../round-kinds-ui.ts";
 import type { App } from "../app/state.ts";
 import { h } from "../dom/h.ts";
+import { aiButton } from "./ai-door.ts";
 import { nameField } from "../dom/name-field.ts";
 import { wholeMinutes } from "../format.ts";
 import { actionRow, openMore } from "./card-actions.ts";
@@ -110,17 +111,23 @@ function addRoundControl(app: App): HTMLElement {
   return add;
 }
 
+/** "Add rounds with AI" (while the quiz has room) and "Check the answers with AI" (once it has questions), side by side. */
+function aiTools(app: App, quiz: Quiz): HTMLElement {
+  const buttons = [...(canAddRound(quiz) ? [aiButton(app, "rounds")] : []), ...(quiz.rounds.some((round) => round.questions.length > 0) ? [aiButton(app, "check")] : [])];
+  return h("div", { class: "quiz-ai-tools", "data-count": String(buttons.length) }, ...buttons);
+}
+
 /** The left pane: the header card and the rounds. */
 function roundsPane(app: App, quiz: Quiz, openId: string | undefined): HTMLElement {
   const { t } = app;
   const pane = h("section", { class: "quiz-pane quiz-pane--rounds", "aria-labelledby": "quiz-quiz-title" }, quizHead(app, quiz));
   if (quiz.rounds.length === 0) {
-    pane.append(emptyState({ icon: "deck", title: t("quiz.emptyTitle"), text: t("quiz.emptyText"), action: addRoundControl(app) }));
+    pane.append(emptyState({ icon: "deck", title: t("quiz.emptyTitle"), text: t("quiz.emptyText"), action: h("div", { class: "quiz-empty-actions" }, addRoundControl(app), aiButton(app, "rounds")) }));
     return pane;
   }
   const list = h("ol", { class: "quiz-rounds" }, ...quiz.rounds.map((round, index) => roundCard(app, quiz, round, index, openId)));
   makeSortable({ list, attribute: ROUND_ATTRIBUTE, onMove: (id, to) => { moveRoundTo(app, id, to); } });
-  pane.append(h("h3", { class: "quiz-section" }, t("quiz.rounds")), list, addRoundControl(app));
+  pane.append(h("h3", { class: "quiz-section" }, t("quiz.rounds")), list, addRoundControl(app), aiTools(app, quiz));
   return pane;
 }
 

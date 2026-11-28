@@ -7,6 +7,7 @@ import { kindBadge, roundKindUis } from "../round-kinds-ui.ts";
 import type { App } from "../app/state.ts";
 import { iconButton, labelButton } from "../dom/controls.ts";
 import { h } from "../dom/h.ts";
+import { aiButton } from "./ai-door.ts";
 import { nameField } from "../dom/name-field.ts";
 import { type ListMode, readListMode, writeListMode } from "../storage/view-prefs.ts";
 import { openMore } from "./card-actions.ts";
@@ -47,6 +48,12 @@ function addControl(app: App, round: Round): HTMLElement {
   const add = addButton(t("question.add"), "data-add-question");
   add.addEventListener("click", () => { newQuestion(app, round.id); });
   return h("div", { class: "quiz-fab" }, add);
+}
+
+/** "Add questions with AI" under the questions of a standard round that has room (a special round's questions are fixed). */
+function aiQuestions(app: App, round: Round): HTMLElement[] {
+  if (shapeOf(round, app.env.registries) || !canAddQuestion(round)) return [];
+  return [h("div", { class: "quiz-ai-tools", "data-count": "1" }, aiButton(app, "questions", round.id))];
 }
 
 /** "Cards / List": how the questions are shown; two buttons that say which one is on. */
@@ -142,5 +149,5 @@ export function roundPane(app: App, quiz: Quiz, round: Round): HTMLElement {
     backLink(quiz.name === "" ? t("quiz.unnamed") : quiz.name, () => { up(app); }, "quiz-narrow-only"),
     head,
     roundSettings(app, round, refresh),
-    ...(own ? [list] : [bar, list, addControl(app, round)]));
+    ...(own ? [list] : [bar, list, addControl(app, round), ...aiQuestions(app, round)]));
 }

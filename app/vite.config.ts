@@ -5,6 +5,7 @@ import { defineConfig, type Plugin } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
 import { app as config, type AppConfig } from "../app.config.ts";
 import { OG_IMAGE, escapeHtml, ogImageAlt, ogImageUrl, siteVerificationTag, structuredData } from "../scripts/seo.ts";
+import { SHARE_TARGET_FILE, SHARE_TARGET_PATH, shareTargetScript } from "../scripts/share-target.ts";
 import { SW_HANDOVER_FILE, swHandoverScript } from "../scripts/sw-handover.ts";
 import { vitePreset as teamsPreset } from "@simeonts/teamsync-random-team-generator-miniapp/vite-preset";
 import { vitePreset as scoresPreset } from "gg-counter-miniapp/vite-preset";
@@ -81,7 +82,7 @@ const screenshots = [
 function appHtml(): Plugin {
   const verification = siteVerificationTag(app);
   const origin = (u: string | null | undefined): string => (u ? new URL(u).origin : "");
-  const connect = ["'self'", origin(app.feedback.webhook)].filter(Boolean).join(" ");
+  const connect = ["'self'", origin(app.feedback.webhook), ...(app.csp?.connect ?? [])].filter(Boolean).join(" ");
   // One English URL per app: no hreflang or ?lang= alternates (DECISIONS 2026-11-06); other UI
   // languages are client-side translations only.
   return {
@@ -147,6 +148,7 @@ function swHandover(): Plugin {
     apply: "build",
     generateBundle() {
       this.emitFile({ type: "asset", fileName: SW_HANDOVER_FILE, source: swHandoverScript(app) });
+      this.emitFile({ type: "asset", fileName: SHARE_TARGET_FILE, source: shareTargetScript(BASE) });
     },
   };
 }
@@ -244,6 +246,14 @@ export default defineConfig({
         background_color: "#000000", theme_color: "#000000", orientation: "any",
         categories: [...app.categories],
         launch_handler: { client_mode: ["navigate-existing", "auto"] },
+        // Android, installed: "Share" in another app (an AI assistant's answer) lists Quizzard; the service
+        // worker answers the POST on the device (scripts/share-target.ts). DECISIONS 2026-11-28.
+        share_target: {
+          action: `${BASE}${SHARE_TARGET_PATH}`,
+          method: "POST",
+          enctype: "multipart/form-data",
+          params: { title: "title", text: "text", url: "url", files: [{ name: "file", accept: ["text/plain", "application/json", ".txt", ".json", ".md"] }] },
+        },
         ...(screenshots.length ? { screenshots } : {}),
         // Long-press the app icon → jump straight to a task (app.config.shortcuts). Each shortcut
         // needs a 96 px icon (pwa §2); pwa-96x96.png comes from pwa-assets.config.ts.
@@ -267,13 +277,14 @@ export default defineConfig({
           "og-image.png",
           // Loaded by the worker itself (importScripts); the browser keeps it with the worker.
           SW_HANDOVER_FILE,
+          SHARE_TARGET_FILE,
           // The plugin precaches the manifest itself; matched by "json" above it would be listed twice
           // with different revisions, and Workbox then fails to start its precache.
           "manifest.json",
         ],
         cleanupOutdatedCaches: true,
         // Takes over from the 2025 worker at once and deletes its caches (scripts/sw-handover.ts).
-        importScripts: [SW_HANDOVER_FILE],
+        importScripts: [SW_HANDOVER_FILE, SHARE_TARGET_FILE],
         // Any query (?lang=, ?teams=) still matches the precached page.
         ignoreURLParametersMatching: [/.*/],
         // No navigateFallback (vite-plugin-pwa defaults it to index.html): Workbox would answer

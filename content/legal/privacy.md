@@ -51,8 +51,18 @@
     quiz file to the app you choose in your device's share menu.
   - **Make a quiz with AI:** {App} does not contact any AI service. You copy the instructions to
     an assistant of your choice and paste its answer back; the text is read and checked on your
-    device. **Paste** reads your clipboard once, only when you press it. What you type into the
-    assistant is covered by that assistant's own privacy terms.
+    device. **Paste** reads your clipboard once, only when you press it; **Copy and open** opens the
+    assistant's own website in a new tab. What you type into the assistant is covered by that
+    assistant's own privacy terms. Your choices in its form are kept in this browser for the next time.
+  - **Pictures from Wikimedia Commons:** only when an assistant's answer names pictures, {App}
+    asks Wikimedia Commons (commons.wikimedia.org, thumb.wikimedia.org, upload.wikimedia.org, run by
+    the Wikimedia Foundation) for those files and downloads them. Wikimedia then receives the usual
+    data of a web request — your IP address, your browser's user agent and the names of the files —
+    under its own [privacy policy](https://foundation.wikimedia.org/wiki/Policy:Privacy_policy). The
+    pictures are stored in your quiz with their author and licence, which are shown with them.
+  - **Sharing to the installed app (Android):** when you share a text from another app to the installed
+    {App}, the app's service worker takes it on your device, keeps it for a moment in the browser's
+    cache and deletes it as soon as the Quiz creator has opened it. Nothing is sent to a server.
   - **Separate from the author's other apps:** {App} keeps its data under its own names. The
     TeamSync and GG Counter sites are on the same web address (`simeontsvetanov.github.io`), but
     {App} does not read, change or delete what they saved, and they do not see {App}'s data.

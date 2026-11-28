@@ -2,7 +2,7 @@
 // what is wrong with it comes back as issues an assistant can act on.
 import { describe, expect, it } from "vitest";
 import * as core from "../src/index.ts";
-import { DRAFT_EXAMPLE, type DraftOptions, draftGuide, fromDraft, issueText, issuesForAssistant, readPasted } from "../src/draft/index.ts";
+import { DRAFT_EXAMPLE, type DraftOptions, type QuizWishes, addQuestionsPrompt, addRoundsPrompt, checkPrompt, commonsTitle, draftGuide, fromDraft, issueText, issuesForAssistant, newQuizPrompt, questionsFromDraft, readCheck, readPasted, roundsFromDraft } from "../src/draft/index.ts";
 import { testEnv } from "./helpers.ts";
 
 const OPTIONS: DraftOptions = { now: "2026-11-28T10:00:00.000Z", language: "en", quizName: "New quiz", roundName: (number) => `Round ${String(number)}` };
@@ -310,5 +310,151 @@ describe("fromDraft: slips of real assistants", () => {
     const result = make({ name: "Q", rounds: [{ type: "laugh", name: "L", seconds: 100 }] });
     expect(result.quiz?.rounds[0]?.defaults.seconds).toBe(90);
     expect(issueText(result.issues[0] ?? { level: "fixed", path: "", code: "not-object", values: {} })).toBe("Round 1: 100 is not allowed here (whole numbers from 30 to 600, in steps of 30); 90 was used. (rounds[0].seconds)");
+  });
+});
+
+/** The value, or a failed test when it is missing. */
+function must<T>(value: T | undefined): T {
+  if (value === undefined) throw new Error("missing");
+  return value;
+}
+
+// Moni 2026-11-28: pictures from Wikimedia Commons, rounds and questions added to a quiz, a check of the
+// answers, the person's choices in the prompt, and the messages in Bulgarian.
+describe("pictures: only files of Wikimedia Commons, one media file per file", () => {
+  it("reads a file name, a page and a file address; refuses another website and a name without an ending", () => {
+    expect(commonsTitle("File:Eiffel Tower.jpg")).toBe("File:Eiffel Tower.jpg");
+    expect(commonsTitle("eiffel_Tower.JPG")).toBe("File:Eiffel Tower.JPG");
+    expect(commonsTitle("Image: Flag of Bulgaria.svg")).toBe("File:Flag of Bulgaria.svg");
+    expect(commonsTitle("https://commons.wikimedia.org/wiki/File:Tour_Eiffel_Wikimedia_Commons.jpg")).toBe("File:Tour Eiffel Wikimedia Commons.jpg");
+    expect(commonsTitle("https://commons.m.wikimedia.org/wiki/File:%D0%A1%D0%BE%D1%84%D0%B8%D1%8F.jpg")).toBe("File:София.jpg");
+    expect(commonsTitle("https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Flag_of_Bulgaria.svg/1280px-Flag_of_Bulgaria.svg.png")).toBe("File:Flag of Bulgaria.svg");
+    expect(commonsTitle("https://upload.wikimedia.org/wikipedia/commons/a/a8/Tour_Eiffel.jpg")).toBe("File:Tour Eiffel.jpg");
+    for (const wrong of ["https://example.com/eiffel.jpg", "https://commons.wikimedia.org/wiki/Category:Paris", "Eiffel Tower", "", "File:a|b.jpg"]) expect(commonsTitle(wrong)).toBeUndefined();
+  });
+
+  it("a picture makes a picture question; an answer's picture goes with the answer; the same file is one media file", () => {
+    const result = make({ name: "Q", rounds: [{ name: "R", questions: [
+      { q: "Which city?", a: "Paris", picture: "File:Paris.jpg" },
+      { q: "Which tower?", a: "Eiffel", answerPicture: "https://commons.wikimedia.org/wiki/File:Paris.jpg" },
+      { q: "No picture", a: "x" },
+    ] }] });
+    const [city, tower, plain] = result.quiz?.rounds[0]?.questions ?? [];
+    expect(city).toMatchObject({ kind: "picture", media: { id: expect.any(String) as string } });
+    expect(tower?.kind).toBe("text");
+    expect(tower?.answerMedia).toEqual(city?.media);
+    expect(plain?.media).toBeUndefined();
+    expect(result.pictures).toEqual([{ id: city?.media?.id, title: "File:Paris.jpg", path: "rounds[0].questions[0].picture", place: { round: 1, question: 1 } }]);
+  });
+
+  it("a name that is no Commons file stops the quiz with a message that says how to find one", () => {
+    const result = make({ name: "Q", rounds: [{ name: "R", questions: [{ q: "?", a: "!", picture: "https://example.com/x.jpg" }] }] });
+    expect(result.quiz).toBeUndefined();
+    expect(issueText(result.issues[0] ?? { level: "error", path: "", code: "not-object", values: {} })).toContain("is not a file of Wikimedia Commons");
+  });
+});
+
+describe("rounds and questions added to a quiz", () => {
+  const quiz = (rounds: number): core.Quiz => must(make({ name: "Q", rounds: Array.from({ length: rounds }, (_unused, index) => ({ name: `R${String(index + 1)}`, questions: [{ q: "?", a: "!" }] })) }).quiz);
+
+  it("rounds sent as a list are read like a quiz's; their default names count on from the quiz's", () => {
+    const read = readPasted(`\`\`\`json\n${JSON.stringify([{ questions: [{ q: "New?", a: "yes" }] }, { type: "safe", name: "S", questions: [1, 2, 3, 4, 5].map((digit) => ({ q: "?", digit })) }])}\n\`\`\``);
+    if (!read.ok) throw new Error("not read");
+    const result = roundsFromDraft(read.draft, quiz(2), OPTIONS, testEnv("n"));
+    expect(result.rounds?.map((round) => `${round.kind}:${round.name}`)).toEqual(["standard:Round 3", "safe:S"]);
+  });
+
+  it("no more rounds than the quiz has room for", () => {
+    const result = roundsFromDraft({ rounds: [{ name: "A", questions: [{ q: "?", a: "!" }] }, { name: "B", questions: [{ q: "?", a: "!" }] }] }, quiz(core.MAX_ROUNDS - 1), OPTIONS, testEnv("n"));
+    expect(result.rounds).toBeUndefined();
+    expect(issueText(result.issues[0] ?? { level: "error", path: "", code: "not-object", values: {} })).toBe("The quiz has room for 1 more rounds (at most 20 in all); 2 were sent. Send fewer. (rounds)");
+  });
+
+  it("questions take the round's time and points unless they have their own, and wherever the assistant put them", () => {
+    const target = { ...must(quiz(1).rounds[0]), defaults: { seconds: 40, points: { value: 2 }, questionKind: "text", answerType: "open" } };
+    for (const input of [{ questions: [{ q: "A?", a: "a" }, { q: "B?", a: "b", seconds: 20 }] }, { rounds: [{ name: "x", questions: [{ q: "A?", a: "a" }, { q: "B?", a: "b", seconds: 20 }] }] }]) {
+      const result = questionsFromDraft(input, target, testEnv("n"));
+      expect(result.questions?.map((question) => [question.prompt, question.seconds, question.points])).toEqual([["A?", undefined, undefined], ["B?", 20, undefined]]);
+    }
+    const full = questionsFromDraft({ questions: Array.from({ length: core.MAX_QUESTIONS_PER_ROUND }, () => ({ q: "?", a: "!" })) }, target, testEnv("n"));
+    expect(full.issues.map((issue) => issue.code)).toEqual(["questions-room"]);
+    expect(issueText(questionsFromDraft({ questions: [{ q: "?" }] }, target, testEnv("n")).issues[0] ?? { level: "error", path: "", code: "not-object", values: {} })).toBe("Question 1: The question has no answer. Give \"a\" (a text, or true / false), or \"options\" with \"correct\". (questions[0].a)");
+  });
+});
+
+describe("the check of the answers", () => {
+  const quiz = must(make(DRAFT_EXAMPLE).quiz);
+
+  it("the prompt lists every question with the answer taken as right, and skips rounds without answers", () => {
+    const prompt = checkPrompt(quiz, "bg");
+    expect(prompt).toContain("1. Which river flows through Paris? → The Seine");
+    expect(prompt).toContain("1) World Cup; 2) Water Closet (right); 3) Wash Corner; 4) West Coast");
+    expect(prompt).toContain("Round 3 · Safe (Safe)\n1. How many sides does a triangle have? → 3");
+    expect(prompt.endsWith("Round 4 · Make the quizmaster laugh (Make the quizmaster laugh — no questions)\n")).toBe(true);
+    expect(prompt).toContain("in Bulgarian");
+    expect(prompt).toContain('"Постави" and "Покажи резултата"');
+  });
+
+  it("reads the doubted questions and ties each to the quiz's question; an empty list means all is right", () => {
+    const answer = `Sure.\n\`\`\`json\n{ "check": [ { "round": 1, "question": "2", "problem": "Europa is a moon.", "suggestion": "Only Mars and Venus." }, { "round": 9, "question": 1, "problem": "x" }, { "round": 1, "question": 1 } ] }\n\`\`\``;
+    const read = readCheck(answer, quiz);
+    expect(read.ok && read.items.map((item) => [item.round, item.question, item.found?.prompt, item.suggestion])).toEqual([[1, 2, "Which of these are planets?", "Only Mars and Venus."], [9, 1, undefined, ""]]);
+    expect(readCheck('{ "check": [] }', quiz)).toEqual({ ok: true, items: [] });
+    expect(readCheck("All good!", quiz)).toEqual({ ok: false, reason: "no-json" });
+    expect(readCheck(" ", quiz)).toEqual({ ok: false, reason: "empty" });
+  });
+});
+
+describe("the prompts with the person's choices", () => {
+  const wishes: QuizWishes = { topic: "Bulgarian history", audience: "family", difficulty: "easy", name: "", language: "bg", rounds: 2, perRound: 5, answers: ["open", "choice"], seconds: 45, points: 2, specials: ["safe"], pictures: true, extra: "One question about Ivo" };
+
+  it("say what was chosen and that nothing is asked again; only the chosen special rounds are explained", () => {
+    const prompt = newQuizPrompt(wishes);
+    expect(prompt).toContain("Do not ask about them: write the quiz now. Talk to the person in Bulgarian.");
+    expect(prompt).toContain("- 2 standard rounds of 5 questions each, 45 seconds and 2 points a question; answers: open answers, multiple choice (mix them)");
+    expect(prompt).toContain("- Special rounds: Safe");
+    expect(prompt).toContain("### Round type `safe`");
+    expect(prompt).not.toContain("### Round type `pyramid`");
+    expect(prompt).toContain("## Pictures");
+    expect(prompt).toContain("NEVER invent, guess, complete, translate or remember a file name");
+    expect(prompt).toContain('press "Постави" and "Направи куиза"');
+    expect(newQuizPrompt({ ...wishes, pictures: false })).not.toContain("## Pictures");
+  });
+
+  it("for more rounds and more questions, name what the quiz already has so nothing is asked twice", () => {
+    const quiz = must(make(DRAFT_EXAMPLE).quiz);
+    const rounds = addRoundsPrompt(quiz, wishes);
+    expect(rounds).toContain("Round 1 · Warm-up\n1. Which river flows through Paris?");
+    expect(rounds).not.toContain("→");
+    expect(rounds).toContain("ALL the new rounds as one LIST");
+    const questions = addQuestionsPrompt(quiz, must(quiz.rounds[0]), wishes);
+    expect(questions).toContain("Its questions get 30 seconds and 1 point(s) each");
+    expect(questions).toContain("- 5 new questions; answers: open answers, multiple choice (mix them)");
+    expect(questions).not.toContain("Special rounds");
+    expect(questions).toContain('"Добави въпросите"');
+  });
+
+  it("the guide on the site explains every special round and pictures, with the buttons in both languages", () => {
+    const guide = draftGuide();
+    for (const part of ["`pyramid`", "`safe`", "`laugh`", "`task`", "## Pictures", "## Ask first", "(in Bulgarian: \"Постави\" and \"Направи куиза\")"]) expect(guide).toContain(part);
+  });
+});
+
+describe("messages in Bulgarian, and the reading's last slips", () => {
+  it("the same issue in Bulgarian, with the place in Bulgarian, and the message for the assistant", () => {
+    const result = make({ name: "Q", rounds: [{ name: "R", questions: [{ q: "?" }] }] });
+    expect(issueText(result.issues[0] ?? { level: "error", path: "", code: "not-object", values: {} }, "bg")).toBe("Рунд 1, въпрос 1: Въпросът няма отговор. Дай \"a\" (текст или true / false) или \"options\" с \"correct\". (rounds[0].questions[0].a)");
+    expect(issuesForAssistant(result.issues, "bg").split("\n")[0]).toContain("Quizzard не можа да приеме куиза");
+  });
+
+  it("a one-round quiz written flat keeps its name, language and teams", () => {
+    const read = readPasted(JSON.stringify({ name: "Friday quiz", language: "bg", teams: 6, questions: [{ q: "?", a: "!" }] }));
+    const quiz = read.ok ? make(read.draft).quiz : undefined;
+    expect([quiz?.name, quiz?.language, quiz?.settings.teams, quiz?.rounds.length]).toEqual(["Friday quiz", "bg", 6, 1]);
+  });
+
+  it("JSON typed with curly quotes keeps the quotes of a title inside a text", () => {
+    const read = readPasted("{ \u201Ename\u201C: \u201EКуиз\u201C, \u201Crounds\u201D: [ { \u201Cname\u201D: \u201CR\u201D, \u201Cquestions\u201D: [ { \u201Cq\u201D: \u201CКой е написал \u201EПод игото\u201C?\u201D, \u201Ca\u201D: \u201CВазов\u201D } ] } ] }");
+    expect(read.ok && (read.draft["rounds"] as readonly { questions: readonly { q: string }[] }[])[0]?.questions[0]?.q).toBe("Кой е написал \u201EПод игото\u201C?");
   });
 });

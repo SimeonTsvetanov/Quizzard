@@ -67,7 +67,7 @@ export interface AppConfig {
   readonly otherTools: readonly { readonly name: string; readonly url: string; readonly text: string }[];
   readonly author: { readonly name: string; readonly country: string; readonly linkedin?: string; readonly github?: string }; // Legal notice, About, Support, JSON-LD
   /** `wasm: true` adds 'wasm-unsafe-eval' to script-src — only when the build ships .wasm (engineering → security §1). */
-  readonly csp?: { readonly wasm?: boolean };
+  readonly csp?: { readonly wasm?: boolean; /** Origins the app fetches from besides its own (CSP connect-src). */ readonly connect?: readonly string[] };
   readonly seo?: { readonly googleVerification?: string }; // Search Console meta token (growth → seo-geo §3); omit when unused
   readonly faq: readonly { readonly q: string; readonly a: string }[]; // 5–10, also FAQPage JSON-LD
   readonly shortcuts?: readonly { readonly name: string; readonly url: string }[];
@@ -87,7 +87,7 @@ export const app = {
   description: "Free pub quiz and game night toolkit: quiz maker, random team generator, score keeper and answer sheet. Works offline, no account, data stays with you.",
   url: "https://simeontsvetanov.github.io/Quizzard/",
   repo: "https://github.com/SimeonTsvetanov/Quizzard",
-  version: "0.38.1",
+  version: "0.39.0",
   languages: ["en", "bg"],
   // Palette C · Emerald (DECISIONS 2026-11-22): white text on the light one (5.00:1), dark text on the dark one.
   accent: { light: "#00804F", dark: "#34D399" },
@@ -125,6 +125,9 @@ export const app = {
   storage: { tiers: ["prefs", "indexeddb"], stores: ["theme", "language", "dismissed prompts", "report draft", "quizzes"] },
   limits: {},
   feedback: { webhook: null },
+  // "Make a quiz with AI" fetches the pictures an assistant named from Wikimedia Commons (its API and its
+  // file hosts), only when a quiz has pictures (DECISIONS 2026-11-28, privacy "Make a quiz with AI").
+  csp: { connect: ["https://commons.wikimedia.org", "https://thumb.wikimedia.org", "https://upload.wikimedia.org"] },
   modes: { urlParams: [] },
   help: {
     steps: [

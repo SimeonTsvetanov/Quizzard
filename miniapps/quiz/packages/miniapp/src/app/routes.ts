@@ -24,6 +24,12 @@ export const SUB_KEY = "quizzardSub";
 /** The launch parameter (`#/quiz?audience=1`) with which a playing quiz opens its audience window. */
 export const AUDIENCE_PARAM = "audience";
 
+/**
+ * The launch parameter (`#/quiz?shared=1`) with which the service worker opens the creator after another
+ * app shared a text with Quizzard (scripts/share-target.ts keeps the text for it).
+ */
+export const SHARED_PARAM = "shared";
+
 /** The first screen. */
 export const LIBRARY: Route = { screen: "library" };
 

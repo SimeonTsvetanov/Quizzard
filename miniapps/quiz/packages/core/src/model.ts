@@ -41,6 +41,11 @@ export interface MediaEntry {
    * a video. A `data:image/…;base64,` address, so it travels inside the quiz itself.
    */
   readonly poster?: string;
+  /**
+   * Who made the file and under which licence, as shown with it on the slide ("Jane Doe · CC BY-SA 4.0 ·
+   * Wikimedia Commons"): set for a picture taken from a free source, absent for the person's own file.
+   */
+  readonly credit?: string;
 }
 
 /** An answer: `type` names its answer-type registry entry, the other fields are that type's own. */
@@ -182,6 +187,7 @@ export const mediaEntrySchema = z.looseObject({
   height: z.number().positive().optional(),
   seconds: z.number().nonnegative().optional(),
   poster: z.string().optional(),
+  credit: z.string().optional(),
 });
 
 /** Schema of the version-1 quiz file envelope. Kind and answer payloads are checked in validate.ts. */

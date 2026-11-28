@@ -14,7 +14,8 @@ import { createSaver } from "../storage/saver.ts";
 import { createQuizStore } from "../storage/store.ts";
 import { createUiRegistries } from "../ui-registry.ts";
 import { openQuiz } from "./open-quiz.ts";
-import { AUDIENCE_PARAM, LIBRARY, createNavigator, type Route } from "./routes.ts";
+import { AUDIENCE_PARAM, LIBRARY, SHARED_PARAM, createNavigator, type Route } from "./routes.ts";
+import { takeShared } from "../screens/ai-door.ts";
 import { createSavedTick } from "./saved-tick.ts";
 import type { App } from "./state.ts";
 
@@ -220,7 +221,10 @@ function mountCreator(element: HTMLElement, context: MiniAppContext): Unmount {
   window.addEventListener("pagehide", flush, { signal });
   document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") flush(); }, { signal });
   draw(app); // the library's frame at once; its lines follow from storage
-  void restoreUnsaved(prefs, app.store, app.env.registries).catch(() => undefined).then(() => show(app, shows, app.nav.route(), undefined));
+  void restoreUnsaved(prefs, app.store, app.env.registries).catch(() => undefined).then(() => show(app, shows, app.nav.route(), undefined)).then(() => {
+    // Opened by the system's share sheet (an installed app on Android): the shared text goes to "Make a quiz with AI".
+    if (context.query.has(SHARED_PARAM)) void takeShared(app);
+  });
   return () => {
     if (signal.aborted) return;
     controller.abort();

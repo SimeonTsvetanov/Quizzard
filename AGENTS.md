@@ -16,7 +16,8 @@ creator) behind a `mount` contract; all of their code and data live in this repo
 - Run `pnpm verify` before saying "done"; keep working while it fails. Never weaken a lint rule or a test.
 - The Pages path comes only from `app.config.basePath` (Vite, generate, Playwright); storage keys use
   `app.id` (`quizzard:v1:*`). Never derive one from the other.
-- Not in v1 (PLAN §2): MCP, embed mode, share target, title rotation, API/n8n, Dexie/OPFS in the shell.
+- Not in v1 (PLAN §2): MCP, embed mode, title rotation, API/n8n, Dexie/OPFS in the shell. The share target is in since
+  2026-11-28, for "Make a quiz with AI" only (DECISIONS).
 - Moni corrects/dislikes something → apply it and add an entry to `LEARNINGS.md`.
 - Decisions → `docs/DECISIONS.md` (date · decision · reason) the same day. Update `STATUS.md` (≤ 30 lines).
 - Never hand-edit generated files (`pnpm generate`): `app/public/*.txt|xml|html`, policy pages,

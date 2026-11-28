@@ -24,18 +24,32 @@ The buttons on a quiz's card rename it, make a copy or delete it. A deleted quiz
 
 ## Let your AI assistant write the quiz
 
-Your own assistant — ChatGPT, Gemini, Claude or another — can write the questions. Quizzard does not talk to it: you copy a text to the assistant and its answer back.
+Your own assistant — ChatGPT, Gemini, Claude or another — can write the questions. Quizzard does not talk to it: you carry a text to the assistant and its answer back.
 
 1. In **Your quizzes**, select **Make a quiz with AI**.
-2. Select **Copy instructions** and paste them into a new chat with your assistant.
-3. Answer what the assistant asks: the topic, the number of rounds, the special rounds, the language.
-4. The assistant answers with a block of code. Select the Copy button on that block. In Quizzard, select **Paste**, then **Make the quiz**. For a long quiz in several blocks, copy and paste each block in order first.
+2. Under **What do you want?**, choose the topic, who plays, the difficulty, the language, the number of rounds and questions, the time and points, the kinds of answer and the special rounds. The **ⓘ** beside a special round says what it is. Your choices are kept for the next time.
+3. Under **Give it to your assistant**, select your assistant, then **Copy and open** — the instructions are copied and the assistant opens in a new tab. Paste them into a new chat. On a phone, **Share to an app** sends them straight to the assistant's app.
+4. The assistant answers with one block of code. Select the Copy button on that block, come back to Quizzard, select **Paste**, then **Make the quiz**. For a long quiz in several blocks, copy and paste each block in order first.
 
-The quiz opens, ready to edit and play. The assistant can write text questions (open answer, multiple choice, true / false) and the rounds Golden pyramid, Safe, Make the quizmaster laugh and Free game. You add pictures, audio and video yourself.
+The quiz opens, ready to edit and play. The assistant writes text questions (open answer, multiple choice, true / false) and the rounds Golden pyramid, Safe, Make the quizmaster laugh and Free game.
 
-If something in the answer does not fit, Quizzard lists what must be fixed. Select **Copy for the assistant**, paste the list into the chat, and paste the corrected answer back.
+If something in the answer does not fit, Quizzard lists what must be fixed, in the language of the app. Select **Copy for the assistant**, paste the list into the chat, and paste the corrected answer back.
 
 Check the answers before you play: an assistant can get a fact wrong.
+
+### Pictures from Wikimedia Commons
+
+Tick **Pictures from Wikimedia Commons** and the assistant adds photos to some questions — only files of [Wikimedia Commons](https://commons.wikimedia.org/), which are free to use. Quizzard downloads each one, makes it the right size and shows its author and licence in a corner of the picture. A file name that does not exist on Commons is listed as a problem for the assistant to fix, so a made-up picture never gets in. This works with an assistant that can open web pages; downloading needs an internet connection.
+
+### More rounds, more questions, a check of the answers
+
+- In a quiz, **Add rounds with AI** asks your assistant for new rounds; it sees the questions the quiz already has, so it does not repeat them. They are added after the quiz's rounds, and **Undo** takes them away again.
+- In a standard round, **Add questions with AI** adds questions at the end of the round, with the round's time and points.
+- **Check the answers with AI** gives your assistant every question with its answer. Paste its answer and select **Show the results**: each question it doubts is listed with what is wrong and its suggestion, and **Open the question** takes you to it. Nothing changes by itself.
+
+### Share the answer to Quizzard (Android)
+
+With Quizzard installed on an Android phone, you can also select **Share** on the assistant's answer and pick **Quizzard**: **Make a quiz with AI** opens with the answer already pasted.
 
 ## Add rounds
 

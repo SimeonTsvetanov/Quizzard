@@ -279,4 +279,22 @@
       accent-color: var(--color-accent);
     }
   }
+
+  /* || The AI buttons of a quiz and of a round (screens/ai-door.ts): quiet, beside or under the main "Add". */
+  .quiz-ai-tools {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+    gap: var(--space-2);
+    margin-top: var(--space-2);
+
+    &[data-count="0"] {
+      display: none;
+    }
+  }
+
+  .quiz-empty-actions {
+    display: grid;
+    gap: var(--space-2);
+    justify-items: center;
+  }
 }

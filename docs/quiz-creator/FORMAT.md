@@ -27,6 +27,8 @@ Header:
   `music: { id }` — an audio file played while the question's time runs (since 0.31.0); `settings.music` — the quiz asks for music on every question that can have it; `answerMedia: { id }` — a picture or a clip shown with its answer (a clip since 0.29.0; older players show pictures only); a round's `data` for the kinds `laugh`
   (`first`, `second`: the two prizes) and `task` (`points`: the most a team can get), whole numbers 0–20;
   the answer type `none` (`{ "type": "none" }`) of those kinds' one question.
+- Optional since 2026-11-28: a media entry's `credit` — the author and licence of a picture taken from
+  Wikimedia Commons by "Make a quiz with AI" ("Jane Doe · CC BY-SA 4.0 · Wikimedia Commons"), shown with it on the slide.
 - `parts` gives the order and the exact size of each media file. The file's total size must be
   `16 + N + Σ parts.bytes`.
 

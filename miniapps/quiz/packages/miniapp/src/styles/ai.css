@@ -1,10 +1,11 @@
-/* Quiz creator: "Make a quiz with AI" (screens/ai-quiz.ts) — the sheet (styles/sheet.css) with two
-   steps as soft tiles, the field for the assistant's answer, and the list of what to fix. */
+/* Quiz creator: the AI windows (screens/ai/window.ts) — the sheet (styles/sheet.css) with its steps as
+   soft tiles: the form (lists, ticks, an ⓘ beside a special round), the assistant to give the prompt to,
+   the field for its answer, then what to fix or what the check found. No outlines: tints and the lift. */
 @layer components {
-  /* || Components: make a quiz with AI */
+  /* || Components: AI window */
   .quiz-sheet.quiz-ai {
-    inline-size: min(100%, 36rem);
-    max-block-size: min(100dvh - var(--space-4), 52rem);
+    inline-size: min(100%, 40rem);
+    max-block-size: min(100dvh - var(--space-4), 60rem);
 
     &[open] {
       grid-template-rows: auto minmax(0, 1fr);
@@ -33,19 +34,19 @@
 
   .quiz-ai-step {
     display: grid;
-    gap: var(--space-2);
-    padding: var(--space-3);
+    gap: var(--space-3);
+    padding: var(--space-4);
     border-radius: var(--radius-lg);
-    background: color-mix(in oklch, var(--color-text) 5%, transparent);
+    background: color-mix(in oklch, var(--color-text) 4%, transparent);
 
-    /* `display: grid` above would show a step that is hidden (the list of problems before there is one). */
+    /* `display: grid` above would show a step that is hidden (the outcome before there is one). */
     &[hidden] {
       display: none;
     }
 
     & h3 {
       margin: 0;
-      font-size: var(--text-md);
+      font-size: var(--text-base);
       font-weight: var(--weight-bold);
 
       &:focus {
@@ -59,9 +60,173 @@
     color: var(--color-text-secondary);
   }
 
-  .quiz-ai-details summary {
+  .quiz-ai-private {
+    color: var(--color-text);
+    font-weight: var(--weight-semibold);
+  }
+
+  /* || The form: two columns where there is room, one on a phone. */
+  .quiz-ai-form {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  .quiz-ai-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-3);
+
+    @container (width < 18rem) {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  .quiz-ai-body {
+    container-type: inline-size;
+  }
+
+  .quiz-ai-control {
+    display: grid;
+    gap: var(--space-1);
+    min-width: 0;
+  }
+
+  .quiz-ai-control--wide {
+    grid-column: 1 / -1;
+  }
+
+  .quiz-ai-label {
+    color: var(--color-text-secondary);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+  }
+
+  .quiz-ai-select {
+    appearance: auto;
+    cursor: pointer;
+  }
+
+  .quiz-ai-extra {
+    resize: vertical;
+  }
+
+  .quiz-ai-group {
+    display: grid;
+    gap: var(--space-1);
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+
+    & legend {
+      margin-bottom: var(--space-1);
+      padding: 0;
+    }
+  }
+
+  /* A tick, its words and — for a special round and the pictures — the ⓘ that opens a line about it. */
+  .quiz-ai-tick {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: var(--space-2);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-1);
+  }
+
+  .quiz-ai-tick-label {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
     min-height: var(--tap-target);
-    align-content: center;
+    padding: var(--space-1) var(--space-3);
+    font-weight: var(--weight-semibold);
+    cursor: pointer;
+  }
+
+  .quiz-ai-box {
+    flex: none;
+    inline-size: 1.25rem;
+    block-size: 1.25rem;
+    margin: 0;
+    accent-color: var(--color-accent);
+  }
+
+  .quiz-ai-info {
+    color: var(--color-accent-text);
+
+    &[aria-expanded="true"] {
+      background: var(--color-accent-tint);
+    }
+  }
+
+  .quiz-ai-about {
+    grid-column: 1 / -1;
+    margin: 0;
+    padding: 0 var(--space-3) var(--space-3);
+    color: var(--color-text-secondary);
+    font-size: var(--text-sm);
+
+    &[hidden] {
+      display: none;
+    }
+  }
+
+  /* The kinds of answer: side by side where they fit. */
+  .quiz-ai-ticks-row .quiz-ai-group {
+    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+    gap: var(--space-2);
+
+    & legend {
+      grid-column: 1 / -1;
+    }
+  }
+
+  /* || Giving the prompt: the assistant, then one button. */
+  .quiz-ai-assistants {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--space-1);
+    padding: var(--space-1);
+    border-radius: var(--radius-lg);
+    background: var(--color-fill);
+
+    @container (width < 22rem) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .quiz-ai-assistant {
+    min-height: var(--tap-target);
+    padding: 0 var(--space-2);
+    border: 0;
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: var(--color-text);
+    font: inherit;
+    font-weight: var(--weight-semibold);
+    cursor: pointer;
+
+    &[aria-pressed="true"] {
+      background: var(--color-surface-raised);
+      box-shadow: var(--shadow-1);
+    }
+
+    &:focus-visible {
+      outline: var(--focus-ring-width) solid var(--color-focus);
+      outline-offset: var(--focus-ring-offset);
+    }
+  }
+
+  .quiz-ai-go {
+    width: 100%;
+  }
+
+  .quiz-ai-details summary {
+    display: flex;
+    align-items: center;
+    min-height: var(--tap-target);
     color: var(--color-accent-text);
     font-weight: var(--weight-semibold);
     cursor: pointer;
@@ -74,10 +239,19 @@
     resize: vertical;
   }
 
+  /* Two equal buttons side by side; one under the other where their words would break. */
   .quiz-ai-actions {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--space-2);
+
+    &:has(> :only-child) {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    @container (width < 24rem) {
+      grid-template-columns: minmax(0, 1fr);
+    }
   }
 
   /* Always in the page (a live region that appears with its first words is not read out) and always in
@@ -103,11 +277,48 @@
     }
   }
 
+  /* || What to fix, and what the check found. */
   .quiz-ai-problems {
     display: grid;
     gap: var(--space-2);
     margin: 0;
     padding-inline-start: var(--space-5);
     overflow-wrap: anywhere;
+  }
+
+  .quiz-ai-findings {
+    display: grid;
+    gap: var(--space-2);
+    margin: var(--space-3) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .quiz-ai-finding {
+    display: grid;
+    gap: var(--space-1);
+    padding: var(--space-3);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-1);
+    overflow-wrap: anywhere;
+
+    & .button {
+      justify-self: start;
+      margin-top: var(--space-1);
+    }
+  }
+
+  .quiz-ai-finding-place {
+    color: var(--color-accent-text);
+    font-size: var(--text-sm);
+  }
+
+  .quiz-ai-finding-prompt {
+    font-weight: var(--weight-semibold);
+  }
+
+  .quiz-ai-finding-problem {
+    margin: 0;
   }
 }

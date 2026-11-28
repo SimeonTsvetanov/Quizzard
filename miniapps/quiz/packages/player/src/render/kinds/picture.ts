@@ -45,11 +45,13 @@ function pictureSlide(question: Question, view: SlideView): HTMLElement {
   // A panorama takes the slide's whole width, an upright picture its full height beside the text; every
   // other shape may share the row with the options.
   const layout = layoutOf(entry);
-  if (!media) return h("div", { class: "quiz-slide-frame", ...layout }, image);
+  // A picture from a free source shows its author and licence with it (MediaEntry.credit).
+  const credit = entry?.credit === undefined || entry.credit === "" ? [] : [h("span", { class: "quiz-slide-credit", "data-slide-credit": "" }, entry.credit)];
+  if (!media) return h("div", { class: "quiz-slide-frame", ...layout }, image, ...credit);
   // The whole picture is the button; the mark in its corner says so.
   const mark = h("span", { class: "quiz-slide-zoom-mark", "aria-hidden": "true" }, icon("zoom", 16));
   const zoom = h("button", { type: "button", class: "quiz-slide-zoom", ...zoomFace(view.labels.media).props }, image, mark);
-  const frame = h("div", { class: "quiz-slide-frame", ...layout }, zoom);
+  const frame = h("div", { class: "quiz-slide-frame", ...layout }, zoom, ...credit);
   releaseAfterPointer(zoom);
   zoom.addEventListener("click", () => { media.command("zoom"); });
   let isZoomed = false;

@@ -26,6 +26,7 @@
     "../app.config.ts",
     "../scripts/seo.ts",
     "../scripts/sw-handover.ts",
+    "../scripts/share-target.ts",
     "../scripts/check-miniapp-tokens.ts",
     "../scripts/css-colors.ts",
     "../scripts/size-check.ts"

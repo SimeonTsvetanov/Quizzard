@@ -4,6 +4,20 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.39.0] - 2026-11-28
+### Added
+- **Make a quiz with AI — a form instead of a chat.** Choose the topic, who plays, the difficulty, the language, the number of rounds and questions, the time, the points, the kinds of answer and the special rounds — each with an ⓘ that says what it is — and the assistant writes the quiz at once, without questions. Your choices are kept for the next time.
+- **Copy and open your assistant.** Pick ChatGPT, Gemini, Claude or another once; one press copies the instructions and opens it in a new tab. On a phone, **Share to an app** sends them to the assistant's app.
+- **Pictures from Wikimedia Commons.** The assistant may add free photos to the questions; Quizzard downloads each one and shows its author and licence on the slide. A file name that does not exist is sent back to the assistant to fix, so a made-up picture never gets in.
+- **Add rounds with AI** in a quiz and **Add questions with AI** in a standard round: the assistant sees what the quiz already has and does not repeat it; **Undo** takes the new ones away.
+- **Check the answers with AI**: the assistant reads every question with its answer and lists the ones it doubts, each with a suggestion and a button to the question. Nothing changes by itself.
+- **Android, installed:** **Share** an assistant's answer to Quizzard and **Make a quiz with AI** opens with it already pasted.
+### Changed
+- What must be fixed in an assistant's answer is listed in the language of the app (English or Bulgarian), and copied for the assistant in the same words.
+- A notification too long for one line now wraps instead of pushing its button off a phone's screen.
+### Fixed
+- A one-round quiz written without a list of rounds keeps its name, language and teams; JSON typed with curly quotes keeps the quotes inside its texts.
+
 ## [0.38.1] - 2026-11-28
 ### Changed
 - **Make a quiz with AI:** the instructions now tell the assistant to put the whole quiz in one block of code and nothing around it but one line of what to do next, so the block's own Copy button takes exactly what you paste.

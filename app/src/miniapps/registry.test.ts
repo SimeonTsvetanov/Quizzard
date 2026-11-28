@@ -29,6 +29,7 @@ describe("mini-app registry", () => {
     expect(help?.default.bg?.steps).toHaveLength(help?.default.en.steps.length ?? -1);
     if (quiz) expect([...launchQuery(quiz, new URLSearchParams("quiz=x&lang=bg"))]).toEqual([]);
     if (quiz) expect([...launchQuery(quiz, new URLSearchParams("audience=1&quiz=x"))]).toEqual([["audience", "1"]]);
+    if (quiz) expect([...launchQuery(quiz, new URLSearchParams("shared=1&x=y"))]).toEqual([["shared", "1"]]);
   });
   it("teams is the vendored package's own meta (one source) and loads its body and Help lazily", async () => {
     const teams = miniApps.find(({ meta }) => meta.id === "teams");

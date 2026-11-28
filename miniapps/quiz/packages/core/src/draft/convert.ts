@@ -8,6 +8,7 @@ import { type Env, defaultEnv } from "../ops.ts";
 import type { RoundKind } from "../rounds/round-kind.ts";
 import { digitAnswer, listAnswer, standardAnswer } from "./answers.ts";
 import type { DraftIssue } from "./issue.ts";
+import { type PendingPicture, commonsTitle } from "./pictures.ts";
 import { type Raw, type Reader, isRaw, listOf, note, numberOf, pick, textOf } from "./reader.ts";
 
 /** The languages a quiz can be played in. */
@@ -29,7 +30,17 @@ export interface DraftOptions {
 export interface DraftResult {
   readonly quiz?: Quiz;
   readonly issues: readonly DraftIssue[];
+  /** The pictures the quiz's questions point at and the creator must fetch before it is stored. */
+  readonly pictures: readonly PendingPicture[];
 }
+
+/** The pictures a reading has met: one media id per file, however many questions show it. */
+interface Pictures {
+  readonly byTitle: Map<string, string>;
+  readonly list: PendingPicture[];
+}
+
+const newPictures = (): Pictures => ({ byTitle: new Map(), list: [] });
 
 const SECONDS = { min: limits.MIN_SECONDS, max: limits.MAX_SECONDS };
 const POINTS = { min: 0, max: limits.MAX_POINTS };
@@ -49,6 +60,7 @@ interface RoundJob {
   readonly points: number;
   /** Whether a question may have points of its own; a Golden pyramid's and a Safe's are fixed by their place. */
   readonly hasOwnPoints: boolean;
+  readonly pictures: Pictures;
 }
 
 /** A question's own points: only what differs from its round, and never where the round kind fixes them. */
@@ -77,9 +89,38 @@ function extras(job: RoundJob, raw: Raw, path: string): Partial<Question> {
   return { ...(explanation === "" ? {} : { explanation }), ...(hostNote === "" ? {} : { note: hostNote }), ...(given === job.seconds ? {} : { seconds: given }), ...(points ? { points } : {}) };
 }
 
+/** The names a question's picture and its answer's picture may have in a draft. */
+const PICTURE = ["picture", "image", "photo"];
+const ANSWER_PICTURE = ["answerPicture", "answerImage", "answerPhoto"];
+
+/** The media id of a picture a draft names, the same one for the same file; `undefined` (and an error) for a name that is no Commons file. */
+function pictureRef(job: RoundJob, reader: Reader, value: unknown, path: string): { readonly id: string } | undefined {
+  if (value === undefined || value === null || value === "") return undefined;
+  const title = typeof value === "string" ? commonsTitle(value) : undefined;
+  if (title === undefined) {
+    note(reader, "error", path, "picture-not-commons", { value: typeof value === "string" ? value : JSON.stringify(value) });
+    return undefined;
+  }
+  const known = job.pictures.byTitle.get(title);
+  if (known !== undefined) return { id: known };
+  const id = job.env.ids();
+  job.pictures.byTitle.set(title, id);
+  const place: Record<string, number> = {};
+  for (const [key, number] of Object.entries(reader.place)) if (typeof number === "number") place[key] = number;
+  job.pictures.list.push({ id, title, path, place });
+  return { id };
+}
+
+/** A question with the pictures its draft names: its own (it becomes a picture question) and its answer's. */
+function withPictures(job: RoundJob, reader: Reader, raw: Raw, path: string, made: Question): Question {
+  const own = pictureRef(job, reader, pick(raw, PICTURE), `${path}.picture`);
+  const answer = pictureRef(job, reader, pick(raw, ANSWER_PICTURE), `${path}.answerPicture`);
+  return { ...made, ...(own ? { kind: "picture", media: own } : {}), ...(answer ? { answerMedia: answer } : {}) };
+}
+
 /** One question of a round with answers; `undefined` when it cannot be used. */
 function question(job: RoundJob, value: unknown, index: number, answer: (reader: Reader, raw: Raw, path: string) => Answer | undefined): Question | undefined {
-  const path = `${job.path}.questions[${String(index)}]`;
+  const path = `${job.path === "" ? "" : `${job.path}.`}questions[${String(index)}]`;
   const reader: Reader = { issues: job.reader.issues, place: { ...job.reader.place, question: index + 1 } };
   if (!isRaw(value)) {
     note(reader, "error", path, "wrong-type", { expected: "an object with \"q\" and its answer" });
@@ -89,7 +130,7 @@ function question(job: RoundJob, value: unknown, index: number, answer: (reader:
   if (prompt === "") note(reader, "error", `${path}.q`, "question-no-text");
   const given = answer(reader, value, path);
   if (prompt === "" || !given) return undefined;
-  return { id: job.env.ids(), kind: "text", prompt, answer: given, ...extras({ ...job, reader }, value, path) };
+  return withPictures(job, reader, value, path, { id: job.env.ids(), kind: "text", prompt, answer: given, ...extras({ ...job, reader }, value, path) });
 }
 
 /** The questions of a round with answers, each read with the round kind's own answer. */
@@ -158,7 +199,7 @@ function taskRound(job: RoundJob, base: Pick<Round, "id" | "kind" | "name">): Ro
 }
 
 /** One round of the draft; `undefined` when its type is not known or it is not an object. */
-function round(reader: Reader, value: unknown, index: number, options: DraftOptions, env: Env): Round | undefined {
+function round(reader: Reader, value: unknown, index: number, options: DraftOptions, env: Env, pictures: Pictures): Round | undefined {
   const path = `rounds[${String(index)}]`;
   const inner: Reader = { issues: reader.issues, place: { round: index + 1 } };
   if (!isRaw(value)) {
@@ -176,7 +217,7 @@ function round(reader: Reader, value: unknown, index: number, options: DraftOpti
     name = options.roundName(index + 1);
     note(inner, "fixed", `${path}.name`, "name-missing", { used: name });
   }
-  const job: RoundJob = { reader: inner, raw: value, path, kind, env, seconds: limits.DEFAULT_SECONDS, points: limits.DEFAULT_POINTS, hasOwnPoints: true };
+  const job: RoundJob = { reader: inner, raw: value, path, kind, env, seconds: limits.DEFAULT_SECONDS, points: limits.DEFAULT_POINTS, hasOwnPoints: true, pictures };
   const base = { id: env.ids(), kind: kind.id, name };
   const made = roundOf(job, base);
   const rules = textOf(inner, value["rules"], `${path}.rules`, limits.RULES_MAX);
@@ -203,6 +244,17 @@ function languageOf(reader: Reader, value: unknown, fallback: string): string {
   return fallback;
 }
 
+/** Whether any issue stops the quiz. */
+const hasError = (issues: readonly DraftIssue[]): boolean => issues.some((issue) => issue.level === "error");
+
+/** The rounds of a draft, each read with its kind; at most `room` of them are taken (an error says when there are more). */
+function rounds(reader: Reader, input: Raw, room: number, options: DraftOptions, env: Env, pictures: Pictures): readonly Round[] {
+  const given = listOf(reader, input["rounds"], "rounds");
+  if (given.length === 0) note(reader, "error", "rounds", "no-rounds");
+  if (given.length > room) note(reader, "error", "rounds", room < limits.MAX_ROUNDS ? "rounds-room" : "too-many-rounds", { max: limits.MAX_ROUNDS, room, found: given.length });
+  return given.slice(0, room).flatMap((value, index) => round(reader, value, index, options, env, pictures) ?? []);
+}
+
 /**
  * Turns a draft into a quiz. Texts are trimmed and cut and numbers brought into their ranges (each
  * reported as `fixed`); what cannot be put right is an `error`, and then no quiz is returned.
@@ -212,21 +264,82 @@ function languageOf(reader: Reader, value: unknown, fallback: string): string {
  */
 export function fromDraft(input: unknown, options: DraftOptions, env: Env = defaultEnv): DraftResult {
   const reader: Reader = { issues: [], place: {} };
+  const pictures = newPictures();
   if (!isRaw(input)) {
     note(reader, "error", "", "not-object");
-    return { issues: reader.issues };
+    return { issues: reader.issues, pictures: [] };
   }
   let name = textOf(reader, pick(input, ["name", "title"]), "name", limits.QUIZ_NAME_MAX);
   if (name === "") {
     name = options.quizName;
     note(reader, "fixed", "name", "name-missing", { used: name });
   }
-  const given = listOf(reader, input["rounds"], "rounds");
-  if (given.length === 0) note(reader, "error", "rounds", "no-rounds");
-  if (given.length > limits.MAX_ROUNDS) note(reader, "error", "rounds", "too-many-rounds", { max: limits.MAX_ROUNDS, found: given.length });
-  const rounds = given.slice(0, limits.MAX_ROUNDS).flatMap((value, index) => round(reader, value, index, options, env) ?? []);
+  const list = rounds(reader, input, limits.MAX_ROUNDS, options, env, pictures);
   const teams = numberOf(reader, input["teams"], "teams", { min: limits.MIN_TEAMS, max: limits.MAX_TEAMS, fallback: limits.DEFAULT_TEAMS });
   const language = languageOf(reader, input["language"], options.language);
-  if (reader.issues.some((issue) => issue.level === "error")) return { issues: reader.issues };
-  return { quiz: { id: env.ids(), name, createdAt: options.now, updatedAt: options.now, language, rounds, settings: { teams } }, issues: reader.issues };
+  if (hasError(reader.issues)) return { issues: reader.issues, pictures: [] };
+  return { quiz: { id: env.ids(), name, createdAt: options.now, updatedAt: options.now, language, rounds: list, settings: { teams } }, issues: reader.issues, pictures: pictures.list };
+}
+
+/** The result of {@link roundsFromDraft}: the new rounds when nothing stops them. */
+export interface RoundsResult {
+  readonly rounds?: readonly Round[];
+  readonly issues: readonly DraftIssue[];
+  readonly pictures: readonly PendingPicture[];
+}
+
+/**
+ * Reads the rounds an assistant wrote to be added to a quiz (a list of rounds, or a quiz with them):
+ * the same rules as {@link fromDraft}, and no more rounds than the quiz has room for.
+ * @param input - the draft as parsed JSON (`readPasted` gives a list of rounds as `{ rounds }`)
+ * @param quiz - the quiz they are for
+ * @param options - the words for what the draft leaves out
+ * @param env - gives the ids and the registries
+ */
+export function roundsFromDraft(input: unknown, quiz: Quiz, options: DraftOptions, env: Env = defaultEnv): RoundsResult {
+  const reader: Reader = { issues: [], place: {} };
+  const pictures = newPictures();
+  if (!isRaw(input)) {
+    note(reader, "error", "", "not-object");
+    return { issues: reader.issues, pictures: [] };
+  }
+  const named = (number: number): string => options.roundName(quiz.rounds.length + number);
+  const list = rounds(reader, input, limits.MAX_ROUNDS - quiz.rounds.length, { ...options, roundName: named }, env, pictures);
+  if (hasError(reader.issues)) return { issues: reader.issues, pictures: [] };
+  return { rounds: list, issues: reader.issues, pictures: pictures.list };
+}
+
+/** The result of {@link questionsFromDraft}: the new questions when nothing stops them. */
+export interface QuestionsResult {
+  readonly questions?: readonly Question[];
+  readonly issues: readonly DraftIssue[];
+  readonly pictures: readonly PendingPicture[];
+}
+
+/**
+ * Reads the questions an assistant wrote to be added to a standard round (`{ "questions": [...] }`, or a
+ * round or rounds holding them): each with its own answer, the round's time and points unless it has
+ * its own, and no more than the round has room for.
+ * @param input - the draft as parsed JSON (`readPasted` gives `{ rounds: [{ questions }] }`)
+ * @param target - the round they are for
+ * @param env - gives the ids and the registries
+ */
+export function questionsFromDraft(input: unknown, target: Round, env: Env = defaultEnv): QuestionsResult {
+  const reader: Reader = { issues: [], place: {} };
+  const pictures = newPictures();
+  const kind = env.registries.rounds.get(target.kind);
+  if (!isRaw(input) || !kind) {
+    note(reader, "error", "", "not-object");
+    return { issues: reader.issues, pictures: [] };
+  }
+  // The questions wherever the assistant put them: on the object itself, or in the round or rounds it wrote.
+  const holders = Array.isArray(input["questions"]) ? [input] : listOf(reader, input["rounds"], "rounds").filter(isRaw);
+  const all = holders.flatMap((holder) => (Array.isArray(holder["questions"]) ? (holder["questions"] as readonly unknown[]) : []));
+  const room = limits.MAX_QUESTIONS_PER_ROUND - target.questions.length;
+  if (all.length === 0) note(reader, "error", "questions", "no-questions");
+  if (all.length > room) note(reader, "error", "questions", "questions-room", { max: limits.MAX_QUESTIONS_PER_ROUND, room, found: all.length });
+  const job: RoundJob = { reader, raw: { questions: all.slice(0, room) }, path: "", kind, env, seconds: target.defaults.seconds, points: target.defaults.points.value, hasOwnPoints: true, pictures };
+  const list = all.slice(0, room).flatMap((value, index) => question(job, value, index, (inner, one, where) => standardAnswer(inner, one, where, env.ids)) ?? []);
+  if (hasError(reader.issues)) return { issues: reader.issues, pictures: [] };
+  return { questions: list, issues: reader.issues, pictures: pictures.list };
 }

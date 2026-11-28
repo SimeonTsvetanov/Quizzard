@@ -45,6 +45,8 @@ const SHIPPED: readonly MiniAppEntry[] = [
 
 /** The quiz creator's launch parameter (its app/routes.ts `AUDIENCE_PARAM`; the shell reads only a package's light modules). */
 const QUIZ_AUDIENCE_PARAM = "audience";
+/** The quiz creator's parameter after another app shared a text with the installed Quizzard (scripts/share-target.ts). */
+const QUIZ_SHARED_PARAM = "shared";
 
 /**
  * The launch parameters Quizzard passes on to a mini-app (`context.query`), from each package's
@@ -52,11 +54,13 @@ const QUIZ_AUDIENCE_PARAM = "audience";
  * embed mode belong to its standalone site (PLAN §2: none in Quizzard v1), so `#/teams?shared=…`
  * never fills its list. GG Counter's screen reads no launch parameter (its host-api lists none), so
  * `scores` gets an empty query; so does the Answer sheet. The quiz creator's screens live in
- * `history.state`, never in the address; its one parameter is `audience`, with which a playing quiz
- * opens its audience window (`#/quiz?audience=1`: the stage alone, fed by the window that opened it).
+ * `history.state`, never in the address; its parameters are `audience`, with which a playing quiz
+ * opens its audience window (`#/quiz?audience=1`: the stage alone, fed by the window that opened it),
+ * and `shared`, with which the service worker opens it after the system's share (`#/quiz?shared=1`;
+ * the text itself waits in a cache entry, never in the address — DECISIONS 2026-11-28).
  * A mini-app without a line here gets the whole query.
  */
-const LAUNCH_PARAMS: Readonly<Partial<Record<string, readonly string[]>>> = { teams: [TEAMS_PARAM], scores: [], sheet: [], quiz: [QUIZ_AUDIENCE_PARAM] };
+const LAUNCH_PARAMS: Readonly<Partial<Record<string, readonly string[]>>> = { teams: [TEAMS_PARAM], scores: [], sheet: [], quiz: [QUIZ_AUDIENCE_PARAM, QUIZ_SHARED_PARAM] };
 
 /**
  * Parameters Quizzard adds on its own (never read from the address): Teams names the app in the last
