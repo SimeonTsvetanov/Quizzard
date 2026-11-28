@@ -4,7 +4,7 @@ This guide shows you how to make a quiz with **Quiz creator**: name it, add roun
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="../images/make-a-quiz/quiz-dark.png">
-  <img src="../images/make-a-quiz/quiz-light.png" alt="The quiz Pub night: 2 rounds, 5 questions, 3 min to play, the buttons Play, Preview and Export, and the round cards History and Music." width="390">
+  <img src="../images/make-a-quiz/quiz-light.png" alt="The quiz Pub night: 2 rounds, 5 questions, 3 min to play, the buttons Play, Preview and Export, the round cards History and Music, Add round, and the buttons Write rounds with AI and Check the answers with AI." width="390">
 </picture>
 
 A quiz is a deck of cards: its rounds are the stacks and its questions are the cards. Every change is saved on your device a moment after you make it, and **Saved** shows at the top. There is no Save button.
