@@ -30,6 +30,8 @@
     padding: var(--space-1) var(--space-2) var(--space-2);
     overflow-y: auto;
     overscroll-behavior: contain;
+    /* What takes the focus is never left under the status line held to the lower edge. */
+    scroll-padding-block-end: 5rem;
   }
 
   .quiz-ai-step {
@@ -76,7 +78,7 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--space-3);
 
-    @container (width < 18rem) {
+    @container (width < 24rem) {
       grid-template-columns: minmax(0, 1fr);
     }
   }
@@ -183,7 +185,7 @@
     }
   }
 
-  /* || Giving the prompt: the assistant, then one button. */
+  /* || Giving the prompt: the assistant (radio buttons drawn as one segmented row), then one button. */
   .quiz-ai-assistants {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -192,41 +194,51 @@
     border-radius: var(--radius-lg);
     background: var(--color-fill);
 
-    @container (width < 22rem) {
+    @container (width < 26rem) {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
 
   .quiz-ai-assistant {
+    position: relative;
+    display: grid;
+    place-items: center;
     min-height: var(--tap-target);
     padding: 0 var(--space-2);
-    border: 0;
     border-radius: var(--radius-md);
-    background: transparent;
     color: var(--color-text);
-    font: inherit;
     font-weight: var(--weight-semibold);
+    text-align: center;
     cursor: pointer;
 
-    &[aria-pressed="true"] {
+    &:has(:checked) {
       background: var(--color-surface-raised);
       box-shadow: var(--shadow-1);
     }
 
-    &:focus-visible {
+    &:has(:focus-visible) {
       outline: var(--focus-ring-width) solid var(--color-focus);
       outline-offset: var(--focus-ring-offset);
     }
+  }
+
+  /* The radio itself is not drawn — the tile is — but it stays in the page for keys and screen readers. */
+  .quiz-ai-radio {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
   }
 
   .quiz-ai-go {
     width: 100%;
   }
 
+  /* The summary keeps its own triangle (display: list-item), so it reads as something that opens. */
   .quiz-ai-details summary {
-    display: flex;
-    align-items: center;
-    min-height: var(--tap-target);
+    display: list-item;
+    padding-block: var(--space-3);
     color: var(--color-accent-text);
     font-weight: var(--weight-semibold);
     cursor: pointer;

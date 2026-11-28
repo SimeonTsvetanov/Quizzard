@@ -5,19 +5,15 @@
 import type { App } from "../../app/state.ts";
 import { labelButton } from "../../dom/controls.ts";
 import { h } from "../../dom/h.ts";
+import { ASSISTANTS, type Assistant, readAssistant, writeAssistant } from "../../storage/ai-prefs.ts";
 
-/** The assistants with a page of their own; "other" only copies. */
-const ASSISTANTS = {
+/** The assistants' own pages; "other" only copies. */
+const PAGES: Readonly<Record<Assistant, string | null>> = {
   chatgpt: "https://chatgpt.com/",
   gemini: "https://gemini.google.com/app",
   claude: "https://claude.ai/new",
   other: null,
-} as const;
-
-type Assistant = keyof typeof ASSISTANTS;
-
-/** Where the chosen assistant is kept. */
-const PREF = "ai.assistant";
+};
 
 /** Copies a text; `false` when the browser refuses (no permission, an old WebView). */
 export async function copyText(text: string): Promise<boolean> {
@@ -39,26 +35,29 @@ export interface SendStep {
   say(text: string, isError?: boolean): void;
   /** Says nothing can be sent yet (the form asks for nothing): the words to say, or `null` when all is well. */
   refusal?(): string | null;
+  /** The prompt was copied or shared. */
+  onSent(): void;
 }
 
-/** The buttons to pick the assistant: one is on; the choice is kept. */
-function picker(app: App, chosen: Assistant, onChange: (next: Assistant) => void): HTMLElement {
+/** The assistant to pick, as a group of radio buttons drawn as tiles: one Tab stop, arrow keys move; the choice is kept. */
+function picker(app: App, chosen: Assistant, onChange: (next: Assistant) => void): HTMLFieldSetElement {
   const { t } = app;
-  const buttons = (Object.keys(ASSISTANTS) as Assistant[]).map((one) => {
-    const button = h("button", { type: "button", class: "quiz-ai-assistant", "aria-pressed": String(one === chosen), "data-ai-assistant": one }, t(`ai.assistants.${one}`));
-    button.addEventListener("click", () => {
-      for (const other of buttons) other.setAttribute("aria-pressed", String(other === button));
-      app.context.storage.prefs.set(PREF, one);
+  const tiles = ASSISTANTS.map((one) => {
+    const input = h("input", { type: "radio", name: "quiz-ai-assistant", value: one, class: "quiz-ai-radio", "data-ai-assistant": one });
+    input.checked = one === chosen;
+    input.addEventListener("change", () => {
+      if (!input.checked) return;
+      writeAssistant(app.context.storage.prefs, one);
       onChange(one);
     });
-    return button;
+    return h("label", { class: "quiz-ai-assistant" }, input, h("span", {}, t(`ai.assistants.${one}`)));
   });
-  return h("div", { class: "quiz-ai-assistants", role: "group", "aria-label": t("ai.assistant") }, ...buttons);
+  return h("fieldset", { class: "quiz-ai-group" }, h("legend", { class: "quiz-ai-label" }, t("ai.assistant")), h("div", { class: "quiz-ai-assistants" }, ...tiles));
 }
 
 /** The prompt, to be read and copied by hand when copying is refused. */
 function shownPrompt(app: App, step: SendStep): HTMLDetailsElement {
-  const text = h("textarea", { class: "quiz-input quiz-ai-guide", readonly: "", rows: "8", lang: "en", "aria-label": app.t("ai.show"), "data-ai-guide": "" });
+  const text = h("textarea", { class: "quiz-input quiz-ai-guide", readonly: "", rows: "8", lang: "en", "aria-label": app.t("ai.instructions"), "data-ai-guide": "" });
   const details = h("details", { class: "quiz-ai-details" }, h("summary", {}, app.t("ai.show")), text);
   details.addEventListener("toggle", () => { if (details.open) text.value = step.prompt(); });
   return details;
@@ -71,12 +70,11 @@ function shownPrompt(app: App, step: SendStep): HTMLDetailsElement {
  */
 export function sendStep(app: App, step: SendStep): HTMLElement {
   const { t } = app;
-  const kept = app.context.storage.prefs.get<string>(PREF, "chatgpt");
-  let chosen: Assistant = kept in ASSISTANTS ? (kept as Assistant) : "chatgpt";
+  let chosen: Assistant = readAssistant(app.context.storage.prefs);
   const go = labelButton("copy", "", { class: "button button--primary quiz-ai-go", "data-ai-copy": "" });
   const words = go.querySelector("span");
   const label = (): void => {
-    if (words) words.textContent = ASSISTANTS[chosen] === null ? t("ai.copy") : t("ai.copyOpen", { name: t(`ai.assistants.${chosen}`) });
+    if (words) words.textContent = PAGES[chosen] === null ? t("ai.copy") : t("ai.copyOpen", { name: t(`ai.assistants.${chosen}`) });
   };
   label();
   const details = shownPrompt(app, step);
@@ -87,7 +85,8 @@ export function sendStep(app: App, step: SendStep): HTMLElement {
       return;
     }
     const prompt = step.prompt();
-    const url = ASSISTANTS[chosen];
+    const url = PAGES[chosen];
+    step.onSent();
     const name = t(`ai.assistants.${chosen}`);
     // Both start inside the press: a browser lets a page copy and open a tab only while it handles one.
     const copied = copyText(prompt);
@@ -106,9 +105,10 @@ export function sendStep(app: App, step: SendStep): HTMLElement {
         step.say(refusal, true);
         return;
       }
+      step.onSent();
       void navigator.share({ title: t("ai.shareTitle"), text: step.prompt() }).catch(() => undefined);
     });
     tools.append(share);
   }
-  return h("section", { class: "quiz-ai-step" }, h("h3", {}, t("ai.stepSend", { n: step.number })), h("span", { class: "quiz-ai-label" }, t("ai.assistant")), picker(app, chosen, (next) => { chosen = next; label(); }), go, ...(tools.childElementCount > 0 ? [tools] : []), details);
+  return h("section", { class: "quiz-ai-step" }, h("h3", {}, t("ai.stepSend", { n: step.number })), picker(app, chosen, (next) => { chosen = next; label(); }), go, ...(tools.childElementCount > 0 ? [tools] : []), details);
 }

@@ -9,7 +9,8 @@ const jump = async (page: Page, selector: string): Promise<void> => {
   await page.locator(`[data-dialog="menu"] ${selector}`).first().click();
 };
 
-test("M1: the host panel's Next keeps its label under the pointer", async ({ page, context }) => {
+test("M1: the host panel's Next keeps its label under the pointer", async ({ page, context, isMobile }) => {
+  test.skip(isMobile, "a hover look exists only where a pointer hovers (forge design rule 3, since 0.37.0)");
   await page.setViewportSize({ width: 1280, height: 860 }); // the audience window is a wide screen's tool
   await play(page);
   const opened = context.waitForEvent("page");

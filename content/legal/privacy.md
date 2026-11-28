@@ -1,4 +1,4 @@
-<!-- From the forge template app-shell/templates/legal/privacy.md (legal-pages §2, 2026-11-07), filled for Quizzard on 2026-11-22 with the wording of GG Counter's and TeamSync's privacy texts where the facts are the same, and checked against the code the same day (where: docs/DECISIONS.md 2026-11-22 "Policy pages filled"). Not legal advice. One bullet per layer the app really has: no feedback webhook, no API, no AI features. {App} and {email} are filled by scripts/generate.ts from app.config.ts. -->
+<!-- From the forge template app-shell/templates/legal/privacy.md (legal-pages §2, 2026-11-07), filled for Quizzard on 2026-11-22 with the wording of GG Counter's and TeamSync's privacy texts where the facts are the same, and checked against the code the same day (where: docs/DECISIONS.md 2026-11-22 "Policy pages filled"). Not legal advice. One bullet per layer the app really has: no feedback webhook, no API, no AI service (the AI windows only copy and paste text; DECISIONS 2026-11-28). {App} and {email} are filled by scripts/generate.ts from app.config.ts. -->
 
 **Privacy** — Last updated: 28 November 2026
 
@@ -9,7 +9,8 @@
   entirely on your device. Names,
   players and scores are not uploaded anywhere, and they are never put in the page address (only
   the number of teams can be, e.g. `#/teams?teams=4`). There is no server of our own, and the app
-  loads nothing from other websites: no fonts, scripts, images or trackers from third parties.
+  loads no fonts, scripts, images or trackers from third parties. The one exception: pictures from
+  Wikimedia Commons, fetched only when an AI assistant's answer names them (see below).
 - **Stored on your device only:** everything below is kept in your browser's local storage on this
   device; the quizzes you make with the Quiz creator are kept in your browser's IndexedDB database
   on this device. Nothing is kept in cookies or the browser's private file storage.
@@ -49,20 +50,6 @@
     also your notes; the exported file carries them inside but never shows them on the stage).
     These files leave your device only when you send or share them yourself; **Share** hands the
     quiz file to the app you choose in your device's share menu.
-  - **Make a quiz with AI:** {App} does not contact any AI service. You copy the instructions to
-    an assistant of your choice and paste its answer back; the text is read and checked on your
-    device. **Paste** reads your clipboard once, only when you press it; **Copy and open** opens the
-    assistant's own website in a new tab. What you type into the assistant is covered by that
-    assistant's own privacy terms. Your choices in its form are kept in this browser for the next time.
-  - **Pictures from Wikimedia Commons:** only when an assistant's answer names pictures, {App}
-    asks Wikimedia Commons (commons.wikimedia.org, thumb.wikimedia.org, upload.wikimedia.org, run by
-    the Wikimedia Foundation) for those files and downloads them. Wikimedia then receives the usual
-    data of a web request — your IP address, your browser's user agent and the names of the files —
-    under its own [privacy policy](https://foundation.wikimedia.org/wiki/Policy:Privacy_policy). The
-    pictures are stored in your quiz with their author and licence, which are shown with them.
-  - **Sharing to the installed app (Android):** when you share a text from another app to the installed
-    {App}, the app's service worker takes it on your device, keeps it for a moment in the browser's
-    cache and deletes it as soon as the Quiz creator has opened it. Nothing is sent to a server.
   - **Separate from the author's other apps:** {App} keeps its data under its own names. The
     TeamSync and GG Counter sites are on the same web address (`simeontsvetanov.github.io`), but
     {App} does not read, change or delete what they saved, and they do not see {App}'s data.
@@ -80,6 +67,22 @@
   **Keep data on this device** in Settings → Storage, the app asks the browser to keep this site's
   storage persistent (`navigator.storage.persist()`), so it is not cleared automatically when space
   runs low. Clearing this site's data removes both.
+- **Make a quiz with AI:** {App} does not contact any AI service. You copy the instructions to
+  an assistant of your choice and paste its answer back; the text is read and checked on your
+  device. **Paste** reads your clipboard once, only when you press it; **Copy and open** opens the
+  assistant's own website in a new tab. What you type into the assistant is covered by that
+  assistant's own privacy terms. Your choices in its form, the assistant you picked and which AI
+  window you used last are kept in this browser's local storage for the next time.
+- **Pictures from Wikimedia Commons:** only when an assistant's answer names pictures, {App}
+  asks Wikimedia Commons (commons.wikimedia.org, thumb.wikimedia.org, upload.wikimedia.org, run by
+  the Wikimedia Foundation) for those files and downloads them. Wikimedia then receives the usual
+  data of a web request — your IP address, your browser's user agent and the names of the files —
+  under its own [privacy policy](https://foundation.wikimedia.org/wiki/Policy:Privacy_policy). The
+  pictures are stored in your quiz with their author and licence, which are shown with them.
+- **Sharing to the installed app (Android):** when you share a text from another app to the installed
+  {App}, the app's service worker takes it on your device, keeps it for a moment in the browser's
+  Cache Storage and deletes it as soon as the Quiz creator shows it in an AI window. Nothing is sent
+  to a server.
 - **Sharing and copying:** the text you share is made on your device and leaves it only when you
   share it. **Share** and **Copy** in Teams send the teams (the names in each team and how many
   people each has) and a last line "— Made with {App}N" with a link to {App}, where N is how many

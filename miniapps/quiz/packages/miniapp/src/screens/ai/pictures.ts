@@ -10,7 +10,7 @@ import { hasRoomFor } from "../../storage/space.ts";
 /** What fetching the pictures gave: every file and its description, or why none could be fetched. */
 export type PictureOutcome =
   | { readonly ok: true; readonly entries: readonly MediaEntry[]; readonly files: ReadonlyMap<string, Blob>; readonly issues: readonly DraftIssue[] }
-  | { readonly ok: false; readonly reason: "offline" | "busy" | "space" };
+  | { readonly ok: false; readonly reason: "offline" | "busy" | "space" | "stopped" };
 
 /** What Commons says of one file. */
 type Found = { readonly url: string; readonly credit: string } | "missing" | "not-image";
@@ -31,11 +31,12 @@ class CommonsUnreachable extends Error {
 }
 
 /** A fetch that says "offline" when there is no connection and "busy" when Commons asks to wait. */
-async function get(url: string): Promise<Response> {
+async function get(url: string, signal: AbortSignal): Promise<Response> {
   let response: Response;
   try {
-    response = await fetch(url, { credentials: "omit", referrerPolicy: "no-referrer" });
-  } catch {
+    response = await fetch(url, { credentials: "omit", referrerPolicy: "no-referrer", signal });
+  } catch (error) {
+    if (signal.aborted) throw error;
     throw new CommonsUnreachable("offline");
   }
   if (response.status === 429 || response.status >= 500) throw new CommonsUnreachable("busy");
@@ -80,12 +81,12 @@ function answers(data: Record<string, unknown>, titles: readonly string[]): Map<
 }
 
 /** Asks Commons about the files, 50 at a time. */
-async function lookUp(titles: readonly string[]): Promise<Map<string, Found>> {
+async function lookUp(titles: readonly string[], signal: AbortSignal): Promise<Map<string, Found>> {
   const found = new Map<string, Found>();
   for (let start = 0; start < titles.length; start += BATCH) {
     const part = titles.slice(start, start + BATCH);
     const params = new URLSearchParams({ action: "query", format: "json", formatversion: "2", origin: "*", redirects: "1", prop: "imageinfo", iiprop: "url|mime|extmetadata", iiextmetadatafilter: "Artist|LicenseShortName", iiurlwidth: String(EDGE), iiurlheight: String(EDGE), titles: part.join("|") });
-    const response = await get(`${API}?${params.toString()}`);
+    const response = await get(`${API}?${params.toString()}`, signal);
     if (!response.ok) throw new CommonsUnreachable("busy");
     const data = (await response.json()) as Record<string, unknown>;
     for (const [title, one] of answers(data, part)) found.set(title, one);
@@ -99,8 +100,8 @@ function issueAt(picture: PendingPicture, code: DraftCode): DraftIssue {
 }
 
 /** Fetches one file and prepares it like a picked picture; an issue when it is not one, `"space"` when the device is full. */
-async function fetchOne(picture: PendingPicture, found: { readonly url: string; readonly credit: string }, usedBytes: number): Promise<MediaEntry & { readonly blob: Blob } | DraftIssue | "space"> {
-  const response = await get(found.url);
+async function fetchOne(picture: PendingPicture, found: { readonly url: string; readonly credit: string }, usedBytes: number, signal: AbortSignal): Promise<MediaEntry & { readonly blob: Blob } | DraftIssue | "space"> {
+  const response = await get(found.url, signal);
   if (!response.ok) return issueAt(picture, "picture-not-found");
   const blob = await response.blob();
   const file = new File([blob], picture.title.replace(/^File:/, ""), { type: blob.type });
@@ -114,11 +115,12 @@ async function fetchOne(picture: PendingPicture, found: { readonly url: string; 
  * Fetches the pictures a draft named.
  * @param pictures - the pictures, one per file
  * @param usedBytes - media the quiz already has
+ * @param signal - aborted when the window closes: nothing more is fetched
  * @param progress - told after each file: how many are done of how many
  */
-export async function fetchPictures(pictures: readonly PendingPicture[], usedBytes: number, progress: (done: number, count: number) => void): Promise<PictureOutcome> {
+export async function fetchPictures(pictures: readonly PendingPicture[], usedBytes: number, signal: AbortSignal, progress: (done: number, count: number) => void): Promise<PictureOutcome> {
   try {
-    const found = await lookUp([...new Set(pictures.map((picture) => picture.title))]);
+    const found = await lookUp([...new Set(pictures.map((picture) => picture.title))], signal);
     const issues: DraftIssue[] = [];
     const entries: MediaEntry[] = [];
     const files = new Map<string, Blob>();
@@ -130,7 +132,8 @@ export async function fetchPictures(pictures: readonly PendingPicture[], usedByt
         issues.push(issueAt(picture, one === "missing" ? "picture-not-found" : "picture-not-image"));
         continue;
       }
-      const made = await fetchOne(picture, one, used);
+      if (signal.aborted) return { ok: false, reason: "stopped" };
+      const made = await fetchOne(picture, one, used, signal);
       if (made === "space") return { ok: false, reason: "space" };
       if ("code" in made) {
         issues.push(made);
@@ -144,6 +147,7 @@ export async function fetchPictures(pictures: readonly PendingPicture[], usedByt
     progress(pictures.length, pictures.length);
     return { ok: true, entries, files, issues };
   } catch (error) {
+    if (signal.aborted) return { ok: false, reason: "stopped" };
     if (error instanceof CommonsUnreachable) return { ok: false, reason: error.reason };
     throw error;
   }

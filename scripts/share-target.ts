@@ -14,6 +14,8 @@ export const SHARED_CACHE = "quizzard-shared";
 export const SHARED_ENTRY = "shared-text";
 /** Longest shared text kept, in characters (the creator reads at most 1,000,000). */
 export const SHARED_MAX_CHARS = 1_000_000;
+/** Largest shared POST read at all, in bytes: anything bigger is no assistant's answer. */
+export const SHARED_MAX_BYTES = 8_000_000;
 
 /**
  * Returns the source of share-target.js for a base path.
@@ -26,29 +28,35 @@ export function shareTargetScript(base: string): string {
   var CACHE = ${JSON.stringify(SHARED_CACHE)};
   var ENTRY = ${JSON.stringify(base + SHARED_ENTRY)};
   var MAX = ${String(SHARED_MAX_CHARS)};
+  var MAX_BYTES = ${String(SHARED_MAX_BYTES)};
   function isText(file) {
     return /^text\\//.test(file.type) || /json/.test(file.type) || /\\.(txt|json|md)$/i.test(file.name);
   }
   function sharedText(form) {
     var parts = ["title", "text", "url"].map(function (name) { var value = form.get(name); return typeof value === "string" ? value : ""; });
     var files = form.getAll("file").filter(function (file) { return typeof file !== "string" && isText(file); });
-    return Promise.all(files.map(function (file) { return file.text(); })).then(function (texts) {
+    return Promise.all(files.map(function (file) { return file.slice(0, MAX * 4).text(); })).then(function (texts) {
       return parts.concat(texts).filter(function (part) { return part.trim() !== ""; }).join("\\n\\n").slice(0, MAX);
     });
   }
   self.addEventListener("fetch", function (event) {
     var url = new URL(event.request.url);
     if (event.request.method !== "POST" || url.pathname !== ACTION) return;
+    // The system's share sheet posts with no referrer (or this app's own); a page elsewhere posting here is not a share.
+    var from = event.request.referrer;
+    var isForeign = from !== "" && from !== "about:client" && new URL(from).origin !== self.location.origin;
+    var size = Number(event.request.headers.get("content-length") || "0");
+    var isTooBig = size > MAX_BYTES;
     event.respondWith(
-      event.request.formData()
+      (isForeign || isTooBig ? Promise.resolve() : event.request.formData()
         .then(sharedText)
         .then(function (text) {
           return caches.open(CACHE).then(function (cache) {
             return cache.put(ENTRY, new Response(text, { headers: { "content-type": "text/plain; charset=utf-8" } }));
           });
         })
-        .catch(function () { /* nothing kept: the creator opens as usual */ })
-        .then(function () { return Response.redirect(${JSON.stringify(base)} + "#/quiz?shared=1", 303); })
+        .catch(function () { /* nothing kept: the creator opens as usual */ }))
+        .then(function () { return Response.redirect(${JSON.stringify(base)} + "#/quiz" + (isForeign || isTooBig ? "" : "?shared=1"), 303); })
     );
   });
 })();

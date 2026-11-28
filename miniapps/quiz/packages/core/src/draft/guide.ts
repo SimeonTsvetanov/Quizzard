@@ -4,56 +4,17 @@
 // refuses. `draftGuide` is the whole guide (the site serves it as `ai.md`, scripts/generate.ts); the
 // creator copies a prompt made for one job — a new quiz, more rounds, more questions, a check of the
 // answers — with what the person chose in its form.
-import type { Answer, Quiz, Round } from "../model.ts";
+import type { Quiz, Round } from "../model.ts";
+import { DRAFT_EXAMPLE } from "./example.ts";
+import { quizLines } from "./quiz-lines.ts";
+
+export { DRAFT_EXAMPLE } from "./example.ts";
 import * as limits from "../limits.ts";
 import { PYRAMID_QUESTIONS } from "../rounds/pyramid.ts";
 import { SAFE_QUESTIONS } from "../rounds/safe.ts";
 import { LAUGH_FIRST_DEFAULT, LAUGH_SECOND_DEFAULT, TASK_POINTS_DEFAULT } from "../rounds/tasks.ts";
 
-/** A small quiz in the draft format: one round of every kind. */
-export const DRAFT_EXAMPLE = {
-  name: "Friday quiz",
-  language: "en",
-  teams: 4,
-  rounds: [
-    {
-      type: "standard",
-      name: "Warm-up",
-      seconds: 30,
-      points: 1,
-      questions: [
-        { q: "Which river flows through Paris?", a: "The Seine", explanation: "It splits around two islands in the city centre." },
-        { q: "Which of these are planets?", options: ["Mars", "Europa", "Venus", "Titan"], correct: [1, 3] },
-        { q: "What does the abbreviation WC stand for?", options: ["World Cup", "Water Closet", "Wash Corner", "West Coast"], correct: 2 },
-        { q: "The Great Wall of China is visible from the Moon.", a: false },
-        { q: "Name the band and the song.", a: "Queen — Bohemian Rhapsody", points: 2, pointsNote: "1 for the band, 1 for the song", seconds: 45 },
-      ],
-    },
-    {
-      type: "pyramid",
-      name: "Golden pyramid",
-      questions: [
-        { q: "Name the largest planet.", accepted: ["Jupiter"] },
-        { q: "Name 2 primary colours of light.", accepted: ["Red", "Green", "Blue"] },
-        { q: "Name 3 noble gases.", accepted: ["Helium", "Neon", "Argon", "Krypton", "Xenon", "Radon"] },
-        { q: "Name 4 oceans.", accepted: ["Pacific", "Atlantic", "Indian", "Arctic", "Southern"] },
-      ],
-    },
-    {
-      type: "safe",
-      name: "Safe",
-      bonus: 3,
-      questions: [
-        { q: "How many sides does a triangle have?", digit: 3 },
-        { q: "How many strings does a violin have?", digit: 4 },
-        { q: "How many rings are on the Olympic flag?", digit: 5 },
-        { q: "How many legs does an insect have?", digit: 6 },
-        { q: "How many colours are in a rainbow?", digit: 7 },
-      ],
-    },
-    { type: "laugh", name: "Make the quizmaster laugh", seconds: 300, first: 3, second: 1 },
-  ],
-} as const;
+
 
 /** The kinds of answer a person may ask for in a standard round. */
 export type AnswerChoice = "open" | "choice" | "trueFalse";
@@ -84,18 +45,21 @@ export interface QuizWishes {
   readonly pictures: boolean;
   /** Anything else the person wants, in their own words. */
   readonly extra: string;
+  /** The language the person reads Quizzard in (its buttons; the assistant talks to them in it); the questions' language when not said. */
+  readonly ui?: "en" | "bg";
 }
 
 /** What the result of a prompt is: a whole quiz, rounds to add, questions to add. */
 type Target = "quiz" | "rounds" | "questions";
 
-const LANGUAGE_NAMES = { en: "English", bg: "Bulgarian" } as const;
+/** The languages' names, for the assistant. */
+export const LANGUAGE_NAMES = { en: "English", bg: "Bulgarian" } as const;
 const AUDIENCE_WORDS: Readonly<Record<AudienceChoice, string>> = { friends: "friends", colleagues: "colleagues at work", family: "a family, adults and children together", children: "children of about 8 to 12", teens: "teenagers", experts: "keen quiz players who like it hard" };
 const ANSWER_WORDS: Readonly<Record<AnswerChoice, string>> = { open: "open answers", choice: "multiple choice", trueFalse: "true / false" };
 const SPECIAL_WORDS: Readonly<Record<SpecialChoice, string>> = { pyramid: "Golden pyramid", safe: "Safe", laugh: "Make the quizmaster laugh", task: "a free game" };
 
 /** The words of the creator's buttons the hand-over line names, in the language the person reads. */
-const BUTTONS = {
+export const BUTTONS = {
   en: { open: "Make a quiz with AI", paste: "Paste", quiz: "Make the quiz", rounds: "Add the rounds", questions: "Add the questions", check: "Show the results" },
   bg: { open: "Направи куиз с ИИ", paste: "Постави", quiz: "Направи куиза", rounds: "Добави рундовете", questions: "Добави въпросите", check: "Покажи резултата" },
 } as const;
@@ -158,9 +122,10 @@ function pictureSection(): readonly string[] {
     "Questions may have pictures. A picture is a file of Wikimedia Commons — no other website.",
     "- `\"picture\": \"File:Name.jpg\"` shows it with the question (\"Which city is this?\"); `\"answerPicture\": \"File:Name.jpg\"` shows it with the answer. A picture question still needs its text in `q`.",
     "- Use ONLY a file you have opened in this conversation: search commons.wikimedia.org, open the file's own page (https://commons.wikimedia.org/wiki/File:Name.jpg), make sure the page exists and shows the picture, and copy its exact name. NEVER invent, guess, complete, translate or remember a file name. Quizzard downloads every file before it takes the quiz and refuses names that do not exist.",
-    "- If you cannot open web pages, write the questions without pictures and say so in one line after the code block.",
+    "- If you cannot open web pages, write the questions without pictures and say so in the one line after the code block.",
     "- Choose pictures that make the question clear: landmarks, flags, maps, animals, plants, objects, artworks, well-known public figures in their public role. No private people and no pictures of children.",
-    "- At most one picture per question; about one question in three with a picture is enough unless the person asks for more.",
+    "- Pictures go only on questions of standard and Safe rounds (a Golden pyramid shows its questions as text; Make the quizmaster laugh and a free game have none).",
+    "- At most one picture with the question and one with the answer; about one question in three with a picture is enough unless the person asks for more.",
     "- Quizzard shows each picture's author and licence by itself: do not write them.",
   ];
 }
@@ -185,17 +150,18 @@ function handOverLine(target: Target, language: "en" | "bg" | undefined): string
 function handOverSection(target: Target, language?: "en" | "bg"): readonly string[] {
   const shape = { quiz: "the WHOLE quiz as one object", rounds: "ALL the new rounds as one LIST: `[ { round }, { round } ]`", questions: "ALL the new questions as one object: `{ \"questions\": [ { question }, … ] }`" }[target];
   const long = target === "quiz"
-    ? "- A quiz too long for one answer: the first block is the quiz object with its first rounds; every later block — in the same message or the next ones — is a LIST of the following whole rounds: `[ { round }, { round } ]`. Never cut a round in two. Number the blocks (\"Part 1 of 3\") and tell the person to copy each one and press Paste for each, in order."
-    : "- Too long for one answer: send more blocks of the same shape, numbered (\"Part 1 of 2\"), and tell the person to copy each one and press Paste for each, in order.";
+    ? "- A quiz too long for one answer: the first block is the quiz object with its first rounds; every later block — in the same message or the next ones — is a LIST of the following whole rounds: `[ { round }, { round } ]`. Never cut a round in two. Put only \"Part 1 of 3\" on the line before each block, and tell the person to copy each one and press Paste for each, in order."
+    : "- Too long for one answer: send more blocks of the same shape, each with only \"Part 1 of 2\" on the line before it, and tell the person to copy each one and press Paste for each, in order.";
   return [
     "## Hand it over",
     `- Put ${shape} in ONE \`\`\`json code block, and nothing else in that block. Chat apps show a Copy button on a code block: that button is how the person takes it, so the block must hold exactly what they paste.\n- Write nothing before the block. ${handOverLine(target, language)}\n${long}\n- If the person sends a message that starts with ${PROBLEMS_HEAD}, fix exactly what it lists and send ALL of it again, not only the changed part.\n- Do not invent fields. Do not add ids. Do not wrap the JSON in any other object.`,
   ];
 }
 
-/** An example of the result: the whole example quiz, its first two rounds as a list, or its first questions. */
-function exampleOf(target: Target): string {
-  const value = { quiz: DRAFT_EXAMPLE, rounds: DRAFT_EXAMPLE.rounds.slice(0, 2), questions: { questions: DRAFT_EXAMPLE.rounds[0].questions.slice(0, 4) } }[target];
+/** An example of the result: a standard round and only the special rounds that may be in it. */
+function exampleOf(target: Target, specials: readonly SpecialChoice[]): string {
+  const rounds = DRAFT_EXAMPLE.rounds.filter((round) => round.type === "standard" || (specials as readonly string[]).includes(round.type));
+  const value = { quiz: { ...DRAFT_EXAMPLE, rounds }, rounds, questions: { questions: DRAFT_EXAMPLE.rounds[0].questions.slice(0, 4) } }[target];
   return `\`\`\`json\n${JSON.stringify(value, null, 2)}\n\`\`\``;
 }
 
@@ -205,7 +171,7 @@ function formatSections(target: Target, specials: readonly SpecialChoice[]): rea
   return [
     "## The format",
     `${what}. Text in any language and script; quotes inside a text are escaped as JSON asks (\\"). All numbers are whole numbers. Leave out anything you do not need — every field not marked required has a default.`,
-    exampleOf(target),
+    exampleOf(target, specials),
     ...(target === "questions" ? [] : roundSections(target)),
     ...questionSections(),
     ...(target === "questions" ? [] : specials.flatMap((special) => SPECIAL_SECTIONS[special])),
@@ -247,7 +213,8 @@ function wishLines(wishes: QuizWishes, target: Target): readonly string[] {
   const standard = target === "questions"
     ? `- ${String(wishes.perRound)} new questions; answers: ${answers}${wishes.answers.length > 1 ? " (mix them)" : ""}`
     : `- ${wishes.rounds === 0 ? "No standard rounds" : `${String(wishes.rounds)} standard round${wishes.rounds === 1 ? "" : "s"} of ${String(wishes.perRound)} questions each, ${each}`}`;
-  const specials = target === "questions" ? [] : [`- Special rounds: ${wishes.specials.length === 0 ? "none" : `${wishes.specials.map((one) => SPECIAL_WORDS[one]).join(", ")} (place them where they play best; Make the quizmaster laugh works well last)`}`];
+  const where = wishes.specials.includes("laugh") ? "place them where they play best; Make the quizmaster laugh works well last" : "place them where they play best";
+  const specials = target === "questions" ? [] : [`- Special rounds: ${wishes.specials.length === 0 ? "none — write no special round" : `${wishes.specials.map((one) => SPECIAL_WORDS[one]).join(", ")} (${where})`}`];
   return [
     `- Topic: ${topic}`,
     `- Players: ${AUDIENCE_WORDS[wishes.audience]}; difficulty: ${wishes.difficulty}`,
@@ -265,47 +232,9 @@ function wishSection(wishes: QuizWishes, target: Target): readonly string[] {
   const what = { quiz: "the quiz", rounds: "the new rounds", questions: "the new questions" }[target];
   return [
     "## What the person chose",
-    `The person already chose these in Quizzard. Do not ask about them: write ${what} now. Talk to the person in ${LANGUAGE_NAMES[wishes.language]}.`,
+    `The person already chose these in Quizzard. Do not ask about them: write ${what} now. Talk to the person in ${LANGUAGE_NAMES[wishes.ui ?? wishes.language]}.`,
     wishLines(wishes, target).join("\n"),
   ];
-}
-
-/** One answer as words for a list of the quiz: the text, the right option, the accepted answers, the digit. */
-function answerWords(answer: Answer): string {
-  const field = (name: string): unknown => answer[name];
-  const words = (value: unknown, fallback: string): string => (typeof value === "string" || typeof value === "number" ? String(value) : fallback);
-  switch (answer.type) {
-    case "open":
-      return words(field("text"), "");
-    case "trueFalse":
-      return field("correct") === true ? "true" : "false";
-    case "choice": {
-      const options = (field("options") ?? []) as readonly { id: string; text: string }[];
-      const correct = (field("correct") ?? []) as readonly string[];
-      return options.map((option, index) => `${String(index + 1)}) ${option.text}${correct.includes(option.id) ? " (right)" : ""}`).join("; ");
-    }
-    case "list":
-      return `accepted: ${((field("items") ?? []) as readonly string[]).join(", ")}`;
-    case "digit":
-      return words(field("digit"), "?");
-    default:
-      return "";
-  }
-}
-
-/** The kind of a round as the list of the quiz names it. */
-function roundKindWords(round: Round): string {
-  return { standard: "", pyramid: " (Golden pyramid)", safe: " (Safe)", laugh: " (Make the quizmaster laugh — no questions)", task: " (free game — no questions)" }[round.kind] ?? "";
-}
-
-/** The quiz as numbered lines: "Round 2 · Music", then "3. question → answer". */
-function quizLines(quiz: Quiz, withAnswers: boolean): string {
-  return quiz.rounds.map((round, roundIndex) => {
-    const head = `Round ${String(roundIndex + 1)} · ${round.name}${roundKindWords(round)}`;
-    const hasAnswers = round.kind !== "laugh" && round.kind !== "task";
-    const lines = hasAnswers ? round.questions.map((question, index) => `${String(index + 1)}. ${question.prompt.replace(/\s+/g, " ").trim()}${withAnswers ? ` → ${answerWords(question.answer)}` : ""}`) : [];
-    return [head, ...lines].join("\n");
-  }).join("\n\n");
 }
 
 /**
@@ -320,7 +249,7 @@ export function newQuizPrompt(wishes: QuizWishes): string {
     ...formatSections("quiz", wishes.specials),
     ...(wishes.pictures ? pictureSection() : []),
     ...qualitySection(),
-    ...handOverSection("quiz", wishes.language),
+    ...handOverSection("quiz", wishes.ui ?? wishes.language),
   ].join("\n\n")}\n`;
 }
 
@@ -335,11 +264,11 @@ export function addRoundsPrompt(quiz: Quiz, wishes: QuizWishes): string {
     `You are adding rounds to the quiz "${quiz.name}" made in Quizzard, a free quiz app. You write only the new rounds, as JSON in the format below; the person pastes them into Quizzard, which adds them after the rounds it has.`,
     ...wishSection(wishes, "rounds"),
     "## The quiz so far",
-    `Do not repeat a question it already has.\n\n${quizLines(quiz, false)}`,
+    `It has ${String(quiz.rounds.length)} of at most ${String(l.MAX_ROUNDS)} rounds: write at most ${String(l.MAX_ROUNDS - quiz.rounds.length)} new rounds. Do not repeat a question it already has.\n\n${quizLines(quiz, false)}`,
     ...formatSections("rounds", wishes.specials),
     ...(wishes.pictures ? pictureSection() : []),
     ...qualitySection(),
-    ...handOverSection("rounds", wishes.language),
+    ...handOverSection("rounds", wishes.ui ?? wishes.language),
   ].join("\n\n")}\n`;
 }
 
@@ -360,25 +289,6 @@ export function addQuestionsPrompt(quiz: Quiz, round: Round, wishes: QuizWishes)
     ...formatSections("questions", []),
     ...(wishes.pictures ? pictureSection() : []),
     ...qualitySection(),
-    ...handOverSection("questions", wishes.language),
-  ].join("\n\n")}\n`;
-}
-
-/**
- * The prompt for a check of a quiz's answers: every question with the answer the quiz takes as right.
- * @param quiz - the quiz
- * @param language - the language the assistant writes its findings in
- */
-export function checkPrompt(quiz: Quiz, language: "en" | "bg"): string {
-  const buttons = BUTTONS[language];
-  return `${[
-    "# Check the answers of a quiz",
-    `You are checking the quiz "${quiz.name}", made in Quizzard, before it is played. Below is every question with the answer Quizzard will show as right. Check each one carefully, with a web search where you can.`,
-    "## What to report",
-    "Report a question only when: its answer is wrong or out of date; another answer is also right and is not named; a multiple-choice question marks a wrong option as right or a right one as wrong; the question is unclear, misleading or has a mistake in it; a Golden pyramid list has a wrong answer or misses a common right one; a Safe answer is not the right digit. Do not report style or taste.",
-    "## Hand it over",
-    `Answer with ONE \`\`\`json code block and nothing before it:\n\n\`\`\`json\n{ "check": [ { "round": 2, "question": 3, "problem": "…", "suggestion": "…" } ] }\n\`\`\`\n\n\`round\` and \`question\` are the numbers in the list below. Write \`problem\` (what is wrong, with the right fact) and \`suggestion\` (the corrected answer or question) in ${LANGUAGE_NAMES[language]}. If everything is right, send \`{ "check": [] }\`. After the block write one line in ${LANGUAGE_NAMES[language]}: press Copy on the block, go back to Quizzard, press "${buttons.paste}" and "${buttons.check}".`,
-    `## The quiz: ${quiz.name}`,
-    quizLines(quiz, true),
+    ...handOverSection("questions", wishes.ui ?? wishes.language),
   ].join("\n\n")}\n`;
 }

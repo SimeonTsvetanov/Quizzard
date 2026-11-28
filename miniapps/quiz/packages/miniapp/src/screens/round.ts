@@ -149,5 +149,6 @@ export function roundPane(app: App, quiz: Quiz, round: Round): HTMLElement {
     backLink(quiz.name === "" ? t("quiz.unnamed") : quiz.name, () => { up(app); }, "quiz-narrow-only"),
     head,
     roundSettings(app, round, refresh),
-    ...(own ? [list] : [bar, list, addControl(app, round), ...aiQuestions(app, round)]));
+    // "Write questions with AI" before "Add question": on a phone that bar is sticky and must be the last thing, so it rests under the list at the page's end.
+    ...(own ? [list] : [bar, list, ...aiQuestions(app, round), addControl(app, round)]));
 }

@@ -111,8 +111,22 @@ function pictureRef(job: RoundJob, reader: Reader, value: unknown, path: string)
   return { id };
 }
 
+/** Whether a round's questions can show a picture: a standard round's and a Safe's (a Golden pyramid shows its four questions as text on one screen). */
+const takesPictures = (kind: RoundKind): boolean => kind.shape === undefined || kind.shape.answerType === "digit";
+
+/** Notes the pictures a draft names where they cannot be shown; they are left out. */
+function ignorePictures(job: Pick<RoundJob, "kind">, reader: Reader, raw: Raw, path: string): void {
+  for (const [names, field] of [[PICTURE, "picture"], [ANSWER_PICTURE, "answerPicture"]] as const) {
+    if (pick(raw, names) !== undefined) note(reader, "fixed", `${path}.${field}`, "field-ignored", { field, type: job.kind.id });
+  }
+}
+
 /** A question with the pictures its draft names: its own (it becomes a picture question) and its answer's. */
 function withPictures(job: RoundJob, reader: Reader, raw: Raw, path: string, made: Question): Question {
+  if (!takesPictures(job.kind)) {
+    ignorePictures(job, reader, raw, path);
+    return made;
+  }
   const own = pictureRef(job, reader, pick(raw, PICTURE), `${path}.picture`);
   const answer = pictureRef(job, reader, pick(raw, ANSWER_PICTURE), `${path}.answerPicture`);
   return { ...made, ...(own ? { kind: "picture", media: own } : {}), ...(answer ? { answerMedia: answer } : {}) };
@@ -193,6 +207,8 @@ function taskRound(job: RoundJob, base: Pick<Round, "id" | "kind" | "name">): Ro
   const prompt = textOf(reader, pick(raw, ["text", "task", "q"]) ?? (isRaw(first) ? pick(first, PROMPT) : undefined), `${path}.text`, limits.PROMPT_MAX);
   if (prompt === "" && kind.statesTask !== true) note(reader, "error", `${path}.text`, "task-no-text");
   if (defaults["points"] === undefined && raw["points"] !== undefined && raw["points"] !== null) note(reader, "fixed", `${path}.points`, "field-ignored", { field: "points", type: kind.id });
+  ignorePictures(job, reader, raw, path);
+  if (isRaw(first)) ignorePictures(job, reader, first, `${path}.questions[0]`);
   const round: Round = { ...base, defaults: { seconds, points: { value: limits.DEFAULT_POINTS }, questionKind: "text", answerType: "none" }, questions: [], data };
   const value = kind.maxPoints?.(round) ?? limits.DEFAULT_POINTS;
   return { ...round, questions: [{ id: job.env.ids(), kind: "text", prompt, answer: { type: "none" }, ...(value === limits.DEFAULT_POINTS ? {} : { points: { value } }) }] };
@@ -232,7 +248,7 @@ function roundOf(job: RoundJob, base: Pick<Round, "id" | "kind" | "name">): Roun
 }
 
 /** How a language may be written: its code ("bg", "bg-BG") or its name in English or in the language itself. */
-const LANGUAGE_WORDS: readonly (readonly [RegExp, (typeof DRAFT_LANGUAGES)[number]])[] = [[/^(?:bg\b|bul|бълг)/i, "bg"], [/^(?:en\b|eng|англ)/i, "en"]];
+const LANGUAGE_WORDS: readonly (readonly [RegExp, (typeof DRAFT_LANGUAGES)[number]])[] = [[/^(?:bg(?![a-z])|bul|бълг)/i, "bg"], [/^(?:en(?![a-z])|eng|англ)/i, "en"]];
 
 /** The quiz's language: the draft's when it is one the player speaks, else the caller's. */
 function languageOf(reader: Reader, value: unknown, fallback: string): string {

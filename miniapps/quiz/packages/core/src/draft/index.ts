@@ -4,6 +4,7 @@
  * creator loads it only when a person makes a quiz with their assistant.
  */
 export * from "./check.ts";
+export * from "./check-prompt.ts";
 export * from "./convert.ts";
 export * from "./guide.ts";
 export * from "./issue.ts";

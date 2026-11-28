@@ -57,38 +57,48 @@ interface IssueWords {
   readonly rules: Readonly<Record<DraftCode, string>>;
   readonly round: string;
   readonly question: string;
+  /** The message's first line — the same in every job, the prompts name it — and what to send again, per job. */
   readonly head: string;
+  readonly again: Readonly<Record<IssueTarget, string>>;
 }
+
+/** What the assistant was asked for: a whole quiz, rounds to add, questions to add. */
+export type IssueTarget = "quiz" | "rounds" | "questions";
 
 const EN: IssueWords = {
   round: "Round {round}",
   question: "question {question}",
-  head: "Quizzard could not take the quiz. Fix these problems and send the whole quiz again (in several code blocks if it is long, as before):",
+  head: "Quizzard could not take the quiz.",
+  again: {
+    quiz: "Fix these problems and send the whole quiz again (in several code blocks if it is long, as before):",
+    rounds: "Fix these problems and send ALL the new rounds again, as one list in one code block — not the quiz's own rounds:",
+    questions: "Fix these problems and send ALL the new questions again, as { \"questions\": [ … ] } in one code block:",
+  },
   rules: {
     "not-object": "The quiz must be one JSON object with a \"rounds\" list.",
     "wrong-type": "This must be {expected}.",
     "no-rounds": "The quiz has no rounds. Add at least one round to \"rounds\".",
-    "too-many-rounds": "A quiz has at most {max} rounds; this one has {found}. Remove or merge rounds.",
-    "rounds-room": "The quiz has room for {room} more rounds (at most {max} in all); {found} were sent. Send fewer.",
+    "too-many-rounds": "Rounds in a quiz: at most {max}; this one has {found}. Remove or merge rounds.",
+    "rounds-room": "New rounds that still fit in the quiz: {room} (at most {max} in all); sent: {found}. Send fewer.",
     "unknown-round-type": "Unknown round type \"{type}\". Use one of: {allowed}.",
     "no-questions": "This round has no questions. Add at least one question to \"questions\".",
-    "too-many-questions": "A round has at most {max} questions; this one has {found}. Split it into two rounds.",
-    "questions-room": "The round has room for {room} more questions (at most {max} in all); {found} were sent. Send fewer.",
-    "wrong-count": "A \"{type}\" round has exactly {expected} questions; this one has {found}.",
+    "too-many-questions": "Questions in a round: at most {max}; this one has {found}. Split it into two rounds.",
+    "questions-room": "New questions that still fit in the round: {room} (at most {max} in all); sent: {found}. Send fewer.",
+    "wrong-count": "Questions in a \"{type}\" round: exactly {expected}; this one has {found}.",
     "question-no-text": "The question has no text. Put the question in \"q\".",
     "answer-missing": "The question has no answer. Give \"a\" (a text, or true / false), or \"options\" with \"correct\".",
-    "options-count": "A multiple-choice question has {min} to {max} options; this one has {found}.",
+    "options-count": "Options of a multiple-choice question: {min} to {max}; this one has {found}.",
     "option-empty": "Option {option} is empty. Every option needs a text.",
     "correct-missing": "No option is marked as right. Set \"correct\" to the number of the right option (the first is 1), or a list of numbers.",
     "correct-unknown": "\"correct\" is \"{value}\", which does not name one option. Write the option's number without quotes (the first option is 1).",
-    "accepted-too-few": "Question {question} of a Golden pyramid asks for {needed} answers, so \"accepted\" must list at least {needed}; it lists {found}.",
+    "accepted-too-few": "Answers this Golden pyramid question asks for: {needed}, so \"accepted\" must list at least that many; it lists {found}.",
     "digit-invalid": "A Safe question is answered with one digit. Set \"digit\" to a whole number from 0 to 9.",
     "task-no-text": "A free game needs its task. Put what the teams must do in \"text\".",
     "picture-not-commons": "\"{value}\" is not a file of Wikimedia Commons. Give the exact file name from commons.wikimedia.org (\"File:….jpg\"), or leave the picture out.",
     "picture-not-found": "There is no file \"{title}\" on Wikimedia Commons. Open commons.wikimedia.org, find a picture that exists and copy its exact file name — never guess one. If you cannot open the site, leave the picture out.",
-    "picture-not-image": "\"{title}\" on Wikimedia Commons is not a picture. Choose a photo or a drawing.",
+    "picture-not-image": "\"{title}\" on Wikimedia Commons is not a picture Quizzard can show. Choose a photo or a drawing (JPEG, PNG, WebP or GIF).",
     "name-missing": "The name was missing; \"{used}\" was used.",
-    "list-too-long": "The list had more than {max} entries; only the first {max} were kept.",
+    "list-too-long": "Entries a list may have: {max}; only the first {max} were kept.",
     "field-ignored": "\"{field}\" is not used in a \"{type}\" round and was left out.",
     "text-too-long": "The text was longer than {max} characters and was cut. Shorten it.",
     "number-out-of-range": "{value} is not allowed here (whole numbers from {min} to {max}, in steps of {step}); {used} was used.",
@@ -99,32 +109,37 @@ const EN: IssueWords = {
 const BG: IssueWords = {
   round: "Рунд {round}",
   question: "въпрос {question}",
-  head: "Quizzard не можа да приеме куиза. Поправи тези проблеми и изпрати целия куиз отново (в няколко блока с код, ако е дълъг, както преди):",
+  head: "Quizzard не можа да приеме куиза.",
+  again: {
+    quiz: "Поправи тези проблеми и изпрати целия куиз отново (в няколко блока с код, ако е дълъг, както преди):",
+    rounds: "Поправи тези проблеми и изпрати ВСИЧКИ нови рундове отново, като един списък в един блок с код — не рундовете, които куизът вече има:",
+    questions: "Поправи тези проблеми и изпрати ВСИЧКИ нови въпроси отново, като { \"questions\": [ … ] } в един блок с код:",
+  },
   rules: {
     "not-object": "Куизът трябва да е един JSON обект със списък \"rounds\".",
     "wrong-type": "Тук трябва да има {expected}.",
     "no-rounds": "Куизът няма рундове. Добави поне един рунд в \"rounds\".",
-    "too-many-rounds": "Един куиз има най-много {max} рунда; този има {found}. Махни или слей рундове.",
-    "rounds-room": "В куиза има място за още {room} рунда (най-много {max} общо); изпратени са {found}. Изпрати по-малко.",
+    "too-many-rounds": "Рундове в един куиз: най-много {max}; в този са {found}. Махни или слей рундове.",
+    "rounds-room": "Нови рундове, които още се побират в куиза: {room} (най-много {max} общо); изпратени: {found}. Изпрати по-малко.",
     "unknown-round-type": "Непознат вид рунд \"{type}\". Използвай един от: {allowed}.",
     "no-questions": "Този рунд няма въпроси. Добави поне един въпрос в \"questions\".",
-    "too-many-questions": "Един рунд има най-много {max} въпроса; този има {found}. Раздели го на два рунда.",
-    "questions-room": "В рунда има място за още {room} въпроса (най-много {max} общо); изпратени са {found}. Изпрати по-малко.",
-    "wrong-count": "Рунд от вида \"{type}\" има точно {expected} въпроса; този има {found}.",
+    "too-many-questions": "Въпроси в един рунд: най-много {max}; в този са {found}. Раздели го на два рунда.",
+    "questions-room": "Нови въпроси, които още се побират в рунда: {room} (най-много {max} общо); изпратени: {found}. Изпрати по-малко.",
+    "wrong-count": "Въпроси в рунд от вида \"{type}\": точно {expected}; в този са {found}.",
     "question-no-text": "Въпросът няма текст. Сложи въпроса в \"q\".",
     "answer-missing": "Въпросът няма отговор. Дай \"a\" (текст или true / false) или \"options\" с \"correct\".",
-    "options-count": "Въпрос с избор има от {min} до {max} възможни отговора; този има {found}.",
+    "options-count": "Възможни отговори на въпрос с избор: от {min} до {max}; в този са {found}.",
     "option-empty": "Отговор {option} е празен. Всеки възможен отговор трябва да има текст.",
     "correct-missing": "Нито един отговор не е отбелязан като верен. Сложи в \"correct\" номера на верния отговор (първият е 1) или списък с номера.",
     "correct-unknown": "\"correct\" е \"{value}\", което не посочва един от отговорите. Напиши номера на отговора без кавички (първият е 1).",
-    "accepted-too-few": "Въпрос {question} от Златната пирамида иска {needed} отговора, затова \"accepted\" трябва да изброи поне {needed}; изброява {found}.",
-    "digit-invalid": "Въпрос от Сейфа се отговаря с една цифра. Сложи в \"digit\" цяло число от 0 до 9.",
+    "accepted-too-few": "Отговори, които този въпрос от Златната пирамида иска: {needed}, затова \"accepted\" трябва да изброи поне толкова; изброява {found}.",
+    "digit-invalid": "На въпрос от Сейфа се отговаря с една цифра. Сложи в \"digit\" цяло число от 0 до 9.",
     "task-no-text": "Свободната игра има нужда от задача. Напиши в \"text\" какво правят отборите.",
     "picture-not-commons": "\"{value}\" не е файл от Wikimedia Commons. Дай точното име на файла от commons.wikimedia.org (\"File:….jpg\") или махни снимката.",
     "picture-not-found": "В Wikimedia Commons няма файл \"{title}\". Отвори commons.wikimedia.org, намери снимка, която съществува, и копирай точното ѝ име — никога не го измисляй. Ако не можеш да отвориш сайта, махни снимката.",
-    "picture-not-image": "\"{title}\" в Wikimedia Commons не е снимка. Избери снимка или рисунка.",
+    "picture-not-image": "\"{title}\" в Wikimedia Commons не е изображение, което Quizzard може да покаже. Избери снимка или рисунка (JPEG, PNG, WebP или GIF).",
     "name-missing": "Липсваше име; използвано е \"{used}\".",
-    "list-too-long": "Списъкът имаше повече от {max} записа; запазени са първите {max}.",
+    "list-too-long": "Записи, които един списък може да има: {max}; запазени са първите {max}.",
     "field-ignored": "\"{field}\" не се използва в рунд от вида \"{type}\" и е пропуснато.",
     "text-too-long": "Текстът беше по-дълъг от {max} знака и е съкратен. Скъси го.",
     "number-out-of-range": "{value} не е позволено тук (цели числа от {min} до {max}, през {step}); използвано е {used}.",
@@ -164,9 +179,11 @@ export function issueText(issue: DraftIssue, lang: IssueLang = "en"): string {
  * The message a person sends back to their assistant: every error, then what to do; `""` when nothing must be fixed.
  * @param issues - what the reading found
  * @param lang - the language of the words (English unless said)
+ * @param target - what the assistant was asked for (a whole quiz unless said)
  */
-export function issuesForAssistant(issues: readonly DraftIssue[], lang: IssueLang = "en"): string {
+export function issuesForAssistant(issues: readonly DraftIssue[], lang: IssueLang = "en", target: IssueTarget = "quiz"): string {
   const errors = issues.filter((issue) => issue.level === "error");
   if (errors.length === 0) return "";
-  return [WORDS[lang].head, ...errors.map((issue) => `- ${issueText(issue, lang)}`)].join("\n");
+  const words = WORDS[lang];
+  return [`${words.head} ${words.again[target]}`, ...errors.map((issue) => `- ${issueText(issue, lang)}`)].join("\n");
 }

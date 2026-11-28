@@ -61,33 +61,49 @@ function tidy(json: string): string {
   return out;
 }
 
-/** Whether a curly quote at `at` closes a string: what follows it is where JSON goes on after a string. */
-function closesString(text: string, at: number): boolean {
-  return /^\s*(?:[:,}\]]|$)/.test(text.slice(at + 1, at + 40));
-}
+/** Where JSON goes on after a key's closing quote: a colon. */
+const AFTER_KEY = /^\s*:/;
+/** Where JSON goes on after a value's closing quote: the end of its object or list, or a comma and then the next key or value. */
+const AFTER_VALUE = /^\s*(?:[}\]]|$|,\s*(?:["\u201C\u201D\u201E{[\d-]|true|false|null))/;
 
 /**
  * JSON typed with curly quotes (a word processor, a phone's keyboard): a curly quote outside a string opens
- * one, and inside a string it closes it only where JSON goes on after a string — so the quotes of a title
- * inside a text („Под игото“, “Hamlet”) stay text. A straight quote inside such a text is escaped.
+ * one. Inside a string it closes it only where JSON truly goes on — after a key, a colon; after a value, the
+ * end of the object or list, or a comma followed by the next key or value — so the quotes of a title inside
+ * a text („Под игото“, кой е…; “Hamlet”, who…) stay text. A straight quote inside such a text is escaped.
  */
 function straightened(json: string): string {
   const CURLY = "\u201C\u201D\u201E";
+  const opened: string[] = [];
   let out = "";
   let isInside = false;
+  let isKey = false;
+  let last = "";
   for (let at = 0; at < json.length; at += 1) {
     const sign = json[at] ?? "";
-    if (!CURLY.includes(sign)) {
-      out += isInside && sign === '"' ? '\\"' : sign;
-    } else if (!isInside) {
-      isInside = true;
-      out += '"';
-    } else if (closesString(json, at)) {
-      isInside = false;
-      out += '"';
-    } else {
-      out += sign;
+    const isCurly = CURLY.includes(sign);
+    if (isInside) {
+      const rest = json.slice(at + 1, at + 60);
+      if (isCurly && (isKey ? AFTER_KEY : AFTER_VALUE).test(rest)) {
+        isInside = false;
+        out += '"';
+        last = '"';
+      } else {
+        out += sign === '"' ? '\\"' : sign;
+      }
+      continue;
     }
+    if (isCurly) {
+      isInside = true;
+      // A string right after "{", or after "," inside an object, is a key.
+      isKey = last === "{" || (last === "," && opened.at(-1) === "{");
+      out += '"';
+      continue;
+    }
+    if (sign === "{" || sign === "[") opened.push(sign);
+    if (sign === "}" || sign === "]") opened.pop();
+    if (sign.trim() !== "") last = sign;
+    out += sign;
   }
   return out;
 }
@@ -108,7 +124,7 @@ function parse(json: string): unknown {
 
 /** Whether a piece of text that is not JSON was meant to be a part of a quiz. */
 function looksLikeQuiz(text: string): boolean {
-  return /["\u201C\u201D\u201E](?:rounds|questions|check)["\u201C\u201D]\s*:/.test(text);
+  return /["\u201C\u201D\u201E](?:rounds|questions|check|problem)["\u201C\u201D]\s*:/.test(text);
 }
 
 /** Every JSON object or list in a text, in order, and whether a part meant as a quiz could not be read. */
@@ -147,19 +163,27 @@ function isRound(value: unknown): value is Raw {
   return isRaw(value) && !Array.isArray(value["rounds"]) && (Array.isArray(value["questions"]) || typeof value["type"] === "string");
 }
 
-/** The rounds a value carries when it is not a whole quiz: a round, or a list of them. */
+/** Whether an object with rounds is the next part of a quiz, not a quiz of its own: it has no name and no language. */
+function isContinuation(value: unknown): value is Raw {
+  return isRaw(value) && Array.isArray(value["rounds"]) && value["name"] === undefined && value["title"] === undefined && value["language"] === undefined;
+}
+
+/** The rounds a value carries when it is not a whole quiz: a round, a list of them, or `{ "rounds" }` with no name. */
 function looseRounds(value: unknown): readonly Raw[] {
   if (isRound(value)) return [value];
+  if (isContinuation(value)) return (value["rounds"] as readonly unknown[]).filter(isRaw);
   return Array.isArray(value) && value.length > 0 && value.every(isRound) ? value : [];
 }
 
 /**
- * Rounds with no quiz around them. A one-round quiz written flat — `{ "name", "language", "questions" }` —
- * is a quiz: its name, language and teams are the quiz's, and the round gets a name of its own later.
+ * Rounds with no quiz around them. A one-round quiz written flat — one bare object `{ "name", "language",
+ * "questions" }`, not in a list — is a quiz: its name, language and teams are the quiz's. A round in a list
+ * is always a round (what "Write rounds with AI" asks for), and keeps its name.
  */
-function liftQuiz(rounds: readonly Raw[]): Raw {
+function liftQuiz(found: readonly unknown[], rounds: readonly Raw[]): Raw {
   const [only] = rounds;
-  if (rounds.length !== 1 || !only || (only["language"] === undefined && only["teams"] === undefined)) return { rounds };
+  const isBare = found.length === 1 && found[0] === only;
+  if (rounds.length !== 1 || !only || !isBare || (only["language"] === undefined && only["teams"] === undefined)) return { rounds };
   const { name, title, language, teams, ...round } = only;
   return { name: name ?? title, language, teams, rounds: [round] };
 }
@@ -170,23 +194,22 @@ function liftQuiz(rounds: readonly Raw[]): Raw {
  * example, a version that was refused — is left out, with the loose rounds that belonged to it.
  */
 function merge(found: readonly unknown[]): Raw | undefined {
-  const last = found.findLastIndex((value) => isRaw(value) && Array.isArray(value["rounds"]));
+  const last = found.findLastIndex((value) => isRaw(value) && Array.isArray(value["rounds"]) && !isContinuation(value));
   const head = last >= 0 ? (found[last] as Raw) : undefined;
   const after = found.slice(last + 1).flatMap(looseRounds);
-  if (!head) return after.length > 0 ? liftQuiz(after) : undefined;
+  if (!head) return after.length > 0 ? liftQuiz(found, after) : undefined;
   return { ...head, rounds: [...(head["rounds"] as readonly unknown[]), ...after] };
 }
 
 /**
  * Every JSON object or list in a pasted text, in order — for an answer that is not a quiz (the check of
- * the answers); `undefined` when there is none or a part meant as one cannot be read.
+ * the answers) — and whether a part meant as one could not be read.
  * @param pasted - what was pasted
  */
-export function pastedValues(pasted: string): readonly unknown[] | undefined {
+export function pastedValues(pasted: string): { readonly found: readonly unknown[]; readonly isBroken: boolean } {
   const text = pasted.replace(/^\uFEFF/, "");
-  if (text.trim() === "" || text.length > PASTE_MAX_CHARS) return undefined;
-  const { found, isBroken } = values(text);
-  return isBroken || found.length === 0 ? undefined : found;
+  if (text.trim() === "" || text.length > PASTE_MAX_CHARS) return { found: [], isBroken: false };
+  return values(text);
 }
 
 /**

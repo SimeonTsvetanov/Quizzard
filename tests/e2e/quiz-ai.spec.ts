@@ -152,7 +152,11 @@ test.describe("AI windows", () => {
     const copied = await page.evaluate(() => navigator.clipboard.readText());
     expect(copied.split("\n")[0]).toBe("Quizzard could not take the quiz. Fix these problems and send the whole quiz again (in several code blocks if it is long, as before):");
     expect(copied.split("\n")).toHaveLength(4);
-    await field(page).fill(`${JSON.stringify(broken)}\n\n${JSON.stringify({ name: "Q", rounds: [{ name: "R", questions: [{ q: "Answer?", a: "Yes" }] }] })}`);
+    // After a refused answer, Paste puts the corrected one in its place (not after it).
+    await page.evaluate((text) => navigator.clipboard.writeText(text), JSON.stringify({ name: "Q", rounds: [{ name: "R", questions: [{ q: "Answer?", a: "Yes" }] }] }));
+    await dialog(page).locator("[data-ai-paste]").click();
+    await expect(field(page)).not.toHaveValue(/No answer\?/);
+    await expect(make(page)).toBeFocused();
     await make(page).click();
     await expect(screen(page, "quiz")).toBeVisible();
     expect((await stored(page)).map((one) => one.quiz.name)).toEqual(["Q"]);
@@ -221,10 +225,12 @@ test.describe("AI windows", () => {
     await onlyCopy(page);
     await dialog(page).locator("[data-ai-copy]").click();
     expect(await page.evaluate(() => navigator.clipboard.readText())).toContain("## The quiz: Pub night");
-    await field(page).fill(fence({ check: [{ round: 1, question: 1, problem: "The Seine flows through Paris; the answer is right but misspelt.", suggestion: "The Seine" }] }));
+    await field(page).fill(fence({ check: [{ round: 1, question: 1, problem: "The Seine flows through Paris; the answer is right but misspelt.", suggestion: "The Seine" }, { round: 2, question: 0, problem: "Two questions ask the same thing.", suggestion: "" }] }));
     await make(page).click();
     const found = dialog(page).locator("[data-ai-findings]");
-    await expect(found.getByRole("heading")).toHaveText("1 question to look at");
+    await expect(found.getByRole("heading")).toHaveText("2 things to look at");
+    await expect(found.locator("li").nth(1)).toContainText("Round 2");
+    await expect(found.locator("li").nth(1).getByRole("button")).toHaveCount(0);
     await found.getByRole("button", { name: "Open the question" }).click();
     await expect(screen(page, "editor")).toBeVisible();
   });
@@ -241,6 +247,42 @@ test.describe("AI windows", () => {
     await make(page).click();
     await expect(screen(page, "quiz")).toBeVisible();
     expect(await page.evaluate(async () => (await (await caches.open("quizzard-shared")).match("shared-text")) === undefined)).toBe(true);
+  });
+
+  test("a shared answer goes to the window its instructions came from: Write rounds in its quiz", async ({ page }) => {
+    await openQuiz(page, pubNight());
+    await root(page).locator("[data-ai-open-rounds]").click();
+    await onlyCopy(page);
+    await dialog(page).locator("[data-ai-copy]").click();
+    await page.keyboard.press("Escape");
+    await screen(page, "quiz").waitFor();
+    await page.evaluate(async (text) => { await (await caches.open("quizzard-shared")).put("shared-text", new Response(text)); }, fence([{ name: "Shared round", questions: [{ q: "Shared?", a: "yes" }] }]));
+    await page.goto("#/quiz?shared=1");
+    await expect(dialog(page)).toBeVisible();
+    await expect(status(page)).toHaveText("Text shared from another app is below. Press “Add the rounds”.");
+    await make(page).click();
+    await expect(dialog(page)).toBeHidden();
+    await expect.poll(async () => ((await stored(page))[0]?.quiz.rounds ?? []).map((round) => round.name)).toEqual(["History", "Music", "Shared round"]);
+  });
+
+  test("closing the window while pictures load stops the job: nothing is made", async ({ page }) => {
+    let release: () => void = () => undefined;
+    const held = new Promise<void>((resolve) => { release = resolve; });
+    await page.route("https://commons.wikimedia.org/w/api.php**", async (route) => {
+      await held;
+      await route.fulfill({ json: { query: { pages: [{ title: "File:Paris.jpg", imageinfo: [{ mime: "image/jpeg", thumburl: "https://thumb.wikimedia.org/x/p.jpg" }] }] } }, headers: { "access-control-allow-origin": "*" } }).catch(() => undefined);
+    });
+    await page.route("https://thumb.wikimedia.org/**", (route) => route.fulfill({ body: readFileSync(PICTURES.landscape), contentType: "image/jpeg", headers: { "access-control-allow-origin": "*" } }));
+    await openNew(page);
+    await field(page).fill(fence({ name: "Stopped", rounds: [{ name: "R", questions: [{ q: "?", a: "!", picture: "File:Paris.jpg" }] }] }));
+    await make(page).click();
+    await expect(status(page)).toHaveText(/^Downloading pictures…/);
+    await page.keyboard.press("Escape");
+    await expect(dialog(page)).toBeHidden();
+    release();
+    await page.waitForTimeout(500);
+    expect(await files(page)).toHaveLength(0);
+    await expect(screen(page, "library")).toBeVisible();
   });
 
   test("the service worker takes the system's share on the device and keeps the text for the creator", async ({ page }) => {

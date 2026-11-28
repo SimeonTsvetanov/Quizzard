@@ -1,65 +1,19 @@
-// The four AI jobs (screens/ai/window.ts is their window): make a quiz, add rounds to a quiz, add questions
-// to a standard round, check a quiz's answers. Each builds its prompt from the person's choices and the
-// quiz as it is, and takes the assistant's answer: read (core draft/), checked, its pictures fetched
-// (ai/pictures.ts) — then the quiz is made or changed, with Undo, or what must be fixed is listed.
-import { type MediaEntry, type Question, type Quiz, type Round, findQuestion, usedMediaBytes, withMedia } from "@simeonts/quizzard-quiz-core";
-import { type CheckItem, type DraftIssue, type PendingPicture, type QuizWishes, addQuestionsPrompt, addRoundsPrompt, checkPrompt, fromDraft, newQuizPrompt, questionsFromDraft, readCheck, readPasted, roundsFromDraft } from "@simeonts/quizzard-quiz-core/draft";
+// Three of the AI jobs (screens/ai/window.ts is their window; the fourth, the check, is ai/check.ts): make a
+// quiz, add rounds to a quiz, add questions to a standard round. Each builds its prompt from the person's
+// choices and the quiz as it is, and takes the assistant's answer: read (core draft/), checked, its pictures
+// fetched (ai/pictures.ts) — then the quiz is made or changed, with Undo, or what must be fixed is listed.
+// A job whose window was closed, or whose quiz or round is gone meanwhile, changes nothing.
+import { type MediaEntry, type Question, type Quiz, type Round, usedMediaBytes, withMedia } from "@simeonts/quizzard-quiz-core";
+import { type QuizWishes, addQuestionsPrompt, addRoundsPrompt, fromDraft, newQuizPrompt, questionsFromDraft, roundsFromDraft } from "@simeonts/quizzard-quiz-core/draft";
 import type { App } from "../../app/state.ts";
-import { labelButton } from "../../dom/controls.ts";
-import { h } from "../../dom/h.ts";
 import { offerUndo } from "../common.ts";
-import { givenRules } from "../round-rules.ts";
 import { wishForm } from "./form.ts";
-import { fetchPictures } from "./pictures.ts";
+import { draftOptions, freeName, keepFiles, pasted, pictures, withFetched, withRules } from "./take.ts";
 import type { AiJob, AiWindow } from "./window.ts";
 
-/** The words for what a draft leaves out. */
-function draftOptions(app: App): { now: string; language: string; quizName: string; roundName: (n: number) => string } {
-  return { now: new Date().toISOString(), language: app.lang, quizName: app.t("library.newName"), roundName: (n) => app.t("round.defaultName", { n }) };
-}
-
-/** Reads the pasted text as a draft; says why not when it cannot. */
-function pasted(app: App, window: AiWindow): Readonly<Record<string, unknown>> | undefined {
-  const read = readPasted(window.field.value);
-  if (read.ok) return read.draft;
-  const words = { empty: "ai.empty", "no-json": "ai.noJson", broken: "ai.broken", "too-long": "ai.tooLong" } as const;
-  window.say(app.t(words[read.reason]), true);
-  window.field.focus();
-  return undefined;
-}
-
-/** Fetches the pictures a draft named; `undefined` when it could not (the window says why). */
-async function pictures(app: App, window: AiWindow, list: readonly PendingPicture[], usedBytes: number): Promise<{ readonly entries: readonly MediaEntry[]; readonly files: ReadonlyMap<string, Blob>; readonly issues: readonly DraftIssue[] } | undefined> {
-  if (list.length === 0) return { entries: [], files: new Map(), issues: [] };
-  const outcome = await fetchPictures(list, usedBytes, (done, count) => { window.say(app.t("ai.picturesLoading", { done, count })); });
-  if (outcome.ok) {
-    window.say("");
-    return outcome;
-  }
-  const words = { offline: "ai.picturesOffline", busy: "ai.picturesBusy", space: "notSaved" } as const;
-  window.say(app.t(words[outcome.reason]), true);
-  return undefined;
-}
-
-/** The rules text every special round is given, in the language the quiz is played in, where it has none. */
-async function withRules(app: App, rounds: readonly Round[], language: string): Promise<Round[]> {
-  const lang = language === "bg" ? "bg" : "en";
-  return Promise.all(rounds.map(async (round) => {
-    if ((round.rules ?? "") !== "") return round;
-    const rules = await givenRules(round, lang, app.env.registries);
-    return rules === undefined ? round : { ...round, rules };
-  }));
-}
-
-/** A name no quiz of the library has: the quiz's own, or "… 2", "… 3". */
-function freeName(app: App, name: string): string {
-  const lines = app.library === null || app.library === "error" ? [] : app.library;
-  const taken = new Set(lines.map((line) => line.name));
-  if (!taken.has(name)) return name;
-  for (let n = 2; ; n += 1) {
-    if (!taken.has(`${name} ${String(n)}`)) return `${name} ${String(n)}`;
-  }
-}
+/** Most rounds in a quiz and questions in a round (core model limits). */
+const MAX_ROUNDS = 20;
+const MAX_QUESTIONS = 50;
 
 /** The refusal of a form that asks for nothing. */
 function nothingChosen(app: App, wishes: QuizWishes): string | null {
@@ -69,6 +23,7 @@ function nothingChosen(app: App, wishes: QuizWishes): string | null {
 /** Stores a new quiz with its pictures and opens it. */
 async function storeNew(app: App, window: AiWindow, quiz: Quiz, entries: readonly MediaEntry[], files: ReadonlyMap<string, Blob>, fixed: number): Promise<void> {
   const { t } = app;
+  if (window.signal.aborted) return;
   try {
     if (entries.length > 0) await app.store.bring({ quiz, media: entries }, files);
     else await app.store.put(quiz);
@@ -86,19 +41,20 @@ async function storeNew(app: App, window: AiWindow, quiz: Quiz, entries: readonl
 /**
  * "Make a quiz with AI".
  * @param app - the mounted creator
- * @param shared - text another app shared with Quizzard, put in the field at once
+ * @param say - the window's status line
  */
-export function newQuizJob(app: App, shared?: string): AiJob {
+export function newQuizJob(app: App, say: AiWindow["say"]): AiJob {
   const { t } = app;
-  const form = wishForm(app, "quiz", app.lang === "bg" ? "bg" : "en", { rounds: 10, questions: 50 });
+  const form = wishForm(app, "quiz", app.lang === "bg" ? "bg" : "en", { rounds: 10, questions: MAX_QUESTIONS }, say);
   return {
     title: t("ai.open"),
     intro: t("ai.intro"),
+    target: "quiz",
     form,
     prompt: () => newQuizPrompt(form.wishes()),
     refusal: () => nothingChosen(app, form.wishes()),
+    last: { kind: "quiz" },
     make: t("ai.make"),
-    ...(shared === undefined ? {} : { start: { text: shared, status: t("ai.shared") } }),
     async take(_text, window) {
       const draft = pasted(app, window);
       if (!draft) return;
@@ -119,34 +75,44 @@ export function newQuizJob(app: App, shared?: string): AiJob {
   };
 }
 
-/** Puts fetched pictures in the open quiz's storage and its media list; the quiz itself is changed by the caller. */
-async function keepFiles(app: App, quizId: string, files: ReadonlyMap<string, Blob>): Promise<void> {
-  for (const [id, blob] of files) {
-    await app.store.putMedia(quizId, id, blob);
-    app.media.add(id, blob);
-  }
+/** The open quiz, when it is still the one a job is for; else the window says it changed. */
+function stillOpen(app: App, window: AiWindow, quizId: string, roundId?: string): NonNullable<App["current"]> | undefined {
+  if (window.signal.aborted) return undefined;
+  const latest = app.current;
+  if (latest?.quiz.id === quizId && (roundId === undefined || latest.quiz.rounds.some((round) => round.id === roundId))) return latest;
+  window.say(app.t("ai.gone"), true);
+  return undefined;
 }
 
 /**
  * "Write rounds with AI": new rounds after the quiz's own, with Undo.
  * @param app - the mounted creator
  * @param quiz - the open quiz
+ * @param say - the window's status line
  */
-export function addRoundsJob(app: App, quiz: Quiz): AiJob {
+export function addRoundsJob(app: App, quiz: Quiz, say: AiWindow["say"]): AiJob {
   const { t } = app;
   const language = quiz.language === "bg" ? "bg" : "en";
-  const form = wishForm(app, "rounds", language, { rounds: 20 - quiz.rounds.length, questions: 50 });
+  const room = (): number => MAX_ROUNDS - (app.current?.quiz ?? quiz).rounds.length;
+  const form = wishForm(app, "rounds", language, { rounds: room(), questions: MAX_QUESTIONS }, say);
   return {
     title: t("ai.addRounds"),
     intro: t("ai.introRounds", { name: quiz.name }),
+    target: "rounds",
     form,
     prompt: () => addRoundsPrompt(app.current?.quiz ?? quiz, { ...form.wishes(), language }),
-    refusal: () => nothingChosen(app, form.wishes()),
+    refusal: () => {
+      const wishes = form.wishes();
+      const left = room();
+      if (left <= 0) return t("ai.quizFull", { max: MAX_ROUNDS });
+      return wishes.rounds + wishes.specials.length > left ? t("ai.fewerRounds", { room: left }) : nothingChosen(app, wishes);
+    },
+    last: { kind: "rounds", quizId: quiz.id },
     make: t("ai.makeRounds"),
     async take(_text, window) {
-      const now = app.current;
-      const draft = pasted(app, window);
-      if (!draft || !now) return;
+      const now = stillOpen(app, window, quiz.id);
+      const draft = now && pasted(app, window);
+      if (!now || !draft) return;
       const result = roundsFromDraft(draft, now.quiz, draftOptions(app), app.env);
       if (!result.rounds) {
         window.showProblems(result.issues);
@@ -159,10 +125,11 @@ export function addRoundsJob(app: App, quiz: Quiz): AiJob {
         return;
       }
       const added = await withRules(app, result.rounds, now.quiz.language);
-      await keepFiles(app, now.quiz.id, fetched.files);
-      const latest = app.current;
-      if (latest?.quiz.id !== now.quiz.id) return;
-      app.change({ ...latest.quiz, rounds: [...latest.quiz.rounds, ...added] }, fetched.entries.reduce<readonly MediaEntry[]>((media, entry) => withMedia(media, entry), latest.media));
+      if (!stillOpen(app, window, quiz.id)) return;
+      await keepFiles(app, quiz.id, fetched.files);
+      const latest = stillOpen(app, window, quiz.id);
+      if (!latest) return;
+      app.change({ ...latest.quiz, rounds: [...latest.quiz.rounds, ...added] }, withFetched(latest.media, fetched, withMedia));
       await window.close();
       const ids = new Set(added.map((round) => round.id));
       app.draw(`[data-focus="round:${added[0]?.id ?? ""}"]`);
@@ -176,22 +143,26 @@ export function addRoundsJob(app: App, quiz: Quiz): AiJob {
  * @param app - the mounted creator
  * @param quiz - the open quiz
  * @param round - the round they are for
+ * @param say - the window's status line
  */
-export function addQuestionsJob(app: App, quiz: Quiz, round: Round): AiJob {
+export function addQuestionsJob(app: App, quiz: Quiz, round: Round, say: AiWindow["say"]): AiJob {
   const { t } = app;
   const language = quiz.language === "bg" ? "bg" : "en";
-  const form = wishForm(app, "questions", language, { rounds: 0, questions: 50 - round.questions.length });
   const current = (): Round => app.current?.quiz.rounds.find((one) => one.id === round.id) ?? round;
+  const form = wishForm(app, "questions", language, { rounds: 0, questions: MAX_QUESTIONS - round.questions.length }, say);
   return {
     title: t("ai.addQuestions"),
     intro: t("ai.introQuestions", { name: round.name }),
+    target: "questions",
     form,
     prompt: () => addQuestionsPrompt(app.current?.quiz ?? quiz, current(), { ...form.wishes(), language, rounds: 1 }),
+    refusal: () => (current().questions.length >= MAX_QUESTIONS ? t("ai.roundFull", { max: MAX_QUESTIONS }) : null),
+    last: { kind: "questions", quizId: quiz.id, roundId: round.id },
     make: t("ai.makeQuestions"),
     async take(_text, window) {
-      const now = app.current;
-      const draft = pasted(app, window);
-      if (!draft || !now) return;
+      const now = stillOpen(app, window, quiz.id, round.id);
+      const draft = now && pasted(app, window);
+      if (!now || !draft) return;
       const result = questionsFromDraft(draft, current(), app.env);
       if (!result.questions) {
         window.showProblems(result.issues);
@@ -203,69 +174,18 @@ export function addQuestionsJob(app: App, quiz: Quiz, round: Round): AiJob {
         window.showProblems(fetched.issues);
         return;
       }
-      await keepFiles(app, now.quiz.id, fetched.files);
-      const latest = app.current;
-      if (latest?.quiz.id !== now.quiz.id) return;
+      if (!stillOpen(app, window, quiz.id, round.id)) return;
+      await keepFiles(app, quiz.id, fetched.files);
+      const latest = stillOpen(app, window, quiz.id, round.id);
+      if (!latest) return;
       const added: readonly Question[] = result.questions;
       const ids = new Set(added.map((question) => question.id));
       const rounds = latest.quiz.rounds.map((one) => (one.id === round.id ? { ...one, questions: [...one.questions, ...added] } : one));
-      app.change({ ...latest.quiz, rounds }, fetched.entries.reduce<readonly MediaEntry[]>((media, entry) => withMedia(media, entry), latest.media));
+      app.change({ ...latest.quiz, rounds }, withFetched(latest.media, fetched, withMedia));
       await window.close();
       app.draw(`[data-focus="question:${added[0]?.id ?? ""}"]`);
       const restore = (quizNow: Quiz): Quiz => ({ ...quizNow, rounds: quizNow.rounds.map((one) => ({ ...one, questions: one.questions.filter((question) => !ids.has(question.id)) })) });
       offerUndo(app, t("ai.questionsAdded", { count: added.length }), restore, () => { app.draw("[data-add-question]"); });
-    },
-  };
-}
-
-/** One doubted question in the check's result: where, what is wrong, the suggestion, and the way to it. */
-function finding(app: App, quiz: Quiz, item: CheckItem, close: () => Promise<void>): HTMLElement {
-  const { t } = app;
-  const parts: HTMLElement[] = [h("strong", { class: "quiz-ai-finding-place" }, t("ai.checkPlace", { round: item.round, question: item.question }))];
-  if (item.found) parts.push(h("span", { class: "quiz-ai-finding-prompt" }, item.found.prompt));
-  else parts.push(h("span", { class: "quiz-ai-finding-prompt" }, t("ai.checkMissing")));
-  parts.push(h("p", { class: "quiz-ai-finding-problem" }, item.problem));
-  if (item.suggestion !== "") parts.push(h("p", { class: "quiz-ai-text" }, t("ai.checkSuggestion", { text: item.suggestion })));
-  const found = item.found;
-  if (found && findQuestion(quiz, found.id)) {
-    const open = labelButton("open", t("ai.checkOpen"), { class: "button", "data-ai-open-question": found.id });
-    open.addEventListener("click", () => {
-      void close().then(() => { app.go({ screen: "editor", quiz: quiz.id, question: found.id }); });
-    });
-    parts.push(open);
-  }
-  return h("li", { class: "quiz-ai-finding" }, ...parts);
-}
-
-/**
- * "Check the answers with AI": the assistant's doubts, each with the way to its question.
- * @param app - the mounted creator
- * @param quiz - the open quiz
- */
-export function checkJob(app: App, quiz: Quiz): AiJob {
-  const { t } = app;
-  const language = app.lang === "bg" ? "bg" : "en";
-  return {
-    title: t("ai.check"),
-    intro: t("ai.introCheck"),
-    prompt: () => checkPrompt(app.current?.quiz ?? quiz, language),
-    make: t("ai.makeCheck"),
-    async take(text, window) {
-      await Promise.resolve();
-      const now = app.current?.quiz ?? quiz;
-      const read = readCheck(text, now);
-      if (!read.ok) {
-        window.say(t(read.reason === "empty" ? "ai.empty" : "ai.noJson"), true);
-        window.field.focus();
-        return;
-      }
-      window.say("");
-      if (read.items.length === 0) {
-        window.showResult(h("div", {}, h("h3", { tabindex: "-1" }, t("ai.checkNone"))));
-        return;
-      }
-      const list = h("ul", { class: "quiz-ai-findings" }, ...read.items.map((item) => finding(app, now, item, () => window.close())));
-      window.showResult(h("div", { "data-ai-findings": "" }, h("h3", { tabindex: "-1" }, t("ai.checkFound", { count: read.items.length })), list));
     },
   };
 }

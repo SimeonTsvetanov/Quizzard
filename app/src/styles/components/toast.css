@@ -40,9 +40,11 @@
       color: var(--color-danger-text);
     }
 
-    /* Desktop: the region sits at the bottom, so toasts rise from below. */
+    /* Desktop: the region sits at the bottom, so toasts rise from below; a long message wraps at a reading width. */
     @media (width > 600px) {
       --toast-enter-y: var(--toast-enter-offset);
+
+      max-width: min(36rem, calc(100vw - 2 * var(--space-4)));
     }
 
     /* Reduced motion: a short fade instead of the drop-in (accessibility §8). */

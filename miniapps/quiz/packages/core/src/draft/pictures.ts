@@ -15,15 +15,23 @@ export interface PendingPicture {
   readonly place: Readonly<Record<string, number>>;
 }
 
-/** The hosts whose addresses name a Commons file. */
-const COMMONS_PAGE = /^https?:\/\/(?:commons\.(?:m\.)?wikimedia\.org)\/wiki\/(.+)$/i;
+/** A Commons page that names a file: `/wiki/File:…`, `/wiki/Special:FilePath/…`, `/wiki/Special:Redirect/file/…` — also a Wikipedia's own file page, which shows the Commons file of that name. */
+const FILE_PAGE = /^https?:\/\/(?:commons|[a-z-]+)\.(?:m\.)?(?:wikimedia|wikipedia)\.org\/wiki\/(?:(?:File|Image|Файл):|Special:FilePath\/|Special:Redirect\/file\/)([^?#]+)/i;
+/** `/w/index.php?title=File:…`. */
+const INDEX_PAGE = /^https?:\/\/(?:commons|[a-z-]+)\.(?:m\.)?(?:wikimedia|wikipedia)\.org\/w\/index\.php\?(?:.*&)?title=(?:File|Image):([^&#]+)/i;
+/** A file's own address on Commons' file hosts, full size or a thumbnail. */
 const COMMONS_FILE = /^https?:\/\/(?:upload|thumb)\.wikimedia\.org\/wikipedia\/commons\/(?:thumb\/)?[0-9a-f]\/[0-9a-f]{2}\/([^/?#]+)/i;
+/** A host name at the start of an address written without its scheme ("commons.wikimedia.org/…"). */
+const BARE_HOST = /^(?:www\.)?[a-z0-9-]+(?:\.[a-z0-9-]+)+\//i;
 
-/** A title as Commons writes it: `File:` first, spaces for underscores, the first letter of the name in capitals. */
+/**
+ * A title as Commons writes it: `File:` first, spaces for underscores, the first letter in capitals. A file
+ * name never has "/", "\\" or ":" in it (MediaWiki refuses them), and always ends in a file ending.
+ */
 function asTitle(name: string): string | undefined {
   const plain = name.replace(/_/g, " ").replace(/\s+/g, " ").trim();
   const bare = plain.replace(/^(?:file|image|файл):\s*/i, "");
-  if (bare === "" || /[#<>[\]|{}]/.test(bare) || !/\.[a-z0-9]{2,5}$/i.test(bare)) return undefined;
+  if (bare === "" || /[#<>[\]|{}/\\:]/.test(bare) || !/\.[a-z0-9]{2,5}$/i.test(bare)) return undefined;
   return `File:${bare.charAt(0).toUpperCase()}${bare.slice(1)}`;
 }
 
@@ -38,15 +46,17 @@ function decoded(part: string): string {
 
 /**
  * The Commons title a draft's picture names, from its file name ("File:Eiffel Tower.jpg", "Eiffel_Tower.jpg"),
- * its page ("https://commons.wikimedia.org/wiki/File:…") or its file's address on upload.wikimedia.org;
+ * a page that shows the file (Commons or a Wikipedia), or its file's address on upload.wikimedia.org;
  * `undefined` for anything else — another website, a made-up address, a name without a file ending.
+ * Whether the file exists is for Commons to say (the creator asks it before it takes the quiz).
  * @param value - what the draft holds
  */
 export function commonsTitle(value: string): string | undefined {
-  const text = value.trim();
-  const page = COMMONS_PAGE.exec(text)?.[1];
-  if (page !== undefined) return /^(?:file|image):/i.test(decoded(page)) ? asTitle(decoded(page.split(/[?#]/)[0] ?? "")) : undefined;
-  const file = COMMONS_FILE.exec(text)?.[1];
-  if (file !== undefined) return asTitle(decoded(file));
+  const written = value.trim();
+  const text = BARE_HOST.test(written) ? `https://${written}` : written;
+  for (const pattern of [FILE_PAGE, INDEX_PAGE, COMMONS_FILE]) {
+    const part = pattern.exec(text)?.[1];
+    if (part !== undefined) return asTitle(decoded(part.replace(/\+/g, " ")));
+  }
   return /^[a-z]+:\/\//i.test(text) ? undefined : asTitle(text);
 }

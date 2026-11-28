@@ -149,13 +149,17 @@
     max-width: 100%;
     padding: 0.4cqmin 1.4cqmin;
     border-radius: 1.2cqmin 0 1.2cqmin 0;
-    background: oklch(0% 0 0 / 0.55);
+    background: oklch(0% 0 0 / 0.65);
     color: oklch(100% 0 0);
-    font-size: clamp(7px, 2.4cqmin, 15px);
+    font-size: clamp(10px, 2.4cqmin, 15px);
     line-height: 1.3;
+    /* Two lines at most: a long author's name never hides the licence after it for good. */
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
     overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    overflow-wrap: anywhere;
     pointer-events: none;
 
     [data-zoom] > & {

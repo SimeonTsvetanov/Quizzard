@@ -89,7 +89,7 @@ describe("fromDraft: what stops a quiz", () => {
     const pyramid = { type: "pyramid", name: "P", questions: [{ q: "1", accepted: ["a"] }, { q: "2", accepted: ["a", "a"] }, { q: "3", accepted: ["a", "b", "c"] }, { q: "4", accepted: ["a", "b", "c", "d"] }] };
     const result = make({ name: "Q", rounds: [pyramid] });
     expect(result.issues.map((issue) => issue.code)).toEqual(["accepted-too-few"]);
-    expect(issueText(result.issues[0] ?? { level: "error", path: "", code: "not-object", values: {} })).toContain("asks for 2 answers");
+    expect(issueText(result.issues[0] ?? { level: "error", path: "", code: "not-object", values: {} })).toContain("Answers this Golden pyramid question asks for: 2,");
     const safe = { type: "safe", name: "S", questions: [{ q: "1", digit: 1 }, { q: "2", digit: 12 }, { q: "3", digit: "7" }, { q: "4", a: 4 }, { q: "5" }] };
     expect(errors({ name: "Q", rounds: [safe] })).toEqual(["rounds[0].questions[1].digit:digit-invalid", "rounds[0].questions[4].digit:digit-invalid"]);
   });
@@ -186,7 +186,7 @@ describe("the guide and the message back", () => {
     expect(guide).toContain(`at most ${String(core.MAX_ROUNDS)} rounds`);
     expect(guide).toContain(`up to ${String(core.PROMPT_MAX)} characters`);
     expect(guide).toContain('"type": "pyramid"');
-    expect(guide.length).toBeLessThan(11_000);
+    expect(guide.length).toBeLessThan(12_000);
   });
 
   it("the message for the assistant lists every error and asks for the whole quiz again; none when only fixes were made", () => {
@@ -367,7 +367,7 @@ describe("rounds and questions added to a quiz", () => {
   it("no more rounds than the quiz has room for", () => {
     const result = roundsFromDraft({ rounds: [{ name: "A", questions: [{ q: "?", a: "!" }] }, { name: "B", questions: [{ q: "?", a: "!" }] }] }, quiz(core.MAX_ROUNDS - 1), OPTIONS, testEnv("n"));
     expect(result.rounds).toBeUndefined();
-    expect(issueText(result.issues[0] ?? { level: "error", path: "", code: "not-object", values: {} })).toBe("The quiz has room for 1 more rounds (at most 20 in all); 2 were sent. Send fewer. (rounds)");
+    expect(issueText(result.issues[0] ?? { level: "error", path: "", code: "not-object", values: {} })).toBe("New rounds that still fit in the quiz: 1 (at most 20 in all); sent: 2. Send fewer. (rounds)");
   });
 
   it("questions take the round's time and points unless they have their own, and wherever the assistant put them", () => {
@@ -444,7 +444,8 @@ describe("messages in Bulgarian, and the reading's last slips", () => {
   it("the same issue in Bulgarian, with the place in Bulgarian, and the message for the assistant", () => {
     const result = make({ name: "Q", rounds: [{ name: "R", questions: [{ q: "?" }] }] });
     expect(issueText(result.issues[0] ?? { level: "error", path: "", code: "not-object", values: {} }, "bg")).toBe("Рунд 1, въпрос 1: Въпросът няма отговор. Дай \"a\" (текст или true / false) или \"options\" с \"correct\". (rounds[0].questions[0].a)");
-    expect(issuesForAssistant(result.issues, "bg").split("\n")[0]).toContain("Quizzard не можа да приеме куиза");
+    expect(issuesForAssistant(result.issues, "bg").split("\n")[0]).toContain("Quizzard не можа да приеме куиза.");
+    expect(issuesForAssistant(result.issues, "en", "rounds").split("\n")[0]).toBe("Quizzard could not take the quiz. Fix these problems and send ALL the new rounds again, as one list in one code block — not the quiz's own rounds:");
   });
 
   it("a one-round quiz written flat keeps its name, language and teams", () => {
@@ -456,5 +457,55 @@ describe("messages in Bulgarian, and the reading's last slips", () => {
   it("JSON typed with curly quotes keeps the quotes of a title inside a text", () => {
     const read = readPasted("{ \u201Ename\u201C: \u201EКуиз\u201C, \u201Crounds\u201D: [ { \u201Cname\u201D: \u201CR\u201D, \u201Cquestions\u201D: [ { \u201Cq\u201D: \u201CКой е написал \u201EПод игото\u201C?\u201D, \u201Ca\u201D: \u201CВазов\u201D } ] } ] }");
     expect(read.ok && (read.draft["rounds"] as readonly { questions: readonly { q: string }[] }[])[0]?.questions[0]?.q).toBe("Кой е написал \u201EПод игото\u201C?");
+  });
+});
+
+// Found by the review of the AI windows (2026-11-28, 54 findings re-checked).
+describe("the second review's findings", () => {
+  const quiz = must(make(DRAFT_EXAMPLE).quiz);
+
+  it("a stray [] or an empty check after the real one never hides what the assistant found; a broken answer is said", () => {
+    const real = '```json\n{ "check": [ { "round": 1, "question": 2, "problem": "Wrong", "suggestion": "c" } ] }\n```';
+    for (const after of ["Press Copy, then - [ ] fix it", "If all is right the check returns [].", 'Else send { "check": [] }.']) {
+      const read = readCheck(`${real}\n${after}`, quiz);
+      expect(read.ok && read.items.length).toBe(1);
+    }
+    expect(readCheck('{ "check": [ { "round": 1, "question": 2, "problem": "He said "no" here" } ] }', quiz)).toEqual({ ok: false, reason: "broken" });
+  });
+
+  it("a problem with a whole round or the quiz, or a place written in words, is kept — never an all-clear", () => {
+    const read = readCheck('{ "check": [ { "round": "Round 1", "question": "Q2", "problem": "p" }, { "round": 2, "question": 0, "problem": "two the same" }, { "round": 0, "problem": "too easy" } ] }', quiz);
+    expect(read.ok && read.items.map((item) => [item.round, item.question, item.found?.prompt])).toEqual([[1, 2, "Which of these are planets?"], [2, 0, undefined], [0, 0, undefined]]);
+  });
+
+  it("curly-quoted JSON keeps a title followed by a comma or a colon inside its text", () => {
+    for (const q of ["\u201CIn \u201CHamlet\u201D, who dies first?\u201D", "\u201EВ \u201EПод игото\u201C, кой е Бай Марко?\u201C", "\u201CFinish the line \u201CTo be or not to be\u201D: what comes next?\u201D"]) {
+      const read = readPasted(`{\u201Cname\u201D: \u201CQ\u201D, \u201Crounds\u201D: [{\u201Cquestions\u201D: [{\u201Cq\u201D: ${q}, \u201Ca\u201D: \u201Cx\u201D}]}]}`);
+      expect(read.ok).toBe(true);
+    }
+  });
+
+  it("a later part written as { rounds } continues the quiz; a round in a list keeps its name", () => {
+    const read = readPasted(`${JSON.stringify({ name: "Big", language: "en", rounds: [{ name: "R1", questions: [{ q: "?", a: "!" }] }] })}\n${JSON.stringify({ rounds: [{ name: "R2", questions: [{ q: "?", a: "!" }] }] })}`);
+    expect(read.ok && [read.draft["name"], (read.draft["rounds"] as readonly { name: string }[]).map((round) => round.name)]).toEqual(["Big", ["R1", "R2"]]);
+    const listed = readPasted(JSON.stringify([{ name: "Music", language: "bg", questions: [{ q: "?", a: "!" }] }]));
+    expect(listed.ok && (listed.draft["rounds"] as readonly { name: string }[])[0]?.name).toBe("Music");
+  });
+
+  it("pictures only where they can be shown: a pyramid's and a task's are left out and said", () => {
+    const result = make({ name: "Q", rounds: [{ type: "pyramid", name: "P", questions: [{ q: "1", accepted: ["a"], picture: "File:A.jpg" }, { q: "2", accepted: ["a", "b"] }, { q: "3", accepted: ["a", "b", "c"] }, { q: "4", accepted: ["a", "b", "c", "d"] }] }, { type: "task", name: "T", text: "Draw", picture: "File:B.jpg" }] });
+    expect(result.pictures).toEqual([]);
+    expect(result.issues.map((issue) => `${issue.path}:${issue.code}`)).toEqual(["rounds[0].questions[0].picture:field-ignored", "rounds[1].picture:field-ignored"]);
+  });
+
+  it("language codes with an underscore; the prompt talks in the screen's language and names the room left", () => {
+    expect(make({ name: "Q", language: "bg_BG", rounds: [{ name: "R", questions: [{ q: "?", a: "!" }] }] }).quiz?.language).toBe("bg");
+    const wishes: QuizWishes = { topic: "", audience: "friends", difficulty: "medium", name: "", language: "bg", rounds: 1, perRound: 5, answers: ["open"], seconds: 30, points: 1, specials: [], pictures: false, extra: "", ui: "en" };
+    const prompt = newQuizPrompt(wishes);
+    expect(prompt).toContain("Talk to the person in English.");
+    expect(prompt).toContain('press "Paste" and "Make the quiz"');
+    expect(prompt).not.toContain("\"type\": \"pyramid\"");
+    expect(prompt).toContain("Special rounds: none — write no special round");
+    expect(addRoundsPrompt(quiz, wishes)).toContain("It has 4 of at most 20 rounds: write at most 16 new rounds.");
   });
 });
