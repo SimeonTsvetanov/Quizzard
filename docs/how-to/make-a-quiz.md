@@ -17,7 +17,7 @@ A quiz is a deck of cards: its rounds are the stacks and its questions are the c
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="../images/make-a-quiz/library-dark.png">
-  <img src="../images/make-a-quiz/library-light.png" alt="Your quizzes with the buttons New quiz and Open a quiz file and a card for the quiz Pub night: 2 rounds, 5 questions, 3 min." width="390">
+  <img src="../images/make-a-quiz/library-light.png" alt="Your quizzes with the buttons New quiz, Open a quiz file and Make a quiz with AI and a card for the quiz Pub night: 2 rounds, 5 questions, 3 min." width="390">
 </picture>
 
 The buttons on a quiz's card rename it, make a copy or delete it. A deleted quiz can be brought back with **Undo** for a few seconds. From six quizzes on, **Search your quizzes** finds a quiz by its name.
@@ -28,6 +28,11 @@ Your own assistant — ChatGPT, Gemini, Claude or another — can write the ques
 
 1. In **Your quizzes**, select **Make a quiz with AI**.
 2. Under **What do you want?**, choose the topic, who plays, the difficulty, the language, the number of rounds and questions, the time and points, the kinds of answer and the special rounds. The **ⓘ** beside a special round says what it is. Your choices are kept for the next time.
+   <picture>
+     <source media="(prefers-color-scheme: dark)" srcset="../images/make-a-quiz/ai-dark.png">
+     <img src="../images/make-a-quiz/ai-light.png" alt="The Make a quiz with AI window on a phone: the special rounds Golden pyramid, Safe (ticked, with its ⓘ open: 5 questions, each answered with one digit), Make the quizmaster laugh and Free game, and the tick Pictures from Wikimedia Commons." width="390">
+   </picture>
+
 3. Under **Give it to your assistant**, select your assistant, then **Copy and open ChatGPT** (or Gemini, Claude; **Copy the instructions** for another assistant) — the instructions are copied and the assistant opens in a new tab. Paste them into a new chat. On a phone, **Share to an app** sends them straight to the assistant's app.
 4. The assistant answers with one block of code. Select the Copy button on that block, come back to Quizzard, select **Paste**, then **Make the quiz**. For a long quiz in several blocks, copy and paste each block in order first.
 

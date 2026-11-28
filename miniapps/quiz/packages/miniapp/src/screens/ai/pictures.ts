@@ -120,6 +120,7 @@ async function fetchOne(picture: PendingPicture, found: { readonly url: string; 
  */
 export async function fetchPictures(pictures: readonly PendingPicture[], usedBytes: number, signal: AbortSignal, progress: (done: number, count: number) => void): Promise<PictureOutcome> {
   try {
+    progress(0, pictures.length);
     const found = await lookUp([...new Set(pictures.map((picture) => picture.title))], signal);
     const issues: DraftIssue[] = [];
     const entries: MediaEntry[] = [];

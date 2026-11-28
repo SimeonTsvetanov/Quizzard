@@ -130,6 +130,19 @@ async function jumpTo(page: Page, screen: string, nth: number): Promise<void> {
 const QUIZ_SHOTS: readonly DocsShot[] = [
   { page: "make-a-quiz", name: "library", device: "phone", setUp: async (page) => { await seedQuiz(page); await settle(page); } },
   {
+    page: "make-a-quiz", name: "ai", device: "phone",
+    setUp: async (page) => {
+      await seedQuiz(page);
+      await settle(page);
+      await page.locator("[data-ai-open-quiz]").click();
+      await page.locator("[data-ai-topic]").fill("Rivers of Europe");
+      await page.locator("[data-ai-special-safe]").check();
+      await page.locator("[data-ai-dialog]").getByRole("button", { name: "About Safe" }).click();
+      await page.locator("[data-ai-special-safe]").scrollIntoViewIfNeeded();
+      await page.waitForTimeout(300);
+    },
+  },
+  {
     page: "make-a-quiz", name: "quiz", device: "phone",
     setUp: async (page) => {
       await page.setViewportSize({ width: 390, height: 1000 }); // tall: the header card and both rounds without scrolling

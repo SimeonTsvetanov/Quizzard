@@ -152,7 +152,9 @@ export function openAiWindow(app: App, build: (say: AiWindow["say"]) => AiJob, s
   const show = (children: HTMLElement[]): void => {
     outcome.replaceChildren(...children);
     outcome.hidden = false;
-    (outcome.querySelector<HTMLElement>("h3") ?? outcome).focus();
+    // The outcome comes to the top of the window (not just into view at its lower edge), its title takes the focus.
+    (outcome.querySelector<HTMLElement>("h3") ?? outcome).focus({ preventScroll: true });
+    outcome.scrollIntoView({ block: "start" });
   };
   const window: AiWindow = {
     field: parts.field,

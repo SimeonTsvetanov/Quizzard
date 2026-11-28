@@ -11,10 +11,11 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 - **Pictures from Wikimedia Commons.** The assistant may add free photos to the questions; Quizzard downloads each one and shows its author and licence on the slide. A file name that does not exist is sent back to the assistant to fix, so a made-up picture never gets in.
 - **Write rounds with AI** in a quiz and **Write questions with AI** in a standard round: the assistant sees what the quiz already has and does not repeat it; **Undo** takes the new ones away.
 - **Check the answers with AI**: the assistant reads every question with its answer and lists the ones it doubts, each with a suggestion and a button to the question. Nothing changes by itself.
-- **Android, installed:** **Share** an assistant's answer to Quizzard and **Make a quiz with AI** opens with it already pasted.
+- **Android, installed:** **Share** an assistant's answer to Quizzard and the AI window you copied the instructions from opens again — in its quiz or round — with the answer already pasted.
 ### Changed
 - What must be fixed in an assistant's answer is listed in the language of the app (English or Bulgarian), and copied for the assistant in the same words.
 - A notification too long for one line now wraps instead of pushing its button off a phone's screen.
+- After a refused answer, **Paste** puts the corrected answer in place of the old one; closing an AI window stops what it was doing (nothing is added half-way); only one AI window opens at a time.
 ### Fixed
 - A one-round quiz written without a list of rounds keeps its name, language and teams; JSON typed with curly quotes keeps the quotes inside its texts.
 
