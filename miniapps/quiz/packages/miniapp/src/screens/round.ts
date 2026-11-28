@@ -50,7 +50,7 @@ function addControl(app: App, round: Round): HTMLElement {
   return h("div", { class: "quiz-fab" }, add);
 }
 
-/** "Add questions with AI" under the questions of a standard round that has room (a special round's questions are fixed). */
+/** "Write questions with AI" under the questions of a standard round that has room (a special round's questions are fixed). */
 function aiQuestions(app: App, round: Round): HTMLElement[] {
   if (shapeOf(round, app.env.registries) || !canAddQuestion(round)) return [];
   return [h("div", { class: "quiz-ai-tools", "data-count": "1" }, aiButton(app, "questions", round.id))];

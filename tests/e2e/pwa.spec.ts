@@ -16,12 +16,12 @@ async function openControlled(page: Page): Promise<void> {
     .toBe(true);
 }
 
-test("manifest carries shortcuts only when app.config has them, and no share target (PLAN §2)", async ({
+test("manifest carries shortcuts only when app.config has them, and the share target of Make a quiz with AI (DECISIONS 2026-11-28)", async ({
   request,
 }) => {
   const m = (await (await request.get("./manifest.json")).json()) as Record<string, unknown>;
   expect(m["shortcuts"] !== undefined).toBe(Boolean(app.shortcuts?.length));
-  expect(m["share_target"]).toBeUndefined();
+  expect(m["share_target"]).toMatchObject({ action: `${app.basePath}share-target`, method: "POST", enctype: "multipart/form-data", params: { text: "text" } });
 });
 
 test("manifest scope and start URL are the Pages path from app.config", async ({ request }) => {

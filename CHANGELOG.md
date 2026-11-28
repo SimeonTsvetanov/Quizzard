@@ -9,7 +9,7 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 - **Make a quiz with AI — a form instead of a chat.** Choose the topic, who plays, the difficulty, the language, the number of rounds and questions, the time, the points, the kinds of answer and the special rounds — each with an ⓘ that says what it is — and the assistant writes the quiz at once, without questions. Your choices are kept for the next time.
 - **Copy and open your assistant.** Pick ChatGPT, Gemini, Claude or another once; one press copies the instructions and opens it in a new tab. On a phone, **Share to an app** sends them to the assistant's app.
 - **Pictures from Wikimedia Commons.** The assistant may add free photos to the questions; Quizzard downloads each one and shows its author and licence on the slide. A file name that does not exist is sent back to the assistant to fix, so a made-up picture never gets in.
-- **Add rounds with AI** in a quiz and **Add questions with AI** in a standard round: the assistant sees what the quiz already has and does not repeat it; **Undo** takes the new ones away.
+- **Write rounds with AI** in a quiz and **Write questions with AI** in a standard round: the assistant sees what the quiz already has and does not repeat it; **Undo** takes the new ones away.
 - **Check the answers with AI**: the assistant reads every question with its answer and lists the ones it doubts, each with a suggestion and a button to the question. Nothing changes by itself.
 - **Android, installed:** **Share** an assistant's answer to Quizzard and **Make a quiz with AI** opens with it already pasted.
 ### Changed

@@ -111,7 +111,7 @@ function addRoundControl(app: App): HTMLElement {
   return add;
 }
 
-/** "Add rounds with AI" (while the quiz has room) and "Check the answers with AI" (once it has questions), side by side. */
+/** "Write rounds with AI" (while the quiz has room) and "Check the answers with AI" (once it has questions), side by side. */
 function aiTools(app: App, quiz: Quiz): HTMLElement {
   const buttons = [...(canAddRound(quiz) ? [aiButton(app, "rounds")] : []), ...(quiz.rounds.some((round) => round.questions.length > 0) ? [aiButton(app, "check")] : [])];
   return h("div", { class: "quiz-ai-tools", "data-count": String(buttons.length) }, ...buttons);

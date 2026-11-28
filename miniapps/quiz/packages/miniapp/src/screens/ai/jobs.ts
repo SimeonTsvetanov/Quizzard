@@ -128,7 +128,7 @@ async function keepFiles(app: App, quizId: string, files: ReadonlyMap<string, Bl
 }
 
 /**
- * "Add rounds with AI": new rounds after the quiz's own, with Undo.
+ * "Write rounds with AI": new rounds after the quiz's own, with Undo.
  * @param app - the mounted creator
  * @param quiz - the open quiz
  */
@@ -172,7 +172,7 @@ export function addRoundsJob(app: App, quiz: Quiz): AiJob {
 }
 
 /**
- * "Add questions with AI": new questions at the end of a standard round, with Undo.
+ * "Write questions with AI": new questions at the end of a standard round, with Undo.
  * @param app - the mounted creator
  * @param quiz - the open quiz
  * @param round - the round they are for

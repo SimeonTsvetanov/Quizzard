@@ -2,8 +2,8 @@
 export const enAi = {
   ai: {
     open: "Make a quiz with AI",
-    addRounds: "Add rounds with AI",
-    addQuestions: "Add questions with AI",
+    addRounds: "Write rounds with AI",
+    addQuestions: "Write questions with AI",
     check: "Check the answers with AI",
     intro: "Your own AI assistant — ChatGPT, Gemini, Claude or another — writes the questions. Quizzard checks them and makes the quiz.",
     introRounds: "Your assistant writes new rounds for “{{name}}”. Quizzard checks them and adds them after the rounds it has.",

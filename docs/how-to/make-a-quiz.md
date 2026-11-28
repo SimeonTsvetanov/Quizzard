@@ -43,8 +43,8 @@ Tick **Pictures from Wikimedia Commons** and the assistant adds photos to some q
 
 ### More rounds, more questions, a check of the answers
 
-- In a quiz, **Add rounds with AI** asks your assistant for new rounds; it sees the questions the quiz already has, so it does not repeat them. They are added after the quiz's rounds, and **Undo** takes them away again.
-- In a standard round, **Add questions with AI** adds questions at the end of the round, with the round's time and points.
+- In a quiz, **Write rounds with AI** asks your assistant for new rounds; it sees the questions the quiz already has, so it does not repeat them. They are added after the quiz's rounds, and **Undo** takes them away again.
+- In a standard round, **Write questions with AI** adds questions at the end of the round, with the round's time and points.
 - **Check the answers with AI** gives your assistant every question with its answer. Paste its answer and select **Show the results**: each question it doubts is listed with what is wrong and its suggestion, and **Open the question** takes you to it. Nothing changes by itself.
 
 ### Share the answer to Quizzard (Android)
