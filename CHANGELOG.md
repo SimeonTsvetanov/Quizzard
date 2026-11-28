@@ -4,6 +4,10 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.38.1] - 2026-11-28
+### Changed
+- **Make a quiz with AI:** the instructions now tell the assistant to put the whole quiz in one block of code and nothing around it but one line of what to do next, so the block's own Copy button takes exactly what you paste.
+
 ## [0.38.0] - 2026-11-28
 ### Added
 - **Quiz creator — "Make a quiz with AI".** Your own assistant (ChatGPT, Gemini, Claude or another) writes the questions: copy the instructions into a chat, answer what it asks, paste its answer back and press "Make the quiz". Quizzard checks the quiz and adds it to your quizzes, ready to edit and play — text questions with open answers, multiple choice and true / false, and the rounds Golden pyramid, Safe, Make the quizmaster laugh and Free game.

@@ -29,7 +29,7 @@ Your own assistant — ChatGPT, Gemini, Claude or another — can write the ques
 1. In **Your quizzes**, select **Make a quiz with AI**.
 2. Select **Copy instructions** and paste them into a new chat with your assistant.
 3. Answer what the assistant asks: the topic, the number of rounds, the special rounds, the language.
-4. Copy the assistant's whole answer. In Quizzard, select **Paste**, then **Make the quiz**.
+4. The assistant answers with a block of code. Select the Copy button on that block. In Quizzard, select **Paste**, then **Make the quiz**. For a long quiz in several blocks, copy and paste each block in order first.
 
 The quiz opens, ready to edit and play. The assistant can write text questions (open answer, multiple choice, true / false) and the rounds Golden pyramid, Safe, Make the quizmaster laugh and Free game. You add pictures, audio and video yourself.
 
