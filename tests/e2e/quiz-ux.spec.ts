@@ -296,10 +296,14 @@ test("S8: a long round as a compact list — 56 px rows, remembered on this devi
   await expect(page.locator(".toast")).toHaveCount(0, { timeout: 8000 }); // on a phone the note lies over the first rows for a moment
   await drag(page, '[data-question="lq1"]', '[data-question="lq3"]');
   expect((await order(page, "data-question")).slice(0, 3)).toEqual(["lq2", "lq3", "lq1"]);
-  // At the end of the page the "Add question" button rests under the list. Anywhere else it lies over whichever
-  // row is passing under it, and how much of that row shows depends on the header's height — luck, not the list.
-  await page.evaluate(() => { window.scrollTo(0, document.documentElement.scrollHeight); });
+  // Every row is measured where nothing sticky lies over it: in a window as tall as the page, the header stays
+  // above the first row and "Add question" rests under the list. In a shorter window the header and the button
+  // lie over whichever row is passing under them, and which one that is depends on the page's length — luck, not the list.
+  const size = page.viewportSize();
+  const full = await page.evaluate(() => document.documentElement.scrollHeight);
+  if (size) await page.setViewportSize({ width: size.width, height: full });
   await axe(page, "round as a list");
+  if (size) await page.setViewportSize(size);
   await page.reload();
   await expect(root(page).locator(".quiz-qrow")).toHaveCount(14);
   await root(page).locator('[data-view-mode="cards"]').click();
