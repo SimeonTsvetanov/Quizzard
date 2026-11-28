@@ -17,6 +17,7 @@ app/public/robots.txt
 app/public/sitemap.xml
 app/public/llms.txt
 app/public/llms-full.txt
+app/public/ai.md
 app/public/404.html
 app/public/error-page.*
 app/public/page.css

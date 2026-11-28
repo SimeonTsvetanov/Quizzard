@@ -212,6 +212,7 @@ export function llmsTxt(app: AppConfig): string {
     "## Use it", ...useItLinks(app), "",
     "## Optional",
     `- [Full reference](${app.url}llms-full.txt): usage, URL parameters, limits and features`,
+    `- [Make a quiz for a person](${app.url}ai.md): what to ask them and the JSON format the Quiz creator takes ("Make a quiz with AI")`,
     `- [Privacy](${app.url}privacy/): what is processed and stored`,
     `- [Terms](${app.url}terms/): conditions of use`,
     "",

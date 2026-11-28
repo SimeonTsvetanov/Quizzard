@@ -208,6 +208,11 @@
       display: inline-flex;
     }
 
+    /* "Make a quiz with AI", the third way in: the whole row under the other two. */
+    & > .quiz-ai-open {
+      grid-column: 1 / -1;
+    }
+
     @media (width < 420px) {
       grid-template-columns: minmax(0, 1fr);
     }

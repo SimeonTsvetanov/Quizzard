@@ -1,0 +1,104 @@
+/* Quiz creator: "Make a quiz with AI" (screens/ai-quiz.ts) — the sheet (styles/sheet.css) with two
+   steps as soft tiles, the field for the assistant's answer, and the list of what to fix. */
+@layer components {
+  /* || Components: make a quiz with AI */
+  .quiz-sheet.quiz-ai {
+    inline-size: min(100%, 36rem);
+    max-block-size: min(100dvh - var(--space-4), 52rem);
+
+    &[open] {
+      grid-template-rows: auto minmax(0, 1fr);
+    }
+
+    & .quiz-sheet-title {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+
+      & svg {
+        flex: none;
+        color: var(--color-accent-text);
+      }
+    }
+  }
+
+  .quiz-ai-body {
+    display: grid;
+    gap: var(--space-3);
+    min-height: 0;
+    padding: var(--space-1) var(--space-2) var(--space-2);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .quiz-ai-step {
+    display: grid;
+    gap: var(--space-2);
+    padding: var(--space-3);
+    border-radius: var(--radius-lg);
+    background: color-mix(in oklch, var(--color-text) 5%, transparent);
+
+    /* `display: grid` above would show a step that is hidden (the list of problems before there is one). */
+    &[hidden] {
+      display: none;
+    }
+
+    & h3 {
+      margin: 0;
+      font-size: var(--text-md);
+      font-weight: var(--weight-bold);
+
+      &:focus {
+        outline: none;
+      }
+    }
+  }
+
+  .quiz-ai-text {
+    margin: 0;
+    color: var(--color-text-secondary);
+  }
+
+  .quiz-ai-details summary {
+    min-height: var(--tap-target);
+    align-content: center;
+    color: var(--color-accent-text);
+    font-weight: var(--weight-semibold);
+    cursor: pointer;
+  }
+
+  .quiz-ai-guide,
+  .quiz-ai-field {
+    width: 100%;
+    font-size: max(var(--text-sm), var(--quiz-field-min-font));
+    resize: vertical;
+  }
+
+  .quiz-ai-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-2);
+  }
+
+  .quiz-ai-status {
+    min-height: 1lh;
+    margin: 0;
+    font-weight: var(--weight-semibold);
+
+    &:empty {
+      display: none;
+    }
+
+    &[data-error] {
+      color: var(--color-danger-text);
+    }
+  }
+
+  .quiz-ai-problems {
+    display: grid;
+    gap: var(--space-2);
+    margin: 0;
+    padding-inline-start: var(--space-5);
+    overflow-wrap: anywhere;
+  }
+}

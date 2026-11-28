@@ -1,4 +1,5 @@
 import type { Messages } from "./en.ts";
+import { bgAi } from "./bg-ai.ts";
 import { bgEdit } from "./bg-edit.ts";
 import { bgFiles } from "./bg-files.ts";
 import { bgMore } from "./bg-more.ts";
@@ -156,6 +157,7 @@ export const bg: Messages = {
     empty: "Още е празен",
     moved: "Въпрос {{n}} е преместен в „{{round}}“",
   },
+  ...bgAi,
   ...bgEdit,
   ...bgFiles,
   ...bgMore,

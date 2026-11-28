@@ -168,7 +168,7 @@ export async function axe(page: Page, name: string): Promise<void> {
 }
 
 /** Every quiz as it is stored. */
-export const stored = (page: Page): Promise<{ quiz: { id: string; name: string; rounds: { id: string; name: string; questions: { id: string; kind: string; prompt: string; media?: { id: string } }[] }[] } }[]> =>
+export const stored = (page: Page): Promise<{ quiz: { id: string; name: string; language?: string; rounds: { id: string; name: string; kind?: string; rules?: string; questions: { id: string; kind: string; prompt: string; media?: { id: string } }[] }[] } }[]> =>
   page.evaluate(
     () =>
       new Promise((resolve) => {

@@ -1,3 +1,4 @@
+import { enAi } from "./en-ai.ts";
 import { enEdit } from "./en-edit.ts";
 import { enFiles } from "./en-files.ts";
 import { enMore } from "./en-more.ts";
@@ -151,6 +152,7 @@ export const en = {
     empty: "Still empty",
     moved: "Question {{n}} moved to “{{round}}”",
   },
+  ...enAi,
   ...enEdit,
   ...enFiles,
   ...enMore,

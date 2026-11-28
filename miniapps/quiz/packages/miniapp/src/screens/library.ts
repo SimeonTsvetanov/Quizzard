@@ -82,7 +82,7 @@ function headActions(app: App): HTMLElement {
     app.view.isNaming = true;
     app.draw('[data-focus="new-name"]');
   });
-  return h("div", { class: "quiz-head-actions" }, create, openFileButton(app));
+  return h("div", { class: "quiz-head-actions" }, create, openFileButton(app), aiButton(app));
 }
 
 async function rename(app: App, id: string, name: string): Promise<void> {
@@ -190,6 +190,17 @@ function openFile(app: App, file: File): void {
   void import("../quizfile/open.ts").then(({ openQuizFile }) => openQuizFile(app, file)).catch(() => {
     if (!app.signal.aborted) app.context.shell.toast(app.t("file.openFailed"), { tone: "error" });
   });
+}
+
+/** "Make a quiz with AI": the person's own assistant writes the quiz, Quizzard reads it (screens/ai-quiz.ts, lazy). */
+function aiButton(app: App): HTMLElement {
+  const button = labelButton("ai", app.t("ai.open"), { class: "button quiz-ai-open", "data-ai-open": "" });
+  button.addEventListener("click", () => {
+    void import("./ai-quiz.ts").then(({ openAiQuiz }) => { openAiQuiz(app); }).catch(() => {
+      if (!app.signal.aborted) app.context.shell.toast(app.t("ai.notLoaded"), { tone: "error" });
+    });
+  });
+  return button;
 }
 
 /** "Open a quiz file": the system's file picker behind a button. */

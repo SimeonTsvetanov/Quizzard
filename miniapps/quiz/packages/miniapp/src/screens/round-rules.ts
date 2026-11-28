@@ -2,7 +2,7 @@
 // time of "Make the quizmaster laugh", the most points of a free game. It is the host's text to change, but
 // while it is still the text the round was given, it follows those numbers (Moni 2026-11-26: the stage said
 // "3 points for first place" after the prize was set to 4). A text the host rewrote is left alone.
-import { type Quiz, type Round, laughPrizes, safeBonus, setRoundRules, shapeOf, taskPoints } from "@simeonts/quizzard-quiz-core";
+import { type Quiz, type Registries, type Round, laughPrizes, safeBonus, setRoundRules, shapeOf, taskPoints } from "@simeonts/quizzard-quiz-core";
 import type { App } from "../app/state.ts";
 import type { Lang } from "../contract.ts";
 import { type TextKey, type Translate, createTranslator, loadLanguage } from "../i18n/translate.ts";
@@ -18,6 +18,20 @@ const MARK = "§¤§";
 /** The numbers of a round, as its rules text names them. */
 function valuesOf(round: Round, lang: Lang): Record<(typeof NAMES)[number], string | number> {
   return { bonus: safeBonus(round), ...laughPrizes(round), points: taskPoints(round), minutes: (round.defaults.seconds / 60).toLocaleString(lang, { maximumFractionDigits: 1 }) };
+}
+
+/**
+ * The rules text a special round is given, with the round's own numbers, in a language; `undefined` for a
+ * round whose kind has none (a standard round).
+ * @param round - the round
+ * @param lang - the language the quiz is played in
+ * @param registries - the round kinds
+ */
+export async function givenRules(round: Round, lang: Lang, registries: Registries): Promise<string | undefined> {
+  const key = shapeOf(round, registries) ? roundKindUis.get(round.kind)?.rules : undefined;
+  if (key === undefined) return undefined;
+  await loadLanguage(lang);
+  return createTranslator(lang)(key, valuesOf(round, lang));
 }
 
 /** Whether a text is the kind's rules text in a language, with any numbers in it. */

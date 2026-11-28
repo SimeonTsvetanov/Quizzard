@@ -1,6 +1,6 @@
 <!-- From the forge template app-shell/templates/legal/privacy.md (legal-pages §2, 2026-11-07), filled for Quizzard on 2026-11-22 with the wording of GG Counter's and TeamSync's privacy texts where the facts are the same, and checked against the code the same day (where: docs/DECISIONS.md 2026-11-22 "Policy pages filled"). Not legal advice. One bullet per layer the app really has: no feedback webhook, no API, no AI features. {App} and {email} are filled by scripts/generate.ts from app.config.ts. -->
 
-**Privacy** — Last updated: 26 November 2026
+**Privacy** — Last updated: 28 November 2026
 
 - **Who is responsible:** {App} is made by Simeon Tsvetanov, Bulgaria (contact: {email}). The
   names, players and scores you enter stay on your device and under your control only; where data
@@ -49,6 +49,10 @@
     also your notes; the exported file carries them inside but never shows them on the stage).
     These files leave your device only when you send or share them yourself; **Share** hands the
     quiz file to the app you choose in your device's share menu.
+  - **Make a quiz with AI:** {App} does not contact any AI service. You copy the instructions to
+    an assistant of your choice and paste its answer back; the text is read and checked on your
+    device. **Paste** reads your clipboard once, only when you press it. What you type into the
+    assistant is covered by that assistant's own privacy terms.
   - **Separate from the author's other apps:** {App} keeps its data under its own names. The
     TeamSync and GG Counter sites are on the same web address (`simeontsvetanov.github.io`), but
     {App} does not read, change or delete what they saved, and they do not see {App}'s data.

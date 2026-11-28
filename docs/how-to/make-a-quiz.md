@@ -22,6 +22,21 @@ A quiz is a deck of cards: its rounds are the stacks and its questions are the c
 
 The buttons on a quiz's card rename it, make a copy or delete it. A deleted quiz can be brought back with **Undo** for a few seconds. From six quizzes on, **Search your quizzes** finds a quiz by its name.
 
+## Let your AI assistant write the quiz
+
+Your own assistant — ChatGPT, Gemini, Claude or another — can write the questions. Quizzard does not talk to it: you copy a text to the assistant and its answer back.
+
+1. In **Your quizzes**, select **Make a quiz with AI**.
+2. Select **Copy instructions** and paste them into a new chat with your assistant.
+3. Answer what the assistant asks: the topic, the number of rounds, the special rounds, the language.
+4. Copy the assistant's whole answer. In Quizzard, select **Paste**, then **Make the quiz**.
+
+The quiz opens, ready to edit and play. The assistant can write text questions (open answer, multiple choice, true / false) and the rounds Golden pyramid, Safe, Make the quizmaster laugh and Free game. You add pictures, audio and video yourself.
+
+If something in the answer does not fit, Quizzard lists what must be fixed. Select **Copy for the assistant**, paste the list into the chat, and paste the corrected answer back.
+
+Check the answers before you play: an assistant can get a fact wrong.
+
 ## Add rounds
 
 1. Select **Add round**. The **Add a round** window opens.

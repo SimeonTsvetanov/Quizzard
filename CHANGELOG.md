@@ -4,6 +4,12 @@ All notable user-facing changes. Format: Keep a Changelog · SemVer.
 
 ## [Unreleased]
 
+## [0.38.0] - 2026-11-28
+### Added
+- **Quiz creator — "Make a quiz with AI".** Your own assistant (ChatGPT, Gemini, Claude or another) writes the questions: copy the instructions into a chat, answer what it asks, paste its answer back and press "Make the quiz". Quizzard checks the quiz and adds it to your quizzes, ready to edit and play — text questions with open answers, multiple choice and true / false, and the rounds Golden pyramid, Safe, Make the quizmaster laugh and Free game.
+- When an answer cannot be taken, Quizzard lists what must be fixed — which round, which question, what is wrong — and "Copy for the assistant" gives the list to send back.
+- Quizzard sends nothing to any AI service: you carry the text. The instructions are also on the site as `ai.md` for assistants that read web pages.
+
 ## [0.37.2] - 2026-11-27
 ### Changed
 - **The animated light background has no sun any more.** In its place, abstract clouds hang from the top edge — three soft rounded bands in the same style as the mountains at the bottom — and drift slowly sideways.

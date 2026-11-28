@@ -11,6 +11,7 @@ import { stripTypeScriptTypes } from "node:module";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 import { app as config, type AppConfig } from "../app.config.ts";
+import { draftGuide } from "../miniapps/quiz/packages/core/src/draft/guide.ts";
 import { accentCss, resolveAccent } from "./accent.ts";
 import { POLICY_TITLES, legalFills, policyBodyHtml } from "./legal.ts";
 import { TOOLS_TITLE, toolsBody, toolsDescription } from "./tools-page.ts";
@@ -71,6 +72,8 @@ write(
 
 // llms.txt — llmstxt.org format for agents (seo-geo §8); details go to llms-full.txt below.
 write("llms.txt", llmsTxt(app));
+// ai.md — the guide an AI assistant follows to write a quiz the Quiz creator can take (core draft/guide.ts).
+write("ai.md", draftGuide());
 // Error page + shared page assets (app-shell error-pages / pages).
 write("404.html", fill(readFileSync(join(assets, "404.html"), "utf8")));
 for (const f of ["error-page.css", "error-page.js", "page.css", "year.js"]) {

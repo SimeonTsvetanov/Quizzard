@@ -7,7 +7,8 @@
   "license": "MIT",
   "exports": {
     ".": "./src/index.ts",
-    "./play": "./src/play.ts"
+    "./play": "./src/play.ts",
+    "./draft": "./src/draft/index.ts"
   },
   "dependencies": {
     "zod": "^4.6.0"
