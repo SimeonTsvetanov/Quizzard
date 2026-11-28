@@ -13,15 +13,22 @@ const NAMES = {
   digit: ["digit", "a", "answer"],
 } as const;
 
-/** The option a `correct` entry names: its number (the first is 1), its letter (A, B, …) or its exact text. */
+/**
+ * The option a `correct` entry names: its number (the first is 1), its letter (A, B, …) or its exact
+ * text. A number that is no option's place may still be an option's own text ("4" among 2, 4, 6); a
+ * quoted number that could be either a place or another option's text names nothing.
+ */
 function optionAt(entry: unknown, texts: readonly string[]): number {
-  if (typeof entry === "number" && Number.isInteger(entry)) return entry - 1;
-  if (typeof entry !== "string") return -1;
-  const word = entry.trim();
+  if (typeof entry !== "string" && typeof entry !== "number") return -1;
+  const word = String(entry).trim();
   const byText = texts.findIndex((text) => text.toLowerCase() === word.toLowerCase());
+  const byPlace = /^\d+$/.test(word) ? Number(word) - 1 : -1;
+  const isPlace = byPlace >= 0 && byPlace < texts.length;
+  if (typeof entry === "number") return isPlace ? byPlace : byText;
+  if (byText >= 0 && isPlace && byText !== byPlace) return -1;
   if (byText >= 0) return byText;
-  if (/^[A-Ha-h]$/.test(word)) return word.toUpperCase().charCodeAt(0) - 65;
-  return /^\d+$/.test(word) ? Number(word) - 1 : -1;
+  if (isPlace) return byPlace;
+  return /^[A-Ha-h]$/.test(word) ? word.toUpperCase().charCodeAt(0) - 65 : -1;
 }
 
 /** A multiple-choice answer: 2–8 options, at least one of them right. */
@@ -53,11 +60,10 @@ function choice(reader: Reader, raw: Raw, path: string, ids: IdSource): Answer |
   return { type: "choice", options, correct: options.flatMap((option, index) => (places.includes(index) ? [option.id] : [])) };
 }
 
-/** `true` / `false`, also as the words an assistant may write for them. */
+/** `true` / `false`, also when an assistant wrote the word in quotes. */
 function truth(value: unknown): boolean | undefined {
   if (typeof value === "boolean") return value;
-  if (typeof value !== "string") return undefined;
-  const word = value.trim().toLowerCase();
+  const word = typeof value === "string" ? value.trim().toLowerCase() : "";
   if (word === "true") return true;
   return word === "false" ? false : undefined;
 }
@@ -74,14 +80,14 @@ function truth(value: unknown): boolean | undefined {
 export function standardAnswer(reader: Reader, raw: Raw, path: string, ids: IdSource): Answer | undefined {
   if (pick(raw, NAMES.options) !== undefined) return choice(reader, raw, path, ids);
   const given = pick(raw, NAMES.answer);
-  if (typeof given === "boolean") return { type: "trueFalse", correct: given };
+  const correct = truth(given);
+  if (correct !== undefined) return { type: "trueFalse", correct };
   const text = textOf(reader, given, `${path}.a`, limits.ANSWER_TEXT_MAX);
   if (text === "") {
     note(reader, "error", `${path}.a`, "answer-missing");
     return undefined;
   }
-  const asTruth = pick(raw, ["type"]) === "trueFalse" ? truth(given) : undefined;
-  return asTruth === undefined ? { type: "open", text } : { type: "trueFalse", correct: asTruth };
+  return { type: "open", text };
 }
 
 /**
@@ -94,7 +100,10 @@ export function standardAnswer(reader: Reader, raw: Raw, path: string, ids: IdSo
 export function listAnswer(reader: Reader, raw: Raw, path: string, needed: number): Answer | undefined {
   const given = listOf(reader, pick(raw, NAMES.accepted), `${path}.accepted`);
   const all = given.map((item, index) => textOf(reader, item, `${path}.accepted[${String(index)}]`, limits.ANSWER_TEXT_MAX)).filter((item) => item !== "");
-  const items = [...new Set(all)].slice(0, limits.LIST_ITEMS_MAX);
+  // The same answer twice — also in other capitals — is one answer: it must not count for two.
+  const distinct = all.filter((item, index) => all.findIndex((other) => other.toLowerCase() === item.toLowerCase()) === index);
+  if (distinct.length > limits.LIST_ITEMS_MAX) note(reader, "fixed", `${path}.accepted`, "list-too-long", { max: limits.LIST_ITEMS_MAX });
+  const items = distinct.slice(0, limits.LIST_ITEMS_MAX);
   if (items.length < needed) {
     note(reader, "error", `${path}.accepted`, "accepted-too-few", { needed, found: items.length });
     return undefined;

@@ -76,7 +76,7 @@ export function numberOf(reader: Reader, value: unknown, path: string, range: Ra
   }
   const step = range.step ?? 1;
   const used = clamp(Math.round(given / step) * step, range.min, range.max);
-  if (used !== given) note(reader, "fixed", path, "number-out-of-range", { value: given, min: range.min, max: range.max, used });
+  if (used !== given) note(reader, "fixed", path, "number-out-of-range", { value: given, min: range.min, max: range.max, step, used });
   return used;
 }
 

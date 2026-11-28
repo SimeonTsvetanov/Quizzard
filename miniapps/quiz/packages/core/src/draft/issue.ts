@@ -22,6 +22,8 @@ export type DraftCode =
   | "digit-invalid"
   | "task-no-text"
   | "name-missing"
+  | "list-too-long"
+  | "field-ignored"
   | "text-too-long"
   | "number-out-of-range"
   | "language-unknown";
@@ -55,13 +57,15 @@ const TEXTS: Readonly<Record<DraftCode, string>> = {
   "options-count": "A multiple-choice question has {min} to {max} options; this one has {found}.",
   "option-empty": "Option {option} is empty. Every option needs a text.",
   "correct-missing": "No option is marked as right. Set \"correct\" to the number of the right option (the first is 1), or a list of numbers.",
-  "correct-unknown": "\"correct\" names \"{value}\", which is not one of the options. Use the option's number (the first is 1) or its exact text.",
+  "correct-unknown": "\"correct\" is \"{value}\", which does not name one option. Write the option's number without quotes (the first option is 1).",
   "accepted-too-few": "Question {question} of a Golden pyramid asks for {needed} answers, so \"accepted\" must list at least {needed}; it lists {found}.",
   "digit-invalid": "A Safe question is answered with one digit. Set \"digit\" to a whole number from 0 to 9.",
   "task-no-text": "A free game needs its task. Put what the teams must do in \"text\".",
   "name-missing": "The name was missing; \"{used}\" was used.",
+  "list-too-long": "The list had more than {max} entries; only the first {max} were kept.",
+  "field-ignored": "\"{field}\" is not used in a \"{type}\" round and was left out.",
   "text-too-long": "The text was longer than {max} characters and was cut. Shorten it.",
-  "number-out-of-range": "{value} is outside {min}–{max}; {used} was used.",
+  "number-out-of-range": "{value} is not allowed here (whole numbers from {min} to {max}, in steps of {step}); {used} was used.",
   "language-unknown": "Language \"{value}\" is not supported; \"{used}\" was used. Use \"en\" or \"bg\".",
 };
 
@@ -92,5 +96,5 @@ export function issueText(issue: DraftIssue): string {
 export function issuesForAssistant(issues: readonly DraftIssue[]): string {
   const errors = issues.filter((issue) => issue.level === "error");
   if (errors.length === 0) return "";
-  return ["Quizzard could not take the quiz. Fix these problems and send the whole quiz again as one JSON code block:", ...errors.map((issue) => `- ${issueText(issue)}`)].join("\n");
+  return ["Quizzard could not take the quiz. Fix these problems and send the whole quiz again (in several code blocks if it is long, as before):", ...errors.map((issue) => `- ${issueText(issue)}`)].join("\n");
 }

@@ -33,10 +33,14 @@ async function copy(text: string): Promise<boolean> {
   }
 }
 
-/** Says something in the window's status line. */
+/**
+ * Says something in the window's status line, which stays in view at the window's lower edge. The line is
+ * emptied first, so the same words said twice are read out twice.
+ */
 function say(parts: Parts, text: string, isError = false): void {
-  parts.status.textContent = text;
+  parts.status.textContent = "";
   parts.status.toggleAttribute("data-error", isError);
+  if (text !== "") setTimeout(() => { parts.status.textContent = text; }, 40);
 }
 
 /** Step 1: the instructions — one button copies them; they can also be opened and read. */
@@ -44,7 +48,7 @@ function instructions(app: App, parts: Parts): HTMLElement {
   const { t } = app;
   const guide = draftGuide();
   const button = labelButton("copy", t("ai.copy"), { class: "button button--primary", "data-ai-copy": "" });
-  const text = h("textarea", { class: "quiz-input quiz-ai-guide", readonly: "", rows: "8", "aria-label": t("ai.show"), "data-ai-guide": "" });
+  const text = h("textarea", { class: "quiz-input quiz-ai-guide", readonly: "", rows: "8", lang: "en", "aria-label": t("ai.show"), "data-ai-guide": "" });
   text.value = guide;
   const details = h("details", { class: "quiz-ai-details" }, h("summary", {}, t("ai.show")), text);
   button.addEventListener("click", () => {
@@ -100,7 +104,8 @@ async function make(app: App, parts: Parts): Promise<void> {
   parts.problems.hidden = true;
   const pasted = readPasted(parts.field.value);
   if (!pasted.ok) {
-    say(parts, t(pasted.reason === "empty" ? "ai.empty" : "ai.noJson"), true);
+    const words = { empty: "ai.empty", "no-json": "ai.noJson", broken: "ai.broken", "too-long": "ai.tooLong" } as const;
+    say(parts, t(words[pasted.reason]), true);
     parts.field.focus();
     return;
   }
@@ -137,7 +142,8 @@ function answer(app: App, parts: Parts): HTMLElement {
   });
   go.addEventListener("click", () => {
     go.disabled = true;
-    void make(app, parts).finally(() => { go.disabled = false; });
+    // Whatever goes wrong while the answer is read, the window says so and stays as it is.
+    void make(app, parts).catch(() => { say(parts, t("ai.failed"), true); }).finally(() => { go.disabled = false; });
   });
   return h("section", { class: "quiz-ai-step" }, h("h3", {}, t("ai.step2")), h("p", { class: "quiz-ai-text" }, t("ai.step2Text")), field, h("div", { class: "quiz-ai-actions" }, paste, go));
 }
@@ -160,7 +166,10 @@ export function openAiQuiz(app: App): void {
   };
   dialog.append(h("div", { class: "quiz-ai-body" }, h("p", { class: "quiz-ai-text" }, t("ai.intro")), instructions(app, parts), answer(app, parts), parts.status, parts.problems));
   closeButton.addEventListener("click", () => { dialog.close(); });
-  dialog.addEventListener("click", (event) => { if (event.target === dialog) dialog.close(); });
+  // A press that both starts and ends outside the window closes it; a text selection that ends out there does not.
+  let isPressedOutside = false;
+  dialog.addEventListener("pointerdown", (event) => { isPressedOutside = event.target === dialog; });
+  dialog.addEventListener("click", (event) => { if (event.target === dialog && isPressedOutside) dialog.close(); });
   dialog.addEventListener("close", () => {
     dialog.remove();
     if (opener instanceof HTMLElement && opener.isConnected && (document.activeElement === document.body || document.activeElement === null)) opener.focus();

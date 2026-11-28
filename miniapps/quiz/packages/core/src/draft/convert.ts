@@ -44,6 +44,27 @@ interface RoundJob {
   readonly path: string;
   readonly kind: RoundKind;
   readonly env: Env;
+  /** The round's time and points: a question that names the same has none of its own. */
+  readonly seconds: number;
+  readonly points: number;
+  /** Whether a question may have points of its own; a Golden pyramid's and a Safe's are fixed by their place. */
+  readonly hasOwnPoints: boolean;
+}
+
+/** A question's own points: only what differs from its round, and never where the round kind fixes them. */
+function ownPoints(job: RoundJob, raw: Raw, path: string): Points | undefined {
+  const { reader } = job;
+  const hasValue = raw["points"] !== undefined && raw["points"] !== null;
+  if (!job.hasOwnPoints) {
+    for (const field of ["points", "pointsNote"]) {
+      if (raw[field] !== undefined && raw[field] !== null) note(reader, "fixed", `${path}.${field}`, "field-ignored", { field, type: job.kind.id });
+    }
+    return undefined;
+  }
+  const pointsNote = textOf(reader, raw["pointsNote"], `${path}.pointsNote`, limits.POINTS_NOTE_MAX);
+  const value = hasValue ? numberOf(reader, raw["points"], `${path}.points`, { ...POINTS, fallback: job.points }) : job.points;
+  if (pointsNote === "") return value === job.points ? undefined : { value };
+  return { value, note: pointsNote };
 }
 
 /** The parts every question may have: the reveal's explanation, the host's note, its own time and points. */
@@ -51,13 +72,9 @@ function extras(job: RoundJob, raw: Raw, path: string): Partial<Question> {
   const { reader } = job;
   const explanation = textOf(reader, raw["explanation"], `${path}.explanation`, limits.EXPLANATION_MAX);
   const hostNote = textOf(reader, raw["note"], `${path}.note`, limits.HOST_NOTE_MAX);
-  const pointsNote = textOf(reader, raw["pointsNote"], `${path}.pointsNote`, limits.POINTS_NOTE_MAX);
-  const hasPoints = raw["points"] !== undefined && raw["points"] !== null;
-  const points: Points | undefined = hasPoints || pointsNote !== ""
-    ? { value: numberOf(reader, raw["points"], `${path}.points`, { ...POINTS, fallback: limits.DEFAULT_POINTS }), ...(pointsNote === "" ? {} : { note: pointsNote }) }
-    : undefined;
-  const seconds = raw["seconds"] === undefined || raw["seconds"] === null ? undefined : numberOf(reader, raw["seconds"], `${path}.seconds`, { ...SECONDS, fallback: limits.DEFAULT_SECONDS });
-  return { ...(explanation === "" ? {} : { explanation }), ...(hostNote === "" ? {} : { note: hostNote }), ...(seconds === undefined ? {} : { seconds }), ...(points ? { points } : {}) };
+  const points = ownPoints(job, raw, path);
+  const given = raw["seconds"] === undefined || raw["seconds"] === null ? job.seconds : numberOf(reader, raw["seconds"], `${path}.seconds`, { ...SECONDS, fallback: job.seconds });
+  return { ...(explanation === "" ? {} : { explanation }), ...(hostNote === "" ? {} : { note: hostNote }), ...(given === job.seconds ? {} : { seconds: given }), ...(points ? { points } : {}) };
 }
 
 /** One question of a round with answers; `undefined` when it cannot be used. */
@@ -79,11 +96,9 @@ function question(job: RoundJob, value: unknown, index: number, answer: (reader:
 function questions(job: RoundJob, answer: (index: number) => (reader: Reader, raw: Raw, path: string) => Answer | undefined): readonly Question[] {
   const given = listOf(job.reader, job.raw["questions"], `${job.path}.questions`);
   const count = job.kind.shape?.count;
-  if (count !== undefined && given.length !== count) {
-    note(job.reader, "error", `${job.path}.questions`, "wrong-count", { type: job.kind.id, expected: count, found: given.length });
-    return [];
-  }
-  if (given.length === 0) note(job.reader, "error", `${job.path}.questions`, "no-questions");
+  // The questions are still read after a wrong count: every problem comes back in one go, not one a round trip.
+  if (count !== undefined && given.length !== count) note(job.reader, "error", `${job.path}.questions`, "wrong-count", { type: job.kind.id, expected: count, found: given.length });
+  else if (given.length === 0) note(job.reader, "error", `${job.path}.questions`, "no-questions");
   if (given.length > limits.MAX_QUESTIONS_PER_ROUND) {
     note(job.reader, "error", `${job.path}.questions`, "too-many-questions", { max: limits.MAX_QUESTIONS_PER_ROUND, found: given.length });
     return [];
@@ -99,19 +114,21 @@ function commonAnswer(list: readonly Question[]): string {
 }
 
 /** A standard round: any number of questions, each with its own kind of answer. */
-function standardRound(job: RoundJob, base: Pick<Round, "id" | "kind" | "name">): Round {
-  const { reader, raw, path } = job;
+function standardRound(start: RoundJob, base: Pick<Round, "id" | "kind" | "name">): Round {
+  const { reader, raw, path } = start;
   const seconds = numberOf(reader, raw["seconds"], `${path}.seconds`, { ...SECONDS, fallback: limits.DEFAULT_SECONDS });
   const points = numberOf(reader, raw["points"], `${path}.points`, { ...POINTS, fallback: limits.DEFAULT_POINTS });
+  const job: RoundJob = { ...start, seconds, points, hasOwnPoints: true };
   const list = questions(job, () => (inner, one, where) => standardAnswer(inner, one, where, job.env.ids));
   return { ...base, defaults: { seconds, points: { value: points }, questionKind: "text", answerType: commonAnswer(list) }, questions: list };
 }
 
 /** A round whose kind fixes its questions (Golden pyramid, Safe): their number, answer type and points. */
-function shapedRound(job: RoundJob, base: Pick<Round, "id" | "kind" | "name">): Round {
-  const { reader, raw, path, kind } = job;
+function shapedRound(start: RoundJob, base: Pick<Round, "id" | "kind" | "name">): Round {
+  const { reader, raw, path, kind } = start;
   const shape = kind.shape;
   const seconds = numberOf(reader, raw["seconds"], `${path}.seconds`, { ...SECONDS, fallback: shape?.seconds ?? limits.DEFAULT_SECONDS });
+  const job: RoundJob = { ...start, seconds, hasOwnPoints: false };
   const isPyramid = shape?.answerType === "list";
   const list = questions(job, (index) => (inner, one, where) => (isPyramid ? listAnswer(inner, one, where, index + 1) : digitAnswer(inner, one, where)));
   const placed = list.map((one, index) => {
@@ -130,8 +147,11 @@ function taskRound(job: RoundJob, base: Pick<Round, "id" | "kind" | "name">): Ro
   const seconds = numberOf(reader, raw["seconds"], `${path}.seconds`, { ...SECONDS, fallback: shape?.seconds ?? limits.DEFAULT_SECONDS, min: 30, step: 30 });
   const defaults = shape?.defaultData?.() ?? {};
   const data = Object.fromEntries(Object.entries(defaults).map(([key, fallback]) => [key, numberOf(reader, raw[key], `${path}.${key}`, { ...ROUND_VALUE, fallback: typeof fallback === "number" ? fallback : 0 })]));
-  const prompt = textOf(reader, pick(raw, ["text", "task", "q"]), `${path}.text`, limits.PROMPT_MAX);
+  // An assistant may put the task where a question goes: the first question's text is taken as the task.
+  const first = Array.isArray(raw["questions"]) ? (raw["questions"] as readonly unknown[])[0] : undefined;
+  const prompt = textOf(reader, pick(raw, ["text", "task", "q"]) ?? (isRaw(first) ? pick(first, PROMPT) : undefined), `${path}.text`, limits.PROMPT_MAX);
   if (prompt === "" && kind.statesTask !== true) note(reader, "error", `${path}.text`, "task-no-text");
+  if (defaults["points"] === undefined && raw["points"] !== undefined && raw["points"] !== null) note(reader, "fixed", `${path}.points`, "field-ignored", { field: "points", type: kind.id });
   const round: Round = { ...base, defaults: { seconds, points: { value: limits.DEFAULT_POINTS }, questionKind: "text", answerType: "none" }, questions: [], data };
   const value = kind.maxPoints?.(round) ?? limits.DEFAULT_POINTS;
   return { ...round, questions: [{ id: job.env.ids(), kind: "text", prompt, answer: { type: "none" }, ...(value === limits.DEFAULT_POINTS ? {} : { points: { value } }) }] };
@@ -156,7 +176,7 @@ function round(reader: Reader, value: unknown, index: number, options: DraftOpti
     name = options.roundName(index + 1);
     note(inner, "fixed", `${path}.name`, "name-missing", { used: name });
   }
-  const job: RoundJob = { reader: inner, raw: value, path, kind, env };
+  const job: RoundJob = { reader: inner, raw: value, path, kind, env, seconds: limits.DEFAULT_SECONDS, points: limits.DEFAULT_POINTS, hasOwnPoints: true };
   const base = { id: env.ids(), kind: kind.id, name };
   const made = roundOf(job, base);
   const rules = textOf(inner, value["rules"], `${path}.rules`, limits.RULES_MAX);
@@ -170,11 +190,15 @@ function roundOf(job: RoundJob, base: Pick<Round, "id" | "kind" | "name">): Roun
   return shape.answerType === "none" ? taskRound(job, base) : shapedRound(job, base);
 }
 
+/** How a language may be written: its code ("bg", "bg-BG") or its name in English or in the language itself. */
+const LANGUAGE_WORDS: readonly (readonly [RegExp, (typeof DRAFT_LANGUAGES)[number]])[] = [[/^(?:bg\b|bul|бълг)/i, "bg"], [/^(?:en\b|eng|англ)/i, "en"]];
+
 /** The quiz's language: the draft's when it is one the player speaks, else the caller's. */
 function languageOf(reader: Reader, value: unknown, fallback: string): string {
   if (value === undefined || value === null) return fallback;
-  const given = typeof value === "string" ? value.trim().toLowerCase().slice(0, 2) : "";
-  if ((DRAFT_LANGUAGES as readonly string[]).includes(given)) return given;
+  const given = typeof value === "string" ? value.trim() : "";
+  const known = LANGUAGE_WORDS.find(([pattern]) => pattern.test(given))?.[1];
+  if (known) return known;
   note(reader, "fixed", "language", "language-unknown", { value: typeof value === "string" ? value : JSON.stringify(value), used: fallback });
   return fallback;
 }

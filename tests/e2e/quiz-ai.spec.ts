@@ -72,10 +72,11 @@ test.describe("Make a quiz with AI", () => {
     await expect(problems.locator("li")).toHaveText([/^Round 1, question 1: The question has no answer\./, /^Round 1, question 2: A multiple-choice question has 2 to 8 options; this one has 1\./, /^Round 2: A "safe" round has exactly 5 questions; this one has 0\./]);
     await problems.locator("[data-ai-copy-problems]").click();
     const copied = await page.evaluate(() => navigator.clipboard.readText());
-    expect(copied.split("\n")[0]).toBe("Quizzard could not take the quiz. Fix these problems and send the whole quiz again as one JSON code block:");
+    expect(copied.split("\n")[0]).toBe("Quizzard could not take the quiz. Fix these problems and send the whole quiz again (in several code blocks if it is long, as before):");
     expect(copied.split("\n")).toHaveLength(4);
     expect(await stored(page)).toHaveLength(0);
-    await field(page).fill(JSON.stringify({ name: "Q", rounds: [{ name: "R", questions: [{ q: "Answer?", a: "Yes" }] }] }));
+    // The corrected answer is pasted under the refused one, as "Paste" does: the last whole quiz is the one that counts.
+    await field(page).fill(`${JSON.stringify(broken)}\n\n${JSON.stringify({ name: "Q", rounds: [{ name: "R", questions: [{ q: "Answer?", a: "Yes" }] }] })}`);
     await dialog(page).locator("[data-ai-make]").click();
     await expect(screen(page, "quiz")).toBeVisible();
     expect((await stored(page)).map((one) => one.quiz.name)).toEqual(["Q"]);
@@ -89,6 +90,23 @@ test.describe("Make a quiz with AI", () => {
     await field(page).fill("Sorry, I cannot help with that.");
     await dialog(page).locator("[data-ai-make]").click();
     await expect(dialog(page).locator("[data-ai-status]")).toHaveText("No quiz was found in this text. Copy the assistant's whole answer, with its block of code.");
+    await field(page).fill('{ "name": "Q", "rounds": [{ "name": "R", "questions": [{ "q": "Cut off he');
+    await dialog(page).locator("[data-ai-make]").click();
+    await expect(dialog(page).locator("[data-ai-status]")).toHaveText(/^A part of the answer is cut off/);
     expect(await stored(page)).toHaveLength(0);
+  });
+
+  test("selecting text in the field and letting go outside the window does not close it", async ({ page, isMobile }) => {
+    test.skip(isMobile, "a mouse's drag");
+    await open(page);
+    await field(page).fill("some pasted text");
+    const box = await field(page).boundingBox();
+    if (!box) throw new Error("no field");
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(5, 5);
+    await page.mouse.up();
+    await expect(dialog(page)).toBeVisible();
+    await expect(field(page)).toHaveValue("some pasted text");
   });
 });

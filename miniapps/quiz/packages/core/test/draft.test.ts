@@ -28,13 +28,15 @@ describe("fromDraft: the guide's own example", () => {
   });
 
   it("reads each kind of answer of a standard round", () => {
-    const [open, choice, truth, scored] = quiz?.rounds[0]?.questions ?? [];
+    const [open, several, choice, truth, scored] = quiz?.rounds[0]?.questions ?? [];
     expect(open?.answer).toEqual({ type: "open", text: "The Seine" });
     expect(open?.explanation).toBe("It splits around two islands in the city centre.");
     expect(choice?.answer.type).toBe("choice");
     const options = choice?.answer["options"] as readonly { id: string; text: string }[];
-    expect(options.map((option) => option.text)).toEqual(["Water Closet", "World Cup", "Wash Corner", "West Coast"]);
-    expect(choice?.answer["correct"]).toEqual([options[0]?.id]);
+    expect(options.map((option) => option.text)).toEqual(["World Cup", "Water Closet", "Wash Corner", "West Coast"]);
+    expect(choice?.answer["correct"]).toEqual([options[1]?.id]);
+    const severalOptions = several?.answer["options"] as readonly { id: string; text: string }[];
+    expect(several?.answer["correct"]).toEqual([severalOptions[0]?.id, severalOptions[2]?.id]);
     expect(truth?.answer).toEqual({ type: "trueFalse", correct: false });
     expect(scored?.points).toEqual({ value: 2, note: "1 for the band, 1 for the song" });
     expect(scored?.seconds).toBe(45);
@@ -184,15 +186,129 @@ describe("the guide and the message back", () => {
     expect(guide).toContain(`at most ${String(core.MAX_ROUNDS)} rounds`);
     expect(guide).toContain(`up to ${String(core.PROMPT_MAX)} characters`);
     expect(guide).toContain('"type": "pyramid"');
-    expect(guide.length).toBeLessThan(9000);
+    expect(guide.length).toBeLessThan(11_000);
   });
 
   it("the message for the assistant lists every error and asks for the whole quiz again; none when only fixes were made", () => {
     const broken = make(roundOf([{ q: "?" }, { a: "!" }]));
     const message = issuesForAssistant(broken.issues);
     expect(message.split("\n")).toHaveLength(3);
+    expect(message.split("\n")[0]).toContain("in several code blocks if it is long");
     expect(message).toContain("Round 1, question 1: The question has no answer.");
     expect(message).toContain("send the whole quiz again");
     expect(issuesForAssistant(make({ rounds: [{ questions: [{ q: "?", a: "!" }] }] }).issues)).toBe("");
+  });
+});
+
+// Found by the review of 2026-11-28 (assistants simulated from the guide, then reviewers): each is a
+// text or a draft a real assistant writes.
+describe("readPasted: what assistants and people really paste", () => {
+  const round = (name: string): object => ({ name, questions: [{ q: `${name}?`, a: "yes" }] });
+  const quiz = (name: string, rounds: readonly object[]): object => ({ name, rounds });
+  const names = (text: string): readonly unknown[] => {
+    const read = readPasted(text);
+    return read.ok ? [read.draft["name"], ...(read.draft["rounds"] as readonly { name: string }[]).map((one) => one.name)] : [read.reason];
+  };
+
+  it("parts without fences — the chat's Copy button gives the code only — are joined in order", () => {
+    expect(names(`${JSON.stringify(quiz("Q", [round("A")]))}\n\n${JSON.stringify([round("B"), round("C")])}\n${JSON.stringify(round("D"))}`)).toEqual(["Q", "A", "B", "C", "D"]);
+    expect(names(`\`\`\`json\n${JSON.stringify(quiz("Q", [round("A")]))}\n\`\`\`\nPart 2 of 2:\n${JSON.stringify([round("B")])}`)).toEqual(["Q", "A", "B"]);
+  });
+
+  it("a part that is not valid JSON, or an answer cut off in the middle, is said — never dropped in silence", () => {
+    const good = JSON.stringify(quiz("Q", [round("A")]));
+    expect(readPasted(`${good}\n[{ "name": "B", "questions": [{ "q": "?" "a": "!" }] }]`)).toEqual({ ok: false, reason: "broken" });
+    expect(readPasted(good.slice(0, -12))).toEqual({ ok: false, reason: "broken" });
+  });
+
+  it("the last whole quiz wins: the instructions' example above the answer, or a refused version above the corrected one", () => {
+    const example = JSON.stringify(DRAFT_EXAMPLE, null, 2);
+    expect(names(`# How to make a quiz\n\`\`\`json\n${example}\n\`\`\`\n…\nHere it is:\n\`\`\`json\n${JSON.stringify(quiz("Mine", [round("A")]))}\n\`\`\``)).toEqual(["Mine", "A"]);
+    expect(names(`${JSON.stringify(quiz("Old", [round("A"), round("B")]))}\n\n${JSON.stringify([round("C")])}\n\n${JSON.stringify(quiz("New", [round("A2")]))}\n${JSON.stringify([round("B2")])}`)).toEqual(["New", "A2", "B2"]);
+  });
+
+  it("leaves every text as written: commas before brackets, backtick fences and curly quotes inside a question", () => {
+    const tricky = { name: "Q", rounds: [{ name: "R", questions: [{ q: "What is ```code```? Pick [a, ] or {b, }", a: "„Тихият Дон“ — “quoted”" }] }] };
+    const read = readPasted(`Sure:\n\`\`\`json\n${JSON.stringify(tricky, null, 2).replace(/\n(\s*)\}/g, ",\n$1}")}\n\`\`\``);
+    expect(read).toEqual({ ok: true, draft: tricky });
+  });
+
+  it("takes a BOM, CRLF, no-break spaces as indentation, and sentences with brackets around the JSON", () => {
+    const text = `\uFEFFHere you go (5 questions) [draft]:\r\n{\r\n\u00A0\u00A0"name": "Q",\r\n\u00A0\u00A0"rounds": [{ "name": "R", "questions": [{ "q": "?", "a": "!" }] }]\r\n}\r\nEnjoy {really}!`;
+    expect(names(text)).toEqual(["Q", "R"]);
+  });
+
+  it("ignores small JSON that is not a quiz, and refuses a text too long to be one", () => {
+    expect(names(`Settings: {"theme":"dark"}\n${JSON.stringify(quiz("Q", [round("A")]))}\n[1, 2, 3]`)).toEqual(["Q", "A"]);
+    expect(readPasted("x".repeat(1_000_001))).toEqual({ ok: false, reason: "too-long" });
+  });
+
+  it("reads 200,000 characters of nested brackets without hanging", () => {
+    readPasted(`${"[{".repeat(50_000)}"questions": 1`);
+    readPasted("```".repeat(60_000));
+  }, 2000);
+});
+
+describe("fromDraft: slips of real assistants", () => {
+  const first = (question: object, more: object = {}): core.Question | undefined => make({ name: "Q", rounds: [{ name: "R", points: 3, seconds: 40, ...more, questions: [question] }] }).quiz?.rounds[0]?.questions[0];
+
+  it("a points note alone keeps the round's points; points and time equal to the round's are not the question's own", () => {
+    expect(first({ q: "?", a: "!", pointsNote: "1 each" })?.points).toEqual({ value: 3, note: "1 each" });
+    const same = first({ q: "?", a: "!", points: 3, seconds: 40 });
+    expect(same?.points).toBeUndefined();
+    expect(same?.seconds).toBeUndefined();
+    expect(first({ q: "?", a: "!", points: 5, seconds: 20 })).toMatchObject({ points: { value: 5 }, seconds: 20 });
+  });
+
+  it("a Golden pyramid's and a Safe's points are fixed by their place: a draft's own are left out and said", () => {
+    const result = make({ name: "Q", rounds: [{ type: "safe", name: "S", questions: [1, 2, 3, 4, 5].map((digit) => ({ q: "?", digit, points: 5 })) }] });
+    expect(result.quiz?.rounds[0]?.questions.every((question) => question.points === undefined)).toBe(true);
+    expect(result.issues.map((issue) => `${issue.level}:${issue.code}`)).toEqual(Array.from({ length: 5 }, () => "fixed:field-ignored"));
+  });
+
+  it("the right option: a number is its place, a number that is no place may be its text, a quoted number that could be either is refused", () => {
+    const right = (options: readonly string[], correct: unknown): readonly string[] | string => {
+      const result = make({ name: "Q", rounds: [{ name: "R", questions: [{ q: "?", options, correct }] }] });
+      const answer = result.quiz?.rounds[0]?.questions[0]?.answer;
+      if (!answer) return result.issues[0]?.code ?? "";
+      const list = answer["options"] as readonly { id: string; text: string }[];
+      return list.filter((option) => (answer["correct"] as readonly string[]).includes(option.id)).map((option) => option.text);
+    };
+    expect(right(["2", "4", "6"], 4)).toEqual(["4"]);
+    expect(right(["2", "4", "6"], 2)).toEqual(["4"]);
+    expect(right(["3", "1", "2"], "1")).toBe("correct-unknown");
+    expect(right(["1", "2", "3"], "2")).toEqual(["2"]);
+    expect(right(["Red", "Blue"], "2")).toEqual(["Blue"]);
+  });
+
+  it("true / false in quotes is true / false; a language may be written as a word", () => {
+    expect(first({ q: "The Moon is a planet.", a: "False" })?.answer).toEqual({ type: "trueFalse", correct: false });
+    for (const [written, language] of [["Bulgarian", "bg"], ["български", "bg"], ["bg-BG", "bg"], ["English", "en"], ["EN", "en"]] as const) {
+      expect(make({ name: "Q", language: written, rounds: [{ name: "R", questions: [{ q: "?", a: "!" }] }] }).quiz?.language).toBe(language);
+    }
+  });
+
+  it("the same accepted answer twice counts once, and more than a question holds are cut and said", () => {
+    const pyramid = (accepted: readonly string[]): object => ({ name: "Q", rounds: [{ type: "pyramid", name: "P", questions: [{ q: "1", accepted }, { q: "2", accepted: ["a", "b"] }, { q: "3", accepted: ["a", "b", "c"] }, { q: "4", accepted: ["a", "b", "c", "d"] }] }] });
+    expect(make(pyramid(["Everest", "everest", " EVEREST "])).quiz?.rounds[0]?.questions[0]?.answer).toEqual({ type: "list", items: ["Everest"] });
+    const many = make(pyramid([...Array(core.LIST_ITEMS_MAX + 5).keys()].map((index) => `answer ${String(index)}`)));
+    expect((many.quiz?.rounds[0]?.questions[0]?.answer["items"] as readonly string[]).length).toBe(core.LIST_ITEMS_MAX);
+    expect(many.issues.map((issue) => issue.code)).toEqual(["list-too-long"]);
+  });
+
+  it("a wrong number of questions does not hide what is wrong inside them", () => {
+    expect(errors({ name: "Q", rounds: [{ type: "safe", name: "S", questions: [{ q: "?", digit: 12 }, { digit: 1 }] }] })).toEqual(["rounds[0].questions:wrong-count", "rounds[0].questions[0].digit:digit-invalid", "rounds[0].questions[1].q:question-no-text"]);
+  });
+
+  it("a task written where a question goes is taken as the task; a laugh round's stray points are left out and said", () => {
+    const result = make({ name: "Q", rounds: [{ type: "task", name: "T", questions: [{ q: "Draw a cat" }] }, { type: "laugh", name: "L", points: 5 }] });
+    expect(result.quiz?.rounds[0]?.questions[0]?.prompt).toBe("Draw a cat");
+    expect(result.issues.map((issue) => `${issue.path}:${issue.code}`)).toEqual(["rounds[1].points:field-ignored"]);
+  });
+
+  it("a number that was rounded says so, with the step it goes in", () => {
+    const result = make({ name: "Q", rounds: [{ type: "laugh", name: "L", seconds: 100 }] });
+    expect(result.quiz?.rounds[0]?.defaults.seconds).toBe(90);
+    expect(issueText(result.issues[0] ?? { level: "fixed", path: "", code: "not-object", values: {} })).toBe("Round 1: 100 is not allowed here (whole numbers from 30 to 600, in steps of 30); 90 was used. (rounds[0].seconds)");
   });
 });
